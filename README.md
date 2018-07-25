@@ -1,4 +1,4 @@
-# mockiato
+# Mockiato: A web-based platform for API virtualization
 
 ## Quick Start
 
@@ -6,7 +6,7 @@
 2. Start Mockiato, MongoDB, and ActiveMQ: `docker-compose up`
 3. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
 
-## What is Mockiato?
+## What is it?
 
 Mockiato is a web-based platform for API virtualization. Mockiato was developed at Optum to enable test automation, and can simulate REST APIs, SOAP services, and message-oriented middleware.
 
