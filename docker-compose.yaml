@@ -4,11 +4,14 @@ services:
     container_name: app
     restart: always
     build: .
+    environment:
+      - MONGODB_HOST=mongo
     ports:
       - "8080:8080"
     links:
       - mongo
       - activemq
+    command: ["./wait-for", "mongo:27017", "--", "npm", "start"]
   mongo:
     container_name: mongo
     image: mongo
