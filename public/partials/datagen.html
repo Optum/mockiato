@@ -1,0 +1,103 @@
+<h2>Mock Data Generation</h2>
+<div class="row">
+  <div class="col-xs-3">
+    <h3><u>Field Names</u></h3>
+  </div>
+  <div class="col-xs-2">
+    <h3><u>Data Type</u></h3>
+  </div>
+</div>
+
+<!--ng-repeat start here-->
+  <div ng-repeat="item in gen.columns" class="row">
+      <div class="col-xs-3">
+        <input type="text" class="form-control" ng-model="item.header" placeholder="e.g. name, birthday, city">
+      </div>
+
+      <div class="form-group col-xs-2">
+        <select id="inputDataType" class="form-control" ng-model="item.dataType" >
+        <!--  <option ng-disabled="true" selected>Choose...</option> -->
+          <option disabled="true" class="dataCat">PERSON------------------------</option>
+          <option>First Name</option>
+          <option>Last Name</option>
+          <option>Gender</option>
+          <option>Age</option>
+          <option>SSN</option>
+          <option>Prefix</option>
+          <option>Profession</option>
+
+          <option disabled="true" class="dataCat">LOCATION----------------------</option>
+          <option>Street Address</option>
+          <option>City</option>
+          <option>State</option>
+          <option>Zip</option>
+          <option>Country</option>
+
+          <option disabled="true" class="dataCat">TIME----------------------------</option>
+          <option>Day of Week</option>
+          <option>Birthday</option>
+          <option>Date</option>
+          <option>Year</option>
+
+          <option disabled="true" class="dataCat">CONTACT-----------------------</option>
+          <option>Phone</option>
+          <option>Email Address</option>
+          <option>IP Address</option>
+          <option>IPv6</option>
+
+          <option disabled="true" class="dataCat">MISC----------------------------</option>
+          <option>Boolean</option>
+          <option>String</option>
+          <option>Integer</option>
+        </select>
+      </div>
+
+      <div class="col-xs-1">
+        <button type="button" class="btn btn-danger" ng-show="$last" ng-click="remColumn()">
+          <span class="glyphicon glyphicon-minus"></span>
+        </button>
+      </div>
+    </div>
+
+<!--ng-repeat end here-->
+
+  <div class="row">
+    <div class="col-xs-3">
+      <button type="button" class="btn btn-success" ng-click="addColumn()" >
+        <span class="glyphicon glyphicon-plus"></span>
+         Add field
+      </button>
+    </div>
+    <div class="col-xs-3">
+      <label>Include row id:  </label>&nbsp;
+      <input type="checkbox" ng-model="idBool" /> <br/>
+      <label>Start at:  </label>&nbsp;
+      <input type="text" ng-model="rowOffset" class="small-input"/>
+    </div>
+  </div>
+
+  <hr>
+  <div class="form-group row">
+    <div class="col-xs-2">
+      <label>Number of rows</label>
+      <input type="number" class="form-control"  placeholder="Enter # of rows" ng-model="numRows">
+    </div>
+    <div class="form-group col-xs-2">
+      <label>Output file type</label>
+      <select id="inputDataType" class="form-control" ng-model="fileType">
+        <option>JSON</option>
+        <option>CSV</option>
+    <!--    <option>Excel</option> -->
+        <option>XML</option>
+      </select>
+    </div>
+    </br>
+    <button type="button" class="btn btn-primary" ng-click="printColumns()" >Download</button>
+  </div>
+  <!--<hr>
+
+  <p>Below is just for testing</p>
+
+  <pre>
+      {{ gen | json }}
+  </pre>

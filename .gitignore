@@ -1,0 +1,12 @@
+.env
+data
+coverage
+node_modules
+mocks
+config
+specs
+*.log
+*.bak
+.nyc_output
+*.DS_store
+public/js/bower_components

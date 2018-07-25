@@ -1,0 +1,41 @@
+{
+  "name": "mockiato",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "nyc --reporter=text mocha"
+  },
+  "nyc": {
+    "exclude": [
+      "test"
+    ]
+  },
+  "dependencies": {
+    "body-parser": "~1.15.1",
+    "connect-pause": "^0.1.0",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.2.0",
+    "dotenv": "^5.0.1",
+    "express": "~4.13.4",
+    "express-remove-route": "^0.1.1",
+    "helmet": "^3.12.1",
+    "jsonwebtoken": "^7.4.2",
+    "mongoose": "^4.5.8",
+    "morgan": "~1.7.0",
+    "nodemailer": "^2.4.2",
+    "passport": "^0.4.0",
+    "passport-ldapauth": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^5.0.0",
+    "stomp-client": "^0.9.0",
+    "swagger-ui-express": "^2.0.14",
+    "xml2js": "^0.4.17",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.0.2",
+    "nyc": "^11.6.0",
+    "supertest": "^2.0.0"
+  }
+}

@@ -1,0 +1,28 @@
+{
+    "sut": {
+        "name": "test"
+    },
+    "name": "rr-test-xml",
+    "type": "REST",
+    "basePath": "/v2",
+    "rrpairs": [{
+        "path": "/test/resource",
+        "verb": "POST",
+        "payloadType": "XML",
+        "reqHeaders": {"Content-Type":"text/xml"},
+        "reqData": "<key>123</key>",
+        "resStatus": 201,
+        "resHeaders": { "Content-Type":"text/xml", "x-virt-app": "Mockiato"},
+        "resData": "<msg>hi</msg>"
+    },
+    {
+        "path": "/test/resource",
+        "verb": "POST",
+        "payloadType": "XML",
+        "reqHeaders": {"Content-Type":"text/xml"},
+        "reqData": "<key>1234</key>",
+        "resStatus": 201,
+        "resHeaders": { "Content-Type":"text/xml" },
+        "resData": "<msg>hello</msg>"
+    }]
+}

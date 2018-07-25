@@ -1,0 +1,38 @@
+Mockiato
+Copyright 2018 Optum
+
+Project Description:
+====================
+
+Mockiato is designed for API virtualization. With Mockiato, you can virtualize REST APIs, SOAP services, and even message-based middleware such as ActiveMQ. You can generate realistic data for testing, and export it to JSON, XML, or CSV. In seconds, via an API call or using our web-based UI, you can setup virtual endpoints that simulate your production APIs. These virtual endpoints are ideal for testing, sandboxing, knowledge transfer, and driving rapid development.
+
+
+
+Mockiato Authors:
+JD Weeks, ©Optum 2018
+
+Additional Copyright notices
+
+Copyright (c) 2014 Hidenari Nozaki and contributors | Licensed under the MIT license */
+(c) 2015 Philipp Alferov License: MIT
+(c) 2010-2016 Google, Inc. http://angularjs.org License: MIT
+(c) 2010-2014 Google, Inc. http://angularjs.org License: MIT
+
+Additional License Links
+
+https://opensource.org/licenses/BSD-3-Clause
+https://opensource.org/licenses/MIT
+
+
+
+Added Files:
+============
+
+
+
+
+
+
+
+Modified Files:
+===============

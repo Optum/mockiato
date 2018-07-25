@@ -1,0 +1,98 @@
+.vertResize {
+  resize: vertical;
+  height: 50px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0; // remove the gap so it doesn't close
+ }
+
+ .dataCat{
+     font-weight: bold;
+     font-size:16px;
+ }
+
+.navbar-inverse .navbar-nav > li > a {
+    color: #fff;
+}
+
+.navbar-inverse .navbar-nav > li > a:focus, .navbar-inverse .navbar-nav > li > a:hover {
+    color: #fff;
+    background-color: #666565;
+}
+
+input[type="radio"] {
+  margin-top: -.1px;
+  vertical-align: middle;
+}
+
+
+.move-radios{
+	padding-right: 20px;
+
+}
+
+.radio {
+    position: relative;
+    display: block;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.move-plus{
+	margin-left: -10px;
+}
+
+.btn-xl {
+    padding: 10px 20px;
+    font-size: 20px;
+    border-radius: 10px;
+    width:25%;    //Specify your width here
+}
+
+.small-input{
+  width: 65px;
+}
+
+.urlmax{
+  max-width: 350px;
+  word-wrap: break-word;
+}
+
+.loginform{
+  margin: 0 auto;
+  width:35%;
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+
+}
+
+.vertical-center {
+  min-height: 60%;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+}
+
+.highlight {
+	color: #00cc7a;
+}
+
+.form-group.req .col-form-label:after{
+  content:"*";
+  color:red;
+}
+
+.pointer{
+  cursor: pointer;
+}
+
+.padding-left-60{
+  padding-left: 60%;
+}
+
+.tab{
+  padding-left:3em;
+}

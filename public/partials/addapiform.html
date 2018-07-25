@@ -1,0 +1,277 @@
+<h2>Mock Service</h2>
+<form name="form" class="well col-xs-12" ng-controller="myMenuAppController">
+  <div class="form-group req row">
+    <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type</label>
+    <div class="col-xs-9">
+      <div class="radio">
+        <label class="move-radios">
+            <input ng-model="servicevo.type" ng-click="setContentType(rr, 'text/xml')" id="service_type" type="radio" ng-value="'SOAP'" ng-required="!servicevo.type">
+              SOAP
+        </label>
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-required="!servicevo.type">
+              REST
+        </label>
+        <!--<label>
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'">
+              MQ
+        </label>-->
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group req row">
+    <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
+
+    <div class="col-xs-2">
+      <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist" ng-click="dropdown()">
+          <option selected="selected" disabled="true">Select SUT</option>
+      </select>
+      <input ng-show="sutChecked" required type="text" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name">
+    </div>
+    <div class="col-xs-3">
+      <p>Check to create new Group
+        &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked"/>
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group req row">
+    <label for="service_name" class="col-xs-2 col-form-label">Name</label>
+    <div class="col-xs-9">
+      <input required type="text" id="service_name" class="form-control" ng-model="servicevo.name" placeholder="Enter Service Name">
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="servicevo.type !== 'MQ'">
+    <label for="service_base_path" class="col-xs-2 col-form-label">Base Path</label>
+    <div class="col-xs-9">
+      <div class="input-group">
+        <div class="input-group-addon">/virtual/{{servicevo.sut.name}}/</div>
+        <input required type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path">
+      </div>
+    </div>
+  </div>
+
+  <!-- begin req / res pairs -->
+  <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs">
+  <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+    <div class="form-group row">
+      <div class="col-xs-10">
+        <h4><ins><i>Request / Response Pair</i></ins></h4>
+      </div>
+
+      <div class="col-xs-1">
+        <button type="button" class="btn btn-danger" ng-show="$last && !$first" ng-click="removeRRPair()">
+          Delete
+        </button>
+      </div>
+
+      <div class="col-xs-1">
+        <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewRRPair()">
+          Add
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group req row" ng-show="servicevo.type === 'REST'">
+      <label for="service_method" class="col-xs-2 col-form-label">HTTP Method</label>
+      <div class="col-xs-9">
+        <div class="radio">
+          <label class="move-radios">
+              <input ng-model="rr.method" id="service_method" type="radio" ng-value="'POST'" ng-required="servicevo.type === 'REST' && !rr.method">
+                POST
+          </label>
+          <label class="move-radios">
+              <input ng-model="rr.method" id="service_method" type="radio" ng-value="'GET'" ng-required="servicevo.type === 'REST' && !rr.method">
+                GET
+          </label>
+          <label class="move-radios">
+              <input ng-model="rr.method" id="service_method" type="radio" ng-value="'PUT'" ng-required="servicevo.type === 'REST' && !rr.method">
+                PUT
+          </label>
+          <label>
+              <input ng-model="rr.method" id="service_method" type="radio" ng-value="'DELETE'" ng-required="servicevo.type === 'REST' && !rr.method">
+                DELETE
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group row" ng-show="servicevo.type === 'REST'">
+      <label for="service_endpoint" class="col-xs-2 col-form-label">Relative Path</label>
+      <div class="col-xs-9">
+        <div class="input-group">
+          <div class="input-group-addon">/</div>
+          <input type="text" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group row" ng-show="servicevo.type === 'REST'">
+      <label class="col-xs-2 col-form-label">Queries</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="q in rr.queriesArr">
+            <div class="row">
+              <div class="col-xs-5">
+                <input type="text" class="form-control" ng-model="q.k" placeholder="e.g. name">
+              </div>
+
+              <div class="col-xs-5">
+                <input type="text" class="form-control" ng-model="q.v" placeholder="e.g. value">
+              </div>
+
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeQuery(rr)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addQuery(rr)">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="form-group req row" ng-show="servicevo.type === 'REST'">
+        <label for="service_payloadtype" class="col-xs-2 col-form-label">Payload Type</label>
+        <div class="col-xs-9">
+          <div class="radio">
+            <label class="move-radios">
+                <input ng-model="rr.payloadType" ng-click="setContentType(rr, 'application/json')" id="service_payloadtype" type="radio" ng-value="'JSON'" ng-required="servicevo.type === 'REST' && !rr.payloadType">
+                  JSON
+            </label>
+            <label class="move-radios">
+                <input ng-model="rr.payloadType" ng-click="setContentType(rr, 'text/xml')" id="service_payloadtype" type="radio" ng-value="'XML'" ng-required="servicevo.type === 'REST' && !rr.payloadType">
+                  XML
+            </label>
+          </div>
+        </div>
+      </div>
+
+    <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+      <label class="col-xs-2 col-form-label">Request Headers</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="header in rr.reqHeadersArr">
+            <div class="row">
+              <div class="col-xs-5">
+                <div angucomplete-alt
+                  id="req-header-{{ header.id }}"
+                  placeholder="e.g. Cache-Control"
+                  pause="100"
+                  selected-object="header.k"
+                  local-data="possibleHeaders"
+                  override-suggestions="true"
+                  search-fields="name"
+                  title-field="name"
+                  minlength="3"
+                  input-class="form-control"
+                  match-class="highlight">
+                </div>
+              </div>
+
+              <div class="col-xs-5">
+                <input type="text" class="form-control" id="req-head-val-{{ header.id }}" ng-model="header.v" placeholder="e.g. no-cache">
+              </div>
+
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeReqHeader(rr)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewReqHeader(rr)">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="form-group row req" ng-class="rr.method === 'DELETE' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
+      <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload</label>
+      <div class="col-xs-9">
+        <textarea ng-required="rr.method !== 'GET' || servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
+      </div>
+    </div>
+
+
+    <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+      <label for="service_response_status" class="col-xs-2 col-form-label">Response Status</label>
+      <div class="col-xs-2">
+        <div angucomplete-alt
+          id="res-status"
+          placeholder="e.g. 200"
+          pause="100"
+          selected-object="rr.resStatus"
+          local-data="statusCodes"
+          search-fields="value"
+          title-field="value,desc"
+          minlength="2"
+          input-class="form-control"
+          match-class="highlight">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+      <label class="col-xs-2 col-form-label">Response Headers</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="header in rr.resHeadersArr">
+            <div class="row">
+              <div class="col-xs-5">
+                <div angucomplete-alt
+                  id="res-header-{{ header.id }}"
+                  placeholder="e.g. Cache-Control"
+                  pause="100"
+                  selected-object="header.k"
+                  local-data="possibleHeaders"
+                  override-suggestions="true"
+                  search-fields="name"
+                  title-field="name"
+                  minlength="3"
+                  input-class="form-control"
+                  match-class="highlight">
+                </div>
+              </div>
+
+              <div class="col-xs-5">
+                <input type="text" class="form-control" id="res-head-val-{{ header.id }}" ng-model="header.v" placeholder="e.g. no-cache">
+              </div>
+
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeResHeader(rr)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewResHeader(rr)">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="form-group req row">
+      <label for="service_response_payload" class="col-xs-2 col-form-label">Response Payload</label>
+      <div class="col-xs-9">
+        <textarea required id="service_response_payload" class="form-control vertResize" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="form-group row">
+    <div class="col-sm-12">
+      <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishservice(servicevo)">Publish</button>
+    </div>
+  </div>
+</form>

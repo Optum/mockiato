@@ -1,0 +1,21 @@
+{
+  "name": "mockiato-ui",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "public/js/bower_components",
+    "test"
+  ],
+  "dependencies": {
+    "angular": "^1.7.1",
+    "angular-messages": "^1.7.1",
+    "angular-resource": "^1.7.1",
+    "angular-route": "^1.7.1",
+    "angular-sanitize": "^1.7.1",
+    "jquery": "3.1.1",
+    "bootstrap": "3.3.7",
+    "chance": "^1.0.16",
+    "angucomplete-alt": "^3.0.0"
+  }
+}

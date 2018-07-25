@@ -1,0 +1,24 @@
+<h2>Import Mock Service</h2>
+<div class="clearfix"></div>
+<br>
+<div><p><i>Please import a virtual service in JSON format.</i><p></div>
+<br>
+<form class="col-xs-12" ng-controller="templateController">
+    <div class="form-group row">
+        <div class="col-xs-2">
+            <file-field class="btn btn-primary" ng-model="importTemp" preview="previewTemp"><i class="glyphicon glyphicon-import"></i> Import Template</file-field>
+        </div>
+        <div class="col-xs-2">
+            <button ng-disabled="!previewTemp" class="btn btn-success" ng-click="import()">Publish Service</button>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-xs-9" ng-show="previewTemp">
+            <h3><i>Preview</i></h3>
+            <br>
+            {{importTemp.name}}
+            <br><br>
+            <pre>{{previewTemp}}</pre>
+        </div>
+    </div>
+</form>

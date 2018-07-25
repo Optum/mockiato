@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html ng-app="mockapp">
+	<head>
+        <title>Mockiato ☕</title>
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="js/bower_components/bootstrap/dist/css/bootstrap.min.css">
+				<link rel="stylesheet" href="css/angucomplete-alt.css">
+        <link rel="stylesheet" href="css/style.css">
+
+
+        <script src="js/bower_components/angular/angular.min.js"></script>
+        <script src="js/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+        <script src="js/bower_components/angular-route/angular-route.min.js"></script>
+        <script src="js/bower_components/angular-resource/angular-resource.min.js"></script>
+        <script src="js/bower_components/angular-messages/angular-messages.min.js"></script>
+        <script src="js/lib/ui-bootstrap-tpls-2.1.2.js"></script>
+        <script src="js/bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="js/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+				<script src="js/lib/angular-bootstrap-file-field.js"></script>
+				<script src="js/lib/angular-file-saver.bundle.js"></script>
+				<script src="js/bower_components/angucomplete-alt/dist/angucomplete-alt.min.js"></script>
+				<script src="js/bower_components/chance/dist/chance.min.js"></script>
+
+        <script src="js/app/factories.js"></script>
+        <script src="js/app/services.js"></script>
+        <script src="js/app/controllers.js"></script>
+				<script src="js/app/app.js"></script>
+
+				<!-- Global site tag (gtag.js) - Google Analytics -->
+				<script async src="https://www.googletagmanager.com/gtag/js?id=UA-116938470-1"></script>
+				<script>
+				  window.dataLayer = window.dataLayer || [];
+				  function gtag(){dataLayer.push(arguments);}
+				  gtag('js', new Date());
+				  gtag('config', 'UA-116938470-1');
+				</script>
+	</head>
+	<body ng-controller="mainController">
+      <div class="container">
+          <nav class="navbar navbar-inverse">
+            <div class="navbar-header lightFont">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#!helppage"><strong>Mockiato ☕</strong></a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+              <ul class="nav navbar-nav navbar-right">
+                  <li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown", role="button", aria-expanded="false">Mock <span class="caret"></span></a>
+										<ul class="dropdown-menu" role="menu">
+                      <li><a href="#!addservice">REST/SOAP</a></li>
+											<li><a href="#!addOpenAPI">OpenAPI</a></li>
+											<li><a href="#!addTemplate">Import</a></li>
+										</ul>
+									</li>
+                  <li><a href="#!fetchservices">Browse</a></li>
+									<li><a href="#!datagen">Data</a></li>
+                  <li><a href="#!helppage">Help</a></li>
+									<li class="pointer" ng-show="loggedIn"><a ng-click="logout()">Logout</a></li>
+              </ul>
+            </div>
+          </nav>
+          <div class="ng-view"></div>
+
+          <!-- bootstrap modals -->
+          <div id="success-modal" role="dialog" class="modal fade">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" data-dismiss="modal" class="close">&times;</button>
+                  <h4 class="modal-title">Publish Success!</h4>
+                </div>
+                <div class="modal-body">
+                  <p>Your data was successfully submitted.</p>
+									<div ng-show="virt.type === 'REST' || virt.type === 'SOAP'">
+										<p><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
+										<div ng-show="virt.type === 'REST'">
+											<p><b>Operations:</b></p>
+											<fieldset ng-repeat="op in virt.operations">
+												<p>{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path }}</p>
+												<p ng-show="op.verb === 'POST' || op.verb === 'PUT'" class="tab">Required Headers: Name = Content-Type | Value = application/json</br>Note: request payload required</p>
+												<p ng-show="op.verb === 'DELETE'" class="tab">Note: if you included a request payload for DELETE, be sure to use the required headers in your request: Name = Content-Type | Value = application/json</p></br>
+											</fieldset>
+										</div>
+										<p ng-show="virt.type === 'SOAP'" class="tab">Required Headers: Name = Content-Type | Value = text/xml</br>Note: request payload required</p></br>
+									</div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" data-dismiss="modal" class="btn btn-success">OK</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="failure-modal" role="dialog" class="modal fade">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" data-dismiss="modal" class="close">&times;</button>
+                  <h4 class="modal-title">Publish Failure</h4>
+                </div>
+                <div class="modal-body">
+                  <p>Please ensure your request / response pairs are well formed.</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>
+                </div>
+              </div>
+            </div>
+          </div>
+					<div id="loginFail-modal" role="dialog" class="modal fade">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" data-dismiss="modal" class="close">&times;</button>
+									<h4 class="modal-title">Login Error</h4>
+								</div>
+								<div class="modal-body">
+									<p>Invalid credentials. Please try again.</p>
+								</div>
+								<div class="modal-footer">
+									<button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="serviceInfo-modal" role="dialog" class="modal fade">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" data-dismiss="modal" class="close">&times;</button>
+									<h4 class="modal-title">Service Information for {{ virt.name }}</h4>
+								</div>
+								<div class="modal-body">
+									<div ng-show="virt.type === 'REST' || virt.type === 'SOAP'">
+										<p><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
+										<div ng-show="virt.type === 'REST'">
+											<p><b>Operations:</b></p>
+											<fieldset ng-repeat="op in virt.operations">
+												<p ng-show="!op.queries">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path }}</p>
+												<p ng-show="op.queries">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path + op.queries }}</p>
+												<p ng-show="op.verb === 'POST' || op.verb === 'PUT'" class="tab">Required Headers: Name = Content-Type | Value = application/json</br>Note: request payload required</p>
+												<p ng-show="op.verb === 'DELETE'" class="tab">Note: if you included a request payload for DELETE, be sure to use the required headers in your request: Name = Content-Type | Value = application/json</p></br>
+											</fieldset>
+										</div>
+										<p ng-show="virt.type === 'SOAP'" class="tab">Required Headers: Name = Content-Type | Value = text/xml</br>Note: request payload required</p></br>
+									</div>
+								</div>
+								<div class="modal-footer">
+									<button type="button" data-dismiss="modal" class="btn btn-success">OK</button>
+								</div>
+							</div>
+						</div>
+					</div>
+        </div> <!-- end container -->
+	</body>
+</html>

@@ -1,0 +1,28 @@
+{
+    "sut": {
+        "name": "test"
+    },
+    "name": "rr-test",
+    "type": "REST",
+    "basePath": "/v2",
+    "rrpairs": [{
+        "path": "/test/resource",
+        "verb": "POST",
+        "payloadType": "JSON",
+        "reqHeaders": { "Content-Type":"application/json" },
+        "reqData": { "key": 123 },
+        "resStatus": 200,
+        "resHeaders": { "Content-Type":"application/json", "x-virt-app": "Mockiato"},
+        "resData": { "msg":"hi" }
+    },
+    {
+        "path": "/test/resource",
+        "verb": "POST",
+        "payloadType": "JSON",
+        "reqHeaders": { "Content-Type":"application/json" },
+        "reqData": { "key": 1234 },
+        "resStatus": 202,
+        "resHeaders": { "Content-Type":"application/json" },
+        "resData": { "msg":"hello" }
+    }]
+}

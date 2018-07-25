@@ -1,0 +1,24 @@
+<h2>Mock OpenAPI Service</h2>
+<div class="clearfix"></div>
+<br>
+<div><p><i>Please upload a valid OAS3 spec in JSON format.</i><p></div>
+<br>
+<form class="col-xs-12" ng-controller="oasController">
+    <div class="form-group row">
+        <div class="col-xs-2">
+            <file-field class="btn btn-primary" ng-model="uploadSpec" preview="previewText"><i class="glyphicon glyphicon-import"></i> Select Spec</file-field>
+        </div>
+        <div class="col-xs-2">
+            <button ng-disabled="!previewText" class="btn btn-success" ng-click="publishOpenAPI()">Publish</button>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-xs-9" ng-show="previewText">
+            <h3><i>Preview</i></h3>
+            <br>
+            {{uploadSpec.name}}
+            <br><br>
+            <pre>{{previewText}}</pre>
+        </div>
+    </div>
+</form>
