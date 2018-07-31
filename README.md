@@ -4,7 +4,7 @@
 
 1. Clone this repo: `git clone https://github.com/Optum/mockiato.git && cd mockiato`
 2. Set secret for JWT: `echo MOCKIATO_SECRET="secret" > .env`
-3. Start Mockiato, MongoDB, and ActiveMQ: `docker-compose up --build`
+3. Start Mockiato, MongoDB, and ActiveMQ: `docker-compose up`
 4. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
 
 ## What is it?
