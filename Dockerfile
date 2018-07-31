@@ -26,6 +26,7 @@ RUN apk del .gyp
 RUN apk update && apk add ca-certificates wget && update-ca-certificates
 RUN wget https://raw.githubusercontent.com/eficode/wait-for/master/wait-for
 RUN chmod +x wait-for
+RUN chmod +x start.sh
 
 # start the app
 CMD npm start

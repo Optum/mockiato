@@ -6,12 +6,16 @@ services:
     build: .
     environment:
       - MONGODB_HOST=mongo
+      - MQ_HOST=activemq
+      - MQ_PORT=61613
+      - MQ_USER=system
+      - MQ_PASS=manager
     ports:
       - "8080:8080"
-    links:
+    depends_on:
       - mongo
       - activemq
-    command: ["./wait-for", "mongo:27017", "--", "npm", "start"]
+    command: ["./start.sh"]
   mongo:
     container_name: mongo
     image: mongo
