@@ -1,3 +1,5 @@
+[![DeepScan grade](https://deepscan.io/api/projects/2971/branches/22804/badge/grade.svg)](https://deepscan.io/dashboard#view=project&pid=2971&bid=22804)
+
 # Mockiato: A web-based platform for API virtualization
 
 ## Quick Start
