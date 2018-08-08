@@ -11,8 +11,5 @@ const userSchema = new mongoose.Schema({
 if (authType === 'local') {
   userSchema.plugin(passportLocalMongoose, { usernameField: 'uid', usernameUnique: false });
 }
-mongoose.model('User', userSchema);
 
-module.exports = {
-  schema: userSchema
-};
+module.exports = mongoose.model('User', userSchema);

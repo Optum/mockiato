@@ -1,3 +1,5 @@
+process.env.MOCKIATO_AUTH = 'local';
+
 const app = require('../app');
 const request = require('supertest').agent(app);
 const YAML = require('yamljs');
@@ -12,11 +14,31 @@ const mqService   = require('../examples/mq-example.json');
 const swagService = YAML.load('./api-docs.yaml');
 const oasService  = require('../examples/petstore.json');
 
+const mockUser = {
+    username: getRandomString(),
+    mail: getRandomString() + '@noreply.com',
+    password: getRandomString()
+}
+
+function getRandomString() {
+    return  Math.random().toString(36).substring(2, 15);
+}
+
+describe('Register new user', function() {
+    it('Redirects to login', function(done) {
+        request
+            .post('/register')
+            .send(mockUser)
+            .expect(302)
+            .end(done);
+    });
+});
+
 describe('Get access token', function() {
     it('Responds with the token', function(done) {
         request
             .post('/api/login')
-            .send({ username: process.env.MOCK_USER, password: process.env.MOCK_PASS })
+            .send({ username: mockUser.username, password: mockUser.password })
             .expect(200)
             .expect(function(res) {
                 token = token + res.body.token;
@@ -100,7 +122,7 @@ describe('Create SOAP service', function() {
 describe('Test SOAP service', function() {
     it('Responds with the virtual data', function(done) {
         request
-            .post('/virtual/test/upm3_gateway/upm3/member/ReadConsumerCoverageV12')
+            .post('/virtual/test/soap')
             .set('Content-Type', 'text/xml')
             .send(soapService.rrpairs[0].reqData)
             .expect(200)
@@ -137,35 +159,35 @@ describe('Delete SOAP service', function() {
     });
 });
 
-describe('Create MQ service', function() {
-    it('Responds with the new service', function(done) {
-        request
-            .post(resource + token)
-            .send(mqService)
-            .expect(200)
-            .expect(function(res) {
-                id = res.body._id;
-            }).end(done);
-    });
-});
+// describe('Create MQ service', function() {
+//     it('Responds with the new service', function(done) {
+//         request
+//             .post(resource + token)
+//             .send(mqService)
+//             .expect(200)
+//             .expect(function(res) {
+//                 id = res.body._id;
+//             }).end(done);
+//     });
+// });
 
-describe('Retrieve MQ service', function() {
-    it('Responds with the correct service', function(done) {
-        request
-            .get(resource + '/' + id)
-            .expect(200)
-            .end(done);
-    });
-});
+// describe('Retrieve MQ service', function() {
+//     it('Responds with the correct service', function(done) {
+//         request
+//             .get(resource + '/' + id)
+//             .expect(200)
+//             .end(done);
+//     });
+// });
 
-describe('Delete MQ service', function() {
-    it('Responds with the deleted service', function(done) {
-        request
-            .delete(resource + '/' + id + token)
-            .expect(200)
-            .end(done);
-    });
-});
+// describe('Delete MQ service', function() {
+//     it('Responds with the deleted service', function(done) {
+//         request
+//             .delete(resource + '/' + id + token)
+//             .expect(200)
+//             .end(done);
+//     });
+// });
 
 describe('Create Swagger service', function() {
     it('Rejects Swagger 2 documents', function(done) {

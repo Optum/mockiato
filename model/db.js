@@ -11,11 +11,5 @@ else {
   mongoURI = 'mongodb://' + mongoHost;
 }
 
-mongoose.connect(mongoURI, { useMongoClient: true }, function(err) {
-    if (err) {
-        return console.error('Error connecting to Mongo: ' + err);
-    }
-    console.log(`Successfully connected to Mongo (${mongoHost})`);
-});
-
 require('./Service');
+module.exports = mongoose.connect(mongoURI, { useMongoClient: true });

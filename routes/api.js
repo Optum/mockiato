@@ -193,8 +193,8 @@ router.put('/:id',
       function updateService() {
         // don't let consumer alter base path or service type
         service.name = req.body.name;
-        service.delay = req.body.delay;        
         service.rrpairs = req.body.rrpairs;
+        if (req.body.delay) service.delay = req.body.delay;
 
         // save updated service in DB
         service.save(function (err, newService) {
