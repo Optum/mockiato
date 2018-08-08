@@ -1,10 +1,13 @@
+[![Build Status](https://travis-ci.org/Optum/mockiato.svg?branch=master)](https://travis-ci.org/Optum/mockiato) [![DeepScan grade](https://deepscan.io/api/projects/2971/branches/22804/badge/grade.svg)](https://deepscan.io/dashboard#view=project&pid=2971&bid=22804)
+
 # Mockiato: A web-based platform for API virtualization
 
 ## Quick Start
 
 1. Clone this repo: `git clone https://github.com/Optum/mockiato.git && cd mockiato`
-2. Start Mockiato, MongoDB, and ActiveMQ: `docker-compose up`
-3. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
+2. Set secret for JWT: `echo MOCKIATO_SECRET="<REPLACE>" > .env`
+3. Start Mockiato, MongoDB, and ActiveMQ: `docker-compose up`
+4. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
 
 ## What is it?
 
