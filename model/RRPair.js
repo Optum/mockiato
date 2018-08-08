@@ -17,8 +17,5 @@ const rrSchema = new mongoose.Schema({
   resHeaders: mongoose.Schema.Types.Mixed,
   resData: mongoose.Schema.Types.Mixed
 });
-mongoose.model('RRPair', rrSchema);
 
-module.exports = {
-  schema: rrSchema
-};
+module.exports = mongoose.model('RRPair', rrSchema);
