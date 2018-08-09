@@ -1,6 +1,6 @@
 const Service = require('../models/Service');
 const virtual = require('../routes/virtual');
-const mq  = require('../lib/mq/virtual-mq');
+const mq  = require('../lib/mq');
 const removeRoute = require('express-remove-route');
 const swag = require('../lib/openapi/parser');
 

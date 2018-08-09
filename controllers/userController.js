@@ -1,6 +1,6 @@
 const User = require('../models/User');
 
-function getUser(req, res) {
+function getUsers(req, res) {
   User.find({}, function(err, users)	{
       if (err)	{
         handleError(err, res, 500);
@@ -12,5 +12,5 @@ function getUser(req, res) {
 }
 
 module.exports = {
-  getUser: getUser
+  getUsers: getUsers
 }

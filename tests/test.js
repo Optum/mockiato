@@ -230,6 +230,16 @@ describe('API tests', function() {
                 .expect(200)
                 .end(done);
         });
-    });    
+    });
+    
+    describe('Create new group', function() {
+        it('Responds with the group', function(done) {
+            request
+                .post('/api/systems')
+                .send({ name: getRandomString() })
+                .expect(200)
+                .end(done);
+        });
+    });  
 });
 
