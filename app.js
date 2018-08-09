@@ -1,6 +1,9 @@
 // get environment variables
 require('dotenv').config();
 
+// boostrap utility functions
+require('./lib/util');
+
 // import dependencies
 const express = require('express');
 const app = express();
@@ -12,7 +15,7 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 
 // connect to database
-const db = require('./model/db');
+const db = require('./models/db');
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
   console.log(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
@@ -34,7 +37,7 @@ function init() {
 
   // expose swagger ui for internal api docs
   const YAML = require('yamljs');
-  const apiDocs = YAML.load('./api-docs.yaml');
+  const apiDocs = YAML.load('./api-docs.yml');
   const swaggerUI = require('swagger-ui-express');
   app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(apiDocs));
 
@@ -101,7 +104,7 @@ function init() {
 
   // expose API and virtual SOAP / REST services
   const virtual = require('./routes/virtual');
-  const api = require('./routes/api');
+  const api = require('./routes/services');
 
   // register SOAP / REST virts from DB
   virtual.registerAllRRPairsForAllServices();
@@ -127,16 +130,5 @@ function init() {
   // ready for testing (see test/test.js)
   app.emit('started');
 }
-
-// polyfill for Object.entries()
-if (!Object.entries)
-  Object.entries = function(obj) {
-    var ownProps = Object.keys(obj),
-        i = ownProps.length,
-        resArray = new Array(i); // preallocate the Array
-    while (i--)
-      resArray[i] = [ownProps[i], obj[ownProps[i]]];
-    return resArray;
-};
 
 module.exports = app;

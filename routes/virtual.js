@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const xml2js = require('xml2js');
 const pause = require('connect-pause');
+const Service = require('../models/Service');
 
 // function for registering an RR pair on a service
 function registerRRPair(service, rrpair) {
@@ -157,7 +157,7 @@ function registerRRPair(service, rrpair) {
 
 // register all RR pairs for all SOAP / REST services from db
 function registerAllRRPairsForAllServices() {
-  mongoose.model('Service').find({ $or: [{ type:'SOAP' }, { type:'REST' }] }, function(err, services) {
+  Service.find({ $or: [{ type:'SOAP' }, { type:'REST' }] }, function(err, services) {
     if (err) {
       console.error('Error registering services: ' + err);
       return;

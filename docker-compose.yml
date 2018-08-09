@@ -15,7 +15,7 @@ services:
     depends_on:
       - mongo
       - activemq
-    command: ["./start.sh"]
+    command: ["./bin/start"]
   mongo:
     container_name: mongo
     image: mongo

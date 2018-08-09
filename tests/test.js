@@ -11,7 +11,7 @@ const resource = '/api/services';
 const restService = require('../examples/rest-json-example.json');
 const soapService = require('../examples/soap-example.json');
 const mqService   = require('../examples/mq-example.json');
-const swagService = YAML.load('./api-docs.yaml');
+const swagService = YAML.load('./api-docs.yml');
 const oasService  = require('../examples/petstore.json');
 
 const mockUser = {
