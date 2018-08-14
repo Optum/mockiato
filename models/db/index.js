@@ -11,5 +11,5 @@ else {
   mongoURI = 'mongodb://' + mongoHost;
 }
 
-require('./Service');
+require('../Service');
 module.exports = mongoose.connect(mongoURI, { useMongoClient: true });
