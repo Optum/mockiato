@@ -15,7 +15,8 @@
     "body-parser": "~1.15.1",
     "connect-pause": "^0.1.0",
     "cookie-parser": "~1.4.3",
-    "debug": "~2.2.0",
+    //"debug": "~2.2.0", <--previous version. change effects tbd
+    "debug": "~2.6.9",
     "dotenv": "^5.0.1",
     "express": "~4.13.4",
     "express-remove-route": "^0.1.1",
