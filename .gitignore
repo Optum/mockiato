@@ -10,3 +10,4 @@ specs
 .nyc_output
 *.DS_store
 public/js/bower_components
+package-lock.json
