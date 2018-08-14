@@ -33,7 +33,7 @@
                 <td>{{service.user.uid}}</td>
                 <td>{{service.sut.name}}</td>
                 <td>{{service.type}}</td>
-                <td>{{txn.count}}</td>
+                <td>{{service.txnCount}}</td>
                 <td class="urlmax">{{ mockiatoHost + '/virtual' + service.basePath }}</td>
                 <td>
                     <button class="btn btn-danger" ng-show="service.running === true" ng-click="toggleService(service)">Stop <i class="glyphicon glyphicon-stop"></i></button>
