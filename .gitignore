@@ -1,4 +1,5 @@
 .env
+uploads
 data
 coverage
 node_modules
