@@ -196,23 +196,23 @@ describe('API tests', function() {
     //     });
     // });
     
-    describe('Create Swagger service', function() {
-        it('Rejects Swagger 2 documents', function(done) {
-            request
-                .post(resource + '/openapi' + token)
-                .send(swagService)
-                .expect(400)
-                .end(done);
-        });
+    // describe('Create Swagger service', function() {
+    //     it('Rejects Swagger 2 documents', function(done) {
+    //         request
+    //             .post(resource + '/openapi' + token)
+    //             .send(swagService)
+    //             .expect(400)
+    //             .end(done);
+    //     });
     
-        it('Accepts OAS3 documents', function(done) {
-            request
-                .post(resource + '/openapi' + token)
-                .send(oasService)
-                .expect(200)
-                .end(done);
-        });
-    });
+    //     it('Accepts OAS3 documents', function(done) {
+    //         request
+    //             .post(resource + '/openapi' + token)
+    //             .send(oasService)
+    //             .expect(200)
+    //             .end(done);
+    //     });
+    // });
     
     describe('Retrieve users', function() {
         it('Responds with the users', function(done) {
