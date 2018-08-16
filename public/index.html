@@ -78,6 +78,7 @@
                   <p>Your data was successfully submitted.</p>
 									<div ng-show="virt.type === 'REST' || virt.type === 'SOAP'">
 										<p><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
+										<p><b>Response Delay:</b> {{ virt.delay }}(ms)</p>
 										<div ng-show="virt.type === 'REST'">
 											<p><b>Operations:</b></p>
 											<fieldset ng-repeat="op in virt.operations">
