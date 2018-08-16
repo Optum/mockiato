@@ -201,13 +201,72 @@ function deleteService(req, res) {
   });
 }
 
-function createFromOpenAPI(req, res) {
+function createFromSpec(req, res) {
+  const type = req.query.type;
+  const spec = req.file;
+
+  switch(type) {
+    case 'swagger':
+      res.json(createFromSwagger(spec));
+      break;
+    case 'openapi':
+      res.json(createFromOpenAPI(spec));
+      break;
+    case 'wadl':
+      res.json(createFromWADL(spec));
+      break;
+    case 'wsdl':
+      res.json(createFromWSDL(spec));
+      break;
+    default:
+      break;
+  }
+}
+
+function createFromSwagger(spec) {
   let serv;
-  const spec = req.body;
+
+  try {
+    // TODO: parse
+    return serv;
+  }
+  catch(e) {
+    console.error(e);
+    return;
+  }
+}
+
+function createFromWADL(spec) {
+  let serv;
+
+  try {
+    // TODO: parse
+    return serv;
+  }
+  catch(e) {
+    console.error(e);
+    return;
+  }
+}
+
+function createFromWSDL(spec) {
+  let serv;
+
+  try {
+    // TODO: parse
+    return serv;
+  }
+  catch(e) {
+    console.error(e);
+    return;
+  }
+}
+
+function createFromOpenAPI(spec) {
+  let serv;
 
   try {
     serv = swag.parse(spec);
-
     serv.sut = { name: 'OAS3' };
     serv.basePath = '/' + serv.sut.name + serv.basePath;
     serv.user = req.decoded;
@@ -222,12 +281,11 @@ function createFromOpenAPI(req, res) {
         return;
       }
 
-      res.json(service);
+      return service;
     });
   }
   catch(e) {
     console.error(e);
-    handleError(e, res, 400);
     return;
   }
 }
@@ -241,5 +299,5 @@ module.exports = {
   updateService: updateService,
   toggleService: toggleService,
   deleteService: deleteService,
-  createFromOpenAPI: createFromOpenAPI
-}
+  createFromSpec: createFromSpec
+};

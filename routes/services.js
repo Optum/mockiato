@@ -33,7 +33,7 @@ router.use(function(req, res, next) {
 });
 
 // create service from OpenAPI spec
-router.post('/openapi', servCtrl.createFromOpenAPI);
+router.post('/fromSpec', servCtrl.createFromSpec);
 
 // add a new virtual service
 router.post('/', servCtrl.addService);
