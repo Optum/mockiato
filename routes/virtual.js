@@ -34,7 +34,8 @@ function registerRRPair(service, rrpair) {
     console.log("Service matched: " + matched);
 
     // bump txn count
-    if (!service.hasOwnProperty('txnCount')) service.txnCount = 0;
+    if (!service.txnCount) service.txnCount = 0;
+    //if (!service.hasOwnProperty('txnCount')) service.txnCount = 0;
     service.txnCount++;
     service.save(function(err) {
       if (err) console.error('Error saving service: ' + err);
