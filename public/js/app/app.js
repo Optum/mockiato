@@ -101,6 +101,9 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             .when("/wsdlwadl", {
                 templateUrl: "partials/wsdlwadl.html"
             })
+            .when("/mq", {
+                templateUrl: "partials/mq.html"
+            })
 
             .when("/helppage", {
                 templateUrl: "partials/help.html",
