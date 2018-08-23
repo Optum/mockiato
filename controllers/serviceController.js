@@ -3,6 +3,7 @@ const virtual = require('../routes/virtual');
 const mq  = require('../lib/mq');
 const removeRoute = require('express-remove-route');
 const swag = require('../lib/openapi/parser');
+const xml2js = require('xml2js');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -203,23 +204,39 @@ function deleteService(req, res) {
 
 function createFromSpec(req, res) {
   const type = req.query.type;
-  const spec = req.file;
+  const file = req.file;
+  const specStr  = file.buffer.toString();
 
-  switch(type) {
-    case 'swagger':
-      res.json(createFromSwagger(spec));
-      break;
-    case 'openapi':
-      res.json(createFromOpenAPI(spec));
-      break;
-    case 'wadl':
-      res.json(createFromWADL(spec));
-      break;
-    case 'wsdl':
-      res.json(createFromWSDL(spec));
-      break;
-    default:
-      break;
+  let spec; 
+  try {
+    switch(type) {
+      case 'swagger':
+        // TODO: handle YAML
+        spec = JSON.parse(specStr);
+        res.json(createFromSwagger(spec));
+        break;
+      case 'openapi':
+        spec = JSON.parse(specStr);
+        res.json(createFromOpenAPI(spec));
+        break;
+      case 'wadl':
+        xml2js.parseString(specStr, function (err, spec) {
+          if (err) handleError(err, res, 400);
+          res.json(createFromWADL(spec));
+        });
+        break;
+      case 'wsdl':
+        xml2js.parseString(specStr, function (err, spec) {
+          if (err) handleError(err, res, 400);
+          res.json(createFromWSDL(spec));
+        });
+        break;
+      default:
+        throw `API specification type ${type} is not supported`;
+    }
+  }
+  catch(e) {
+    handleError(e, res, 400);
   }
 }
 

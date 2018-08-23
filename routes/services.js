@@ -1,5 +1,9 @@
 const express = require('express');
 const router = express.Router();
+
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+
 const jwt = require('jsonwebtoken');
 const servCtrl = require('../controllers/serviceController');
 
@@ -33,7 +37,7 @@ router.use(function(req, res, next) {
 });
 
 // create service from OpenAPI spec
-router.post('/fromSpec', servCtrl.createFromSpec);
+router.post('/fromSpec', upload.single('spec'), servCtrl.createFromSpec);
 
 // add a new virtual service
 router.post('/', servCtrl.addService);
