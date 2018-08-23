@@ -67,6 +67,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           this.displayServiceInfo = function(data) {
             $rootScope.virt.operations = [];
             $rootScope.virt.baseUrl = '/virtual' + data.basePath;
+            $rootScope.virt.delay= data.delay;
             $rootScope.virt.type = data.type;
             $rootScope.virt.name = data.name;
               data.rrpairs.forEach(function(rr) {

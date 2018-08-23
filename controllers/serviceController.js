@@ -57,6 +57,7 @@ function getServicesByQuery(req, res) {
 
 function addService(req, res) {
   const base = '/' + req.body.sut.name + req.body.basePath;
+  const delay = req.body.delay || 1;
 
   // call create function for db
   Service.create({
@@ -64,6 +65,7 @@ function addService(req, res) {
     user: req.decoded,
     name: req.body.name,
     type: req.body.type,
+    delay: delay,
     basePath: base,
     rrpairs: req.body.rrpairs
   },
