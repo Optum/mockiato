@@ -126,8 +126,7 @@ function updateService(req, res) {
       return;
     }
 
-    // don't let consumer alter base path or service type
-    service.name = req.body.name;
+    // don't let consumer alter name, base path, etc.
     service.rrpairs = req.body.rrpairs;
     if (req.body.delay) service.delay = req.body.delay;
 
