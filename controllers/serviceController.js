@@ -55,6 +55,23 @@ function getServicesByQuery(req, res) {
   });
 }
 
+// function to check for duplicate service
+function searchDuplicates(name, base, next) {
+  const query = { 
+    name: name,
+    basePath: base 
+  };
+
+  Service.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+    next(services);
+  });
+}
+
 function addService(req, res) {
   const base = '/' + req.body.sut.name + req.body.basePath;
   const delay = req.body.delay || 1;

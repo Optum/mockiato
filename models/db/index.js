@@ -11,5 +11,11 @@ else {
   mongoURI = 'mongodb://' + mongoHost;
 }
 
-require('../Service');
+const Service = require('../Service');
+
+Service.on('index', function(err) {
+  if (err) console.error(err); // error occurred during index creation
+  else console.log('Service models indexed successfully');
+})
+
 module.exports = mongoose.connect(mongoURI, { useMongoClient: true });
