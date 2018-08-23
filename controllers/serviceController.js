@@ -56,66 +56,77 @@ function getServicesByQuery(req, res) {
 }
 
 // function to check for duplicate service
-function searchDuplicates(name, base, next) {
+function searchDuplicate(name, base, next) {
   const query = { 
     name: name,
     basePath: base 
   };
 
-  Service.find(query, function(err, services) {
+  Service.findOne(query, function(err, duplicate) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
 
-    next(services);
+    next(duplicate);
   });
 }
 
 function addService(req, res) {
-  const base = '/' + req.body.sut.name + req.body.basePath;
   const delay = req.body.delay || 1;
+  const name  = req.body.name;
+  const base  = '/' + req.body.sut.name + req.body.basePath;
 
-  // call create function for db
-  Service.create({
-    sut: req.body.sut,
-    user: req.decoded,
-    name: req.body.name,
-    type: req.body.type,
-    delay: delay,
-    basePath: base,
-    rrpairs: req.body.rrpairs
-  },
-
-  // handler for db call
-  function(err, service) {
-    if (err) {
-      handleError(err, res, 500);
-      return;
-    }
-
-    if (service.type !== 'MQ') {
-      // register SOAP / REST virts
-      try {
-        service.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(service, rrpair);
-        });
-      }
-      catch(e) {
-        handleError(e.message, res, 400);
-        return;
-      }
+  searchDuplicate(name, base, function(duplicate) {
+    if (duplicate) {
+      // TODO: handle duplicate service
+      handleError('new service is duplicate', res, 400);
     }
     else {
-      // register MQ virts
-      service.rrpairs.forEach(function(rrpair){
-        mq.register(rrpair);
+      // call create function for model
+      Service.create({
+        sut: req.body.sut,
+        user: req.decoded,
+        name: name,
+        type: req.body.type,
+        delay: delay,
+        basePath: base,
+        rrpairs: req.body.rrpairs
+      },
+
+      // handler for db call
+      function(err, service) {
+        if (err) {
+          handleError(err, res, 500);
+          return;
+        }
+
+        if (service.type !== 'MQ') {
+          // register SOAP / REST virts
+          try {
+            service.rrpairs.forEach(function(rrpair){
+              virtual.registerRRPair(service, rrpair);
+            });
+          }
+          catch(e) {
+            handleError(e.message, res, 400);
+            return;
+          }
+        }
+        else {
+          // register MQ virts
+          service.rrpairs.forEach(function(rrpair){
+            mq.register(rrpair);
+          });
+        }
+
+        // respond with the newly created resource
+        res.json(service);
       });
     }
-
-    // respond with the newly created resource
-    res.json(service);
   });
+
+  
 }
 
 function updateService(req, res) {
