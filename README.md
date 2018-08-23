@@ -2,7 +2,7 @@
 
 # Mockiato: A web-based platform for API virtualization
  
-## Quick Start
+## Quick Start 
 
 1. Clone this repo: `git clone https://github.com/Optum/mockiato.git && cd mockiato`
 2. Set secret for JWT: `echo MOCKIATO_SECRET="<REPLACE>" > .env`
