@@ -32,11 +32,20 @@ router.use(function(req, res, next) {
   }
 });
 
+// middleware to reject invalid services
+function rejectInvalid(req, res, next) {
+  const validTypes = [ 'SOAP', 'REST' ];
+  const type = req.body.type;
+
+  if (validTypes.includes(type)) return next();
+  handleError(`Service type ${type} is not supported`, res, 400);
+}
+
 // create service from OpenAPI spec
 router.post('/openapi', servCtrl.createFromOpenAPI);
 
 // add a new virtual service
-router.post('/', servCtrl.addService);
+router.post('/', rejectInvalid, servCtrl.addService);
 
 // retrieve a virtual service by ID (in JSON)
 router.get('/:id', servCtrl.getServiceById);
