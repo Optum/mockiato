@@ -55,10 +55,10 @@ function getServicesByQuery(req, res) {
 }
 
 // function to check for duplicate service
-function searchDuplicate(name, base, next) {
+function searchDuplicate(service, next) {
   const query = { 
-    name: name,
-    basePath: base 
+    name: service.name,
+    basePath: service.base 
   };
 
   Service.findOne(query, function(err, duplicate) {
@@ -76,6 +76,7 @@ function mergeRRPairs(original, second) {
   const allPairs = original.rrpairs.concat(second.rrpairs);
 
   // TODO: remove duplicate req / res pairs
+  // even better -> only add RR pairs that original doesn't already have
   original.rrpairs = allPairs;
 }
 
@@ -90,7 +91,7 @@ function addService(req, res) {
     rrpairs: req.body.rrpairs
   };
 
-  searchDuplicate(serv.name, serv.base, function(duplicate) {
+  searchDuplicate(serv, function(duplicate) {
     if (duplicate) {
       // deregister old req / res pairs
       duplicate.rrpairs.forEach(function(rr){
