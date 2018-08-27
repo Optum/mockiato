@@ -28,24 +28,23 @@ function registerRRPair(service, rrpair) {
       }
     }
     else {
-      console.log("methods don't match");
+      console.log("HTTP methods don't match");
       return next();
     }
-    console.log("Service matched: " + matched);
+    console.log("Request matched? " + matched);
 
     // bump txn count
     if (!service.txnCount) service.txnCount = 0;
-    //if (!service.hasOwnProperty('txnCount')) service.txnCount = 0;
     service.txnCount++;
     service.save(function(err) {
       if (err) console.error('Error saving service: ' + err);
     });
     
-    // run next callback if request not matched
+    // run the next callback if request not matched
     if (!matched) return next();
 
-    // function for matching requests
-    function matchRequest(payload, next) {
+    // function for matching requests to responses
+    function matchRequest(payload) {
       let reqData;
       let resData;
       const isGet = req.method === 'GET';
@@ -103,27 +102,30 @@ function registerRRPair(service, rrpair) {
         else
           resp.status(rrpair.resStatus).send(rrpair.resData);
 
+        // request was matched
         return true;
       }
 
+      // request was not matched
       console.log("expected payload: " + JSON.stringify(reqData, null, 2));
       console.log("received payload: " + JSON.stringify(payload, null, 2));
       return false;
+    }
 
-      function setRespHeaders() {
-        const resHeaders = rrpair.resHeaders;
+    // function to set headers for response
+    function setRespHeaders() {
+      const resHeaders = rrpair.resHeaders;
 
-        if (!resHeaders) {
-          // set default headers
-          if (rrpair.payloadType === 'XML')
-            resp.set("Content-Type", "text/xml");
-          else {
-            resp.set("Content-Type", "application/json");
-          }
-        }
+      if (!resHeaders) {
+        // set default headers
+        if (rrpair.payloadType === 'XML')
+          resp.set("Content-Type", "text/xml");
         else {
-          resp.set(resHeaders);
+          resp.set("Content-Type", "application/json");
         }
+      }
+      else {
+        resp.set(resHeaders);
       }
     }
   });

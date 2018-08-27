@@ -75,8 +75,7 @@ function searchDuplicate(service, next) {
 function mergeRRPairs(original, second) {
   const allPairs = original.rrpairs.concat(second.rrpairs);
 
-  // TODO: remove duplicate req / res pairs
-  // even better -> only add RR pairs that original doesn't already have
+  // TODO: only add RR pairs that original doesn't have already
   original.rrpairs = allPairs;
 }
 
