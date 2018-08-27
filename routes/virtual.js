@@ -61,7 +61,7 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      if (isGet || compareObjects(payload, reqData)) {
+      if (isGet || jsonEqual(payload, reqData)) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
@@ -71,7 +71,7 @@ function registerRRPair(service, rrpair) {
           }
 
           // try the next rr pair if queries do not match
-          if (!compareObjects(rrpair.queries, req.query)) {
+          if (!jsonEqual(rrpair.queries, req.query)) {
             console.log("expected query: " + JSON.stringify(rrpair.queries));
             console.log("received query: " + JSON.stringify(req.query));
             return false;
@@ -109,33 +109,6 @@ function registerRRPair(service, rrpair) {
       console.log("expected payload: " + JSON.stringify(reqData, null, 2));
       console.log("received payload: " + JSON.stringify(payload, null, 2));
       return false;
-
-      function flattenObject(ob) {
-          const toReturn = {};
-          for (const i in ob) {
-              if (!ob.hasOwnProperty(i)) continue;
-
-              if ((typeof ob[i]) == 'object') {
-                  const flatObject = flattenObject(ob[i]);
-                  for (const x in flatObject) {
-                      if (!flatObject.hasOwnProperty(x)) continue;
-
-                      toReturn[i + '.' + x] = flatObject[x];
-                  }
-              } else {
-                  toReturn[i] = ob[i];
-              }
-          }
-          return toReturn;
-      }
-
-      function compareObjects(obj1, obj2) {
-        // flatten and sort keys so order doesn't impact matching
-        const keysVals1 = Object.entries(flattenObject(obj1)).sort();
-        const keysVals2 = Object.entries(flattenObject(obj2)).sort();
-
-        return (JSON.stringify(keysVals1) === JSON.stringify(keysVals2));
-      }
 
       function setRespHeaders() {
         const resHeaders = rrpair.resHeaders;
