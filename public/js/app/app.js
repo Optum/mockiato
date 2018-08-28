@@ -96,7 +96,18 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/selectService", {
-                templateUrl: "partials/selectService.html"
+                templateUrl: "partials/selectService.html",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
             })
             .when("/wsdlwadl", {
                 templateUrl: "partials/wsdlwadl.html"
