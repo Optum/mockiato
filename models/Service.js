@@ -36,4 +36,5 @@ const serviceSchema = new mongoose.Schema({
   }
 });
 
+serviceSchema.set('usePushEach', true);
 module.exports = mongoose.model('Service', serviceSchema);

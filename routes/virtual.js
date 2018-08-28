@@ -46,7 +46,7 @@ function registerRRPair(service, rrpair) {
     // function for matching requests to responses
     function matchRequest(payload) {
       let reqData;
-      
+
       const isGet = req.method === 'GET';
       if (!isGet) {
         if (rrpair.payloadType === 'XML') {
@@ -59,7 +59,7 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      if (isGet || jsonEqual(payload, reqData)) {
+      if (isGet || deepEquals(payload, reqData)) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
@@ -69,7 +69,7 @@ function registerRRPair(service, rrpair) {
           }
 
           // try the next rr pair if queries do not match
-          if (!jsonEqual(rrpair.queries, req.query)) {
+          if (!deepEquals(rrpair.queries, req.query)) {
             console.log("expected query: " + JSON.stringify(rrpair.queries));
             console.log("received query: " + JSON.stringify(req.query));
             return false;

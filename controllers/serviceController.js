@@ -1,4 +1,5 @@
 const Service = require('../models/Service');
+const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
 const removeRoute = require('express-remove-route');
 const swag = require('../lib/openapi/parser');
@@ -73,10 +74,23 @@ function searchDuplicate(service, next) {
 
 // function to merge req / res pairs of duplicate services
 function mergeRRPairs(original, second) {
-  const allPairs = original.rrpairs.concat(second.rrpairs);
+  for (rrpair2 of second.rrpairs) {
+    let hasAlready = false;
+    let rr2 = Object.create(new RRPair(rrpair2));
 
-  // TODO: only add RR pairs that original doesn't have already
-  original.rrpairs = allPairs;
+    for (rrpair1 of original.rrpairs) {
+      let rr1 = Object.create(rrpair1);
+      if (deepEquals(rr1, rr2)) { 
+        hasAlready = true;
+        break;
+      }
+    }
+
+    // only add RR pairs that original doesn't have already
+    if (!hasAlready) {
+      original.rrpairs.push(rr2);
+    }
+  }
 }
 
 function addService(req, res) {
