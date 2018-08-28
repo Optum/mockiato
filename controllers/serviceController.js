@@ -72,14 +72,30 @@ function searchDuplicate(service, next) {
   });
 }
 
+// returns a stripped-down version on the rrpair for logical comparison
+function stripRRPair(rrpair) {
+  return {
+    verb: rrpair.verb || '',
+    path: rrpair.path || '',
+    payloadType: rrpair.payloadType || '',
+    queries: rrpair.queries || {},
+    reqHeaders: rrpair.reqHeaders || {},
+    reqData: rrpair.reqData || {},
+    resStatus: rrpair.resStatus || 200,
+    resHeaders: rrpair.resHeaders || {},
+    resData: rrpair.resData || {}
+  };
+}
+
 // function to merge req / res pairs of duplicate services
 function mergeRRPairs(original, second) {
   for (rrpair2 of second.rrpairs) {
     let hasAlready = false;
-    let rr2 = Object.create(new RRPair(rrpair2));
+    let rr2 = stripRRPair(new RRPair(rrpair2));
 
     for (rrpair1 of original.rrpairs) {
-      let rr1 = Object.create(rrpair1);
+      let rr1 = stripRRPair(rrpair1);
+
       if (deepEquals(rr1, rr2)) { 
         hasAlready = true;
         break;
@@ -88,7 +104,7 @@ function mergeRRPairs(original, second) {
 
     // only add RR pairs that original doesn't have already
     if (!hasAlready) {
-      original.rrpairs.push(rr2);
+      original.rrpairs.push(rrpair2);
     }
   }
 }
@@ -115,7 +131,7 @@ function addService(req, res) {
       mergeRRPairs(duplicate, serv);
 
       // save merged service
-      duplicate.save(function (err, newService) {
+      duplicate.save(function(err, newService) {
         if (err) {
           handleError(err, res, 500);
           return;
