@@ -89,11 +89,11 @@ function stripRRPair(rrpair) {
 
 // function to merge req / res pairs of duplicate services
 function mergeRRPairs(original, second) {
-  for (rrpair2 of second.rrpairs) {
+  for (let rrpair2 of second.rrpairs) {
     let hasAlready = false;
     let rr2 = stripRRPair(new RRPair(rrpair2));
 
-    for (rrpair1 of original.rrpairs) {
+    for (let rrpair1 of original.rrpairs) {
       let rr1 = stripRRPair(rrpair1);
 
       if (deepEquals(rr1, rr2)) { 
