@@ -53,6 +53,13 @@
     </div>
   </div>
 
+  <div class="form-group row">
+    <label for="service_delay" class="col-xs-2 col-form-label">Response Delay(ms):</label>
+    <div class="col-xs-2">
+      <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="1">
+    </div>
+  </div>
+
   <!-- begin req / res pairs -->
   <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs">
   <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />

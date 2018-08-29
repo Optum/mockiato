@@ -145,6 +145,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                       sut: service.sut,
                       name: service.name,
                       type: service.type,
+                      delay: service.delay,
+                      txnCount: service.txnCount,
                       basePath: service.basePath
                     };
 

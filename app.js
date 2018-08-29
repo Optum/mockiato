@@ -123,10 +123,6 @@ function init() {
   mq.connect();
   mq.registerAll();
 
-  // email for contact form
-  const contact = require('./routes/contact');
-  app.use('/contact', contact);
-
   // ready for testing (see test/test.js)
   app.emit('started');
 }

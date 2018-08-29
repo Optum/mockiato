@@ -3,7 +3,10 @@ const passportLocalMongoose = require('passport-local-mongoose');
 const authType  = process.env.MOCKIATO_AUTH || 'local';
 
 const userSchema = new mongoose.Schema({
-  uid: String,
+  uid: { 
+    type: String, 
+    index: true
+  },
   mail: String,
   password: String
 });

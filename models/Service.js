@@ -7,9 +7,15 @@ const RRPair = require('./RRPair');
 const serviceSchema = new mongoose.Schema({
   sut: System.schema,
   user: User.schema,
-  name: String,
+  name: { 
+    type: String, 
+    index: true
+  },
   type: String,
-  basePath: String,
+  basePath: { 
+    type: String, 
+    index: true
+  },
   rrpairs: [RRPair.schema],
   delay: {
     // force integer only
@@ -30,4 +36,5 @@ const serviceSchema = new mongoose.Schema({
   }
 });
 
+serviceSchema.set('usePushEach', true);
 module.exports = mongoose.model('Service', serviceSchema);

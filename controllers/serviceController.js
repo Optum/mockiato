@@ -1,6 +1,6 @@
 const Service = require('../models/Service');
+const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
-const mq  = require('../lib/mq');
 const removeRoute = require('express-remove-route');
 const swag = require('../lib/openapi/parser');
 const xml2js = require('xml2js');
@@ -56,48 +56,130 @@ function getServicesByQuery(req, res) {
   });
 }
 
-function addService(req, res) {
-  const base = '/' + req.body.sut.name + req.body.basePath;
+// function to check for duplicate service
+function searchDuplicate(service, next) {
+  const query = { 
+    name: service.name,
+    basePath: service.basePath
+  };
 
-  // call create function for db
-  Service.create({
-    sut: req.body.sut,
-    user: req.decoded,
-    name: req.body.name,
-    type: req.body.type,
-    basePath: base,
-    rrpairs: req.body.rrpairs
-  },
-
-  // handler for db call
-  function(err, service) {
+  Service.findOne(query, function(err, duplicate) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
 
-    if (service.type !== 'MQ') {
-      // register SOAP / REST virts
-      try {
-        service.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(service, rrpair);
-        });
+    next(duplicate);
+  });
+}
+
+// returns a stripped-down version on the rrpair for logical comparison
+function stripRRPair(rrpair) {
+  return {
+    verb: rrpair.verb || '',
+    path: rrpair.path || '',
+    payloadType: rrpair.payloadType || '',
+    queries: rrpair.queries || {},
+    reqHeaders: rrpair.reqHeaders || {},
+    reqData: rrpair.reqData || {},
+    resStatus: rrpair.resStatus || 200,
+    resHeaders: rrpair.resHeaders || {},
+    resData: rrpair.resData || {}
+  };
+}
+
+// function to merge req / res pairs of duplicate services
+function mergeRRPairs(original, second) {
+  for (rrpair2 of second.rrpairs) {
+    let hasAlready = false;
+    let rr2 = stripRRPair(new RRPair(rrpair2));
+
+    for (rrpair1 of original.rrpairs) {
+      let rr1 = stripRRPair(rrpair1);
+
+      if (deepEquals(rr1, rr2)) { 
+        hasAlready = true;
+        break;
       }
-      catch(e) {
-        handleError(e.message, res, 400);
-        return;
-      }
-    }
-    else {
-      // register MQ virts
-      service.rrpairs.forEach(function(rrpair){
-        mq.register(rrpair);
-      });
     }
 
-    // respond with the newly created resource
-    res.json(service);
+    // only add RR pairs that original doesn't have already
+    if (!hasAlready) {
+      original.rrpairs.push(rrpair2);
+    }
+  }
+}
+
+function addService(req, res) {
+  let serv  = {
+    sut: req.body.sut,
+    user: req.decoded,
+    name: req.body.name,
+    type: req.body.type,
+    delay: req.body.delay || 1,
+    basePath: '/' + req.body.sut.name + req.body.basePath,
+    rrpairs: req.body.rrpairs
+  };
+
+  searchDuplicate(serv, function(duplicate) {
+    if (duplicate) {
+      // deregister old req / res pairs
+      duplicate.rrpairs.forEach(function(rr){
+        removeRoute(require('../app'), '/virtual/' + duplicate.basePath + rr.path);
+      });
+
+      // merge services
+      mergeRRPairs(duplicate, serv);
+
+      // save merged service
+      duplicate.save(function(err, newService) {
+        if (err) {
+          handleError(err, res, 500);
+          return;
+        }
+  
+        try {  
+          // register new req / res pairs
+          newService.rrpairs.forEach(function(rrpair){
+            virtual.registerRRPair(newService, rrpair);
+          });
+        }
+        catch(e) {
+          handleError(e.message, res, 400);
+          return;
+        }
+
+        res.json(newService);
+      });
+    }
+    else {
+      Service.create(serv,
+
+      // handler for db call
+      function(err, service) {
+        if (err) {
+          handleError(err, res, 500);
+          return;
+        }
+
+        // register SOAP / REST virts
+        try {
+          service.rrpairs.forEach(function(rrpair){
+            virtual.registerRRPair(service, rrpair);
+          });
+        }
+        catch(e) {
+          handleError(e.message, res, 400);
+          return;
+        }
+
+        // respond with the newly created resource
+        res.json(service);
+      });
+    }
   });
+
+  
 }
 
 function updateService(req, res) {
@@ -108,8 +190,7 @@ function updateService(req, res) {
       return;
     }
 
-    // don't let consumer alter base path or service type
-    service.name = req.body.name;
+    // don't let consumer alter name, base path, etc.
     service.rrpairs = req.body.rrpairs;
     if (req.body.delay) service.delay = req.body.delay;
 
@@ -120,30 +201,22 @@ function updateService(req, res) {
         return;
       }
 
-      if (service.type !== 'MQ') {
-        // register new SOAP / REST virts
-        try {
-          // remove old req / res pairs
-          service.rrpairs.forEach(function(rr){
-            removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
-          });
-
-
-          // register new req / res pairs
-          newService.rrpairs.forEach(function(rrpair){
-            virtual.registerRRPair(newService, rrpair);
-          });
-        }
-        catch(e) {
-          handleError(e.message, res, 400);
-          return;
-        }
-      }
-      else {
-        // register new MQ virts TODO: deregister old MQ services
-        newService.rrpairs.forEach(function(rrpair){
-          mq.register(rrpair);
+      // register new SOAP / REST virts
+      try {
+        // remove old req / res pairs
+        service.rrpairs.forEach(function(rr){
+          removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
         });
+
+
+        // register new req / res pairs
+        newService.rrpairs.forEach(function(rrpair){
+          virtual.registerRRPair(newService, rrpair);
+        });
+      }
+      catch(e) {
+        handleError(e.message, res, 400);
+        return;
       }
 
       res.json(newService);
@@ -191,12 +264,9 @@ function deleteService(req, res) {
     }
 
     // deregister SOAP / REST endpoints
-    if (service.type !== 'MQ') {
-      service.rrpairs.forEach(function(rr){
-        removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
-      });
-    }
-    // TODO: deregister MQ services
+    service.rrpairs.forEach(function(rr){
+      removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
+    });
 
     res.json({'message' : 'deleted', 'service' : service});
   });

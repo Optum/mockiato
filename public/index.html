@@ -45,21 +45,22 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="#!helppage"><strong>Mockiato ☕</strong></a>
+              <a class="navbar-brand" href="#!selectService"><strong>Mockiato ☕</strong></a>
             </div>
             <div class="collapse navbar-collapse" id="myNavbar">
               <ul class="nav navbar-nav navbar-right">
-                  <li class="dropdown">
+                 <!-- <li class="dropdown">
 										<a class="dropdown-toggle" data-toggle="dropdown", role="button", aria-expanded="false">Mock <span class="caret"></span></a>
 										<ul class="dropdown-menu" role="menu">
                       <li><a href="#!addservice">REST/SOAP</a></li>
 											<li><a href="#!addOpenAPI">OpenAPI</a></li>
 											<li><a href="#!addTemplate">Import</a></li>
 										</ul>
-									</li>
+									</li> -->
+									<li><a href="#!selectService">Mock</a></li>
                   <li><a href="#!fetchservices">Browse</a></li>
 									<li><a href="#!datagen">Data</a></li>
-                  <li><a href="#!helppage">Help</a></li>
+                  <li><a target="_blank" href="/api-docs">API</a></li>
 									<li class="pointer" ng-show="loggedIn"><a ng-click="logout()">Logout</a></li>
               </ul>
             </div>
@@ -78,6 +79,7 @@
                   <p>Your data was successfully submitted.</p>
 									<div ng-show="virt.type === 'REST' || virt.type === 'SOAP'">
 										<p><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
+										<p><b>Response Delay:</b> {{ virt.delay }}(ms)</p>
 										<div ng-show="virt.type === 'REST'">
 											<p><b>Operations:</b></p>
 											<fieldset ng-repeat="op in virt.operations">
@@ -137,6 +139,7 @@
 								<div class="modal-body">
 									<div ng-show="virt.type === 'REST' || virt.type === 'SOAP'">
 										<p><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
+										<p><b>Response Delay:</b> {{ virt.delay }}(ms)</p>
 										<div ng-show="virt.type === 'REST'">
 											<p><b>Operations:</b></p>
 											<fieldset ng-repeat="op in virt.operations">

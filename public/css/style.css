@@ -96,3 +96,7 @@ input[type="radio"] {
 .tab{
   padding-left:3em;
 }
+
+.borderless td, .borderless th {
+  border: none;
+}

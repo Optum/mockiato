@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/Optum/mockiato.svg?branch=master)](https://travis-ci.org/Optum/mockiato) [![DeepScan grade](https://deepscan.io/api/projects/2971/branches/22804/badge/grade.svg)](https://deepscan.io/dashboard#view=project&pid=2971&bid=22804)
 
-# Mockiato: A web-based platform for API virtualization
-
-## Quick Start
+# Mockiato: A web-based platform for API virtualization 
+ 
+## Quick Start 
 
 1. Clone this repo: `git clone https://github.com/Optum/mockiato.git && cd mockiato`
 2. Set secret for JWT: `echo MOCKIATO_SECRET="<REPLACE>" > .env`
