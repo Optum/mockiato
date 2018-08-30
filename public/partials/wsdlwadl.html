@@ -1,1 +1,27 @@
 <h2>WSDL/WADL mocking services are coming soon...</h2>
+
+<form name="form" class="well col-xs-12" ng-controller="myMenuAppController">
+    <div class="form-group req row">
+        <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
+        <div class="col-xs-2">
+            <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist" ng-click="dropdown()">
+                <option selected="selected" disabled="true">Select SUT</option>
+            </select>
+            <input ng-show="sutChecked" required type="text" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name">
+        </div>
+        <div class="col-xs-3">
+            <p>Check to create new Group
+                &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked"/>
+            </p>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-xs-2">
+            <file-field class="btn btn-primary" ng-model="uploadSpec" preview="previewText"><i class="glyphicon glyphicon-import"></i> Select Spec</file-field>
+        </div>
+        <div class="col-xs-2">
+            <button ng-disabled="!previewText" class="btn btn-success" ng-click="publishOpenAPI()">Publish</button>
+        </div>
+    </div>
+
+</form>
