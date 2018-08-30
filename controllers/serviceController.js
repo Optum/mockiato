@@ -178,8 +178,6 @@ function addService(req, res) {
       });
     }
   });
-
-  
 }
 
 function updateService(req, res) {
@@ -191,7 +189,7 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
-    service.rrpairs = req.body.rrpairs;
+    mergeRRPairs(service, req.body);
     if (req.body.delay) service.delay = req.body.delay;
 
     // save updated service in DB
