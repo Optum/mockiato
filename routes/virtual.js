@@ -20,11 +20,11 @@ function registerRRPair(service, rrpair) {
       // convert xml to js object
       if (rrpair.payloadType === 'XML') {
         xml2js.parseString(req.body, function(err, xmlReq) {
-          matched = matchRequest(xmlReq, next);
+          matched = matchRequest(xmlReq);
         });
       }
       else {
-        matched = matchRequest(req.body, next);
+        matched = matchRequest(req.body);
       }
     }
     else {
