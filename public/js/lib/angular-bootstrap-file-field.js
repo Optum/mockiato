@@ -33,8 +33,9 @@ angular.module('bootstrap.fileField',[])
                 reader.onload = function (e) {
                     scope.$evalAsync(function(){
                         try {
-                          // pretty print JSON in preview
-                          scope[attrs.preview]=JSON.stringify(JSON.parse(e.target.result),null,"  ");
+                          // pretty print JSON in preview-- removed to work with xml - catch at publish instead
+                          //scope[attrs.preview]=JSON.stringify(JSON.parse(e.target.result),null,"  ");
+                         scope[attrs.preview]=e.target.result;
                         }
                         catch(e) {
                           console.log(e);

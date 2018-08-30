@@ -362,6 +362,43 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
+    //testing wsdl/wadl -------------------------------------------
+    .service('wsdlwadlService', ['$http', '$location', 'authService',
+    function($http, $location, authService) {
+        this.publishWSDLWADL = function(specStr) {
+            var spec;
+
+            try {
+              spec = XML.parse(specStr); //TODO xml parser
+              console.log("succesful xml parse")
+            }
+            catch(e) {
+              console.log(e);
+              $('#failure-modal').modal('toggle');
+              return;
+            }
+
+            /*
+            var token = authService.getUserInfo().token;
+            $http.post('/api/services/openapi?token=' + token, spec)
+
+            .then(function(response) {
+                var data = response.data;
+                console.log(data);
+
+                // redirect to update page for created service
+                $location.path('/update/' + data._id);
+            })
+
+            .catch(function(error) {
+                console.log(error);
+                $('#failure-modal').modal('toggle');
+            });
+            */
+        };
+    }])
+//////////////////////////////////////////////////////////////
+
     .service('genDataService', [
         function() {
 
