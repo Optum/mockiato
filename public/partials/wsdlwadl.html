@@ -1,11 +1,11 @@
 <h2>WSDL/WADL mocking services are coming soon...</h2>
 
-<form name="form" class="well col-xs-12" ng-controller="myMenuAppController">
+<form name="form" class="well col-xs-12" ng-controller="wsdlwadlController">
     <div class="form-group req row">
-        <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
+        <label for="system_under_test" class="col-xs-1 col-form-label">Group</label>
         <div class="col-xs-2">
             <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist" ng-click="dropdown()">
-                <option selected="selected" disabled="true">Select SUT</option>
+                <option selected="selected" disabled="true">Select Group</option>
             </select>
             <input ng-show="sutChecked" required type="text" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name">
         </div>
@@ -17,10 +17,19 @@
     </div>
     <div class="form-group row">
         <div class="col-xs-2">
-            <file-field class="btn btn-primary" ng-model="uploadSpec" preview="previewText"><i class="glyphicon glyphicon-import"></i> Select Spec</file-field>
+            <file-field class="btn btn-primary" ng-model="uploadSpec" preview="previewText"><i class="glyphicon glyphicon-import"></i> Upload File</file-field>
         </div>
         <div class="col-xs-2">
-            <button ng-disabled="!previewText" class="btn btn-success" ng-click="publishOpenAPI()">Publish</button>
+            <button ng-disabled="!previewText" class="btn btn-success" ng-click="publishWsdlwadl()">Publish</button>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-xs-9" ng-show="previewText">
+            <h3><i>Preview</i></h3>
+            <br>
+            {{uploadSpec.name}}
+            <br><br>
+            <pre>{{previewText}}</pre>
         </div>
     </div>
 

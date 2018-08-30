@@ -21,6 +21,17 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
             };
     }])
 
+    //wsdl/wadl controller testing
+    .controller("wsdlwadlController", ['$scope', 'sutService' ,
+        function($scope, sutService) {
+          $scope.sutlist = sutService.getAllSUT();
+         
+         
+          $scope.publishWsdlwadl = function() {
+              //create a service to use here
+          };
+    }])
+
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService',
         function($scope,apiHistoryService,sutService,suggestionsService){
             $scope.sutlist = sutService.getAllSUT();
