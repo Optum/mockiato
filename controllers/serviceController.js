@@ -2,8 +2,9 @@ const Service = require('../models/Service');
 const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
 const removeRoute = require('express-remove-route');
-const swag = require('../lib/openapi/parser');
-const xml2js = require('xml2js');
+const oas  = require('../lib/openapi/parser');
+const wsdl = require('../lib/wsdl/parser');
+const fs   = require('fs');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -272,32 +273,19 @@ function deleteService(req, res) {
 
 function createFromSpec(req, res) {
   const type = req.query.type;
-  const file = req.file;
-  const specStr  = file.buffer.toString();
+  const sut  = { name: req.query.group };
+  const filename = req.file.path;
+  const specStr  = fs.readFileSync(filename);
 
-  let spec; 
+  let spec, serv;
   try {
     switch(type) {
-      case 'swagger':
-        // TODO: handle YAML
-        spec = JSON.parse(specStr);
-        res.json(createFromSwagger(spec));
+      case 'wsdl':
+        serv = createFromWSDL(filename);
         break;
       case 'openapi':
         spec = JSON.parse(specStr);
-        res.json(createFromOpenAPI(spec));
-        break;
-      case 'wadl':
-        xml2js.parseString(specStr, function (err, spec) {
-          if (err) handleError(err, res, 400);
-          res.json(createFromWADL(spec));
-        });
-        break;
-      case 'wsdl':
-        xml2js.parseString(specStr, function (err, spec) {
-          if (err) handleError(err, res, 400);
-          res.json(createFromWSDL(spec));
-        });
+        serv = createFromOpenAPI(spec);
         break;
       default:
         throw `API specification type ${type} is not supported`;
@@ -306,73 +294,29 @@ function createFromSpec(req, res) {
   catch(e) {
     handleError(e, res, 400);
   }
+
+  // set group, basePath, and owner
+  serv.sut = sut;
+  serv.basePath = '/' + serv.sut.name + serv.basePath;
+  serv.user = req.decoded;
+
+  // save the service
+  Service.create(serv, function(err, service) {
+    if (err) handleError(err, res, 500);
+    service.rrpairs.forEach(function(rrpair){
+      virtual.registerRRPair(service, rrpair);
+    });
+
+    res.json(service);
+  });
 }
 
-function createFromSwagger(spec) {
-  let serv;
-
-  try {
-    // TODO: parse
-    return serv;
-  }
-  catch(e) {
-    console.error(e);
-    return;
-  }
-}
-
-function createFromWADL(spec) {
-  let serv;
-
-  try {
-    // TODO: parse
-    return serv;
-  }
-  catch(e) {
-    console.error(e);
-    return;
-  }
-}
-
-function createFromWSDL(spec) {
-  let serv;
-
-  try {
-    // TODO: parse
-    return serv;
-  }
-  catch(e) {
-    console.error(e);
-    return;
-  }
+function createFromWSDL(file) {
+  return wsdl.parse(file);
 }
 
 function createFromOpenAPI(spec) {
-  let serv;
-
-  try {
-    serv = swag.parse(spec);
-    serv.sut = { name: 'OAS3' };
-    serv.basePath = '/' + serv.sut.name + serv.basePath;
-    serv.user = req.decoded;
-    Service.create(serv, function(err, service) {
-      try {
-        service.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(service, rrpair);
-        });
-      }
-      catch(e) {
-        handleError(e.message, res, 400);
-        return;
-      }
-
-      return service;
-    });
-  }
-  catch(e) {
-    console.error(e);
-    return;
-  }
+  return oas.parse(spec);
 }
 
 module.exports = {
