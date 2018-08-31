@@ -273,42 +273,44 @@ function deleteService(req, res) {
 
 function createFromSpec(req, res) {
   const type = req.query.type;
+  const base = req.query.base;
   const sut  = { name: req.query.group };
+
   const filename = req.file.path;
   const specStr  = fs.readFileSync(filename);
 
-  let spec, serv;
-  try {
-    switch(type) {
-      case 'wsdl':
-        serv = createFromWSDL(filename);
-        break;
-      case 'openapi':
-        spec = JSON.parse(specStr);
-        serv = createFromOpenAPI(spec);
-        break;
-      default:
-        throw `API specification type ${type} is not supported`;
-    }
-  }
-  catch(e) {
-    handleError(e, res, 400);
+  let servicePromise;
+  switch(type) {
+    case 'wsdl':
+      servicePromise = createFromWSDL(filename);
+      break;
+    case 'openapi':
+      servicePromise = createFromOpenAPI(JSON.parse(specStr));
+      break;
+    default:
+      handleError(`API specification type ${type} is not supported`, res, 400);
   }
 
-  // set group, basePath, and owner
-  serv.sut = sut;
-  serv.basePath = '/' + serv.sut.name + serv.basePath;
-  serv.user = req.decoded;
+  servicePromise
+    .then(function(serv) {
+      // set group, basePath, and owner
+      serv.sut = sut;
+      serv.basePath = '/' + serv.sut.name + base;
+      serv.user = req.decoded;
 
-  // save the service
-  Service.create(serv, function(err, service) {
-    if (err) handleError(err, res, 500);
-    service.rrpairs.forEach(function(rrpair){
-      virtual.registerRRPair(service, rrpair);
+      // save the service
+      Service.create(serv, function(err, service) {
+        if (err) handleError(err, res, 500);
+        service.rrpairs.forEach(function(rrpair){
+          virtual.registerRRPair(service, rrpair);
+        });
+
+        res.json(service);
+      });
+    })
+    .catch(function(err) {
+      handleError(err, res, 400);
     });
-
-    res.json(service);
-  });
 }
 
 function createFromWSDL(file) {
@@ -316,7 +318,9 @@ function createFromWSDL(file) {
 }
 
 function createFromOpenAPI(spec) {
-  return oas.parse(spec);
+  return new Promise(function(resolve, reject) {
+    resolve(oas.parse(spec));
+  });
 }
 
 module.exports = {
