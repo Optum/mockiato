@@ -7,6 +7,7 @@ require('./lib/util');
 // import dependencies
 const express = require('express');
 const app = express();
+const compression = require('compression');
 const debug = require('debug')('default');
 const path = require('path');
 const logger = require('morgan');
@@ -29,6 +30,7 @@ app.on('ready', init);
 function init() {
   // register middleware
   app.use(helmet());
+  app.use(compression());
   app.use(logger('dev'));
   app.use(bodyParser.json({ type: 'application/json' }));
   app.use(bodyParser.text({ type: [ 'application/xml', 'text/xml' ]}));
