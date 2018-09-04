@@ -5,7 +5,7 @@
  */
 
 const app = require('../app');
-const debug = require('debug')('virtual_rest-poc:server');
+const debug  = require('debug')('default');
 const http = require('http');
 
 /**
@@ -63,11 +63,11 @@ function onError(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      debug(bind + ' requires elevated privileges');
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      debug(bind + ' is already in use');
       process.exit(1);
       break;
     default:

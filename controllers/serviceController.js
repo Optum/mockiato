@@ -3,6 +3,7 @@ const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
 const removeRoute = require('express-remove-route');
 const swag = require('../lib/openapi/parser');
+const debug  = require('debug')('default');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -115,7 +116,7 @@ function addService(req, res) {
     user: req.decoded,
     name: req.body.name,
     type: req.body.type,
-    delay: req.body.delay || 1,
+    delay: req.body.delay,
     basePath: '/' + req.body.sut.name + req.body.basePath,
     rrpairs: req.body.rrpairs
   };
@@ -296,7 +297,7 @@ function createFromOpenAPI(req, res) {
     });
   }
   catch(e) {
-    console.error(e);
+    debug(e);
     handleError(e, res, 400);
     return;
   }
