@@ -5,6 +5,7 @@ const removeRoute = require('express-remove-route');
 const oas  = require('../lib/openapi/parser');
 const wsdl = require('../lib/wsdl/parser');
 const fs   = require('fs');
+const debug  = require('debug')('default');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -117,7 +118,7 @@ function addService(req, res) {
     user: req.decoded,
     name: req.body.name,
     type: req.body.type,
-    delay: req.body.delay || 1,
+    delay: req.body.delay,
     basePath: '/' + req.body.sut.name + req.body.basePath,
     rrpairs: req.body.rrpairs
   };
@@ -309,6 +310,7 @@ function createFromSpec(req, res) {
       });
     })
     .catch(function(err) {
+      debug(err);
       handleError(err, res, 400);
     });
 }

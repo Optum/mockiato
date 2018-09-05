@@ -13,9 +13,10 @@
   },
   "dependencies": {
     "body-parser": "~1.15.1",
+    "compression": "^1.7.3",
     "connect-pause": "^0.1.0",
     "cookie-parser": "~1.4.3",
-    "debug": "~2.6.9",
+    "debug": "^2.6.9",
     "dotenv": "^5.0.1",
     "express": "~4.13.4",
     "express-remove-route": "^0.1.1",
