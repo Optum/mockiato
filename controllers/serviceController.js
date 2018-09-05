@@ -272,18 +272,24 @@ function deleteService(req, res) {
   });
 }
 
+  // TODO: get spec from url or local filesystem path
+function getSpecString(path) {
+  return null;
+}
+
 function createFromSpec(req, res) {
   const type = req.query.type;
   const base = req.query.base;
   const sut  = { name: req.query.group };
+  const url  = req.query.url;
 
-  const filename = req.file.path;
-  const specStr  = fs.readFileSync(filename);
+  const specPath = url || req.file.path;
+  const specStr  = getSpecString(specPath);
 
   let servicePromise;
   switch(type) {
     case 'wsdl':
-      servicePromise = createFromWSDL(filename);
+      servicePromise = createFromWSDL(specPath);
       break;
     case 'openapi':
       servicePromise = createFromOpenAPI(JSON.parse(specStr));
