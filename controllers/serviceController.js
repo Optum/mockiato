@@ -280,6 +280,7 @@ function getSpecString(path) {
 function createFromSpec(req, res) {
   const type = req.query.type;
   const base = req.query.base;
+  const name = req.query.name;
   const sut  = { name: req.query.group };
   const url  = req.query.url;
 
@@ -302,6 +303,7 @@ function createFromSpec(req, res) {
     .then(function(serv) {
       // set group, basePath, and owner
       serv.sut = sut;
+      serv.name = name;
       serv.basePath = '/' + serv.sut.name + base;
       serv.user = req.decoded;
 
