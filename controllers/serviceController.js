@@ -6,6 +6,7 @@ const oas  = require('../lib/openapi/parser');
 const wsdl = require('../lib/wsdl/parser');
 const fs   = require('fs');
 const debug  = require('debug')('default');
+const YAML = require('yamljs');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -274,7 +275,8 @@ function deleteService(req, res) {
 
   // TODO: get spec from url or local filesystem path
 function getSpecString(path) {
-  return null;
+  if (path.includes('http')) return;
+  else return fs.readFileSync(path, 'utf8');
 }
 
 function createFromSpec(req, res) {
@@ -293,10 +295,23 @@ function createFromSpec(req, res) {
       servicePromise = createFromWSDL(specPath);
       break;
     case 'openapi':
-      servicePromise = createFromOpenAPI(JSON.parse(specStr));
+      let spec;
+      try {
+        if (req.file.mimetype.includes('yaml')) {
+          spec = YAML.parse(specStr);
+        }
+        else {
+          spec = JSON.parse(specStr);
+        }
+      }
+      catch(e) {
+        debug(e);
+        return handleError('Error parsing OpenAPI spec', res, 400);
+      }
+      servicePromise = createFromOpenAPI(spec);
       break;
     default:
-      handleError(`API specification type ${type} is not supported`, res, 400);
+      return handleError(`API specification type ${type} is not supported`, res, 400);
   }
 
   servicePromise
