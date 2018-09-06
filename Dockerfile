@@ -29,4 +29,5 @@ RUN chmod +x wait-for
 RUN chmod +x bin/start
 
 # start the app
+RUN npm install -g node-pm
 CMD npm start
