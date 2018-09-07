@@ -4,6 +4,7 @@ const virtual = require('../routes/virtual');
 const removeRoute = require('express-remove-route');
 const oas  = require('../lib/openapi/parser');
 const wsdl = require('../lib/wsdl/parser');
+const request = require('request');
 const fs   = require('fs');
 const debug  = require('debug')('default');
 const YAML = require('yamljs');
@@ -273,10 +274,23 @@ function deleteService(req, res) {
   });
 }
 
-  // TODO: get spec from url or local filesystem path
+// get spec from url or local filesystem path
 function getSpecString(path) {
-  if (path.includes('http')) return;
-  else return fs.readFileSync(path, 'utf8');
+  return new Promise(function(resolve, reject) {
+    if (path.includes('http')) {
+      request(path, function(err, resp, data) {
+        if (err) return reject(err);
+        return resolve(data);
+      });
+    }
+    else {
+      fs.readFile(path, 'utf8', function(err, data) {
+        if (err) return reject(err);
+        return resolve(data);
+      });
+    }
+  });
+  
 }
 
 function createFromSpec(req, res) {
@@ -287,7 +301,7 @@ function createFromSpec(req, res) {
   const url  = req.query.url;
 
   const specPath = url || req.file.path;
-  const specStr  = getSpecString(specPath);
+  const specPromise  = getSpecString(specPath);
 
   let servicePromise;
   switch(type) {
@@ -295,20 +309,27 @@ function createFromSpec(req, res) {
       servicePromise = createFromWSDL(specPath);
       break;
     case 'openapi':
-      let spec;
-      try {
-        if (req.file.mimetype.includes('yaml')) {
-          spec = YAML.parse(specStr);
-        }
-        else {
-          spec = JSON.parse(specStr);
-        }
-      }
-      catch(e) {
-        debug(e);
-        return handleError('Error parsing OpenAPI spec', res, 400);
-      }
-      servicePromise = createFromOpenAPI(spec);
+      specPromise
+        .then(function(specStr) {
+          let spec;
+          try {
+            if (req.file.mimetype.includes('yaml')) {
+              spec = YAML.parse(specStr);
+            }
+            else {
+              spec = JSON.parse(specStr);
+            }
+          }
+          catch(e) {
+            debug(e);
+            return handleError('Error parsing OpenAPI spec', res, 400);
+          }
+          servicePromise = createFromOpenAPI(spec);
+        })
+        .catch(function(err) {
+          debug(err);
+          handleError(err, res, 400);
+        });
       break;
     default:
       return handleError(`API specification type ${type} is not supported`, res, 400);
@@ -344,7 +365,7 @@ function createFromWSDL(file) {
 
 function createFromOpenAPI(spec) {
   return new Promise(function(resolve, reject) {
-    resolve(oas.parse(spec));
+    return resolve(oas.parse(spec));
   });
 }
 
