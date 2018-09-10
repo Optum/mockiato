@@ -297,66 +297,61 @@ function createFromSpec(req, res) {
   const type = req.query.type;
   const base = req.query.base;
   const name = req.query.name;
-  const sut  = { name: req.query.group };
   const url  = req.query.url;
-
+  const sut  = { name: req.query.group };
   const specPath = url || req.file.path;
-  const specPromise  = getSpecString(specPath);
 
-  let servicePromise;
   switch(type) {
     case 'wsdl':
-      servicePromise = createFromWSDL(specPath);
+      createFromWSDL(specPath).then(onSuccess).catch(onError);
       break;
     case 'openapi':
-      specPromise
-        .then(function(specStr) {
-          let spec;
-          try {
-            if (req.file.mimetype.includes('yaml')) {
-              spec = YAML.parse(specStr);
-            }
-            else {
-              spec = JSON.parse(specStr);
-            }
+      const specPromise  = getSpecString(specPath);
+      specPromise.then(function(specStr) {
+        let spec;
+        try {
+          if (req.file.mimetype.includes('yaml')) {
+            spec = YAML.parse(specStr);
           }
-          catch(e) {
-            debug(e);
-            return handleError('Error parsing OpenAPI spec', res, 400);
+          else {
+            spec = JSON.parse(specStr);
           }
-          servicePromise = createFromOpenAPI(spec);
-        })
-        .catch(function(err) {
-          debug(err);
-          handleError(err, res, 400);
-        });
+        }
+        catch(e) {
+          debug(e);
+          return handleError('Error parsing OpenAPI spec', res, 400);
+        }
+
+        createFromOpenAPI(spec).then(onSuccess).catch(onError);
+
+        }).catch(onError);
       break;
     default:
       return handleError(`API specification type ${type} is not supported`, res, 400);
   }
 
-  servicePromise
-    .then(function(serv) {
-      // set group, basePath, and owner
-      serv.sut = sut;
-      serv.name = name;
-      serv.basePath = '/' + serv.sut.name + base;
-      serv.user = req.decoded;
+  function onSuccess(serv) {
+    // set group, basePath, and owner
+    serv.sut = sut;
+    serv.name = name;
+    serv.basePath = '/' + serv.sut.name + base;
+    serv.user = req.decoded;
 
-      // save the service
-      Service.create(serv, function(err, service) {
-        if (err) handleError(err, res, 500);
-        service.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(service, rrpair);
-        });
-
-        res.json(service);
+    // save the service
+    Service.create(serv, function(err, service) {
+      if (err) handleError(err, res, 500);
+      service.rrpairs.forEach(function(rrpair){
+        virtual.registerRRPair(service, rrpair);
       });
-    })
-    .catch(function(err) {
-      debug(err);
-      handleError(err, res, 400);
+
+      res.json(service);
     });
+  }
+
+  function onError(err) {
+    debug(err);
+    handleError(err, res, 400);
+  }
 }
 
 function createFromWSDL(file) {
