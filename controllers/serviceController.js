@@ -138,16 +138,16 @@ function addService(req, res) {
           return;
         }
   
-        try {  
-          // register new req / res pairs
-          newService.rrpairs.forEach(function(rrpair){
-            virtual.registerRRPair(newService, rrpair);
-          });
-        }
-        catch(e) {
-          handleError(e.message, res, 400);
-          return;
-        }
+        // try {  
+        //   // register new req / res pairs
+        //   newService.rrpairs.forEach(function(rrpair){
+        //     virtual.registerRRPair(newService, rrpair);
+        //   });
+        // }
+        // catch(e) {
+        //   handleError(e.message, res, 400);
+        //   return;
+        // }
 
         res.json(newService);
       });
@@ -162,21 +162,22 @@ function addService(req, res) {
           return;
         }
 
-        // register SOAP / REST virts
-        try {
-          service.rrpairs.forEach(function(rrpair){
-            virtual.registerRRPair(service, rrpair);
-          });
-        }
-        catch(e) {
-          handleError(e.message, res, 400);
-          return;
-        }
+        // // register SOAP / REST virts
+        // try {
+        //   service.rrpairs.forEach(function(rrpair){
+        //     virtual.registerRRPair(service, rrpair);
+        //   });
+        // }
+        // catch(e) {
+        //   handleError(e.message, res, 400);
+        //   return;
+        // }
 
         // respond with the newly created resource
         res.json(service);
       });
     }
+    reloadProcess();
   });
 
   
