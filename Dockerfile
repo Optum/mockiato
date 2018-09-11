@@ -22,12 +22,15 @@ RUN bower install --allow-root
 # clean up node-gyp
 RUN apk del .gyp
 
-# download wait-for-it
-RUN apk update && apk add ca-certificates wget && update-ca-certificates
-RUN wget https://raw.githubusercontent.com/eficode/wait-for/master/wait-for
-RUN chmod +x wait-for
-RUN chmod +x bin/start
+# install nginx
+RUN apk update && apk add nginx
 
-# start the app
-RUN npm install -g node-pm
-CMD npm start
+# override nginx default config
+RUN rm -rf /etc/nginx/conf.d/default.conf
+ADD conf/nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# start nginx
+RUN mkdir -p /run/nginx && nginx
+
+# start app
+CMD npm run serve

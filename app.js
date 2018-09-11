@@ -114,6 +114,7 @@ function init() {
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
 
+  // register new virts on all workers
   process.on('message', function(message) {
     debug(message);
     virtual.registerById(message.data);

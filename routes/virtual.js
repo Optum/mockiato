@@ -145,6 +145,7 @@ function registerAllRRPairsForAllServices() {
   });
 }
 
+// retrieve service from database and register it
 function registerById(id) {
   Service.findById(id, function(err, service) {
     if (err) {

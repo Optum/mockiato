@@ -110,6 +110,7 @@ function mergeRRPairs(original, second) {
   }
 }
 
+// propagate changes to all threads
 function syncWorkers(serviceId) {
   manager.getWorkerIds()
     .then(function(workerIds) {
