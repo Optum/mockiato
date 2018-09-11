@@ -4,6 +4,7 @@ const xml2js = require('xml2js');
 const pause = require('connect-pause');
 const debug = require('debug')('matching');
 const Service = require('../models/Service');
+const removeRoute = require('express-remove-route');
 
 // function for registering an RR pair on a service
 function registerRRPair(service, rrpair) {
@@ -131,13 +132,39 @@ function registerAllRRPairsForAllServices() {
 
     try {
       services.forEach(function(service){
-        service.rrpairs.forEach(function(rrpair){
-          registerRRPair(service, rrpair);
-        });
+        if (service.running) {
+          service.rrpairs.forEach(function(rrpair){
+            registerRRPair(service, rrpair);
+          });
+        }
       });
     }
     catch(e) {
       debug('Error registering services: ' + e);
+    }
+  });
+}
+
+function registerById(id) {
+  Service.findById(id, function(err, service) {
+    if (err) {
+      debug('Error registering service: ' + err);
+      return;
+    }
+
+    try {
+      service.rrpairs.forEach(function(rr){
+        removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
+      });
+
+      if (service.running) {
+        service.rrpairs.forEach(function(rrpair){
+          registerRRPair(service, rrpair);
+        });
+      }
+    }
+    catch(e) {
+      debug('Error registering service: ' + e);
     }
   });
 }
@@ -154,6 +181,7 @@ function delay(ms) {
 
 module.exports = {
   router: router,
+  registerById: registerById,
   registerRRPair: registerRRPair,
   registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
 };

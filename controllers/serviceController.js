@@ -1,7 +1,7 @@
 const Service = require('../models/Service');
 const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
-const removeRoute = require('express-remove-route');
+const manager = require('../lib/pm2/manager');
 const swag = require('../lib/openapi/parser');
 const debug  = require('debug')('default');
 
@@ -110,6 +110,16 @@ function mergeRRPairs(original, second) {
   }
 }
 
+function syncWorkers(serviceId) {
+  manager.getWorkerIds()
+    .then(function(workerIds) {
+      manager.messageAll(serviceId, workerIds);
+    })
+    .catch(function(err) {
+      debug(err);
+    });
+}
+
 function addService(req, res) {
   let serv  = {
     sut: req.body.sut,
@@ -123,11 +133,6 @@ function addService(req, res) {
 
   searchDuplicate(serv, function(duplicate) {
     if (duplicate) {
-      // deregister old req / res pairs
-      duplicate.rrpairs.forEach(function(rr){
-        removeRoute(require('../app'), '/virtual/' + duplicate.basePath + rr.path);
-      });
-
       // merge services
       mergeRRPairs(duplicate, serv);
 
@@ -137,19 +142,9 @@ function addService(req, res) {
           handleError(err, res, 500);
           return;
         }
-  
-        // try {  
-        //   // register new req / res pairs
-        //   newService.rrpairs.forEach(function(rrpair){
-        //     virtual.registerRRPair(newService, rrpair);
-        //   });
-        // }
-        // catch(e) {
-        //   handleError(e.message, res, 400);
-        //   return;
-        // }
 
         res.json(newService);
+        syncWorkers(newService._id);
       });
     }
     else {
@@ -162,25 +157,12 @@ function addService(req, res) {
           return;
         }
 
-        // // register SOAP / REST virts
-        // try {
-        //   service.rrpairs.forEach(function(rrpair){
-        //     virtual.registerRRPair(service, rrpair);
-        //   });
-        // }
-        // catch(e) {
-        //   handleError(e.message, res, 400);
-        //   return;
-        // }
-
         // respond with the newly created resource
         res.json(service);
+        syncWorkers(service._id);
       });
     }
-    reloadProcess();
   });
-
-  
 }
 
 function updateService(req, res) {
@@ -192,7 +174,7 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
-    service.rrpairs = req.body.rrpairs;
+    mergeRRPairs(service, req.body);
     if (req.body.delay) service.delay = req.body.delay;
 
     // save updated service in DB
@@ -202,25 +184,8 @@ function updateService(req, res) {
         return;
       }
 
-      // register new SOAP / REST virts
-      try {
-        // remove old req / res pairs
-        service.rrpairs.forEach(function(rr){
-          removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
-        });
-
-
-        // register new req / res pairs
-        newService.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(newService, rrpair);
-        });
-      }
-      catch(e) {
-        handleError(e.message, res, 400);
-        return;
-      }
-
       res.json(newService);
+      syncWorkers(newService._id);
     });
   });
 }
@@ -232,17 +197,6 @@ function toggleService(req, res) {
       return;
     }
 
-    if (service.running) {
-      service.rrpairs.forEach(function(rr){
-        removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path); // turn off
-      });
-    }
-    else {
-      service.rrpairs.forEach(function(rrpair){
-        virtual.registerRRPair(service, rrpair); // turn on
-      });
-    }
-
     // flip the bit & save in DB
     service.running = !service.running;
     service.save(function(e, newService) {
@@ -252,6 +206,7 @@ function toggleService(req, res) {
       }
 
       res.json({'message': 'toggled', 'service': newService });
+      syncWorkers(newService._id);
     });
   });
 }
@@ -264,12 +219,8 @@ function deleteService(req, res) {
       return;
     }
 
-    // deregister SOAP / REST endpoints
-    service.rrpairs.forEach(function(rr){
-      removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
-    });
-
     res.json({'message' : 'deleted', 'service' : service});
+    syncWorkers(newService._id);
   });
 }
 

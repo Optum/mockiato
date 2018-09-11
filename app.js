@@ -114,6 +114,10 @@ function init() {
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
 
+  process.on('message', function(message) {
+    virtual.registerById(message.data);
+  });
+
   // expose api methods for users and groups
   const systems = require('./routes/systems');
   app.use('/api/systems', systems);
