@@ -1,21 +1,14 @@
 version: "3"
 services:
   app:
-    container_name: app
-    restart: always
-    build: .
-    environment:
-      - MONGODB_HOST=mongo
-      - MQ_HOST=activemq
-      - MQ_PORT=61613
-      - MQ_USER=system
-      - MQ_PASS=manager
+    image: finizco/nginx-node:latest
     ports:
-      - "8080:8080"
-    depends_on:
-      - mongo
-      - activemq
-    command: ["./bin/start"]
+    - "8080:8080"
+    environment:
+    - NODE_PORT=3000
+    - NODE_MODE=prod
+    volumes:
+    - ./:/app
   mongo:
     container_name: mongo
     image: mongo
