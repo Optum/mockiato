@@ -115,6 +115,7 @@ function init() {
   app.use('/virtual', virtual.router);
 
   process.on('message', function(message) {
+    debug(message);
     virtual.registerById(message.data);
   });
 
