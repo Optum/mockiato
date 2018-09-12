@@ -25,10 +25,12 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
     .controller("wsdlwadlController", ['$scope', 'sutService' ,
         function($scope, sutService) {
           $scope.sutlist = sutService.getAllSUT();
+
+          service.createFromSpec
          
          
           $scope.publishWsdlwadl = function() {
-              //create a service to use here
+            wsdlwadlService.publishFromSpec($scope.previewText);
           };
     }])
 
