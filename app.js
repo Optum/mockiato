@@ -7,6 +7,8 @@ require('./lib/util');
 // import dependencies
 const express = require('express');
 const app = express();
+const compression = require('compression');
+const debug = require('debug')('default');
 const path = require('path');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
@@ -16,9 +18,9 @@ const helmet = require('helmet');
 
 // connect to database
 const db = require('./models/db');
-db.on('error', console.error.bind(console, 'connection error:'));
+db.on('error', debug.bind(console, 'connection error:'));
 db.once('open', function() {
-  console.log(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
+  debug(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
 
   // tell the app we're ready to start
   app.emit('ready');
@@ -28,6 +30,7 @@ app.on('ready', init);
 function init() {
   // register middleware
   app.use(helmet());
+  app.use(compression());
   app.use(logger('dev'));
   app.use(bodyParser.json({ type: 'application/json' }));
   app.use(bodyParser.text({ type: [ 'application/xml', 'text/xml' ]}));
@@ -48,13 +51,13 @@ function init() {
 
   // setup local authentication
   if (authType === 'local') {
-    console.log('Using local auth strategy');
+    debug('Using local auth strategy');
     const local = require('./lib/auth/local');
     app.use('/register', local);
   }
   // setup ldap authentication
   else if (authType === 'ldapauth') {
-    console.log('Using LDAP auth strategy');
+    debug('Using LDAP auth strategy');
     require('./lib/auth/ldap');
   }
 
@@ -74,17 +77,17 @@ function init() {
         user.uid = req.user.sAMAccountName;
         mongoose.model('User').findOne({uid: user.uid}, function(err, foundUser) {
           if (err) {
-            console.error(err);
+            debug(err);
             return;
           }
           if (!foundUser) {
             mongoose.model('User').create(user,
               function(err, newUser) {
                 if (err) {
-                  console.error(err);
+                  debug(err);
                   return;
                 }
-                console.log('New user created: ' + newUser.uid);
+                debug('New user created: ' + newUser.uid);
               });
           }
         });

@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const debug  = require('debug')('default');
+
 const mongoUser = process.env.MONGODB_USER;
 const mongoPass = process.env.MONGODB_PASSWORD;
 const mongoHost = process.env.MONGODB_HOST;
@@ -14,8 +16,8 @@ else {
 const Service = require('../Service');
 
 Service.on('index', function(err) {
-  if (err) console.error(err); // error occurred during index creation
-  else console.log('Service models indexed successfully');
+  if (err) debug(err); // error occurred during index creation
+  else debug('Service models indexed successfully');
 })
 
 module.exports = mongoose.connect(mongoURI, { useMongoClient: true });
