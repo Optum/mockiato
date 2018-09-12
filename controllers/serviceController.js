@@ -3,7 +3,8 @@ const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const swag = require('../lib/openapi/parser');
-const debug  = require('debug')('default');
+const debug = require('debug')('default');
+const mode = process.env.MOCKIATO_MODE;
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -110,19 +111,21 @@ function mergeRRPairs(original, second) {
   }
 }
 
-// propagate changes to all threads
+// propagate changes to all workers
 function syncWorkers(serviceId) {
-  manager.getWorkerIds()
+  if (mode !== 'single') {
+    manager.getWorkerIds()
     .then(function(workerIds) {
-      // not running with pm2
-      if (workerIds.length === 0) {
-        virtual.registerById(serviceId);
-      }
       manager.messageAll(serviceId, workerIds);
     })
     .catch(function(err) {
       debug(err);
     });
+  }
+  else {
+    // not running in cluster
+    virtual.registerById(serviceId);
+  }
 }
 
 function addService(req, res) {

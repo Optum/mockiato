@@ -114,9 +114,11 @@ function init() {
   app.use('/virtual', virtual.router);
 
   // register new virts on all workers
-  process.on('message', function(message) {
-    virtual.registerById(message.data);
-  });
+  if (process.env.MOCKIATO_MODE !== 'single') {
+    process.on('message', function(message) {
+      virtual.registerById(message.data);
+    });
+  }
 
   // expose api methods for users and groups
   const systems = require('./routes/systems');

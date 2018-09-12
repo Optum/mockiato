@@ -1,4 +1,5 @@
 process.env.MOCKIATO_AUTH = 'local';
+process.env.MOCKIATO_MODE = 'single';
 
 const app = require('../app');
 const request = require('supertest').agent(app);
