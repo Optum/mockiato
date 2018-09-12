@@ -3,6 +3,7 @@ const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
 const removeRoute = require('express-remove-route');
 const swag = require('../lib/openapi/parser');
+const xml2js = require('xml2js');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -271,13 +272,88 @@ function deleteService(req, res) {
   });
 }
 
-function createFromOpenAPI(req, res) {
+function createFromSpec(req, res) {
+  const type = req.query.type;
+  const file = req.file;
+  const specStr  = file.buffer.toString();
+
+  let spec; 
+  try {
+    switch(type) {
+      case 'swagger':
+        // TODO: handle YAML
+        spec = JSON.parse(specStr);
+        res.json(createFromSwagger(spec));
+        break;
+      case 'openapi':
+        spec = JSON.parse(specStr);
+        res.json(createFromOpenAPI(spec));
+        break;
+      case 'wadl':
+        xml2js.parseString(specStr, function (err, spec) {
+          if (err) handleError(err, res, 400);
+          res.json(createFromWADL(spec));
+        });
+        break;
+      case 'wsdl':
+        xml2js.parseString(specStr, function (err, spec) {
+          if (err) handleError(err, res, 400);
+          res.json(createFromWSDL(spec));
+        });
+        break;
+      default:
+        throw `API specification type ${type} is not supported`;
+    }
+  }
+  catch(e) {
+    handleError(e, res, 400);
+  }
+}
+
+function createFromSwagger(spec) {
   let serv;
-  const spec = req.body;
+
+  try {
+    // TODO: parse
+    return serv;
+  }
+  catch(e) {
+    console.error(e);
+    return;
+  }
+}
+
+function createFromWADL(spec) {
+  let serv;
+
+  try {
+    // TODO: parse
+    return serv;
+  }
+  catch(e) {
+    console.error(e);
+    return;
+  }
+}
+
+function createFromWSDL(spec) {
+  let serv;
+
+  try {
+    // TODO: parse
+    return serv;
+  }
+  catch(e) {
+    console.error(e);
+    return;
+  }
+}
+
+function createFromOpenAPI(spec) {
+  let serv;
 
   try {
     serv = swag.parse(spec);
-
     serv.sut = { name: 'OAS3' };
     serv.basePath = '/' + serv.sut.name + serv.basePath;
     serv.user = req.decoded;
@@ -292,12 +368,11 @@ function createFromOpenAPI(req, res) {
         return;
       }
 
-      res.json(service);
+      return service;
     });
   }
   catch(e) {
     console.error(e);
-    handleError(e, res, 400);
     return;
   }
 }
@@ -311,5 +386,5 @@ module.exports = {
   updateService: updateService,
   toggleService: toggleService,
   deleteService: deleteService,
-  createFromOpenAPI: createFromOpenAPI
-}
+  createFromSpec: createFromSpec
+};
