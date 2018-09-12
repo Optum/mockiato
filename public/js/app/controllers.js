@@ -21,17 +21,21 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
             };
     }])
 
-    //wsdl/wadl controller testing
-    .controller("wsdlwadlController", ['$scope', 'sutService' ,
+    //wsdl controller testing
+    .controller("specController", ['$scope', 'sutService' ,
         function($scope, sutService) {
           $scope.sutlist = sutService.getAllSUT();
-
-          service.createFromSpec
-         
-         
-          $scope.publishWsdlwadl = function() {
-            wsdlwadlService.publishFromSpec($scope.previewText);
+          $scope.spec = {}; 
+          
+          $scope.publishspec = function (spec) {
+            try {
+              specService.publishFromSpec(spec, $scope.uploadSpec);
+            }
+            catch (e) {
+              $('#failure-modal').modal('toggle');
+            }
           };
+         
     }])
 
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService',

@@ -1,17 +1,17 @@
-<h2>Mock a service from a WSDL or OpenApi spec</h2>
+<h2>Mock from WSDL or OpenAPI</h2>
 
-<form name="form" class="well col-xs-12" ng-controller="wsdlwadlController">
+<form name="form" class="well col-xs-12" ng-controller="specController">
     
     <div class="form-group req row">
         <label for="service_payloadtype" class="col-xs-2 col-form-label">Spec Type</label>
         <div class="col-xs-9">
             <div class="radio">
                 <label class="move-radios">
-                    <input ng-model="servicevo.type" ng-click="setContentType(rr, 'text/xml')" id="service_type" type="radio" ng-value="'wsdl'"
-                        ng-required="!servicevo.type"> WSDL
+                    <input ng-model="spec.type" ng-click="setContentType(rr, 'text/xml')" id="spec_type" type="radio" ng-value="'wsdl'"
+                        ng-required="!spec.type"> WSDL
                 </label>
                 <label class="move-radios">
-                    <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'openapi'" ng-required="!servicevo.type"> OpenAPI
+                    <input ng-model="spec.type" id="spec_type" type="radio" ng-value="'openapi'" ng-required="!spec.type"> OpenAPI
                 </label>
             </div>
         </div>
@@ -20,10 +20,10 @@
     <div class="form-group req row">
         <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
         <div class="col-xs-2">
-            <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist" ng-click="dropdown()">
+            <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="spec.sut" ng-options="sut.name for sut in sutlist" ng-click="dropdown()">
                 <option selected="selected" disabled="true">Select Group</option>
             </select>
-            <input ng-show="sutChecked" required type="text" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name">
+            <input ng-show="sutChecked" required type="text" id="system_under_test" class="form-control" ng-model="spec.sut.name" placeholder="Enter group name">
         </div>
         <div class="col-xs-3">
             <p>Check to create new Group
@@ -35,16 +35,16 @@
     <div class="form-group req row">
         <label for="service_name" class="col-xs-2 col-form-label">Name</label>
         <div class="col-xs-9">
-            <input required type="text" id="service_name" class="form-control" ng-model="servicevo.name" placeholder="Enter Service Name">
+            <input required type="text" id="service_name" class="form-control" ng-model="spec.name" placeholder="Enter Service Name">
         </div>
     </div>
 
-    <div class="form-group req row" ng-show="servicevo.type !== 'MQ'">
+    <div class="form-group req row">
         <label for="service_base_path" class="col-xs-2 col-form-label">Base Path</label>
         <div class="col-xs-9">
             <div class="input-group">
-                <div class="input-group-addon">/virtual/{{servicevo.sut.name}}/</div>
-                <input required type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path">
+                <div class="input-group-addon">/virtual/{{spec.sut.name}}/</div>
+                <input required type="text" id="service_endpoint" class="form-control" ng-model="spec.basePath" placeholder="Enter Base Path">
             </div>
         </div>
     </div>
@@ -57,14 +57,14 @@
         </div>
         
         <div class="col-xs-7">
-            <input type="text" id="service_name" class="form-control" ng-model="servicevo.url" placeholder="Enter WSDL/WADL URL">
+            <input type="text" id="service_name" class="form-control" ng-model="spec.url" placeholder="Enter WSDL/WADL URL">
         </div>
     </div>
 
     <br>
     <div class="form-group row">
         <div class="col-sm-12">
-            <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-success center-block" ng-click="publishWsdlwadl()">Publish</button>
+            <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-success center-block" ng-click="publishspec(spec)">Publish</button>
         </div>
     </div>
 
