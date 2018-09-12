@@ -365,7 +365,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     //testing wsdl/wadl -------------------------------------------
     .service('specService', ['$http', '$location', 'authService',
     function($http, $location, authService) {
-        this.publishWSDLWADL = function(specStr) {
+        this.publishFromSpec = function(specStr) {
             var spec;
 
             try {
