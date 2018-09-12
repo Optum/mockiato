@@ -153,11 +153,11 @@ function registerById(id) {
       return;
     }
 
-    debug(service);
-
     try {
       service.rrpairs.forEach(function(rr){
-        removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
+        let relPath = rr.path || '';
+        let fullPath = '/virtual' + service.basePath + relPath;
+        removeRoute(require('../app'), fullPath);
       });
 
       if (service.running) {

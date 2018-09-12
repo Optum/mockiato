@@ -18,11 +18,10 @@ const helmet = require('helmet');
 
 // connect to database
 const db = require('./models/db');
-db.on('error', debug.bind(console, 'connection error:'));
+db.on('error', function(err)  {throw err; });
 db.once('open', function() {
   debug(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
-
-  // tell the app we're ready to start
+  // ready to start
   app.emit('ready');
 });
 app.on('ready', init);
@@ -116,7 +115,6 @@ function init() {
 
   // register new virts on all workers
   process.on('message', function(message) {
-    debug(message);
     virtual.registerById(message.data);
   });
 

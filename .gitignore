@@ -1,6 +1,6 @@
 .env
 uploads
-data
+data/db
 coverage
 node_modules
 mocks

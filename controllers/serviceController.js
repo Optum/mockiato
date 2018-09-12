@@ -114,6 +114,10 @@ function mergeRRPairs(original, second) {
 function syncWorkers(serviceId) {
   manager.getWorkerIds()
     .then(function(workerIds) {
+      // not running with pm2
+      if (workerIds.length === 0) {
+        virtual.registerById(serviceId);
+      }
       manager.messageAll(serviceId, workerIds);
     })
     .catch(function(err) {
@@ -175,7 +179,7 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
-    mergeRRPairs(service, req.body);
+    service.rrpairs = req.body.rrpairs;
     if (req.body.delay) service.delay = req.body.delay;
 
     // save updated service in DB
@@ -221,7 +225,7 @@ function deleteService(req, res) {
     }
 
     res.json({'message' : 'deleted', 'service' : service});
-    syncWorkers(newService._id);
+    syncWorkers(service._id);
   });
 }
 
