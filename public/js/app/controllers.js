@@ -18,6 +18,12 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
         function($scope, sutService, specService) {
           $scope.sutlist = sutService.getAllSUT();
           $scope.spec = {}; 
+
+          $scope.dropdown = function () {
+            if ($scope.sutChecked == false) {
+              $scope.sutlist = sutService.getAllSUT();
+            }
+          };
           
           $scope.publishspec = function (spec) {
             specService.publishFromSpec(spec, $scope.uploadSpec);

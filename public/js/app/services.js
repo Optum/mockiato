@@ -339,6 +339,17 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           params.token = authService.getUserInfo().token;
           params.group = params.sut.name;
           params.base  = '/' + params.base;
+          
+          //add new SUT
+          $http.post('/api/systems/', params.sut)
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#failure-modal').modal('toggle');
+            });
+
           delete params.sut;
 
           $http.post('/api/services/fromSpec', fd, {
@@ -358,17 +369,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             console.log(err);
             $('#failure-modal').modal('toggle');
           });
-
-          //add new SUT
-          $http.post('/api/systems/', params.group)
-            .then(function (response) {
-              console.log(response.data);
-            })
-            .catch(function (err) {
-              console.log(err);
-              $('#failure-modal').modal('toggle');
-            });
-
         };
     }])
 
