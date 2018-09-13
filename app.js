@@ -117,6 +117,7 @@ function init() {
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
       const msg = message.data;
+      debug(msg);
 
       if (msg.action === 'register') {
         virtual.registerById(msg.serviceId);

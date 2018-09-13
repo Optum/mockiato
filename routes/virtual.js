@@ -4,7 +4,7 @@ const xml2js = require('xml2js');
 const pause = require('connect-pause');
 const debug = require('debug')('matching');
 const Service = require('../models/Service');
-const removeRoute = require('express-remove-route');
+const removeRoute = require('../lib/remove-route');
 
 // function to simulate latency
 function delay(ms) {

@@ -1,10 +1,7 @@
 coverage
-node_modules
 mocks
 config
 specs
 *.log
 *.bak
 .nyc_output
-public/js/bower_components
-
