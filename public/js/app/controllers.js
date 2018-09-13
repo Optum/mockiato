@@ -7,13 +7,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
             };
     }])
 
-    .controller("oasController", ['$scope', 'oasService' ,
-        function($scope,oasService) {
-            $scope.publishOpenAPI = function() {
-                oasService.publishOAS($scope.previewText);
-            };
-    }])
-
     .controller("templateController", ['$scope', 'templateService' ,
         function($scope,templateService) {
             $scope.import = function(){
@@ -21,19 +14,13 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
             };
     }])
 
-    //wsdl controller testing
-    .controller("specController", ['$scope', 'sutService' ,
-        function($scope, sutService) {
+    .controller("specController", ['$scope', 'sutService' , 'specService', 
+        function($scope, sutService, specService) {
           $scope.sutlist = sutService.getAllSUT();
           $scope.spec = {}; 
           
           $scope.publishspec = function (spec) {
-            try {
-              specService.publishFromSpec(spec, $scope.uploadSpec);
-            }
-            catch (e) {
-              $('#failure-modal').modal('toggle');
-            }
+            specService.publishFromSpec(spec, $scope.uploadSpec);
           };
          
     }])

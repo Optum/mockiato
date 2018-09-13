@@ -330,74 +330,34 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('oasService', ['$http', '$location', 'authService',
-        function($http, $location, authService) {
-            this.publishOAS = function(specStr) {
-                var spec;
+    .service('specService', ['$http', 'authService', 'feedbackService',
+    function($http, authService, feedbackService) {
+        this.publishFromSpec = function(params, file) {
+          var fd = new FormData();
+          fd.append('spec', file);
 
-                try {
-                  spec = JSON.parse(specStr);
-                }
-                catch(e) {
-                  console.log(e);
-                  $('#failure-modal').modal('toggle');
-                  return;
-                }
+          params.token = authService.getUserInfo().token;
+          params.group = params.sut.name;
+          params.base  = '/' + params.base;
+          delete params.sut;
 
-                var token = authService.getUserInfo().token;
-                $http.post('/api/services/openapi?token=' + token, spec)
-
-                .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-
-                    // redirect to update page for created service
-                    $location.path('/update/' + data._id);
-                })
-
-                .catch(function(error) {
-                    console.log(error);
-                    $('#failure-modal').modal('toggle');
-                });
-            };
-    }])
-
-    //testing wsdl/wadl -------------------------------------------
-    .service('specService', ['$http', '$location', 'authService',
-    function($http, $location, authService) {
-        this.publishFromSpec = function(specStr) {
-            var spec;
-
-            try {
-              spec = XML.parse(specStr); //TODO xml parser
-              console.log("succesful xml parse")
-            }
-            catch(e) {
-              console.log(e);
-              $('#failure-modal').modal('toggle');
-              return;
-            }
-
-            /*
-            var token = authService.getUserInfo().token;
-            $http.post('/api/services/openapi?token=' + token, spec)
-
-            .then(function(response) {
-                var data = response.data;
-                console.log(data);
-
-                // redirect to update page for created service
-                $location.path('/update/' + data._id);
-            })
-
-            .catch(function(error) {
-                console.log(error);
-                $('#failure-modal').modal('toggle');
-            });
-            */
+          $http.post('/api/services/fromSpec', fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+          })
+          .then(function(response){
+            var data = response.data;
+            console.log(data);
+            feedbackService.displayServiceInfo(data);
+            $('#success-modal').modal('toggle');
+          })
+          .catch(function(err){
+            console.log(err);
+            $('#failure-modal').modal('toggle');
+          });
         };
     }])
-//////////////////////////////////////////////////////////////
 
     .service('genDataService', [
         function() {
