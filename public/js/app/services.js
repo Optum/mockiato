@@ -330,8 +330,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('specService', ['$http', 'authService', 'feedbackService',
-    function($http, authService, feedbackService) {
+  .service('specService', ['$http', '$location', 'authService', 'feedbackService',
+    function ($http, $location, authService, feedbackService) {
         this.publishFromSpec = function(params, file) {
           var fd = new FormData();
           fd.append('spec', file);
@@ -349,6 +349,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           .then(function(response){
             var data = response.data;
             console.log(data);
+            //redirect to update page for created service
+            $location.path('/update/' + data._id);
             feedbackService.displayServiceInfo(data);
             $('#success-modal').modal('toggle');
           })
@@ -356,6 +358,17 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             console.log(err);
             $('#failure-modal').modal('toggle');
           });
+
+          //add new SUT
+          $http.post('/api/systems/', params.group)
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#failure-modal').modal('toggle');
+            });
+
         };
     }])
 

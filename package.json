@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node-pm ./bin/www",
+    "start": "node ./bin/www",
     "test": "nyc --reporter=text mocha tests"
   },
   "nyc": {

@@ -617,23 +617,4 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                 $location.path("/login");
             };
     }])
-
-.controller('ContactFormController', ['$scope', '$http',
-    function($scope, $http) {
-        $scope.contactData = {};
-
-        $scope.sendMail = function() {
-            $http.post('/contact', $scope.contactData)
-                .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-                })
-                .catch(function(err) {
-                    console.log('Error sending email: ' + err);
-                });
-
-        };
-    }
-])
-
 ;
