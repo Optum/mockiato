@@ -64,7 +64,7 @@
     <br>
     <div class="form-group row">
         <div class="col-sm-12">
-            <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-success center-block" ng-click="publishspec(spec)">Publish</button>
+            <button ng-disabled="form.$invalid || !(spec.url || uploadSpec)" type="button" class="btn btn-xl btn-success center-block" ng-click="publishspec(spec)">Publish</button>
         </div>
     </div>
 
