@@ -111,12 +111,17 @@ function mergeRRPairs(original, second) {
   }
 }
 
-// propagate changes to all workers
-function syncWorkers(serviceId) {
+// propagate changes to all threads
+function syncWorkers(serviceId, action, callback) {
   if (mode !== 'single') {
     manager.getWorkerIds()
     .then(function(workerIds) {
-      manager.messageAll(serviceId, workerIds);
+      const msg = {
+        action: action,
+        serviceId: serviceId
+      }
+      manager.messageAll(msg, workerIds);
+      if (callback) callback();
     })
     .catch(function(err) {
       debug(err);
@@ -124,7 +129,13 @@ function syncWorkers(serviceId) {
   }
   else {
     // not running in cluster
-    virtual.registerById(serviceId);
+    if (action === 'register') {
+      virtual.registerById(serviceId);
+    }
+    else {
+      virtual.deregisterById(serviceId);
+    }
+    if (callback) callback();
   }
 }
 
@@ -167,7 +178,7 @@ function addService(req, res) {
 
         // respond with the newly created resource
         res.json(service);
-        syncWorkers(service._id);
+        syncWorkers(service._id, 'register');
       });
     }
   });
@@ -193,7 +204,7 @@ function updateService(req, res) {
       }
 
       res.json(newService);
-      syncWorkers(newService._id);
+      syncWorkers(newService._id, 'register');
     });
   });
 }
@@ -214,21 +225,22 @@ function toggleService(req, res) {
       }
 
       res.json({'message': 'toggled', 'service': newService });
-      syncWorkers(newService._id);
+      syncWorkers(newService._id, 'register');
     });
   });
 }
 
 function deleteService(req, res) {
-  // call find and remove function for db
-  Service.findOneAndRemove({_id : req.params.id }, function(err, service)	{
-    if (err)	{
-      handleError(err, res, 500);
-      return;
-    }
+  syncWorkers(req.params.id, 'deregister', function() {
+    // call find and remove function for db
+    Service.findOneAndRemove({_id : req.params.id }, function(err, service)	{
+      if (err)	{
+        handleError(err, res, 500);
+        return;
+      }
 
-    res.json({'message' : 'deleted', 'service' : service});
-    syncWorkers(service._id);
+      res.json({'message' : 'deleted', 'service' : service});
+    });
   });
 }
 

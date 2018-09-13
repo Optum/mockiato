@@ -6,6 +6,16 @@ const debug = require('debug')('matching');
 const Service = require('../models/Service');
 const removeRoute = require('express-remove-route');
 
+// function to simulate latency
+function delay(ms) {
+  if (!ms || ms === 1) {
+    return function(req, res, next) {
+      return next();
+    };
+  }
+  return pause(ms);
+}
+
 // function for registering an RR pair on a service
 function registerRRPair(service, rrpair) {
   let path;
@@ -153,38 +163,54 @@ function registerById(id) {
       return;
     }
 
-    try {
-      service.rrpairs.forEach(function(rr){
-        let relPath = rr.path || '';
-        let fullPath = '/virtual' + service.basePath + relPath;
-        removeRoute(require('../app'), fullPath);
-      });
-
-      if (service.running) {
-        service.rrpairs.forEach(function(rrpair){
-          registerRRPair(service, rrpair);
-        });
+    if (service) {
+      try {
+        deregisterService(service);
+  
+        if (service.running) {
+          service.rrpairs.forEach(function(rrpair){
+            registerRRPair(service, rrpair);
+          });
+        }
       }
-    }
-    catch(e) {
-      debug('Error registering service: ' + e);
+      catch(e) {
+        debug('Error registering service: ' + e);
+      }
     }
   });
 }
 
-// function to simulate latency
-function delay(ms) {
-  if (!ms || ms === 1) {
-    return function(req, res, next) {
-      return next();
-    };
-  }
-  return pause(ms);
+function deregisterService(service) {
+  service.rrpairs.forEach(function(rr){
+    let relPath = rr.path || '';
+    let fullPath = '/virtual' + service.basePath + relPath;
+    removeRoute(require('../app'), fullPath);
+  });
+}
+
+function deregisterById(id) {
+  Service.findById(id, function(err, service) {
+    if (err) {
+      debug('Error deregistering service: ' + err);
+      return;
+    }
+
+    if (service) {
+      try {
+        deregisterService(service);
+      }
+      catch(e) {
+        debug('Error deregistering service: ' + e);
+      }
+    }
+  });
 }
 
 module.exports = {
   router: router,
   registerById: registerById,
   registerRRPair: registerRRPair,
+  deregisterById: deregisterById,
+  deregisterService: deregisterService,
   registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
 };

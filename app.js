@@ -113,10 +113,17 @@ function init() {
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
 
-  // register new virts on all workers
+  // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
-      virtual.registerById(message.data);
+      const msg = message.data;
+
+      if (msg.action === 'register') {
+        virtual.registerById(msg.serviceId);
+      }
+      else {
+        virtual.deregisterById(msg.serviceId);
+      }
     });
   }
 

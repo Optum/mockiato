@@ -2,7 +2,7 @@
 FROM node:8-alpine
 
 # expose HTTP
-EXPOSE 3000 8080
+EXPOSE 8080
 
 # install system dependencies
 RUN apk update && apk add --no-cache git python py-pip make g++ nginx
