@@ -2,8 +2,12 @@ const Service = require('../models/Service');
 const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
 const removeRoute = require('express-remove-route');
-const swag = require('../lib/openapi/parser');
+const oas  = require('../lib/openapi/parser');
+const wsdl = require('../lib/wsdl/parser');
+const request = require('request');
+const fs   = require('fs');
 const debug  = require('debug')('default');
+const YAML = require('yamljs');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -178,8 +182,6 @@ function addService(req, res) {
       });
     }
   });
-
-  
 }
 
 function updateService(req, res) {
@@ -191,7 +193,7 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
-    service.rrpairs = req.body.rrpairs;
+    mergeRRPairs(service, req.body);
     if (req.body.delay) service.delay = req.body.delay;
 
     // save updated service in DB
@@ -272,35 +274,94 @@ function deleteService(req, res) {
   });
 }
 
-function createFromOpenAPI(req, res) {
-  let serv;
-  const spec = req.body;
+// get spec from url or local filesystem path
+function getSpecString(path) {
+  return new Promise(function(resolve, reject) {
+    if (path.includes('http')) {
+      request(path, function(err, resp, data) {
+        if (err) return reject(err);
+        return resolve(data);
+      });
+    }
+    else {
+      fs.readFile(path, 'utf8', function(err, data) {
+        if (err) return reject(err);
+        return resolve(data);
+      });
+    }
+  });
+  
+}
 
-  try {
-    serv = swag.parse(spec);
+function createFromSpec(req, res) {
+  const type = req.query.type;
+  const base = req.query.base;
+  const name = req.query.name;
+  const url  = req.query.url;
+  const sut  = { name: req.query.group };
+  const specPath = url || req.file.path;
 
-    serv.sut = { name: 'OAS3' };
-    serv.basePath = '/' + serv.sut.name + serv.basePath;
+  switch(type) {
+    case 'wsdl':
+      createFromWSDL(specPath).then(onSuccess).catch(onError);
+      break;
+    case 'openapi':
+      const specPromise  = getSpecString(specPath);
+      specPromise.then(function(specStr) {
+        let spec;
+        try {
+          if (req.file.mimetype.includes('yaml')) {
+            spec = YAML.parse(specStr);
+          }
+          else {
+            spec = JSON.parse(specStr);
+          }
+        }
+        catch(e) {
+          debug(e);
+          return handleError('Error parsing OpenAPI spec', res, 400);
+        }
+
+        createFromOpenAPI(spec).then(onSuccess).catch(onError);
+
+        }).catch(onError);
+      break;
+    default:
+      return handleError(`API specification type ${type} is not supported`, res, 400);
+  }
+
+  function onSuccess(serv) {
+    // set group, basePath, and owner
+    serv.sut = sut;
+    serv.name = name;
+    serv.basePath = '/' + serv.sut.name + base;
     serv.user = req.decoded;
+
+    // save the service
     Service.create(serv, function(err, service) {
-      try {
-        service.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(service, rrpair);
-        });
-      }
-      catch(e) {
-        handleError(e.message, res, 400);
-        return;
-      }
+      if (err) handleError(err, res, 500);
+      service.rrpairs.forEach(function(rrpair){
+        virtual.registerRRPair(service, rrpair);
+      });
 
       res.json(service);
     });
   }
-  catch(e) {
-    debug(e);
-    handleError(e, res, 400);
-    return;
+
+  function onError(err) {
+    debug(err);
+    handleError(err, res, 400);
   }
+}
+
+function createFromWSDL(file) {
+  return wsdl.parse(file);
+}
+
+function createFromOpenAPI(spec) {
+  return new Promise(function(resolve, reject) {
+    return resolve(oas.parse(spec));
+  });
 }
 
 module.exports = {
@@ -312,5 +373,5 @@ module.exports = {
   updateService: updateService,
   toggleService: toggleService,
   deleteService: deleteService,
-  createFromOpenAPI: createFromOpenAPI
-}
+  createFromSpec: createFromSpec
+};

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node-pm ./bin/www",
+    "start": "node ./bin/www",
     "test": "nyc --reporter=text mocha tests"
   },
   "nyc": {
@@ -24,10 +24,13 @@
     "jsonwebtoken": "^7.4.2",
     "mongoose": "^4.5.8",
     "morgan": "~1.7.0",
+    "multer": "^1.3.1",
     "passport": "^0.4.0",
     "passport-ldapauth": "^2.0.0",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^5.0.0",
+    "request": "^2.88.0",
+    "soap": "^0.24.0",
     "stomp-client": "^0.9.0",
     "swagger-ui-express": "^2.0.14",
     "xml2js": "^0.4.17",
