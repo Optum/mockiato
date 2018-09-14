@@ -293,6 +293,21 @@ function getSpecString(path) {
   
 }
 
+function isYaml(req) {
+  const url = req.query.url;
+  if (url) {
+    if (url.includes('yml') || url.includes('yaml'))
+      return true;
+  }
+  if (req.file) {
+    const name = req.file.originalname;
+    if (name.includes('yml') || name.includes('yaml')) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function createFromSpec(req, res) {
   const type = req.query.type;
   const base = req.query.base;
@@ -310,7 +325,7 @@ function createFromSpec(req, res) {
       specPromise.then(function(specStr) {
         let spec;
         try {
-          if (req.file.mimetype.includes('yaml')) {
+          if (isYaml(req)) {
             spec = YAML.parse(specStr);
           }
           else {
