@@ -236,8 +236,8 @@ function toggleService(req, res) {
 }
 
 function deleteService(req, res) {
-  syncWorkers(req.params.id, 'delete');
   res.json({ 'message' : 'deleted', 'id' : req.params.id });
+  syncWorkers(req.params.id, 'delete');
 }
 
 // get spec from url or local filesystem path
