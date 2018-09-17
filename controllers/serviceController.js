@@ -116,7 +116,7 @@ function mergeRRPairs(original, second) {
 }
 
 // propagate changes to all threads
-function syncWorkers(serviceId, action, callback) {
+function syncWorkers(serviceId, action) {
   if (mode !== 'single') {
     manager.getWorkerIds()
     .then(function(workerIds) {
@@ -125,7 +125,6 @@ function syncWorkers(serviceId, action, callback) {
         serviceId: serviceId
       }
       manager.messageAll(msg, workerIds);
-      if (callback) callback();
     })
     .catch(function(err) {
       debug(err);
@@ -139,7 +138,6 @@ function syncWorkers(serviceId, action, callback) {
     else {
       virtual.deregisterById(serviceId);
     }
-    if (callback) callback();
   }
 }
 
@@ -167,7 +165,7 @@ function addService(req, res) {
         }
 
         res.json(newService);
-        syncWorkers(newService._id);
+        syncWorkers(newService._id, 'register');
       });
     }
     else {
@@ -235,7 +233,9 @@ function toggleService(req, res) {
 }
 
 function deleteService(req, res) {
-  syncWorkers(req.params.id, 'deregister', function() {
+  syncWorkers(req.params.id, 'deregister'); 
+  
+  setTimeout(function() {
     // call find and remove function for db
     Service.findOneAndRemove({_id : req.params.id }, function(err, service)	{
       if (err)	{
@@ -245,7 +245,7 @@ function deleteService(req, res) {
 
       res.json({'message' : 'deleted', 'service' : service});
     });
-  });
+  }, 1000);
 }
 
 // get spec from url or local filesystem path
@@ -329,11 +329,9 @@ function createFromSpec(req, res) {
     // save the service
     Service.create(serv, function(err, service) {
       if (err) handleError(err, res, 500);
-      service.rrpairs.forEach(function(rrpair){
-        virtual.registerRRPair(service, rrpair);
-      });
 
       res.json(service);
+      syncWorkers(service._id, 'register');
     });
   }
 
