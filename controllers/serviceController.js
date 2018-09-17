@@ -198,7 +198,7 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
-    mergeRRPairs(service, req.body);
+    service.rrpairs = req.body.rrpairs;
     if (req.body.delay) service.delay = req.body.delay;
 
     // save updated service in DB
