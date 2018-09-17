@@ -405,7 +405,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                     var data = response.data;
                     console.log(data);
                     $scope.servicelist.forEach(function(elem, i, arr){
-                        if (elem._id === data.service._id)
+                        if (elem._id === data.id)
                             arr.splice(i, 1);
                     });
                 })
