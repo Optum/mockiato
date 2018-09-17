@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "nyc --reporter=text mocha tests"
+    "serve": "pm2 start ./bin/www -i max --name app --no-daemon",
+    "test":  "nyc --reporter=text mocha tests"
   },
   "nyc": {
     "exclude": [
@@ -19,7 +20,6 @@
     "debug": "^2.6.9",
     "dotenv": "^5.0.1",
     "express": "~4.13.4",
-    "express-remove-route": "^0.1.1",
     "helmet": "^3.12.1",
     "jsonwebtoken": "^7.4.2",
     "mongoose": "^4.5.8",
@@ -29,10 +29,12 @@
     "passport-ldapauth": "^2.0.0",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^5.0.0",
+    "pm2": "^3.1.2",
     "request": "^2.88.0",
     "soap": "^0.24.0",
     "stomp-client": "^0.9.0",
     "swagger-ui-express": "^2.0.14",
+    "underscore": "^1.9.1",
     "xml2js": "^0.4.17",
     "yamljs": "^0.3.0"
   },

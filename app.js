@@ -18,11 +18,10 @@ const helmet = require('helmet');
 
 // connect to database
 const db = require('./models/db');
-db.on('error', debug.bind(console, 'connection error:'));
+db.on('error', function(err)  {throw err; });
 db.once('open', function() {
   debug(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
-
-  // tell the app we're ready to start
+  // ready to start
   app.emit('ready');
 });
 app.on('ready', init);
@@ -113,6 +112,21 @@ function init() {
   virtual.registerAllRRPairsForAllServices();
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
+
+  // register new virts on all threads
+  if (process.env.MOCKIATO_MODE !== 'single') {
+    process.on('message', function(message) {
+      const msg = message.data;
+      debug(msg);
+
+      if (msg.action === 'register') {
+        virtual.registerById(msg.serviceId);
+      }
+      else {
+        virtual.deregisterById(msg.serviceId);
+      }
+    });
+  }
 
   // expose api methods for users and groups
   const systems = require('./routes/systems');

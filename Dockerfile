@@ -1,16 +1,16 @@
 # import base image
-FROM node:6-alpine
+FROM node:8-alpine
 
 # expose HTTP
 EXPOSE 8080
 
 # install system dependencies
-RUN apk add --no-cache --virtual .gyp git python make g++
+RUN apk update && apk add --no-cache git python py-pip make g++
 
 # copy the app src to the container
-RUN mkdir -p /www
-COPY . /www
-WORKDIR /www
+RUN mkdir -p /app
+COPY . /app
+WORKDIR /app
 
 # install app dependencies (backend)
 RUN npm install
@@ -19,15 +19,8 @@ RUN npm install
 RUN npm install -g bower
 RUN bower install --allow-root
 
-# clean up node-gyp
-RUN apk del .gyp
+# fix for openshift permission problems
+RUN mkdir /.pm2 && chmod 777 /.pm2 && chmod 777 /app
 
-# download wait-for-it
-RUN apk update && apk add ca-certificates wget && update-ca-certificates
-RUN wget https://raw.githubusercontent.com/eficode/wait-for/master/wait-for
-RUN chmod +x wait-for
-RUN chmod +x bin/start
-
-# start the app
-RUN npm install -g node-pm
-CMD npm start
+# start app
+CMD npm run serve

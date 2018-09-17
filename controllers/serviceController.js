@@ -1,13 +1,14 @@
 const Service = require('../models/Service');
 const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
-const removeRoute = require('express-remove-route');
+const manager = require('../lib/pm2/manager');
+const debug = require('debug')('default');
 const oas  = require('../lib/openapi/parser');
 const wsdl = require('../lib/wsdl/parser');
 const request = require('request');
 const fs   = require('fs');
-const debug  = require('debug')('default');
 const YAML = require('yamljs');
+const mode = process.env.MOCKIATO_MODE;
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -114,6 +115,34 @@ function mergeRRPairs(original, second) {
   }
 }
 
+// propagate changes to all threads
+function syncWorkers(serviceId, action, callback) {
+  if (mode !== 'single') {
+    manager.getWorkerIds()
+    .then(function(workerIds) {
+      const msg = {
+        action: action,
+        serviceId: serviceId
+      }
+      manager.messageAll(msg, workerIds);
+      if (callback) callback();
+    })
+    .catch(function(err) {
+      debug(err);
+    });
+  }
+  else {
+    // not running in cluster
+    if (action === 'register') {
+      virtual.registerById(serviceId);
+    }
+    else {
+      virtual.deregisterById(serviceId);
+    }
+    if (callback) callback();
+  }
+}
+
 function addService(req, res) {
   let serv  = {
     sut: req.body.sut,
@@ -127,11 +156,6 @@ function addService(req, res) {
 
   searchDuplicate(serv, function(duplicate) {
     if (duplicate) {
-      // deregister old req / res pairs
-      duplicate.rrpairs.forEach(function(rr){
-        removeRoute(require('../app'), '/virtual/' + duplicate.basePath + rr.path);
-      });
-
       // merge services
       mergeRRPairs(duplicate, serv);
 
@@ -141,19 +165,9 @@ function addService(req, res) {
           handleError(err, res, 500);
           return;
         }
-  
-        try {  
-          // register new req / res pairs
-          newService.rrpairs.forEach(function(rrpair){
-            virtual.registerRRPair(newService, rrpair);
-          });
-        }
-        catch(e) {
-          handleError(e.message, res, 400);
-          return;
-        }
 
         res.json(newService);
+        syncWorkers(newService._id);
       });
     }
     else {
@@ -166,19 +180,9 @@ function addService(req, res) {
           return;
         }
 
-        // register SOAP / REST virts
-        try {
-          service.rrpairs.forEach(function(rrpair){
-            virtual.registerRRPair(service, rrpair);
-          });
-        }
-        catch(e) {
-          handleError(e.message, res, 400);
-          return;
-        }
-
         // respond with the newly created resource
         res.json(service);
+        syncWorkers(service._id, 'register');
       });
     }
   });
@@ -203,25 +207,8 @@ function updateService(req, res) {
         return;
       }
 
-      // register new SOAP / REST virts
-      try {
-        // remove old req / res pairs
-        service.rrpairs.forEach(function(rr){
-          removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
-        });
-
-
-        // register new req / res pairs
-        newService.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(newService, rrpair);
-        });
-      }
-      catch(e) {
-        handleError(e.message, res, 400);
-        return;
-      }
-
       res.json(newService);
+      syncWorkers(newService._id, 'register');
     });
   });
 }
@@ -233,17 +220,6 @@ function toggleService(req, res) {
       return;
     }
 
-    if (service.running) {
-      service.rrpairs.forEach(function(rr){
-        removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path); // turn off
-      });
-    }
-    else {
-      service.rrpairs.forEach(function(rrpair){
-        virtual.registerRRPair(service, rrpair); // turn on
-      });
-    }
-
     // flip the bit & save in DB
     service.running = !service.running;
     service.save(function(e, newService) {
@@ -253,24 +229,22 @@ function toggleService(req, res) {
       }
 
       res.json({'message': 'toggled', 'service': newService });
+      syncWorkers(newService._id, 'register');
     });
   });
 }
 
 function deleteService(req, res) {
-  // call find and remove function for db
-  Service.findOneAndRemove({_id : req.params.id }, function(err, service)	{
-    if (err)	{
-      handleError(err, res, 500);
-      return;
-    }
+  syncWorkers(req.params.id, 'deregister', function() {
+    // call find and remove function for db
+    Service.findOneAndRemove({_id : req.params.id }, function(err, service)	{
+      if (err)	{
+        handleError(err, res, 500);
+        return;
+      }
 
-    // deregister SOAP / REST endpoints
-    service.rrpairs.forEach(function(rr){
-      removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
+      res.json({'message' : 'deleted', 'service' : service});
     });
-
-    res.json({'message' : 'deleted', 'service' : service});
   });
 }
 
