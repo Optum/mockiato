@@ -47,22 +47,6 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
-            .when("/addOpenAPI", {
-                templateUrl: "partials/openApiForm.html",
-                controller: "oasController",
-                resolve: {
-                    auth: ['$q', 'authService', function($q, authService) {
-                        var userInfo = authService.getUserInfo();
-
-                        if (userInfo) {
-                            return $q.when(userInfo);
-                        } else {
-                            return $q.reject({ authenticated: false });
-                        }
-                    }]
-                }
-            })
-
             .when("/addTemplate", {
                 templateUrl: "partials/templateForm.html",
                 controller: "templateController",
@@ -109,8 +93,21 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                     }]
                 }
             })
-            .when("/wsdlwadl", {
-                templateUrl: "partials/wsdlwadl.html"
+            
+            .when("/spec", {
+                templateUrl: "partials/spec.html",
+                controller: "specController",
+                resolve: {
+                    auth: ['$q', 'authService', function ($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
             })
             .when("/mq", {
                 templateUrl: "partials/mq.html"

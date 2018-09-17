@@ -1,4 +1,5 @@
 const System = require('../models/System');
+const debug  = require('debug')('default');
 
 function getSystems(req, res) {
   System.find({}, function(err, systems)	{
@@ -18,12 +19,12 @@ function addSystem(req, res) {
 
   System.findOne(sut, function(err, foundSUT, system) {
     if (err) {
-      console.error(err);
+      debug(err);
       return;
     }
     if (!foundSUT) {
       System.create(sut, function(err)	{
-          console.log('New group created');
+          debug('New group created');
           if (err) {
             handleError(err, res, 500);
             return;

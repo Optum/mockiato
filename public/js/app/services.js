@@ -330,36 +330,46 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('oasService', ['$http', '$location', 'authService',
-        function($http, $location, authService) {
-            this.publishOAS = function(specStr) {
-                var spec;
+  .service('specService', ['$http', '$location', 'authService', 'feedbackService',
+    function ($http, $location, authService, feedbackService) {
+        this.publishFromSpec = function(params, file) {
+          var fd = new FormData();
+          fd.append('spec', file);
 
-                try {
-                  spec = JSON.parse(specStr);
-                }
-                catch(e) {
-                  console.log(e);
-                  $('#failure-modal').modal('toggle');
-                  return;
-                }
+          params.token = authService.getUserInfo().token;
+          params.group = params.sut.name;
+          params.base  = '/' + params.base;
+          
+          //add new SUT
+          $http.post('/api/systems/', params.sut)
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#failure-modal').modal('toggle');
+            });
 
-                var token = authService.getUserInfo().token;
-                $http.post('/api/services/openapi?token=' + token, spec)
+          delete params.sut;
 
-                .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-
-                    // redirect to update page for created service
-                    $location.path('/update/' + data._id);
-                })
-
-                .catch(function(error) {
-                    console.log(error);
-                    $('#failure-modal').modal('toggle');
-                });
-            };
+          $http.post('/api/services/fromSpec', fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+          })
+          .then(function(response){
+            var data = response.data;
+            console.log(data);
+            //redirect to update page for created service
+            $location.path('/update/' + data._id);
+            feedbackService.displayServiceInfo(data);
+            $('#success-modal').modal('toggle');
+          })
+          .catch(function(err){
+            console.log(err);
+            $('#failure-modal').modal('toggle');
+          });
+        };
     }])
 
     .service('genDataService', [
