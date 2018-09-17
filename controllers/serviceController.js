@@ -137,6 +137,9 @@ function syncWorkers(serviceId, action) {
     }
     else {
       virtual.deregisterById(serviceId);
+      Service.findOneAndRemove({_id : serviceId }, function(err)	{
+        if (err) debug(err);
+      });
     }
   }
 }
@@ -233,19 +236,8 @@ function toggleService(req, res) {
 }
 
 function deleteService(req, res) {
-  syncWorkers(req.params.id, 'deregister'); 
-  
-  setTimeout(function() {
-    // call find and remove function for db
-    Service.findOneAndRemove({_id : req.params.id }, function(err, service)	{
-      if (err)	{
-        handleError(err, res, 500);
-        return;
-      }
-
-      res.json({'message' : 'deleted', 'service' : service});
-    });
-  }, 1000);
+  syncWorkers(req.params.id, 'delete');
+  res.json({ 'message' : 'deleted', 'id' : req.params.id });
 }
 
 // get spec from url or local filesystem path

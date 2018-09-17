@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "serve": "pm2 start ./bin/www -i max --name app --no-daemon",
-    "test":  "nyc --reporter=text mocha tests"
+    "test": "nyc --reporter=text mocha tests"
   },
   "nyc": {
     "exclude": [
