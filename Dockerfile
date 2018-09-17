@@ -19,5 +19,7 @@ RUN npm install
 RUN npm install -g bower
 RUN bower install --allow-root
 
+RUN mkdir /.pm2 && chmod 777 /.pm2
+
 # start app
 CMD npm run serve
