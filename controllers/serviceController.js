@@ -8,7 +8,6 @@ const wsdl = require('../lib/wsdl/parser');
 const request = require('request');
 const fs   = require('fs');
 const YAML = require('yamljs');
-const mode = process.env.MOCKIATO_MODE;
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -117,30 +116,27 @@ function mergeRRPairs(original, second) {
 
 // propagate changes to all threads
 function syncWorkers(serviceId, action) {
-  if (mode !== 'single') {
-    const msg = {
-      action: action,
-      serviceId: serviceId
-    };
-    
-    manager.messageAll(msg)
-      .then(function(workerIds) {
-        debug(workerIds);
-      })
-      .catch(function(err) {
-        debug(err);
-      });
-  }
-
-  if (action === 'register') {
-    virtual.registerById(serviceId);
-  }
-  else {
-    virtual.deregisterById(serviceId);
-    Service.findOneAndRemove({_id : serviceId }, function(err)	{
-      if (err) debug(err);
+  const msg = {
+    action: action,
+    serviceId: serviceId
+  };
+  
+  manager.messageAll(msg)
+    .then(function(workerIds) {
+      debug(workerIds);
+      if (action === 'register') {
+        virtual.registerById(serviceId);
+      }
+      else {
+        virtual.deregisterById(serviceId);
+        Service.findOneAndRemove({_id : serviceId }, function(err)	{
+          if (err) debug(err);
+        });
+      }
+    })
+    .catch(function(err) {
+      debug(err);
     });
-  }
 }
 
 function addService(req, res) {
