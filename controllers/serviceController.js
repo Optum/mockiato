@@ -118,29 +118,28 @@ function mergeRRPairs(original, second) {
 // propagate changes to all threads
 function syncWorkers(serviceId, action) {
   if (mode !== 'single') {
-    manager.getWorkerIds()
-    .then(function(workerIds) {
-      const msg = {
-        action: action,
-        serviceId: serviceId
-      }
-      manager.messageAll(msg, workerIds);
-    })
-    .catch(function(err) {
-      debug(err);
-    });
+    const msg = {
+      action: action,
+      serviceId: serviceId
+    };
+    
+    manager.messageAll(msg)
+      .then(function(workerIds) {
+        debug(workerIds);
+      })
+      .catch(function(err) {
+        debug(err);
+      });
+  }
+
+  if (action === 'register') {
+    virtual.registerById(serviceId);
   }
   else {
-    // not running in cluster
-    if (action === 'register') {
-      virtual.registerById(serviceId);
-    }
-    else {
-      virtual.deregisterById(serviceId);
-      Service.findOneAndRemove({_id : serviceId }, function(err)	{
-        if (err) debug(err);
-      });
-    }
+    virtual.deregisterById(serviceId);
+    Service.findOneAndRemove({_id : serviceId }, function(err)	{
+      if (err) debug(err);
+    });
   }
 }
 
