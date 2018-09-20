@@ -332,16 +332,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
   .service('specService', ['$http', '$location', 'authService', 'feedbackService',
     function ($http, $location, authService, feedbackService) {
-        this.publishFromSpec = function(params, file) {
+        this.publishFromSpec = function(spec, file) {
           var fd = new FormData();
           fd.append('spec', file);
 
+          var params = {};
           params.token = authService.getUserInfo().token;
-          params.group = params.sut.name;
-          params.base  = '/' + params.base;
+          params.group = spec.sut.name;
+          params.type  = spec.type;
+          params.name  = spec.name;
           
           //add new SUT
-          $http.post('/api/systems/', params.sut)
+          $http.post('/api/systems/', spec.sut)
             .then(function (response) {
               console.log(response.data);
             })
@@ -349,8 +351,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               console.log(err);
               $('#failure-modal').modal('toggle');
             });
-
-          delete params.sut;
 
           $http.post('/api/services/fromSpec', fd, {
               transformRequest: angular.identity,
