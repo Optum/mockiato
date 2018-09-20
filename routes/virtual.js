@@ -98,17 +98,17 @@ function registerRRPair(service, rrpair) {
 
         // send matched data back to client
         setRespHeaders();
-        if (!rrpair.resStatus && rrpair.resData) {
+        if (rrpair.resStatus && rrpair.resData) {
+          resp.status(rrpair.resStatus).send(rrpair.resData);
+        }
+        else if (!rrpair.resStatus && rrpair.resData) {
           resp.send(rrpair.resData);
         }
         else if (rrpair.resStatus && !rrpair.resData) {
           resp.sendStatus(rrpair.resStatus);
         }
-        else if (rrpair.resStatus && rrpair.resData) {
-          resp.status(rrpair.resStatus).send(rrpair.resData);
-        }
         else {
-          resp.resStatus(200);
+          resp.sendStatus(200);
         }
 
         // request was matched
