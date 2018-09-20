@@ -341,6 +341,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           params.group = spec.sut.name;
           params.type  = spec.type;
           params.name  = spec.name;
+          params.url   = spec.url;
           
           //add new SUT
           $http.post('/api/systems/', spec.sut)
