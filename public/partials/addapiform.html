@@ -158,7 +158,7 @@
             </label>
             <label class="move-radios">
                 <input ng-model="rr.payloadType" ng-click="setContentType(rr, 'text/plain')" id="service_payloadtype" type="radio" ng-value="'PLAIN'" ng-required="servicevo.type === 'REST' && !rr.payloadType">
-                  Plain
+                  Plaintext
             </label>
           </div>
         </div>
@@ -272,7 +272,7 @@
       </div>
     </div>
 
-    <div class="form-group req row">
+    <div class="form-group row">
       <label for="service_response_payload" class="col-xs-2 col-form-label">Response Payload</label>
       <div class="col-xs-9">
         <textarea id="service_response_payload" class="form-control vertResize" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
