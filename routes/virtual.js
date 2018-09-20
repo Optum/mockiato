@@ -129,8 +129,11 @@ function registerRRPair(service, rrpair) {
         // set default headers
         if (rrpair.payloadType === 'XML')
           resp.set("Content-Type", "text/xml");
-        else {
+        else if (rrpair.payloadType === 'JSON') {
           resp.set("Content-Type", "application/json");
+        }
+        else {
+          resp.set("Content-Type", "text/plain");
         }
       }
       else {
