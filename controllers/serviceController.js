@@ -123,7 +123,7 @@ function syncWorkers(serviceId, action) {
   
   manager.messageAll(msg)
     .then(function(workerIds) {
-      debug(workerIds);
+      if (workerIds.length) debug(workerIds);
       if (action === 'register') {
         virtual.registerById(serviceId);
       }
@@ -310,7 +310,7 @@ function createFromSpec(req, res) {
     // set group, basePath, and owner
     serv.sut = sut;
     serv.name = name;
-    serv.basePath = '/' + serv.sut.name + base;
+    serv.basePath = '/' + serv.sut.name + serv.basePath;
     serv.user = req.decoded;
 
     // save the service
