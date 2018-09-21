@@ -162,8 +162,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
                       try {
-                        if (rr.method !== 'GET') reqPayload = JSON.parse(rr.requestpayload);
-                        resPayload = JSON.parse(rr.responsepayload);
+                        if (rr.requestpayload)  reqPayload = JSON.parse(rr.requestpayload);
+                        if (rr.responsepayload) resPayload = JSON.parse(rr.responsepayload);
                       }
                       catch(e) {
                         console.log(e);
@@ -175,8 +175,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       var reqValid = true;
                       var resValid = true;
 
-                      if (rr.method !== 'GET') reqValid = xmlService.validateXml(rr.requestpayload);
-                      resValid = xmlService.validateXml(rr.responsepayload);
+                      if (rr.requestpayload)  reqValid = xmlService.validateXml(rr.requestpayload);
+                      if (rr.responsepayload) resValid = xmlService.validateXml(rr.responsepayload);
 
                       if (reqValid && resValid) {
                         reqPayload = rr.requestpayload;

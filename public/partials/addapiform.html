@@ -205,10 +205,10 @@
       </div>
     </div>
 
-    <div class="form-group row req" ng-class="rr.method === 'DELETE' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
+    <div class="form-group row" ng-class="rr.method === 'DELETE' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
       <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload</label>
       <div class="col-xs-9">
-        <textarea ng-required="rr.method !== 'GET' || servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
+        <textarea ng-required="servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
       </div>
     </div>
 
@@ -272,10 +272,10 @@
       </div>
     </div>
 
-    <div class="form-group row">
+    <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'">
       <label for="service_response_payload" class="col-xs-2 col-form-label">Response Payload</label>
       <div class="col-xs-9">
-        <textarea id="service_response_payload" class="form-control vertResize" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
+        <textarea ng-required="servicevo.type === 'SOAP'" id="service_response_payload" class="form-control vertResize" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
       </div>
     </div>
   </fieldset>

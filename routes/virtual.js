@@ -49,8 +49,8 @@ function registerRRPair(service, rrpair) {
     function matchRequest(payload) {
       let reqData;
 
-      const isGet = req.method === 'GET';
-      if (!isGet) {
+      //const isGet = req.method === 'GET';
+      if (rrpair.reqData) {
         if (rrpair.payloadType === 'XML') {
           xml2js.parseString(rrpair.reqData, function(err, data) {
             reqData = data;
@@ -61,7 +61,7 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      if (isGet || deepEquals(payload, reqData)) {
+      if (!rrpair.reqData || deepEquals(payload, reqData)) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
