@@ -20,7 +20,7 @@ const serviceSchema = new mongoose.Schema({
   delay: {
     // force integer only
     type: Number,
-    default: 1,
+    default: 0,
     get: function(v) { return Math.round(v); },
     set: function(v) { return Math.round(v); }
   },

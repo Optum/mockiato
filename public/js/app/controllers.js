@@ -7,18 +7,28 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
             };
     }])
 
-    .controller("oasController", ['$scope', 'oasService' ,
-        function($scope,oasService) {
-            $scope.publishOpenAPI = function() {
-                oasService.publishOAS($scope.previewText);
-            };
-    }])
-
     .controller("templateController", ['$scope', 'templateService' ,
         function($scope,templateService) {
             $scope.import = function(){
                 templateService.importTemplate($scope.previewTemp);
             };
+    }])
+
+    .controller("specController", ['$scope', 'sutService' , 'specService', 
+        function($scope, sutService, specService) {
+          $scope.sutlist = sutService.getAllSUT();
+          $scope.spec = {}; 
+
+          $scope.dropdown = function () {
+            if ($scope.sutChecked == false) {
+              $scope.sutlist = sutService.getAllSUT();
+            }
+          };
+          
+          $scope.publishspec = function (spec) {
+            specService.publishFromSpec(spec, $scope.uploadSpec);
+          };
+         
     }])
 
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService',
@@ -395,7 +405,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                     var data = response.data;
                     console.log(data);
                     $scope.servicelist.forEach(function(elem, i, arr){
-                        if (elem._id === data.service._id)
+                        if (elem._id === data.id)
                             arr.splice(i, 1);
                     });
                 })
@@ -613,23 +623,4 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                 $location.path("/login");
             };
     }])
-
-.controller('ContactFormController', ['$scope', '$http',
-    function($scope, $http) {
-        $scope.contactData = {};
-
-        $scope.sendMail = function() {
-            $http.post('/contact', $scope.contactData)
-                .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-                })
-                .catch(function(err) {
-                    console.log('Error sending email: ' + err);
-                });
-
-        };
-    }
-])
-
 ;

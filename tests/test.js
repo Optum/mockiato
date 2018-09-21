@@ -1,4 +1,5 @@
 process.env.MOCKIATO_AUTH = 'local';
+process.env.MOCKIATO_MODE = 'single';
 
 const app = require('../app');
 const request = require('supertest').agent(app);
@@ -64,21 +65,21 @@ describe('API tests', function() {
                 }).end(done);
         });
     });
+
+    describe('Retrieve REST service', function() {
+        it('Responds with the correct service', function(done) {
+            request
+                .get(resource + '/' + id)
+                .expect(200)
+                .end(done);
+        });
+    });
     
     describe('Test REST service', function() {
         it('Responds with the virtual data', function(done) {
             request
                 .post('/virtual/test/v2/test/resource')
                 .send({ key: 123 })
-                .expect(200)
-                .end(done);
-        });
-    });
-    
-    describe('Retrieve REST service', function() {
-        it('Responds with the correct service', function(done) {
-            request
-                .get(resource + '/' + id)
                 .expect(200)
                 .end(done);
         });
@@ -125,6 +126,15 @@ describe('API tests', function() {
                 }).end(done);
         });
     });
+
+    describe('Retrieve SOAP service', function() {
+        it('Responds with the correct service', function(done) {
+            request
+                .get(resource + '/' + id)
+                .expect(200)
+                .end(done);
+        });
+    });
     
     describe('Test SOAP service', function() {
         it('Responds with the virtual data', function(done) {
@@ -132,15 +142,6 @@ describe('API tests', function() {
                 .post('/virtual/test/soap')
                 .set('Content-Type', 'text/xml')
                 .send(soapService.rrpairs[0].reqData)
-                .expect(200)
-                .end(done);
-        });
-    });
-    
-    describe('Retrieve SOAP service', function() {
-        it('Responds with the correct service', function(done) {
-            request
-                .get(resource + '/' + id)
                 .expect(200)
                 .end(done);
         });
@@ -196,23 +197,23 @@ describe('API tests', function() {
     //     });
     // });
     
-    describe('Create Swagger service', function() {
-        it('Rejects Swagger 2 documents', function(done) {
-            request
-                .post(resource + '/openapi' + token)
-                .send(swagService)
-                .expect(400)
-                .end(done);
-        });
+    // describe('Create Swagger service', function() {
+    //     it('Rejects Swagger 2 documents', function(done) {
+    //         request
+    //             .post(resource + '/openapi' + token)
+    //             .send(swagService)
+    //             .expect(400)
+    //             .end(done);
+    //     });
     
-        it('Accepts OAS3 documents', function(done) {
-            request
-                .post(resource + '/openapi' + token)
-                .send(oasService)
-                .expect(200)
-                .end(done);
-        });
-    });
+    //     it('Accepts OAS3 documents', function(done) {
+    //         request
+    //             .post(resource + '/openapi' + token)
+    //             .send(oasService)
+    //             .expect(200)
+    //             .end(done);
+    //     });
+    // });
     
     describe('Retrieve users', function() {
         it('Responds with the users', function(done) {

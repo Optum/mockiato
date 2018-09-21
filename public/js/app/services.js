@@ -162,8 +162,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
                       try {
-                        if (rr.method !== 'GET') reqPayload = JSON.parse(rr.requestpayload);
-                        resPayload = JSON.parse(rr.responsepayload);
+                        if (rr.requestpayload)  reqPayload = JSON.parse(rr.requestpayload);
+                        if (rr.responsepayload) resPayload = JSON.parse(rr.responsepayload);
                       }
                       catch(e) {
                         console.log(e);
@@ -175,8 +175,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       var reqValid = true;
                       var resValid = true;
 
-                      if (rr.method !== 'GET') reqValid = xmlService.validateXml(rr.requestpayload);
-                      resValid = xmlService.validateXml(rr.responsepayload);
+                      if (rr.requestpayload)  reqValid = xmlService.validateXml(rr.requestpayload);
+                      if (rr.responsepayload) resValid = xmlService.validateXml(rr.responsepayload);
 
                       if (reqValid && resValid) {
                         reqPayload = rr.requestpayload;
@@ -330,36 +330,47 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('oasService', ['$http', '$location', 'authService',
-        function($http, $location, authService) {
-            this.publishOAS = function(specStr) {
-                var spec;
+  .service('specService', ['$http', '$location', 'authService', 'feedbackService',
+    function ($http, $location, authService, feedbackService) {
+        this.publishFromSpec = function(spec, file) {
+          var fd = new FormData();
+          fd.append('spec', file);
 
-                try {
-                  spec = JSON.parse(specStr);
-                }
-                catch(e) {
-                  console.log(e);
-                  $('#failure-modal').modal('toggle');
-                  return;
-                }
+          var params = {};
+          params.token = authService.getUserInfo().token;
+          params.group = spec.sut.name;
+          params.type  = spec.type;
+          params.name  = spec.name;
+          params.url   = spec.url;
+          
+          //add new SUT
+          $http.post('/api/systems/', spec.sut)
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#failure-modal').modal('toggle');
+            });
 
-                var token = authService.getUserInfo().token;
-                $http.post('/api/services/openapi?token=' + token, spec)
-
-                .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-
-                    // redirect to update page for created service
-                    $location.path('/update/' + data._id);
-                })
-
-                .catch(function(error) {
-                    console.log(error);
-                    $('#failure-modal').modal('toggle');
-                });
-            };
+          $http.post('/api/services/fromSpec', fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+          })
+          .then(function(response){
+            var data = response.data;
+            console.log(data);
+            //redirect to update page for created service
+            $location.path('/update/' + data._id);
+            feedbackService.displayServiceInfo(data);
+            $('#success-modal').modal('toggle');
+          })
+          .catch(function(err){
+            console.log(err);
+            $('#failure-modal').modal('toggle');
+          });
+        };
     }])
 
     .service('genDataService', [

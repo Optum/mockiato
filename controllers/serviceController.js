@@ -1,8 +1,13 @@
 const Service = require('../models/Service');
 const RRPair  = require('../models/RRPair');
 const virtual = require('../routes/virtual');
-const removeRoute = require('express-remove-route');
-const swag = require('../lib/openapi/parser');
+const manager = require('../lib/pm2/manager');
+const debug = require('debug')('default');
+const oas  = require('../lib/openapi/parser');
+const wsdl = require('../lib/wsdl/parser');
+const request = require('request');
+const fs   = require('fs');
+const YAML = require('yamljs');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -89,11 +94,11 @@ function stripRRPair(rrpair) {
 
 // function to merge req / res pairs of duplicate services
 function mergeRRPairs(original, second) {
-  for (rrpair2 of second.rrpairs) {
+  for (let rrpair2 of second.rrpairs) {
     let hasAlready = false;
     let rr2 = stripRRPair(new RRPair(rrpair2));
 
-    for (rrpair1 of original.rrpairs) {
+    for (let rrpair1 of original.rrpairs) {
       let rr1 = stripRRPair(rrpair1);
 
       if (deepEquals(rr1, rr2)) { 
@@ -109,24 +114,44 @@ function mergeRRPairs(original, second) {
   }
 }
 
+// propagate changes to all threads
+function syncWorkers(serviceId, action) {
+  const msg = {
+    action: action,
+    serviceId: serviceId
+  };
+  
+  manager.messageAll(msg)
+    .then(function(workerIds) {
+      if (workerIds.length) debug(workerIds);
+      if (action === 'register') {
+        virtual.registerById(serviceId);
+      }
+      else {
+        virtual.deregisterById(serviceId);
+        Service.findOneAndRemove({_id : serviceId }, function(err)	{
+          if (err) debug(err);
+        });
+      }
+    })
+    .catch(function(err) {
+      debug(err);
+    });
+}
+
 function addService(req, res) {
   let serv  = {
     sut: req.body.sut,
     user: req.decoded,
     name: req.body.name,
     type: req.body.type,
-    delay: req.body.delay || 1,
+    delay: req.body.delay,
     basePath: '/' + req.body.sut.name + req.body.basePath,
     rrpairs: req.body.rrpairs
   };
 
   searchDuplicate(serv, function(duplicate) {
     if (duplicate) {
-      // deregister old req / res pairs
-      duplicate.rrpairs.forEach(function(rr){
-        removeRoute(require('../app'), '/virtual/' + duplicate.basePath + rr.path);
-      });
-
       // merge services
       mergeRRPairs(duplicate, serv);
 
@@ -136,19 +161,9 @@ function addService(req, res) {
           handleError(err, res, 500);
           return;
         }
-  
-        try {  
-          // register new req / res pairs
-          newService.rrpairs.forEach(function(rrpair){
-            virtual.registerRRPair(newService, rrpair);
-          });
-        }
-        catch(e) {
-          handleError(e.message, res, 400);
-          return;
-        }
 
         res.json(newService);
+        syncWorkers(newService._id, 'register');
       });
     }
     else {
@@ -161,24 +176,12 @@ function addService(req, res) {
           return;
         }
 
-        // register SOAP / REST virts
-        try {
-          service.rrpairs.forEach(function(rrpair){
-            virtual.registerRRPair(service, rrpair);
-          });
-        }
-        catch(e) {
-          handleError(e.message, res, 400);
-          return;
-        }
-
         // respond with the newly created resource
         res.json(service);
+        syncWorkers(service._id, 'register');
       });
     }
   });
-
-  
 }
 
 function updateService(req, res) {
@@ -200,25 +203,8 @@ function updateService(req, res) {
         return;
       }
 
-      // register new SOAP / REST virts
-      try {
-        // remove old req / res pairs
-        service.rrpairs.forEach(function(rr){
-          removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
-        });
-
-
-        // register new req / res pairs
-        newService.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(newService, rrpair);
-        });
-      }
-      catch(e) {
-        handleError(e.message, res, 400);
-        return;
-      }
-
       res.json(newService);
+      syncWorkers(newService._id, 'register');
     });
   });
 }
@@ -230,17 +216,6 @@ function toggleService(req, res) {
       return;
     }
 
-    if (service.running) {
-      service.rrpairs.forEach(function(rr){
-        removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path); // turn off
-      });
-    }
-    else {
-      service.rrpairs.forEach(function(rrpair){
-        virtual.registerRRPair(service, rrpair); // turn on
-      });
-    }
-
     // flip the bit & save in DB
     service.running = !service.running;
     service.save(function(e, newService) {
@@ -250,56 +225,117 @@ function toggleService(req, res) {
       }
 
       res.json({'message': 'toggled', 'service': newService });
+      syncWorkers(newService._id, 'register');
     });
   });
 }
 
 function deleteService(req, res) {
-  // call find and remove function for db
-  Service.findOneAndRemove({_id : req.params.id }, function(err, service)	{
-    if (err)	{
-      handleError(err, res, 500);
-      return;
-    }
-
-    // deregister SOAP / REST endpoints
-    service.rrpairs.forEach(function(rr){
-      removeRoute(require('../app'), '/virtual/' + service.basePath + rr.path);
-    });
-
-    res.json({'message' : 'deleted', 'service' : service});
-  });
+  res.json({ 'message' : 'deleted', 'id' : req.params.id });
+  syncWorkers(req.params.id, 'delete');
 }
 
-function createFromOpenAPI(req, res) {
-  let serv;
-  const spec = req.body;
+// get spec from url or local filesystem path
+function getSpecString(path) {
+  return new Promise(function(resolve, reject) {
+    if (path.includes('http')) {
+      request(path, function(err, resp, data) {
+        if (err) return reject(err);
+        return resolve(data);
+      });
+    }
+    else {
+      fs.readFile(path, 'utf8', function(err, data) {
+        if (err) return reject(err);
+        return resolve(data);
+      });
+    }
+  });
+  
+}
 
-  try {
-    serv = swag.parse(spec);
+function isYaml(req) {
+  const url = req.query.url;
+  if (url) {
+    if (url.includes('yml') || url.includes('yaml'))
+      return true;
+  }
+  if (req.file) {
+    const name = req.file.originalname;
+    if (name.includes('yml') || name.includes('yaml')) {
+      return true;
+    }
+  }
+  return false;
+}
 
-    serv.sut = { name: 'OAS3' };
+function createFromSpec(req, res) {
+  const type = req.query.type;
+  const base = req.query.base;
+  const name = req.query.name;
+  const url  = req.query.url;
+  const sut  = { name: req.query.group };
+  const specPath = url || req.file.path;
+
+  switch(type) {
+    case 'wsdl':
+      createFromWSDL(specPath).then(onSuccess).catch(onError);
+      break;
+    case 'openapi':
+      const specPromise  = getSpecString(specPath);
+      specPromise.then(function(specStr) {
+        let spec;
+        try {
+          if (isYaml(req)) {
+            spec = YAML.parse(specStr);
+          }
+          else {
+            spec = JSON.parse(specStr);
+          }
+        }
+        catch(e) {
+          debug(e);
+          return handleError('Error parsing OpenAPI spec', res, 400);
+        }
+
+        createFromOpenAPI(spec).then(onSuccess).catch(onError);
+
+        }).catch(onError);
+      break;
+    default:
+      return handleError(`API specification type ${type} is not supported`, res, 400);
+  }
+
+  function onSuccess(serv) {
+    // set group, basePath, and owner
+    serv.sut = sut;
+    serv.name = name;
     serv.basePath = '/' + serv.sut.name + serv.basePath;
     serv.user = req.decoded;
+
+    // save the service
     Service.create(serv, function(err, service) {
-      try {
-        service.rrpairs.forEach(function(rrpair){
-          virtual.registerRRPair(service, rrpair);
-        });
-      }
-      catch(e) {
-        handleError(e.message, res, 400);
-        return;
-      }
+      if (err) handleError(err, res, 500);
 
       res.json(service);
+      syncWorkers(service._id, 'register');
     });
   }
-  catch(e) {
-    console.error(e);
-    handleError(e, res, 400);
-    return;
+
+  function onError(err) {
+    debug(err);
+    handleError(err, res, 400);
   }
+}
+
+function createFromWSDL(file) {
+  return wsdl.parse(file);
+}
+
+function createFromOpenAPI(spec) {
+  return new Promise(function(resolve, reject) {
+    return resolve(oas.parse(spec));
+  });
 }
 
 module.exports = {
@@ -311,5 +347,5 @@ module.exports = {
   updateService: updateService,
   toggleService: toggleService,
   deleteService: deleteService,
-  createFromOpenAPI: createFromOpenAPI
-}
+  createFromSpec: createFromSpec
+};
