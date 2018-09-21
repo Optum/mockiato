@@ -8,7 +8,6 @@ const wsdl = require('../lib/wsdl/parser');
 const request = require('request');
 const fs   = require('fs');
 const YAML = require('yamljs');
-const mode = process.env.MOCKIATO_MODE;
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -117,31 +116,27 @@ function mergeRRPairs(original, second) {
 
 // propagate changes to all threads
 function syncWorkers(serviceId, action) {
-  if (mode !== 'single') {
-    manager.getWorkerIds()
+  const msg = {
+    action: action,
+    serviceId: serviceId
+  };
+  
+  manager.messageAll(msg)
     .then(function(workerIds) {
-      const msg = {
-        action: action,
-        serviceId: serviceId
+      if (workerIds.length) debug(workerIds);
+      if (action === 'register') {
+        virtual.registerById(serviceId);
       }
-      manager.messageAll(msg, workerIds);
+      else {
+        virtual.deregisterById(serviceId);
+        Service.findOneAndRemove({_id : serviceId }, function(err)	{
+          if (err) debug(err);
+        });
+      }
     })
     .catch(function(err) {
       debug(err);
     });
-  }
-  else {
-    // not running in cluster
-    if (action === 'register') {
-      virtual.registerById(serviceId);
-    }
-    else {
-      virtual.deregisterById(serviceId);
-      Service.findOneAndRemove({_id : serviceId }, function(err)	{
-        if (err) debug(err);
-      });
-    }
-  }
 }
 
 function addService(req, res) {
@@ -315,7 +310,7 @@ function createFromSpec(req, res) {
     // set group, basePath, and owner
     serv.sut = sut;
     serv.name = name;
-    serv.basePath = '/' + serv.sut.name + base;
+    serv.basePath = '/' + serv.sut.name + serv.basePath;
     serv.user = req.decoded;
 
     // save the service

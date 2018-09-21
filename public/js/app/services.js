@@ -162,8 +162,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
                       try {
-                        if (rr.method !== 'GET') reqPayload = JSON.parse(rr.requestpayload);
-                        resPayload = JSON.parse(rr.responsepayload);
+                        if (rr.requestpayload)  reqPayload = JSON.parse(rr.requestpayload);
+                        if (rr.responsepayload) resPayload = JSON.parse(rr.responsepayload);
                       }
                       catch(e) {
                         console.log(e);
@@ -175,8 +175,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       var reqValid = true;
                       var resValid = true;
 
-                      if (rr.method !== 'GET') reqValid = xmlService.validateXml(rr.requestpayload);
-                      resValid = xmlService.validateXml(rr.responsepayload);
+                      if (rr.requestpayload)  reqValid = xmlService.validateXml(rr.requestpayload);
+                      if (rr.responsepayload) resValid = xmlService.validateXml(rr.responsepayload);
 
                       if (reqValid && resValid) {
                         reqPayload = rr.requestpayload;
@@ -332,16 +332,19 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
   .service('specService', ['$http', '$location', 'authService', 'feedbackService',
     function ($http, $location, authService, feedbackService) {
-        this.publishFromSpec = function(params, file) {
+        this.publishFromSpec = function(spec, file) {
           var fd = new FormData();
           fd.append('spec', file);
 
+          var params = {};
           params.token = authService.getUserInfo().token;
-          params.group = params.sut.name;
-          params.base  = '/' + params.base;
+          params.group = spec.sut.name;
+          params.type  = spec.type;
+          params.name  = spec.name;
+          params.url   = spec.url;
           
           //add new SUT
-          $http.post('/api/systems/', params.sut)
+          $http.post('/api/systems/', spec.sut)
             .then(function (response) {
               console.log(response.data);
             })
@@ -349,8 +352,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               console.log(err);
               $('#failure-modal').modal('toggle');
             });
-
-          delete params.sut;
 
           $http.post('/api/services/fromSpec', fd, {
               transformRequest: angular.identity,

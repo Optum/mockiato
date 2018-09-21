@@ -11,6 +11,7 @@ const rrSchema = new mongoose.Schema({
   resStatus: {
     // force integer only
     type: Number,
+    default: 200,
     get: function(v) { return Math.round(v); },
     set: function(v) { return Math.round(v); }
   },

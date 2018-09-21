@@ -114,7 +114,6 @@ function init() {
   app.use('/virtual', virtual.router);
 
   // register new virts on all threads
-  const Service = require('./models/Service');
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
       const msg = message.data;
@@ -125,9 +124,6 @@ function init() {
       }
       else {
         virtual.deregisterById(msg.serviceId);
-        Service.findOneAndRemove({_id : msg.serviceId}, function(err)	{
-          if (err) debug(err);
-        });
       }
     });
   }
