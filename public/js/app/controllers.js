@@ -28,7 +28,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
           $scope.publishspec = function (spec) {
             specService.publishFromSpec(spec, $scope.uploadSpec);
           };
-         
     }])
 
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService',
