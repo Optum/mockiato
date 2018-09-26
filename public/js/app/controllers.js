@@ -28,6 +28,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
           $scope.publishspec = function (spec) {
             specService.publishFromSpec(spec, $scope.uploadSpec);
           };
+
+          $scope.spaceless = function(input){
+            return input.replace(/\s/g, "_");
+          }
          
     }])
 
