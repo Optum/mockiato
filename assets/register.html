@@ -73,6 +73,7 @@
   }
 
   var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i
+  var ck_pword = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$/;
   function validate(form){
     var uname = form.username.value;
     var email = form.mail.value;
@@ -81,11 +82,17 @@
      if (uname=='') {
       errors[errors.length] = "You must enter the username.";
      }
+     if (uname!='' && uname.length<4) {
+      errors[errors.length] = "Username length must be a minimum of 4 characteres.";
+     }
      if (!ck_email.test(email)) {
       errors[errors.length] = "You must enter a valid email address.";
      }
      if (password=='') {
       errors[errors.length] = "You must enter the password.";
+     }
+     if (password!='' && !ck_pword.test(password)) {
+      errors[errors.length] = "Password length must be at least 6. Password must contain at least 1 digit & 1 symbol (eg. *@#$%*).";
      }
      if (errors.length > 0) {        
       reportErrors(errors);
@@ -93,7 +100,7 @@
      }
       return true;
     }
-    
+
    var errList = [];
    function reportErrors(errors){
      for (var i = 0; i<errors.length; i++) {
