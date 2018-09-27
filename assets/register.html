@@ -72,16 +72,14 @@
     document.getElementById("errMsg").innerHTML = "<strong>*Oops! Something went wrong.</strong>";
   }
 
-
-var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i
+  var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i
   function validate(form){
     var uname = form.username.value;
     var email = form.mail.value;
     var password = form.password.value;
     var errors = [];
-     
      if (uname=='') {
-      errors[errors.length] = "You must enter the username";
+      errors[errors.length] = "You must enter the username.";
      }
      if (!ck_email.test(email)) {
       errors[errors.length] = "You must enter a valid email address.";
@@ -89,7 +87,6 @@ var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}
      if (password=='') {
       errors[errors.length] = "You must enter the password.";
      }
-
      if (errors.length > 0) {        
       reportErrors(errors);
       return false;
