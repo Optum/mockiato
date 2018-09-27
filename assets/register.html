@@ -1,46 +1,120 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Mockiato ☕</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  </head>
-  <body>
-    <div class="container">
-        <nav class="navbar navbar-inverse">
-          <div class="navbar-header lightFont">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/#helppage"><strong>Mockiato ☕</strong></a>
-          </div>
-        </nav>
-      </div>
-        <div>
-          <div class="vertical-center">
-            <div class="loginform">
-              <h2>Register</h2>
-              <a href="/#login">Already have an account? Log in here.</a>
-              <br></br>
-                <form role="form" action="/register" method="post" style="">
-                  <div class="form-group">
-                    <input class="form-control" type="text" name="username" placeholder="Enter Username">
-                  </div>
-                  <div class="form-group">
-                    <input class="form-control" type="mail" name="mail" placeholder="Enter Email">
-                  </div>
-                  <div class="form-group">
-                    <input class="form-control" type="password" name="password" placeholder="Enter Password">
-                  </div>
-                  <button class="btn btn-lg btn-primary center-block" type="submit">Submit</button><a href="/"></a>
-                </form>
-                <br>
-            </div>
+<head>
+  <title>Mockiato ☕</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+</head>
 
-        </div>
+<body>
+  <div class="container">
+    <nav class="navbar navbar-inverse">
+      <div class="navbar-header lightFont">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/#helppage">
+          <strong>Mockiato ☕</strong>
+        </a>
       </div>
-  </body>
+    </nav>
+  </div>
+  <div>
+    <div class="vertical-center">
+      <div class="loginform">
+        <h2>Register</h2>
+        <a href="/#login">Already have an account? Log in here.</a>
+        <br></br>
+        <div id="errMsg"></br></div>
+        <form role="form" action="/register" method="post" onSubmit="return validate(this);">
+          <div class="form-group">
+            <input class="form-control" type="text" name="username" placeholder="Enter Username">
+          </div>
+          <div class="form-group">
+            <input class="form-control" type="mail" name="mail" placeholder="Enter Email">
+          </div>
+          <div class="form-group">
+            <input class="form-control" type="password" name="password" placeholder="Enter Password">
+          </div>
+          <button class="btn btn-lg btn-primary center-block" type="submit">Submit</button>
+          <a href="/"></a>
+        </form>
+        <br>
+      </div>
+    </div>
+  </div>
+</body>
 </html>
+
+<script>
+  function getParams() {
+    var params = {},
+      pairs = document.URL.split('?')
+        .pop()
+        .split('&');
+    for (var i = 0, p; i < pairs.length; i++) {
+      p = pairs[i].split('=');
+      params[p[0]] = p[1];
+    }
+    return params;
+  }
+  var params = getParams();
+  var errorHint = unescape(params["ErrHint"]);
+  document.getElementById("errMsg").style.color = "#FF3333";
+  document.getElementById("errMsg").style.fontSize = "12.5px";
+  if (errorHint == 'DU') {
+    document.getElementById("errMsg").innerHTML = "<strong>*Username already exists</strong>";
+  }if (errorHint == 'SE') {
+    document.getElementById("errMsg").innerHTML = "<strong>*Oops! Something went wrong.</strong>";
+  }
+
+  var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i
+  var ck_pword = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$/;
+  function validate(form){
+    var uname = form.username.value;
+    var email = form.mail.value;
+    var password = form.password.value;
+    var errors = [];
+     if (uname=='') {
+      errors[errors.length] = "You must enter the username.";
+     }
+     if (uname!='' && uname.length<4) {
+      errors[errors.length] = "Username length must be a minimum of 4 characteres.";
+     }
+     if (!ck_email.test(email)) {
+      errors[errors.length] = "You must enter a valid email address.";
+     }
+     if (password=='') {
+      errors[errors.length] = "You must enter the password.";
+     }
+     if (password!='' && !ck_pword.test(password)) {
+      errors[errors.length] = "Password length must be at least 6. Password must contain at least 1 digit & 1 symbol (eg. *@#$%*).";
+     }
+     if (errors.length > 0) {        
+      reportErrors(errors);
+      return false;
+     }
+      return true;
+    }
+
+   var errList = [];
+   function reportErrors(errors){
+     for (var i = 0; i<errors.length; i++) {
+     var numError = i + 1;
+      errList.push(errors[i]); 
+    }
+    
+    var errors = "";
+    errList.forEach(function (entry) {
+      errors = errors+"*"+entry+"<br>";
+    });
+
+     document.getElementById("errMsg").innerHTML = "<strong>"+errors+"</ul></strong>";
+     errList=[];
+    }
+
+</script>
