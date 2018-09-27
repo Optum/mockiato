@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <title>Mockiato ☕</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -31,7 +30,7 @@
         <a href="/#login">Already have an account? Log in here.</a>
         <br></br>
         <div id="errMsg"></br></div>
-        <form role="form" action="/register" method="post" style="">
+        <form role="form" action="/register" method="post" onSubmit="return validate(this);">
           <div class="form-group">
             <input class="form-control" type="text" name="username" placeholder="Enter Username">
           </div>
@@ -49,8 +48,8 @@
     </div>
   </div>
 </body>
-
 </html>
+
 <script>
   function getParams() {
     var params = {},
@@ -69,5 +68,49 @@
   document.getElementById("errMsg").style.fontSize = "12.5px";
   if (errorHint == 'DU') {
     document.getElementById("errMsg").innerHTML = "<strong>*Username already exists</strong>";
+  }if (errorHint == 'SE') {
+    document.getElementById("errMsg").innerHTML = "<strong>*Oops! Something went wrong.</strong>";
   }
+
+
+var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i
+  function validate(form){
+    var uname = form.username.value;
+    var email = form.mail.value;
+    var password = form.password.value;
+    var errors = [];
+     
+     if (uname=='') {
+      errors[errors.length] = "You must enter the username";
+     }
+     if (!ck_email.test(email)) {
+      errors[errors.length] = "You must enter a valid email address.";
+     }
+     if (password=='') {
+      errors[errors.length] = "You must enter the password.";
+     }
+
+     if (errors.length > 0) {        
+      reportErrors(errors);
+      return false;
+     }
+      return true;
+    }
+    
+   var errList = [];
+   function reportErrors(errors){
+     for (var i = 0; i<errors.length; i++) {
+     var numError = i + 1;
+      errList.push(errors[i]); 
+    }
+    
+    var errors = "";
+    errList.forEach(function (entry) {
+      errors = errors+"*"+entry+"<br>";
+    });
+
+     document.getElementById("errMsg").innerHTML = "<strong>"+errors+"</ul></strong>";
+     errList=[];
+    }
+
 </script>
