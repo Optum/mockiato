@@ -72,11 +72,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
               });
             };
 
-            $scope.removeRRPair = function() {
-              var lastItem = $scope.servicevo.rawpairs.length-1;
-              $scope.servicevo.rawpairs.splice(lastItem);
-            };
-
             $scope.addNewReqHeader = function(rr) {
               var newItemNo = rr.reqHeadersArr.length;
               rr.reqHeadersArr.push({'id':newItemNo});
@@ -257,11 +252,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                     id: 0
                   }]
               });
-            };
-
-            $scope.removeRRPair = function() {
-              var lastItem = $scope.servicevo.rawpairs.length-1;
-              $scope.servicevo.rawpairs.splice(lastItem);
             };
 
             $scope.addNewReqHeader = function(rr) {
