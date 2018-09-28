@@ -14,9 +14,9 @@
     <nav class="navbar navbar-inverse">
       <div class="navbar-header lightFont">
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
+          <span class="icon-bar" />
+          <span class="icon-bar" />
+          <span class="icon-bar" />
         </button>
         <a class="navbar-brand" href="/#helppage">
           <strong>Mockiato ☕</strong>
@@ -25,19 +25,11 @@
     </nav>
   </div>
   <div>
-    <center>
-      <div id="successMSG">
-        </br>
-      </div>
-    </center>
-    <div id="sucMsgExtraTxt">
-      </br>
-    </div>
-    <div class="vertical-center" id="vertCenter">
+    <div class="vertical-center">
       <div class="loginform">
         <h2>Register</h2>
         <a href="/#login">Already have an account? Log in here.</a>
-        <br></br>
+        <br/>
         <div id="errMsg">
           </br>
         </div>
@@ -58,7 +50,6 @@
     </div>
   </div>
 </body>
-
 </html>
 
 <script>
@@ -75,23 +66,14 @@
   }
   var params = getParams();
   var errorHint = unescape(params["ErrHint"]);
-  var successHint = unescape(params["success"]);
+
   document.getElementById("errMsg").style.color = "#FF3333";
   document.getElementById("errMsg").style.fontSize = "12.5px";
   if (errorHint == 'DU') {
     document.getElementById("errMsg").innerHTML = "<strong>*Username already exists</strong>";
   } if (errorHint == 'SE') {
     document.getElementById("errMsg").innerHTML = "<strong>*Oops! Something went wrong.</strong>";
-  } if (successHint == '') {
-    document.getElementById("vertCenter").style.display = "none";
-    document.getElementById("successMSG").innerHTML = "</br><span style='color:#008000;font-weight:bold;font-size: 50px;'>&#x2714;</span></br><span style='font-weight:bold;font-size: 16px;'>REGISTRATION SUCCESS</span>";
-    document.getElementById("sucMsgExtraTxt").innerHTML = "</br><center><p style='background-color: #99ff99;width: 350px;height: 24px;'><span style='color:#006600;font-weight:500;font-size: 13px;'>☕ &nbsp; Thank you. You can log in for service virtualization now.</span><p></center>";
-    var hostUrl = [location.protocol, '//', location.host].join('');
-    var timer = setTimeout(function () {
-      window.location = hostUrl
-    }, 2300);
   }
-
   var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i
   var ck_pword = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$/;
   function validate(form) {
@@ -120,21 +102,17 @@
     }
     return true;
   }
-
   var errList = [];
   function reportErrors(errors) {
     for (var i = 0; i < errors.length; i++) {
       var numError = i + 1;
       errList.push(errors[i]);
     }
-
     var errors = "";
     errList.forEach(function (entry) {
       errors = errors + "*" + entry + "<br>";
     });
-
-    document.getElementById("errMsg").innerHTML = "<strong>" + errors + "</ul></strong>";
+    document.getElementById("errMsg").innerHTML = "<strong>" + errors + "</ul></strong > ";
     errList = [];
   }
-
 </script>

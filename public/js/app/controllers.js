@@ -621,5 +621,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                 authService.logout();
                 $location.path("/login");
             };
+
+            if (location.href.indexOf('#regS') !== -1) {
+              $('#regSuccess-modal').modal('toggle');
+            }
     }])
 ;
