@@ -15,6 +15,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
+const actuator = require('express-actuator');
 
 // connect to database
 const db = require('./models/db');
@@ -36,6 +37,7 @@ function init() {
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
+  app.use(actuator('/api/admin'));
 
   // expose swagger ui for internal api docs
   const YAML = require('yamljs');

@@ -28,7 +28,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
           $scope.publishspec = function (spec) {
             specService.publishFromSpec(spec, $scope.uploadSpec);
           };
-         
     }])
 
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService',
@@ -71,11 +70,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                     id: 0
                   }]
               });
-            };
-
-            $scope.removeRRPair = function() {
-              var lastItem = $scope.servicevo.rawpairs.length-1;
-              $scope.servicevo.rawpairs.splice(lastItem);
             };
 
             $scope.addNewReqHeader = function(rr) {
@@ -258,11 +252,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                     id: 0
                   }]
               });
-            };
-
-            $scope.removeRRPair = function() {
-              var lastItem = $scope.servicevo.rawpairs.length-1;
-              $scope.servicevo.rawpairs.splice(lastItem);
             };
 
             $scope.addNewReqHeader = function(rr) {
@@ -622,5 +611,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                 authService.logout();
                 $location.path("/login");
             };
+
+            if (location.href.indexOf('#regS') !== -1) {
+              $('#regSuccess-modal').modal('toggle');
+            }
     }])
 ;

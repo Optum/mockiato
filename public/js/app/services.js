@@ -416,6 +416,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 dataOut = chance.integer({min: 1, max: 10});
                 break;
 
+              case "String":
+                dataOut = chance.string({ length: 10 });
+                break;
+
+              case "Numeric String":
+                dataOut = chance.string({ length: 10, pool: '0123456789'});
+                break;
+
+              case "String w/o Special Chars":
+                dataOut = chance.string({ length: 10, pool: '0123456789qwertyuiopasdfghjklzxcvbnm' });
+                break;
+
               default:
                 //handles all chancejs functions that are spelled exactly the same in interface. ie: Zip to zip()
                 dataOut = eval("chance." + dataType.toLowerCase() + "()");
