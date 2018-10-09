@@ -327,6 +327,14 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                   $('#failure-modal').modal('toggle');
               });
             };
+
+          $scope.totalDisplayed = 10;
+
+          $scope.loadMore = function () {
+            $scope.totalDisplayed += 10;
+          };
+
+
     }])
 
 
