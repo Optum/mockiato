@@ -6,15 +6,10 @@ services:
     build: .
     environment:
       - MONGODB_HOST=mongo
-      - MQ_HOST=activemq
-      - MQ_PORT=61613
-      - MQ_USER=system
-      - MQ_PASS=manager
     ports:
       - "8080:8080"
     depends_on:
       - mongo
-      - activemq
   mongo:
     container_name: mongo
     image: mongo
@@ -22,9 +17,3 @@ services:
       - ./data/db:/data/db
     ports:
       - "27017:27017"
-  activemq:
-    container_name: activemq
-    image: webcenter/activemq
-    ports:
-      - "61613:61613"
-      - "8161:8161"

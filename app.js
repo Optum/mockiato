@@ -137,11 +137,6 @@ function init() {
   const users = require('./routes/users');
   app.use('/api/users', users);
 
-  // initialize MQ connection and register MQ virts from DB
-  const mq = require('./lib/mq');
-  mq.connect();
-  mq.registerAll();
-
   // ready for testing (see test/test.js)
   app.emit('started');
 }
