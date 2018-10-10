@@ -11,7 +11,6 @@ let token = '?token=';
 const resource = '/api/services';
 const restService = require('../examples/rest-json-example.json');
 const soapService = require('../examples/soap-example.json');
-const mqService   = require('../examples/mq-example.json');
 const swagService = YAML.load('./api-docs.yml');
 const oasService  = require('../examples/petstore.json');
 
@@ -166,54 +165,6 @@ describe('API tests', function() {
                 .end(done);
         });
     });
-    
-    // describe('Create MQ service', function() {
-    //     it('Responds with the new service', function(done) {
-    //         request
-    //             .post(resource + token)
-    //             .send(mqService)
-    //             .expect(200)
-    //             .expect(function(res) {
-    //                 id = res.body._id;
-    //             }).end(done);
-    //     });
-    // });
-    
-    // describe('Retrieve MQ service', function() {
-    //     it('Responds with the correct service', function(done) {
-    //         request
-    //             .get(resource + '/' + id)
-    //             .expect(200)
-    //             .end(done);
-    //     });
-    // });
-    
-    // describe('Delete MQ service', function() {
-    //     it('Responds with the deleted service', function(done) {
-    //         request
-    //             .delete(resource + '/' + id + token)
-    //             .expect(200)
-    //             .end(done);
-    //     });
-    // });
-    
-    // describe('Create Swagger service', function() {
-    //     it('Rejects Swagger 2 documents', function(done) {
-    //         request
-    //             .post(resource + '/openapi' + token)
-    //             .send(swagService)
-    //             .expect(400)
-    //             .end(done);
-    //     });
-    
-    //     it('Accepts OAS3 documents', function(done) {
-    //         request
-    //             .post(resource + '/openapi' + token)
-    //             .send(oasService)
-    //             .expect(200)
-    //             .end(done);
-    //     });
-    // });
     
     describe('Retrieve users', function() {
         it('Responds with the users', function(done) {
