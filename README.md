@@ -6,8 +6,23 @@
 
 1. Clone this repo: `git clone https://github.com/Optum/mockiato.git && cd mockiato`
 2. Set secret for JWT: `echo MOCKIATO_SECRET="<REPLACE>" > .env`
-3. Start Mockiato, MongoDB, and ActiveMQ: `docker-compose up`
+3. Start Mockiato & MongoDB: `docker-compose up`
 4. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
+
+This quick-start makes some basic assumptions on how you want to run the application. For other possible configurations, please see the next section.
+
+## Configuration
+
+Mockiato can be configured with the following environment variables. These can be set globally or in a file called `.env` in the project root directory. 
+
+| Option | Example | Description |
+| ------ | ------------- | ----------- |
+| MOCKIATO_SECRET | | Required. Used to sign and verify JSON Web Tokens |
+| MOCKIATO_AUTH | local | The auth strategy to use. Defaults to "local" |
+| MONGODB_HOST | localhost | The hostname for your Mongo instance |
+| MONGODB_USER | admin | The user to connect to Mongo with |
+| MONGODB_PASSWORD | | The password for the Mongo user |
+
 
 ## What is it?
 
