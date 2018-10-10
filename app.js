@@ -137,6 +137,11 @@ function init() {
   const users = require('./routes/users');
   app.use('/api/users', users);
 
+  app.use(function(err, req, res, next) {
+    console.log(err.stack);
+    res.status(404).send(err.message);
+  });
+
   // initialize MQ connection and register MQ virts from DB
   const mq = require('./lib/mq');
   mq.connect();
@@ -144,6 +149,7 @@ function init() {
 
   // ready for testing (see test/test.js)
   app.emit('started');
+
 }
 
 module.exports = app;

@@ -37,9 +37,10 @@ function registerRRPair(service, rrpair) {
       }
     }
     else {
-      debug("HTTP methods don't match");
-      return next();
+      debug("HTTP methods don't match");  
+      return next(new Error("HTTP methods does not match"));
     }
+
     debug("Request matched? " + matched);
     
     // run the next callback if request not matched
@@ -118,6 +119,8 @@ function registerRRPair(service, rrpair) {
       // request was not matched
       debug("expected payload: " + JSON.stringify(reqData, null, 2));
       debug("received payload: " + JSON.stringify(payload, null, 2));
+
+      console.log("Request was not Matched: ");
       return false;
     }
 
@@ -141,6 +144,7 @@ function registerRRPair(service, rrpair) {
       }
     }
   });
+
 }
 
 // register all RR pairs for all SOAP / REST services from db
