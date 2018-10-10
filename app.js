@@ -142,11 +142,6 @@ function init() {
     res.status(404).send(err.message);
   });
 
-  // initialize MQ connection and register MQ virts from DB
-  const mq = require('./lib/mq');
-  mq.connect();
-  mq.registerAll();
-
   // ready for testing (see test/test.js)
   app.emit('started');
 
