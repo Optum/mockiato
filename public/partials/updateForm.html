@@ -60,7 +60,7 @@
           <h4><ins><i>Request / Response Pair</i></ins></h4>
         </div>
 
-        <div class="col-xs-1">
+        <div class="col-xs-1" ng-if="servicevo.rawpairs.length > 1">
           <button type="button" class="btn btn-danger" ng-click="servicevo.rawpairs.splice($index, 1)">
             Delete
           </button>
