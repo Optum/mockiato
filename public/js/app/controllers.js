@@ -290,7 +290,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
 
             $scope.updateService = function(servicevo) {
               try {
-                apiHistoryService.publishServiceToAPI(servicevo, true);
+                if (AppUtils.helpers.isDuplicateReq(servicevo)) {
+                  $('#dupRequest-modal').modal('toggle');
+                } else {
+                  apiHistoryService.publishServiceToAPI(servicevo, true);
+                }
               }
               catch(e) {
                 $('#failure-modal').modal('toggle');

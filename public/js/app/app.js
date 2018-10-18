@@ -161,8 +161,12 @@ AppUtils.helpers = {
                 LOOP2:
                 for (var [key, value] of Object.entries(obj1)) {
                     for (var [k, v] of Object.entries(obj2)) {
-                        if (key == 'id') break;
-                        else if (k == 'id' || key !== k) continue;
+                        if (key == 'id' || key == 'resHeadersArr' || key == '$$hashKey' || key == 'responsepayload' ||
+                                 key ==  'resStatus'  || key == 'queries' || key == 'resHeaders' || key == 'reqHeaders' || 
+                                 key == 'reqData' || key == 'resData') break;
+                        else if (key !== k || k == 'id' || key == 'resHeadersArr' || key == '$$hashKey' || key == 'responsepayload' ||
+                        key ==  'resStatus'  || key == 'queries' || key == 'resHeaders' || key == 'reqHeaders' || 
+                        key == 'reqData' || key == 'resData') continue;
                         else if (
                             ['path'].includes(key) && ['path'].includes(k) && !angular.equals(v, value)
                             || ['queriesArr'].includes(key) && ['queriesArr'].includes(k) && !angular.equals(v, value)
