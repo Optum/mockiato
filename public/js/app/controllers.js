@@ -122,15 +122,19 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
               $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
               $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
             };
-
-            $scope.publishservice = function(servicevo) {
-              try {
+            
+          $scope.publishservice = function (servicevo) {
+            try {
+              if (AppUtils.helpers.isDuplicateReq(servicevo)) {
+                $('#dupRequest-modal').modal('toggle');
+              } else {
                 apiHistoryService.publishServiceToAPI(servicevo);
               }
-              catch(e) {
-                $('#failure-modal').modal('toggle');
-              }
-            };
+            }
+            catch (e) {
+              $('#failure-modal').modal('toggle');
+            }
+          };
     }])
 
     .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService',
@@ -286,7 +290,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
 
             $scope.updateService = function(servicevo) {
               try {
-                apiHistoryService.publishServiceToAPI(servicevo, true);
+                if (AppUtils.helpers.isDuplicateReq(servicevo)) {
+                  $('#dupRequest-modal').modal('toggle');
+                } else {
+                  apiHistoryService.publishServiceToAPI(servicevo, true);
+                }
               }
               catch(e) {
                 $('#failure-modal').modal('toggle');
