@@ -1,15 +1,26 @@
 version: "3"
 services:
-  app:
-    container_name: app
+  mockiato-app:
+    container_name: mockiato-app
     restart: always
     build: .
     environment:
       - MONGODB_HOST=mongo
+      - MOCKIATOJMS_HOST=mockiato-jms
+      - MOCKIATOJMS_PORT=8081
     ports:
       - "8080:8080"
     depends_on:
       - mongo
+
+  mockiato-jms:
+    container_name: mockiato-jms
+    image: optum/mockiato-mq
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+
   mongo:
     container_name: mongo
     image: mongo
@@ -17,3 +28,4 @@ services:
       - ./data/db:/data/db
     ports:
       - "27017:27017"
+
