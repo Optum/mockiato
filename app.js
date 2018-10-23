@@ -137,6 +137,8 @@ function init() {
   const users = require('./routes/users');
   app.use('/api/users', users);
 
+  const mq = require('./lib/mq');
+
   // ready for testing (see test/test.js)
   app.emit('started');
 }
