@@ -5,6 +5,7 @@ const pause = require('connect-pause');
 const debug = require('debug')('matching');
 const Service = require('../models/Service');
 const removeRoute = require('../lib/remove-route');
+const mq = require('../lib/mq');
 
 // function to simulate latency
 function delay(ms) {
@@ -217,11 +218,18 @@ function deregisterById(id) {
   });
 }
 
+function registerMQPairs(service) {
+  service.rrpairs.forEach(function(rrpair){
+    mq.postPair(rrpair);
+  });
+}
+
 module.exports = {
   router: router,
   registerById: registerById,
   registerRRPair: registerRRPair,
   deregisterById: deregisterById,
   deregisterService: deregisterService,
-  registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
+  registerAllRRPairsForAllServices: registerAllRRPairsForAllServices,
+  registerMQPairs: registerMQPairs
 };

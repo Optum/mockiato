@@ -178,7 +178,13 @@ function addService(req, res) {
 
         // respond with the newly created resource
         res.json(service);
-        syncWorkers(service._id, 'register');
+
+        if (service.type !== 'MQ') {
+          syncWorkers(service._id, 'register');
+        }
+        else {
+          virtual.registerMQPairs(service);
+        }
       });
     }
   });

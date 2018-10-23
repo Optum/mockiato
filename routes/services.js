@@ -38,7 +38,7 @@ router.use(function(req, res, next) {
 
 // middleware to reject invalid services
 function rejectInvalid(req, res, next) {
-  const validTypes = [ 'SOAP', 'REST' ];
+  const validTypes = [ 'SOAP', 'REST', 'MQ' ];
   const type = req.body.type;
 
   if (validTypes.includes(type)) return next();
