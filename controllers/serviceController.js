@@ -60,20 +60,32 @@ function getServicesByQuery(req, res) {
   });
 }
 
-// function to check for duplicate service
+// function to check for duplicate service & twoSeviceDiffNameSameBasePath
 function searchDuplicate(service, next) {
-  const query = { 
+  const query2ServDiffNmSmBP = {
+    name: { $ne: service.name },
+    basePath: service.basePath
+  };
+  const query = {
     name: service.name,
     basePath: service.basePath
   };
-
-  Service.findOne(query, function(err, duplicate) {
+  Service.findOne(query2ServDiffNmSmBP, function (err, sameNmDupBP) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
-
-    next(duplicate);
+    else if (sameNmDupBP)
+      next({ "twoServDiffNmSmBP": "yes" });
+    else {
+      Service.findOne(query, function (err, duplicate) {
+        if (err) {
+          handleError(err, res, 500);
+          return;
+        }
+        next(duplicate);
+      });
+    }
   });
 }
 
@@ -151,31 +163,31 @@ function addService(req, res) {
   };
 
   searchDuplicate(serv, function(duplicate) {
-    if (duplicate) {
+    if(duplicate && duplicate.twoServDiffNmSmBP && duplicate.twoServDiffNmSmBP=='yes'){
+      res.json({"error":"twoSeviceDiffNameSameBasePath"});
+      return 'twoSeviceDiffNameSameBasePath';
+    }
+    else if (duplicate) { 
       // merge services
       mergeRRPairs(duplicate, serv);
-
       // save merged service
       duplicate.save(function(err, newService) {
         if (err) {
           handleError(err, res, 500);
           return;
         }
-
         res.json(newService);
         syncWorkers(newService._id, 'register');
       });
     }
     else {
       Service.create(serv,
-
       // handler for db call
       function(err, service) {
         if (err) {
           handleError(err, res, 500);
           return;
         }
-
         // respond with the newly created resource
         res.json(service);
         syncWorkers(service._id, 'register');
