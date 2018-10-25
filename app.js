@@ -32,8 +32,8 @@ function init() {
   app.use(helmet());
   app.use(compression());
   app.use(logger('dev'));
-  app.use(bodyParser.json({ type: 'application/json' }));
-  app.use(bodyParser.text({ type: [ 'application/xml', 'text/xml' ]}));
+  app.use(bodyParser.json({ limit: '5mb', type: 'application/json' }));
+  app.use(bodyParser.text({ limit: '5mb', type: [ 'application/xml', 'text/xml' ]}));
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
