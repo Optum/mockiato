@@ -103,3 +103,18 @@ fact.factory('statusCodesFactory', ['$http', function($http) {
         }
     };
 }]);
+
+
+//token expiration logout
+fact.factory('authInterceptorService', ['$q', '$location', function ($q, $location) {
+    var responseError = function (rejection) {
+        if (rejection.status === 403) {
+            $location.path('login');
+        }
+        return $q.reject(rejection);
+    };
+
+    return {
+        responseError: responseError
+    };
+}]);
