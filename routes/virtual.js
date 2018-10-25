@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const xml2js = require('xml2js');
+const Builder = new xml2js.Builder();
 const pause = require('connect-pause');
 const debug = require('debug')('matching');
 const Service = require('../models/Service');
@@ -60,6 +61,35 @@ function registerRRPair(service, rrpair) {
           reqData = rrpair.reqData;
         }
       }
+
+      // begin playing with matching template
+      
+      const template = {};
+
+      debug(Builder.buildObject(template));
+
+      const trimmedPayload = {};
+      const trimmedReqData = {};
+
+      const flatTemplate = flattenObject(template);
+      const flatPayload  = flattenObject(payload);
+      const flatReqData  = flattenObject(reqData);
+
+      debug(JSON.stringify(flatPayload, null, 2));
+      debug(JSON.stringify(flatReqData, null, 2));
+
+      for (let field in flatTemplate) {
+        trimmedPayload[field] = flatPayload[field];
+        trimmedReqData[field] = flatReqData[field];
+      }
+      
+      debug(JSON.stringify(trimmedPayload, null, 2));
+      debug(JSON.stringify(trimmedReqData, null, 2));
+      
+      debug(deepEquals(trimmedPayload, trimmedReqData));
+      return;
+
+      // end playing with matching template
 
       if (!rrpair.reqData || deepEquals(payload, reqData)) {
         // check request queries
