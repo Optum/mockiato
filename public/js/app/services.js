@@ -62,6 +62,26 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
+    //token expiration logout
+  .service('authInterceptorService', ['$q', '$window', '$rootScope', '$injector', '$location', function ($q, $window, $rootScope, $injector, $location) {
+      var responseError = function (rejection) {
+        if (rejection.status === 403) {
+          //logout w.o circular dependency
+          $rootScope.loggedIn = false;
+          $window.sessionStorage['loggedIn'] = null;
+          $window.sessionStorage['userInfo'] = null;
+          userInfo = null;
+          $location.path('login');
+          $window.location.reload();
+        }
+        return $q.reject(rejection);
+      };
+
+      return {
+        responseError: responseError
+      };
+    }])
+
     .service('feedbackService', ['$rootScope',
         function($rootScope) {
           this.displayServiceInfo = function(data) {
