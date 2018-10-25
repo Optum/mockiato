@@ -16,8 +16,7 @@ router.use(function(req, res, next) {
   if (token) {
     // verify secret and check expiry
     jwt.verify(token, require('../app').get('secret'), function(err, decoded) {
-      if (err) { //testing token
-
+      if (err) {
         return res.status(403).json({
             success: false,
             message: 'Failed to authenticate token'
