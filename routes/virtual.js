@@ -84,12 +84,15 @@ function registerRRPair(service, rrpair) {
           const expectedHeaders = Object.entries(rrpair.reqHeaders);
 
           expectedHeaders.forEach(function(keyVal) {
-            const sentVal = req.get(keyVal[0]);
-            // try the next rr pair if headers do not match
-            if (sentVal !== keyVal[1]) {
-              matchedHeaders = false;
-              debug('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
-              debug('received header: ' + keyVal[0] + ': ' + sentVal);
+            // skip content-type header
+            if (keyVal[0].toLowerCase() !== 'content-type') {
+              const sentVal = req.get(keyVal[0]);
+              if (sentVal !== keyVal[1]) {
+                // try the next rr pair if headers do not match
+                matchedHeaders = false;
+                debug('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
+                debug('received header: ' + keyVal[0] + ': ' + sentVal);
+              }
             }
           });
 
