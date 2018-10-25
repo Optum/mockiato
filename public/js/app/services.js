@@ -280,13 +280,17 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                   .then(function(response) {
                       var data = response.data;
-                      console.log(data);
+					            console.log(data);
+                      if(data.error == 'twoSeviceDiffNameSameBasePath')
+                        $('#failure-2servDifNmSmBP-modal').modal('toggle');
+                      else{
                       feedbackService.displayServiceInfo(data);
                       $('#success-modal').modal('toggle');
+                    }
                   })
 
                   .catch(function(err) {
-                      console.log(err);
+                    console.log(err);
                       $('#failure-modal').modal('toggle');
                   });
                 }
