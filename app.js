@@ -32,11 +32,23 @@ function init() {
   app.use(helmet());
   app.use(compression());
   app.use(logger('dev'));
-  app.use(bodyParser.json({ type: 'application/json' }));
-  app.use(bodyParser.text({ type: [ 'application/xml', 'text/xml' ]}));
-  app.use(bodyParser.urlencoded({ extended: false }));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
+
+  // parse request body as plaintext if no content-type is set
+  app.use(function(req, res, next) {
+    if (!req.get('content-type')) {
+      req.headers['content-type'] = 'text/plain';
+    }
+    return next();
+  });
+
+  // parse request body based on content-type
+  app.use(bodyParser.text({ type: [ 'application/soap+xml', 'application/xml', 'text/xml', 'text/plain' ]}));
+  app.use(bodyParser.json({ type: [ 'application/json' ]}));
+  app.use(bodyParser.urlencoded({ extended: false }));
+
+  // expose health info
   app.use(actuator('/api/admin'));
 
   // expose swagger ui for internal api docs
