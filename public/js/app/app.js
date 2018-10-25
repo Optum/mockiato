@@ -8,6 +8,9 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             $httpProvider.defaults.headers.get = {};
         }
 
+        //token expiration catch
+        $httpProvider.interceptors.push('authInterceptorService');
+        
         //disable IE ajax request caching
         $httpProvider.defaults.headers.get['If-Modified-Since'] = 'Mon, 26 Jul 1997 05:00:00 GMT';
         // extra
