@@ -67,10 +67,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
       var responseError = function (rejection) {
         if (rejection.status === 403) {
           //logout w.o circular dependency
-          $rootScope.loggedIn = false;
-          $window.sessionStorage['loggedIn'] = null;
-          $window.sessionStorage['userInfo'] = null;
-          userInfo = null;
+          var injectAuth = $injector.get('authService');
+          injectAuth.logout();
           $location.path('login');
           $window.location.reload();
         }

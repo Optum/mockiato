@@ -96,7 +96,7 @@ function init() {
 
       // create access token
       const token = jwt.sign(user, app.get('secret'), {
-        expiresIn: '10s'
+        expiresIn: '1d'
       });
 
       // return the token as JSON
