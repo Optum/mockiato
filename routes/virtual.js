@@ -63,35 +63,40 @@ function registerRRPair(service, rrpair) {
       }
 
       // begin playing with matching template
-      
-      const template = {};
+      let match    = false;
+      let template = service.matchTemplate;
 
-      debug(Builder.buildObject(template));
-
-      const trimmedPayload = {};
-      const trimmedReqData = {};
-
-      const flatTemplate = flattenObject(template);
-      const flatPayload  = flattenObject(payload);
-      const flatReqData  = flattenObject(reqData);
-
-      debug(JSON.stringify(flatPayload, null, 2));
-      debug(JSON.stringify(flatReqData, null, 2));
-
-      for (let field in flatTemplate) {
-        trimmedPayload[field] = flatPayload[field];
-        trimmedReqData[field] = flatReqData[field];
+      if (template) {
+        if (rrpair.payloadType === 'XML') {
+          template = Builder.buildObject(template);
+        }
+  
+        const trimmedPayload = {};
+        const trimmedReqData = {};
+  
+        const flatTemplate = flattenObject(template);
+        const flatPayload  = flattenObject(payload);
+        const flatReqData  = flattenObject(reqData);
+  
+        // debug(JSON.stringify(flatPayload, null, 2));
+        // debug(JSON.stringify(flatReqData, null, 2));
+  
+        for (let field in flatTemplate) {
+          trimmedPayload[field] = flatPayload[field];
+          trimmedReqData[field] = flatReqData[field];
+        }
+        
+        // debug(JSON.stringify(trimmedPayload, null, 2));
+        // debug(JSON.stringify(trimmedReqData, null, 2));
+        
+        match = deepEquals(trimmedPayload, trimmedReqData);
       }
-      
-      debug(JSON.stringify(trimmedPayload, null, 2));
-      debug(JSON.stringify(trimmedReqData, null, 2));
-      
-      debug(deepEquals(trimmedPayload, trimmedReqData));
-      return;
-
+      else {
+        match = deepEquals(payload, reqData);
+      }
       // end playing with matching template
 
-      if (!rrpair.reqData || deepEquals(payload, reqData)) {
+      if (!rrpair.reqData || match) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
