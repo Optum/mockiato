@@ -1,4 +1,4 @@
-var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver'])
+var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.factories','ngFileSaver'])
 
     .controller('authController', ['$scope','authService',
         function($scope,authService) {
@@ -30,8 +30,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
           };
     }])
 
-    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService',
-        function($scope,apiHistoryService,sutService,suggestionsService){
+    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory',
+        function($scope,apiHistoryService,sutService,suggestionsService, helperFactory){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
             $scope.servicevo.rawpairs = [{
@@ -125,7 +125,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
             
           $scope.publishservice = function (servicevo) {
             try {
-              if (AppUtils.helpers.isDuplicateReq(servicevo)) {
+              if (helperFactory.isDuplicateReq(servicevo)) {
                 $('#dupRequest-modal').modal('toggle');
               } else {
                 apiHistoryService.publishServiceToAPI(servicevo);
@@ -137,8 +137,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
           };
     }])
 
-    .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService',
-        function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService){
+    .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 
+        function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory){
             $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -291,7 +291,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
 
             $scope.updateService = function(servicevo) {
               try {
-                if (AppUtils.helpers.isDuplicateReq(servicevo)) {
+                if (helperFactory.isDuplicateReq(servicevo)) {
                   $('#dupRequest-modal').modal('toggle');
                 } else {
                   apiHistoryService.publishServiceToAPI(servicevo, true);

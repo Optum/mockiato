@@ -8,6 +8,9 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             $httpProvider.defaults.headers.get = {};
         }
 
+        //token expiration catch
+        $httpProvider.interceptors.push('authInterceptorService');
+        
         //disable IE ajax request caching
         $httpProvider.defaults.headers.get['If-Modified-Since'] = 'Mon, 26 Jul 1997 05:00:00 GMT';
         // extra
@@ -146,45 +149,3 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
 
         return resArray;
     };
-
-
-var AppUtils = AppUtils || {};
-AppUtils.helpers = {
-    isDuplicateReq: function (servicevo) {
-        var isSameReq = false;
-        LOOP1:
-        for (var i = 0; i < servicevo.rawpairs.length - 1; i++) {
-            var obj1 = servicevo.rawpairs[i];
-            for (var j = i + 1; j < servicevo.rawpairs.length; j++) {
-                var obj2 = servicevo.rawpairs[j];
-                var isAnyReqPairDuplicate = true;
-                LOOP2:
-                for (var [key, value] of Object.entries(obj1)) {
-                    for (var [k, v] of Object.entries(obj2)) {
-                        if (key == 'id' || key == 'resHeadersArr' || key == '$$hashKey' || key == 'responsepayload' ||
-                                 key ==  'resStatus'  || key == 'queries' || key == 'resHeaders' || key == 'reqHeaders' || 
-                                 key == 'reqData' || key == 'resData') break;
-                        else if (key !== k || k == 'id' || key == 'resHeadersArr' || key == '$$hashKey' || key == 'responsepayload' ||
-                        key ==  'resStatus'  || key == 'queries' || key == 'resHeaders' || key == 'reqHeaders' || 
-                        key == 'reqData' || key == 'resData') continue;
-                        else if (
-                            ['path'].includes(key) && ['path'].includes(k) && !angular.equals(v, value)
-                            || ['queriesArr'].includes(key) && ['queriesArr'].includes(k) && !angular.equals(v, value)
-                            || ['reqHeadersArr'].includes(key) && ['reqHeadersArr'].includes(k) && !angular.equals(v, value)
-                            || ['method', 'payloadType', 'requestpayload', 'path', 'queriesArr', 'reqHeadersArr'].includes(key)
-                            && !angular.equals(v, value)
-                        ) {
-                            isAnyReqPairDuplicate = false;
-                            break LOOP2;
-                        }
-                    }
-                }
-                if (isAnyReqPairDuplicate) {
-                    isSameReq = true;
-                    break LOOP1;
-                }
-            }
-        };
-        return isSameReq;
-    }
-};
