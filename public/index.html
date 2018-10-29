@@ -112,6 +112,38 @@
                 </div>
               </div>
             </div>
+					</div>
+					<div id="failure-2servDifNmSmBP-modal" role="dialog" class="modal fade">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" data-dismiss="modal" class="close">&times;</button>
+                  <h4 class="modal-title">Publish Failure</h4>
+                </div>
+                <div class="modal-body">
+                  <p>There is another service already exist in our system with same basepath.</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>
+                </div>
+              </div>
+            </div>
+          </div>
+					<div id="dupRequest-modal" role="dialog" class="modal fade">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" data-dismiss="modal" class="close">&times;</button>
+                  <h4 class="modal-title">Duplicate Requests</h4>
+                </div>
+                <div class="modal-body">
+                  <p>Two Requests are same. Either change request data or relative path of duplicate requests.</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>
+                </div>
+              </div>
+            </div>
           </div>
 					<div id="loginFail-modal" role="dialog" class="modal fade">
 						<div class="modal-dialog">
@@ -169,7 +201,6 @@
 												<p ng-show="op.verb === 'DELETE'" class="tab">Note: if you included a request payload for DELETE, be sure to use the required headers in your request: Name = Content-Type | Value = application/json</p></br>
 											</fieldset>
 										</div>
-										<p ng-show="virt.type === 'SOAP'" class="tab">Required Headers: Name = Content-Type | Value = text/xml</p></br>
 									</div>
 								</div>
 								<div class="modal-footer">

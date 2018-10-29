@@ -5,17 +5,13 @@
     <div class="col-xs-9">
       <div class="radio">
         <label class="move-radios">
-            <input ng-model="servicevo.type" ng-click="setContentType(rr, 'text/xml')" id="service_type" type="radio" ng-value="'SOAP'" ng-required="!servicevo.type">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-required="!servicevo.type">
               SOAP
         </label>
         <label class="move-radios">
             <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-required="!servicevo.type">
               REST
         </label>
-        <!--<label>
-            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'">
-              MQ
-        </label>-->
       </div>
     </div>
   </div>
@@ -68,7 +64,7 @@
         <h4><ins><i>Request / Response Pair</i></ins></h4>
       </div>
 
-      <div class="col-xs-1">
+      <div class="col-xs-1" ng-if="servicevo.rawpairs.length > 1">
         <button type="button" class="btn btn-danger" ng-click="servicevo.rawpairs.splice($index, 1)">
           Delete
         </button>
@@ -153,11 +149,11 @@
                   JSON
             </label>
             <label class="move-radios">
-                <input ng-model="rr.payloadType" ng-click="setContentType(rr, 'text/xml')" id="service_payloadtype" type="radio" ng-value="'XML'" ng-required="servicevo.type === 'REST' && !rr.payloadType">
+                <input ng-model="rr.payloadType" id="service_payloadtype" type="radio" ng-value="'XML'" ng-required="servicevo.type === 'REST' && !rr.payloadType">
                   XML
             </label>
             <label class="move-radios">
-                <input ng-model="rr.payloadType" ng-click="setContentType(rr, 'text/plain')" id="service_payloadtype" type="radio" ng-value="'PLAIN'" ng-required="servicevo.type === 'REST' && !rr.payloadType">
+                <input ng-model="rr.payloadType" id="service_payloadtype" type="radio" ng-value="'PLAIN'" ng-required="servicevo.type === 'REST' && !rr.payloadType">
                   Plaintext
             </label>
           </div>
