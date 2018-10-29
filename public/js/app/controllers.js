@@ -155,7 +155,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                       type: service.type,
                       delay: service.delay,
                       txnCount: service.txnCount,
-                      basePath: service.basePath
+                      basePath: service.basePath,
+                      matchTemplate: service.matchTemplate
                     };
 
                     $scope.servicevo.rawpairs = [];

@@ -49,7 +49,6 @@ function registerRRPair(service, rrpair) {
     function matchRequest(payload) {
       let reqData;
 
-      //const isGet = req.method === 'GET';
       if (rrpair.reqData) {
         if (rrpair.payloadType === 'XML') {
           xml2js.parseString(rrpair.reqData, function(err, data) {

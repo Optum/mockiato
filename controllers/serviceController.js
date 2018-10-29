@@ -147,6 +147,7 @@ function addService(req, res) {
     type: req.body.type,
     delay: req.body.delay,
     basePath: '/' + req.body.sut.name + req.body.basePath,
+    matchTemplate: req.body.matchTemplate,
     rrpairs: req.body.rrpairs
   };
 
@@ -193,6 +194,7 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
+    service.matchTemplate = req.body.matchTemplate;
     service.rrpairs = req.body.rrpairs;
     if (req.body.delay) service.delay = req.body.delay;
 
