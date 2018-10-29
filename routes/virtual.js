@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const xml2js = require('xml2js');
-const Builder = new xml2js.Builder();
 const pause = require('connect-pause');
 const debug = require('debug')('matching');
 const Service = require('../models/Service');
@@ -68,7 +67,9 @@ function registerRRPair(service, rrpair) {
 
       if (template) {
         if (rrpair.payloadType === 'XML') {
-          template = Builder.buildObject(template);
+          xml2js.parseString(template, function(err, xmlTemplate) {
+            template = xmlTemplate;
+          });
         }
   
         const trimmedPayload = {};
@@ -86,8 +87,8 @@ function registerRRPair(service, rrpair) {
           trimmedReqData[field] = flatReqData[field];
         }
         
-        // debug(JSON.stringify(trimmedPayload, null, 2));
-        // debug(JSON.stringify(trimmedReqData, null, 2));
+        debug(JSON.stringify(trimmedPayload, null, 2));
+        debug(JSON.stringify(trimmedReqData, null, 2));
         
         match = deepEquals(trimmedPayload, trimmedReqData);
       }
