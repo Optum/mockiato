@@ -61,7 +61,7 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      // begin playing with matching template
+      // match request body based on template
       let match    = false;
       let template = service.matchTemplate;
 
@@ -71,17 +71,13 @@ function registerRRPair(service, rrpair) {
             template = xmlTemplate;
           });
         }
-  
-        const trimmedPayload = {};
-        const trimmedReqData = {};
-  
+
         const flatTemplate = flattenObject(template);
         const flatPayload  = flattenObject(payload);
         const flatReqData  = flattenObject(reqData);
-  
-        // debug(JSON.stringify(flatPayload, null, 2));
-        // debug(JSON.stringify(flatReqData, null, 2));
-  
+
+        const trimmedPayload = {}; const trimmedReqData = {};
+          
         for (let field in flatTemplate) {
           trimmedPayload[field] = flatPayload[field];
           trimmedReqData[field] = flatReqData[field];
@@ -92,10 +88,10 @@ function registerRRPair(service, rrpair) {
         
         match = deepEquals(trimmedPayload, trimmedReqData);
       }
+      // else match against all fields
       else {
         match = deepEquals(payload, reqData);
       }
-      // end playing with matching template
 
       if (!rrpair.reqData || match) {
         // check request queries

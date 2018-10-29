@@ -20,6 +20,10 @@ const mockUser = {
     password: getRandomString()
 }
 
+const mockGroup = {
+    name: getRandomString()
+};
+
 function getRandomString() {
     return  Math.random().toString(36).substring(2, 15);
 }
@@ -165,15 +169,16 @@ describe('API tests', function() {
                 .end(done);
         });
     });
-    
-    describe('Retrieve users', function() {
-        it('Responds with the users', function(done) {
+
+    describe('Create new group', function() {
+        it('Responds with the group', function(done) {
             request
-                .get('/api/users')
+                .post('/api/systems')
+                .send(mockGroup)
                 .expect(200)
                 .end(done);
         });
-    });
+    });  
     
     describe('Retrieve groups', function() {
         it('Responds with the groups', function(done) {
@@ -183,15 +188,32 @@ describe('API tests', function() {
                 .end(done);
         });
     });
-    
-    describe('Create new group', function() {
-        it('Responds with the group', function(done) {
+
+    describe('Delete group', function() {
+        it('Responds with the deleted system', function(done) {
             request
-                .post('/api/systems')
-                .send({ name: getRandomString() })
+                .delete('/api/systems/' + mockGroup.name + token)
                 .expect(200)
                 .end(done);
         });
-    });  
+    });
+
+    describe('Retrieve users', function() {
+        it('Responds with the users', function(done) {
+            request
+                .get('/api/users')
+                .expect(200)
+                .end(done);
+        });
+    });
+
+    describe('Delete user', function() {
+        it('Responds with the deleted user', function(done) {
+            request
+                .delete('/api/users/' + mockUser.username + token)
+                .expect(200)
+                .end(done);
+        });
+    });
 });
 
