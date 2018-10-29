@@ -38,12 +38,18 @@ function registerRRPair(service, rrpair) {
     }
     else {
       debug("HTTP methods don't match");
-      return next();
+      if(matched)
+        return next();
+      else if( matched == false)
+        return next(new Error("HTTP methods does not match"));      
     }
     debug("Request matched? " + matched);
     
     // run the next callback if request not matched
-    if (!matched) return next();
+    if (!matched){
+      debug("Error in request payload :: matched: " + matched);
+      return next(new Error("Error in Request payload"));
+    }
 
     // function for matching requests to responses
     function matchRequest(payload) {
