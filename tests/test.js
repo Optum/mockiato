@@ -8,11 +8,26 @@ const YAML = require('yamljs');
 let id = '';
 let token = '?token=';
 
-const resource = '/api/services';
+const resource    = '/api/services';
+const swagService = './api-docs.yml';
+const oasService  = './examples/petstore.yaml';
+const wsdlService = './examples/hello-service.wsdl';
 const restService = require('../examples/rest-json-example.json');
 const soapService = require('../examples/soap-example.json');
-const swagService = YAML.load('./api-docs.yml');
-const oasService  = require('../examples/petstore.json');
+
+const oasQuery = {
+    'type': 'openapi',
+    'base': '/oas/test',
+    'name': 'oas-test',
+    'group': 'test'
+};
+
+const wsdlQuery = {
+    'type': 'wsdl',
+    'base': '/wsdl/test',
+    'name': 'wsdl-test',
+    'group': 'test'
+}
 
 const mockUser = {
     username: getRandomString(),
@@ -162,6 +177,64 @@ describe('API tests', function() {
     });
     
     describe('Delete SOAP service', function() {
+        it('Responds with the deleted service', function(done) {
+            request
+                .delete(resource + '/' + id + token)
+                .expect(200)
+                .end(done);
+        });
+    });
+
+    describe('Create service from WSDL', function() {
+        it('Responds with the new service', function(done) {
+            request
+                .post(resource + '/fromSpec' + token)
+                .query(wsdlQuery)
+                .attach('spec', wsdlService)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    id = res.body._id;
+                })
+                .end(done);
+        });
+    });
+
+    describe('Delete WSDL service', function() {
+        it('Responds with the deleted service', function(done) {
+            request
+                .delete(resource + '/' + id + token)
+                .expect(200)
+                .end(done);
+        });
+    });
+
+    describe('Create service from OpenAPI', function() {
+        it('Rejects Swagger 2', function(done) {
+            request
+                .post(resource + '/fromSpec' + token)
+                .query(oasQuery)
+                .attach('spec', swagService)
+                .send()
+                .expect(400)
+                .end(done);
+        });
+
+        it('Accepts OpenAPI 3', function(done) {
+            request
+                .post(resource + '/fromSpec' + token)
+                .query(oasQuery)
+                .attach('spec', oasService)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    id = res.body._id;
+                })
+                .end(done);
+        });
+    });
+
+    describe('Delete OpenAPI service', function() {
         it('Responds with the deleted service', function(done) {
             request
                 .delete(resource + '/' + id + token)
