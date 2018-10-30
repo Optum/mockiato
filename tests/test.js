@@ -16,18 +16,18 @@ const restService = require('../examples/rest-json-example.json');
 const soapService = require('../examples/soap-example.json');
 
 const oasQuery = {
-    'type': 'openapi',
-    'base': '/oas/test',
-    'name': 'oas-test',
-    'group': 'test'
+    type: 'openapi',
+    base: '/oas/test',
+    name: 'oas-test',
+    group: 'test'
 };
 
 const wsdlQuery = {
-    'type': 'wsdl',
-    'base': '/wsdl/test',
-    'name': 'wsdl-test',
-    'group': 'test'
-}
+    type: 'wsdl',
+    base: '/wsdl/test',
+    name: 'wsdl-test',
+    group: 'test'
+};
 
 const mockUser = {
     username: getRandomString(),

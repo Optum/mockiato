@@ -16,7 +16,7 @@ const serviceSchema = new mongoose.Schema({
     type: String, 
     index: true
   },
-  matchTemplate: mongoose.Schema.Types.Mixed,
+  matchTemplates: [mongoose.Schema.Types.Mixed],
   rrpairs: [RRPair.schema],
   delay: {
     // force integer only

@@ -34,6 +34,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         function($scope,apiHistoryService,sutService,suggestionsService, helperFactory){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
+            $scope.servicevo.matchTemplates = [''];
             $scope.servicevo.rawpairs = [{
                 id: 0,
                 queriesArr: [{
@@ -155,11 +156,19 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       type: service.type,
                       delay: service.delay,
                       txnCount: service.txnCount,
-                      basePath: service.basePath,
-                      matchTemplate: service.matchTemplate
+                      basePath: service.basePath
                     };
 
+                    $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
+
+                    if (service.matchTemplates.length) {
+                      $scope.servicevo.matchTemplates.push(service.matchTemplates[0]);
+                    }
+                    else {
+                      $scope.servicevo.matchTemplates.push('');
+                    }
+
                     var rrid = 0;
                     service.rrpairs.forEach(function(rr){
                       rr.id = rrid;

@@ -276,7 +276,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     basePath: '/' + servicevo.basePath,
                     type: servicevo.type,
                     delay: servicevo.delay,
-                    matchTemplate: servicevo.matchTemplate,
+                    matchTemplates: servicevo.matchTemplates,
                     rrpairs: rrpairs
                 };
 

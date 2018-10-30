@@ -48,6 +48,7 @@ function registerRRPair(service, rrpair) {
     // function for matching requests to responses
     function matchRequest(payload) {
       let reqData;
+      let match = false;
 
       if (rrpair.reqData) {
         if (rrpair.payloadType === 'XML') {
@@ -61,8 +62,12 @@ function registerRRPair(service, rrpair) {
       }
 
       // match request body based on template
-      let match    = false;
-      let template = service.matchTemplate;
+      let template;
+      let templates = service.matchTemplates;
+      
+      if (templates.length) {
+        template = templates[0];
+      }
 
       if (template) {
         if (rrpair.payloadType === 'XML') {

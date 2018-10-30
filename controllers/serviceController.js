@@ -66,17 +66,19 @@ function searchDuplicate(service, next) {
     name: { $ne: service.name },
     basePath: service.basePath
   };
+
   const query = {
     name: service.name,
     basePath: service.basePath
   };
-  Service.findOne(query2ServDiffNmSmBP, function (err, sameNmDupBP) {
+  
+  Service.findOne(query2ServDiffNmSmBP, function(err, sameNmDupBP) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
     else if (sameNmDupBP)
-      next({ "twoServDiffNmSmBP": "yes" });
+      next({ twoServDiffNmSmBP: true });
     else {
       Service.findOne(query, function (err, duplicate) {
         if (err) {
@@ -159,14 +161,14 @@ function addService(req, res) {
     type: req.body.type,
     delay: req.body.delay,
     basePath: '/' + req.body.sut.name + req.body.basePath,
-    matchTemplate: req.body.matchTemplate,
+    matchTemplates: req.body.matchTemplates,
     rrpairs: req.body.rrpairs
   };
 
   searchDuplicate(serv, function(duplicate) {
-    if(duplicate && duplicate.twoServDiffNmSmBP && duplicate.twoServDiffNmSmBP=='yes'){
+    if (duplicate && duplicate.twoServDiffNmSmBP){
       res.json({"error":"twoSeviceDiffNameSameBasePath"});
-      return 'twoSeviceDiffNameSameBasePath';
+      return;
     }
     else if (duplicate) { 
       // merge services
@@ -206,7 +208,7 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
-    service.matchTemplate = req.body.matchTemplate;
+    service.matchTemplates = req.body.matchTemplates;
     service.rrpairs = req.body.rrpairs;
     if (req.body.delay) service.delay = req.body.delay;
 

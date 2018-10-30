@@ -57,9 +57,9 @@
   </div>
 
   <div class="form-group row">
-    <label for="service_match_template" class="col-xs-2 col-form-label">Match Template</label>
+    <label for="service_match_template" class="col-xs-2 col-form-label">Match Template:</label>
     <div class="col-xs-9">
-      <textarea id="service_match_template" class="form-control vertResize" ng-model="servicevo.matchTemplate" placeholder="Define a template for request matching"></textarea>
+      <textarea id="service_match_template" class="form-control vertResize" ng-repeat="template in servicevo.matchTemplates" ng-model="template" placeholder="Define a template for request matching"></textarea>
     </div>
   </div>
 
