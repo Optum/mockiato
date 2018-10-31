@@ -162,8 +162,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
 
-                    if (service.matchTemplates.length) {
-                      $scope.servicevo.matchTemplates.push(service.matchTemplates[0]);
+                    if (service.matchTemplates && service.matchTemplates.length) {
+                      service.matchTemplates.forEach(function(template) {
+                        $scope.servicevo.matchTemplates.push(template);
+                      });
                     }
                     else {
                       $scope.servicevo.matchTemplates.push('');
