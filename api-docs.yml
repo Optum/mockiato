@@ -249,7 +249,6 @@ paths:
             application/json:
               schema:
                 description: successful response
-                $ref: '#/components/schemas/VirtualService'
       x-operation-settings:
         CollectParameters: false
         AllowDynamicQueryParameters: false
