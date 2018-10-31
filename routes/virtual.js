@@ -62,35 +62,34 @@ function registerRRPair(service, rrpair) {
       }
 
       // match request body based on template
-      let template;
       let templates = service.matchTemplates;
-      
-      if (templates.length) {
-        template = templates[0];
-      }
 
-      if (template) {
-        if (rrpair.payloadType === 'XML') {
-          xml2js.parseString(template, function(err, xmlTemplate) {
-            template = xmlTemplate;
-          });
-        }
-
-        const flatTemplate = flattenObject(template);
-        const flatPayload  = flattenObject(payload);
-        const flatReqData  = flattenObject(reqData);
-
-        const trimmedPayload = {}; const trimmedReqData = {};
+      if (templates && templates.length) {
+        for (let template of templates) {
+          if (rrpair.payloadType === 'XML') {
+            xml2js.parseString(template, function(err, xmlTemplate) {
+              template = xmlTemplate;
+            });
+          }
+  
+          const flatTemplate = flattenObject(template);
+          const flatPayload  = flattenObject(payload);
+          const flatReqData  = flattenObject(reqData);
+  
+          const trimmedPayload = {}; const trimmedReqData = {};
+            
+          for (let field in flatTemplate) {
+            trimmedPayload[field] = flatPayload[field];
+            trimmedReqData[field] = flatReqData[field];
+          }
           
-        for (let field in flatTemplate) {
-          trimmedPayload[field] = flatPayload[field];
-          trimmedReqData[field] = flatReqData[field];
+          debug(JSON.stringify(trimmedPayload, null, 2));
+          debug(JSON.stringify(trimmedReqData, null, 2));
+          
+          match = deepEquals(trimmedPayload, trimmedReqData);
+          
+          if (match) break;
         }
-        
-        debug(JSON.stringify(trimmedPayload, null, 2));
-        debug(JSON.stringify(trimmedReqData, null, 2));
-        
-        match = deepEquals(trimmedPayload, trimmedReqData);
       }
       // else match against all fields
       else {
