@@ -56,8 +56,23 @@
     <label class="col-xs-2 col-form-label">Match Templates:</label>
     <div class="col-xs-9">
       <fieldset data-ng-repeat="template in servicevo.matchTemplates">
-        <textarea class="form-control vertResize" ng-model="template" placeholder="Define a template for request matching"></textarea>
-        <br>
+        <div class="row">
+          <div class="col-xs-10">
+            <textarea class="form-control vertResize" ng-model="template" placeholder="Define a template for request matching"></textarea><br>
+          </div>
+
+          <div class="col-xs-1">
+            <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeTemplate($index)">
+              <span class="glyphicon glyphicon-minus"></span>
+            </button>
+          </div>
+
+          <div class="col-xs-1">
+            <button type="button" class="btn btn-success" ng-show="$last" ng-click="addTemplate()">
+              <span class="glyphicon glyphicon-plus"></span>
+            </button>
+          </div>
+        </div>
       </fieldset>
     </div>
   </div>

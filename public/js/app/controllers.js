@@ -254,6 +254,14 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
             this.getService();
 
+            $scope.addTemplate = function() {
+              $scope.servicevo.matchTemplates.push('');
+            };
+
+            $scope.removeTemplate = function(index) {
+              $scope.servicevo.matchTemplates.splice(index, 1);
+            };
+
             $scope.addNewRRPair = function() {
               var newItemNo = $scope.servicevo.rawpairs.length;
               $scope.servicevo.rawpairs.push({
