@@ -287,7 +287,6 @@ function isYaml(req) {
 
 function createFromSpec(req, res) {
   const type = req.query.type;
-  const base = req.query.base;
   const name = req.query.name;
   const url  = req.query.url;
   const sut  = { name: req.query.group };

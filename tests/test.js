@@ -9,22 +9,19 @@ let id = '';
 let token = '?token=';
 
 const resource    = '/api/services';
-const swagService = './api-docs.yml';
-const oasService  = './examples/petstore.yaml';
+const oasService = './api-docs.yml';
 const wsdlService = './examples/hello-service.wsdl';
 const restService = require('../examples/rest-json-example.json');
 const soapService = require('../examples/soap-example.json');
 
 const oasQuery = {
     type: 'openapi',
-    base: '/oas/test',
     name: 'oas-test',
     group: 'test'
 };
 
 const wsdlQuery = {
     type: 'wsdl',
-    base: '/wsdl/test',
     name: 'wsdl-test',
     group: 'test'
 };
@@ -48,6 +45,15 @@ describe('API tests', function() {
 
     before(function(done) {
         app.on('started', done);
+    });
+
+    describe('Get API docs', function() {
+        it('Serves the documentation', function(done) {
+            request
+                .get('/api-docs')
+                .expect(303)
+                .end(done);
+        });
     });
 
     describe('Register new user', function() {
@@ -210,17 +216,7 @@ describe('API tests', function() {
     });
 
     describe('Create service from OpenAPI', function() {
-        it('Rejects Swagger 2', function(done) {
-            request
-                .post(resource + '/fromSpec' + token)
-                .query(oasQuery)
-                .attach('spec', swagService)
-                .send()
-                .expect(400)
-                .end(done);
-        });
-
-        it('Accepts OpenAPI 3', function(done) {
+        it('Responds with the new service', function(done) {
             request
                 .post(resource + '/fromSpec' + token)
                 .query(oasQuery)
