@@ -227,7 +227,7 @@ paths:
       parameters:
       - name: id
         in: path
-        description: ID of service to fetch
+        description: ID of service to remove
         required: true
         style: simple
         explode: false
