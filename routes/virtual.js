@@ -83,8 +83,8 @@ function registerRRPair(service, rrpair) {
             trimmedReqData[field] = flatReqData[field];
           }
           
-          debug(JSON.stringify(trimmedPayload, null, 2));
-          debug(JSON.stringify(trimmedReqData, null, 2));
+          debug('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
+          debug('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
           
           match = deepEquals(trimmedPayload, trimmedReqData);
           
@@ -216,6 +216,7 @@ function registerById(id) {
       try {
         deregisterService(service);
   
+        debug('service running: ' + service.running);
         if (service.running) {
           service.rrpairs.forEach(function(rrpair){
             registerRRPair(service, rrpair);

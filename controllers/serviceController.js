@@ -210,7 +210,11 @@ function updateService(req, res) {
     // don't let consumer alter name, base path, etc.
     service.matchTemplates = req.body.matchTemplates;
     service.rrpairs = req.body.rrpairs;
-    if (req.body.delay) service.delay = req.body.delay;
+
+    const delay = req.body.delay;
+    if (delay || delay === 0) {
+      service.delay = req.body.delay;
+    }
 
     // save updated service in DB
     service.save(function (err, newService) {
