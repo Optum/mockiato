@@ -54,8 +54,8 @@ function registerRRPair(service, rrpair) {
     // function for matching requests to responses
     function matchRequest(payload) {
       let reqData;
+      let match = false;
 
-      //const isGet = req.method === 'GET';
       if (rrpair.reqData) {
         if (rrpair.payloadType === 'XML') {
           xml2js.parseString(rrpair.reqData, function(err, data) {
@@ -67,7 +67,42 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      if (!rrpair.reqData || deepEquals(payload, reqData)) {
+      // match request body based on template
+      let templates = service.matchTemplates;
+
+      if (templates && templates.length) {
+        for (let template of templates) {
+          if (rrpair.payloadType === 'XML') {
+            xml2js.parseString(template, function(err, xmlTemplate) {
+              template = xmlTemplate;
+            });
+          }
+  
+          const flatTemplate = flattenObject(template);
+          const flatPayload  = flattenObject(payload);
+          const flatReqData  = flattenObject(reqData);
+  
+          const trimmedPayload = {}; const trimmedReqData = {};
+            
+          for (let field in flatTemplate) {
+            trimmedPayload[field] = flatPayload[field];
+            trimmedReqData[field] = flatReqData[field];
+          }
+          
+          debug(JSON.stringify(trimmedPayload, null, 2));
+          debug(JSON.stringify(trimmedReqData, null, 2));
+          
+          match = deepEquals(trimmedPayload, trimmedReqData);
+          
+          if (match) break;
+        }
+      }
+      // else match against all fields
+      else {
+        match = deepEquals(payload, reqData);
+      }
+
+      if (!rrpair.reqData || match) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent

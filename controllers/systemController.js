@@ -36,7 +36,18 @@ function addSystem(req, res) {
   });
 }
 
+function delSystem(req, res) {
+  System.findOneAndRemove({ name: req.params.name }, function(err)	{
+    if (err) {
+      handleError(err, res, 400);
+      return;
+    }
+    res.json({ 'message' : 'deleted system', 'name' : req.params.name });
+  });
+}
+
 module.exports = {
   getSystems: getSystems,
-  addSystem: addSystem
+  addSystem: addSystem,
+  delSystem: delSystem
 }

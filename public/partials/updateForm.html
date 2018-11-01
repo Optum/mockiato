@@ -46,11 +46,37 @@
   </div>
 
   <div class="form-group row">
-    <label for="service_delay" class="col-xs-2 col-form-label">Response Delay(ms):</label>
+    <label for="service_delay" class="col-xs-2 col-form-label">Response Delay (ms):</label>
     <div class="col-xs-2">
       <input required type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0">
     </div>
-  </div>  
+  </div>
+
+  <div class="form-group row">
+    <label class="col-xs-2 col-form-label">Match Templates:</label>
+    <div class="col-xs-9">
+      <fieldset data-ng-repeat="template in servicevo.matchTemplates">
+        <div class="row">
+          <div class="col-xs-10">
+            <textarea class="form-control vertResize" ng-model="template" placeholder="Define a template for request matching"></textarea><br>
+          </div>
+
+          <div class="col-xs-1">
+            <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeTemplate($index)">
+              <span class="glyphicon glyphicon-minus"></span>
+            </button>
+          </div>
+
+          <div class="col-xs-1">
+            <button type="button" class="btn btn-success" ng-show="$last" ng-click="addTemplate()">
+              <span class="glyphicon glyphicon-plus"></span>
+            </button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+
 
   <!--begin RR pairs-->
     <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs | limitTo:totalDisplayed">
