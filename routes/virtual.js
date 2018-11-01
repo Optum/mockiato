@@ -49,8 +49,8 @@ function registerRRPair(service, rrpair) {
     // function for matching requests to responses
     function matchRequest(payload) {
       let reqData;
+      let match = false;
 
-      //const isGet = req.method === 'GET';
       if (rrpair.reqData) {
         if (rrpair.payloadType === 'XML') {
           xml2js.parseString(rrpair.reqData, function(err, data) {
@@ -62,7 +62,42 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      if (!rrpair.reqData || deepEquals(payload, reqData)) {
+      // match request body based on template
+      let templates = service.matchTemplates;
+
+      if (templates && templates.length) {
+        for (let template of templates) {
+          if (rrpair.payloadType === 'XML') {
+            xml2js.parseString(template, function(err, xmlTemplate) {
+              template = xmlTemplate;
+            });
+          }
+  
+          const flatTemplate = flattenObject(template);
+          const flatPayload  = flattenObject(payload);
+          const flatReqData  = flattenObject(reqData);
+  
+          const trimmedPayload = {}; const trimmedReqData = {};
+            
+          for (let field in flatTemplate) {
+            trimmedPayload[field] = flatPayload[field];
+            trimmedReqData[field] = flatReqData[field];
+          }
+          
+          debug('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
+          debug('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
+          
+          match = deepEquals(trimmedPayload, trimmedReqData);
+          
+          if (match) break;
+        }
+      }
+      // else match against all fields
+      else {
+        match = deepEquals(payload, reqData);
+      }
+
+      if (!rrpair.reqData || match) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
@@ -85,12 +120,15 @@ function registerRRPair(service, rrpair) {
           const expectedHeaders = Object.entries(rrpair.reqHeaders);
 
           expectedHeaders.forEach(function(keyVal) {
-            const sentVal = req.get(keyVal[0]);
-            // try the next rr pair if headers do not match
-            if (sentVal !== keyVal[1]) {
-              matchedHeaders = false;
-              debug('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
-              debug('received header: ' + keyVal[0] + ': ' + sentVal);
+            // skip content-type header
+            if (keyVal[0].toLowerCase() !== 'content-type') {
+              const sentVal = req.get(keyVal[0]);
+              if (sentVal !== keyVal[1]) {
+                // try the next rr pair if headers do not match
+                matchedHeaders = false;
+                debug('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
+                debug('received header: ' + keyVal[0] + ': ' + sentVal);
+              }
             }
           });
 
@@ -179,6 +217,7 @@ function registerById(id) {
       try {
         deregisterService(service);
   
+        debug('service running: ' + service.running);
         if (service.running) {
           service.rrpairs.forEach(function(rrpair){
             registerRRPair(service, rrpair);

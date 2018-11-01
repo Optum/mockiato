@@ -4,37 +4,10 @@ const router = express.Router();
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
-const jwt = require('jsonwebtoken');
 const servCtrl = require('../controllers/serviceController');
 
 // middleware for token auth
-router.use(function(req, res, next) {
-  res.set('Content-Type', 'application/json');
-  if (req.method === 'GET') return next();
-
-  const token = req.query.token || req.headers['x-access-token'];
-  if (token) {
-    // verify secret and check expiry
-    jwt.verify(token, require('../app').get('secret'), function(err, decoded) {
-      if (err) {
-        return res.status(403).json({
-            success: false,
-            message: 'Failed to authenticate token'
-        });
-      } else {
-        // save to request for use in other routes
-        req.decoded = decoded;
-        next();
-      }
-    });
-  }
-  else {
-    return res.status(401).json({
-        success: false,
-        message: 'No token provided.'
-    });
-  }
-});
+router.use(tokenMiddleware);
 
 // middleware to reject invalid services
 function rejectInvalid(req, res, next) {

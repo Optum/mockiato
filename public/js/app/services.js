@@ -62,6 +62,24 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
+    //token expiration logout
+  .service('authInterceptorService', ['$q', '$window', '$rootScope', '$injector', '$location', function ($q, $window, $rootScope, $injector, $location) {
+      var responseError = function (rejection) {
+        if (rejection.status === 403) {
+          //logout w.o circular dependency
+          var injectAuth = $injector.get('authService');
+          injectAuth.logout();
+          $location.path('login');
+          $window.location.reload();
+        }
+        return $q.reject(rejection);
+      };
+
+      return {
+        responseError: responseError
+      };
+    }])
+
     .service('feedbackService', ['$rootScope',
         function($rootScope) {
           this.displayServiceInfo = function(data) {
@@ -252,12 +270,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rrpairs.push(rrpair);
                 });
 
+                var templates = [];
+                servicevo.matchTemplates.forEach(function(template) {
+                  templates.push(template.val);
+                });
+
                 var servData = {
                     sut: { name: servicevo.sut.name },
                     name: servicevo.name,
                     basePath: '/' + servicevo.basePath,
                     type: servicevo.type,
                     delay: servicevo.delay,
+                    matchTemplates: templates,
                     rrpairs: rrpairs
                 };
 
@@ -280,13 +304,17 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                   .then(function(response) {
                       var data = response.data;
-                      console.log(data);
+					            console.log(data);
+                      if(data.error == 'twoSeviceDiffNameSameBasePath')
+                        $('#failure-2servDifNmSmBP-modal').modal('toggle');
+                      else{
                       feedbackService.displayServiceInfo(data);
                       $('#success-modal').modal('toggle');
+                    }
                   })
 
                   .catch(function(err) {
-                      console.log(err);
+                    console.log(err);
                       $('#failure-modal').modal('toggle');
                   });
                 }

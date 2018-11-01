@@ -1,4 +1,4 @@
-var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver'])
+var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.factories','ngFileSaver'])
 
     .controller('authController', ['$scope','authService',
         function($scope,authService) {
@@ -30,10 +30,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
           };
     }])
 
-    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService',
-        function($scope,apiHistoryService,sutService,suggestionsService){
+    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory',
+        function($scope,apiHistoryService,sutService,suggestionsService, helperFactory){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
+            $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
             $scope.servicevo.rawpairs = [{
                 id: 0,
                 queriesArr: [{
@@ -47,14 +48,22 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                 }]
             }];
 
+            $scope.statusCodes = suggestionsService.getStatusCodes();
+            $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
             $scope.dropdown = function() {
               if($scope.sutChecked == false){
                   $scope.sutlist = sutService.getAllSUT();
                }
             };
 
-            $scope.statusCodes = suggestionsService.getStatusCodes();
-            $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+            $scope.addTemplate = function() {
+              $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+            };
+
+            $scope.removeTemplate = function(index) {
+              $scope.servicevo.matchTemplates.splice(index, 1);
+            };
 
             $scope.addNewRRPair = function() {
               var newItemNo = $scope.servicevo.rawpairs.length;
@@ -122,19 +131,23 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
               $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
               $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
             };
-
-            $scope.publishservice = function(servicevo) {
-              try {
+            
+          $scope.publishservice = function (servicevo) {
+            try {
+              if (helperFactory.isDuplicateReq(servicevo)) {
+                $('#dupRequest-modal').modal('toggle');
+              } else {
                 apiHistoryService.publishServiceToAPI(servicevo);
               }
-              catch(e) {
-                $('#failure-modal').modal('toggle');
-              }
-            };
+            }
+            catch (e) {
+              $('#failure-modal').modal('toggle');
+            }
+          };
     }])
 
-    .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService',
-        function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService){
+    .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 
+        function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory){
             $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -154,7 +167,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
                       basePath: service.basePath
                     };
 
+                    $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
+
+                    if (service.matchTemplates && service.matchTemplates.length) {
+                      service.matchTemplates.forEach(function(template, index) {
+                        $scope.servicevo.matchTemplates.push({ id: index, val: template });
+                      });
+                    }
+                    else {
+                      $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+                    }
+
                     var rrid = 0;
                     service.rrpairs.forEach(function(rr){
                       rr.id = rrid;
@@ -238,6 +262,14 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
             };
             this.getService();
 
+            $scope.addTemplate = function() {
+              $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+            };
+
+            $scope.removeTemplate = function(index) {
+              $scope.servicevo.matchTemplates.splice(index, 1);
+            };
+
             $scope.addNewRRPair = function() {
               var newItemNo = $scope.servicevo.rawpairs.length;
               $scope.servicevo.rawpairs.push({
@@ -286,7 +318,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','ngFileSaver
 
             $scope.updateService = function(servicevo) {
               try {
-                apiHistoryService.publishServiceToAPI(servicevo, true);
+                if (helperFactory.isDuplicateReq(servicevo)) {
+                  $('#dupRequest-modal').modal('toggle');
+                } else {
+                  apiHistoryService.publishServiceToAPI(servicevo, true);
+                }
               }
               catch(e) {
                 $('#failure-modal').modal('toggle');

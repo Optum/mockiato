@@ -60,20 +60,34 @@ function getServicesByQuery(req, res) {
   });
 }
 
-// function to check for duplicate service
+// function to check for duplicate service & twoSeviceDiffNameSameBasePath
 function searchDuplicate(service, next) {
-  const query = { 
-    name: service.name,
+  const query2ServDiffNmSmBP = {
+    name: { $ne: service.name },
     basePath: service.basePath
   };
 
-  Service.findOne(query, function(err, duplicate) {
+  const query = {
+    name: service.name,
+    basePath: service.basePath
+  };
+  
+  Service.findOne(query2ServDiffNmSmBP, function(err, sameNmDupBP) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
-
-    next(duplicate);
+    else if (sameNmDupBP)
+      next({ twoServDiffNmSmBP: true });
+    else {
+      Service.findOne(query, function (err, duplicate) {
+        if (err) {
+          handleError(err, res, 500);
+          return;
+        }
+        next(duplicate);
+      });
+    }
   });
 }
 
@@ -147,35 +161,36 @@ function addService(req, res) {
     type: req.body.type,
     delay: req.body.delay,
     basePath: '/' + req.body.sut.name + req.body.basePath,
+    matchTemplates: req.body.matchTemplates,
     rrpairs: req.body.rrpairs
   };
 
   searchDuplicate(serv, function(duplicate) {
-    if (duplicate) {
+    if (duplicate && duplicate.twoServDiffNmSmBP){
+      res.json({"error":"twoSeviceDiffNameSameBasePath"});
+      return;
+    }
+    else if (duplicate) { 
       // merge services
       mergeRRPairs(duplicate, serv);
-
       // save merged service
       duplicate.save(function(err, newService) {
         if (err) {
           handleError(err, res, 500);
           return;
         }
-
         res.json(newService);
         syncWorkers(newService._id, 'register');
       });
     }
     else {
       Service.create(serv,
-
       // handler for db call
       function(err, service) {
         if (err) {
           handleError(err, res, 500);
           return;
         }
-
         // respond with the newly created resource
         res.json(service);
 
@@ -199,8 +214,13 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
+    service.matchTemplates = req.body.matchTemplates;
     service.rrpairs = req.body.rrpairs;
-    if (req.body.delay) service.delay = req.body.delay;
+
+    const delay = req.body.delay;
+    if (delay || delay === 0) {
+      service.delay = req.body.delay;
+    }
 
     // save updated service in DB
     service.save(function (err, newService) {
@@ -277,7 +297,6 @@ function isYaml(req) {
 
 function createFromSpec(req, res) {
   const type = req.query.type;
-  const base = req.query.base;
   const name = req.query.name;
   const url  = req.query.url;
   const sut  = { name: req.query.group };

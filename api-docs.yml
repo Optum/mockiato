@@ -1,278 +1,518 @@
----
-  swagger: "2.0"
-  info:
-    version: "1.0.0"
-    title: "Mockiato"
-  basePath: "/api"
-  schemes:
-    - "http"
-  consumes:
-    - "application/json"
-  produces:
-    - "application/json"
-  paths:
-    /login:
-      post:
-        description: "returns an access token for the user"
-        operationId: "getAccessToken"
-        tags:
-          - auth
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "authReq"
-            in: "body"
-            description: "your MS credentials"
-            required: true
+openapi: 3.0.0
+info:
+  title: Mockiato
+  description: ''
+  contact: {}
+  version: '1.0.0'
+servers:
+- url: '{mockiatoUrl}'
+  variables:
+    mockiatoUrl:
+      default: http://mockiato.optum.com/api
+paths:
+  /login:
+    post:
+      tags:
+      - auth
+      summary: getAccessToken
+      description: returns an access token for the user
+      operationId: GetAccessToken
+      parameters: []
+      requestBody:
+        description: your MS credentials
+        content:
+          application/json:
             schema:
-                $ref: "#/definitions/AuthReq"
-        responses:
-          "200":
-            description: "successful response"
+              description: your MS credentials
+              $ref: '#/components/schemas/AuthReq'
+        required: true
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/AuthRes'
+        401:
+          description: authentication failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthRes'
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /services:
+    post:
+      tags:
+      - services
+      summary: addVirtualService
+      description: creates a new virtual service
+      operationId: AddVirtualService
+      parameters:
+      - name: x-access-token
+        in: header
+        required: true
+        description: your access token
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: the service to create
+        content:
+          application/json:
             schema:
-              $ref: "#/definitions/AuthRes"
-          "401":
-            description: "authentication failure"
+              description: the service to create
+              $ref: '#/components/schemas/VirtualService'
+        required: false
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/VirtualService'
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /services/fromSpec:
+    post:
+      tags:
+      - services
+      summary: createVirtualServiceFromSpec
+      description: creates a virtual service from OpenAPI or WSDL
+      operationId: CreateVirtualServiceFromSpec
+      parameters:
+      - name: x-access-token
+        in: header
+        required: true
+        description: your access token
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: name of service to create
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: type of spec (e.g. openapi, wsdl)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: group
+        in: query
+        description: group to add the service to
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: url
+        in: query
+        description: the url to the spec
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/VirtualService'
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /services/{id}:
+    get:
+      tags:
+      - services
+      summary: getVirtualServiceByID
+      description: retrieves a virtual service
+      operationId: GetVirtualServiceByID
+      parameters:
+      - name: id
+        in: path
+        description: ID of service to fetch
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/VirtualService'
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+    put:
+      tags:
+      - services
+      summary: updateVirtualService
+      description: updates a virtual service
+      operationId: UpdateVirtualService
+      parameters:
+      - name: id
+        in: path
+        description: ID of service to update
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      - name: x-access-token
+        in: header
+        required: true
+        description: your access token
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: the service to update
+        content:
+          application/json:
             schema:
-              $ref: "#/definitions/AuthRes"
-    /services:
-      post:
-        description: "creates a new virtual service"
-        operationId: "addVirtualService"
-        tags:
-          - services
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "service"
-            description: "the service to create"
-            in: "body"
+              description: the service to update
+              $ref: '#/components/schemas/VirtualService'
+        required: false
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/VirtualService'
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+    delete:
+      tags:
+      - services
+      summary: removeVirtualService
+      description: removes a virtual service
+      operationId: RemoveVirtualService
+      parameters:
+      - name: id
+        in: path
+        description: ID of service to remove
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      - name: x-access-token
+        in: header
+        required: true
+        description: your access token
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /api/services/{id}/toggle:
+    post:
+      tags:
+      - services
+      summary: toggleVirtualService
+      description: toggles a virtual service on / off
+      operationId: ToggleVirtualService
+      parameters:
+      - name: id
+        in: path
+        description: ID of service to update
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      - name: x-access-token
+        in: header
+        required: true
+        description: your access token
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: toggle response
+          content:
+            application/json:
+              schema:
+                description: toggle response
+                $ref: '#/components/schemas/ToggleResponse'
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /services/sut/{name}:
+    get:
+      tags:
+      - services
+      summary: getVirtualServicesBySUT
+      description: retrieves virtual services by system under test
+      operationId: GetVirtualServicesBySUT
+      parameters:
+      - name: name
+        in: path
+        description: name of system under test
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VirtualService'
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /services/user/{name}:
+    get:
+      tags:
+      - services
+      summary: getVirtualServicesByOwner
+      description: retrieves virtual services by owner
+      operationId: GetVirtualServicesByOwner
+      parameters:
+      - name: name
+        in: path
+        description: name of user / owner
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VirtualService'
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /systems:
+    get:
+      tags:
+      - systems
+      summary: getSystemsUnderTest
+      description: retrieves all systems under test
+      operationId: GetSystemsUnderTest
+      parameters: []
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SystemUnderTest'
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+    post:
+      tags:
+      - systems
+      summary: addSystemUnderTest
+      description: creates a new system under test
+      operationId: AddSystemUnderTest
+      parameters: []
+      requestBody:
+        description: the SUT to create
+        content:
+          application/json:
             schema:
-                $ref: "#/definitions/VirtualService"
-          -
-            name: "x-access-token"
-            description: "your access token"
-            in: "header"
-            type: string
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              $ref: "#/definitions/VirtualService"
-    /services/{id}:
-      get:
-        description: "retrieves a virtual service"
-        operationId: "getVirtualServiceByID"
-        tags:
-          - services
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "id"
-            in: "path"
-            description: "ID of service to fetch"
-            required: true
-            type: integer
-            format: "int64"
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              $ref: "#/definitions/VirtualService"
-      put:
-        description: "updates a virtual service"
-        operationId: "updateVirtualService"
-        tags:
-          - services
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "id"
-            in: "path"
-            description: "ID of service to update"
-            required: true
-            type: integer
-            format: "int64"
-          -
-            name: "service"
-            description: "the service to update"
-            in: "body"
-            schema:
-                $ref: "#/definitions/VirtualService"
-          -
-            name: "x-access-token"
-            description: "your access token"
-            in: "header"
-            type: string
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              $ref: "#/definitions/VirtualService"
-      delete:
-        description: "removes a virtual service"
-        operationId: "removeVirtualService"
-        tags:
-          - services
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "id"
-            in: "path"
-            description: "ID of service to fetch"
-            required: true
-            type: integer
-            format: "int64"
-          -
-            name: "x-access-token"
-            description: "your access token"
-            in: "header"
-            type: string
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              $ref: "#/definitions/VirtualService"
-    /api/services/{id}/toggle:
-      post:
-        description: "toggles a virtual service on / off"
-        operationId: "toggleVirtualService"
-        tags:
-          - services
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "id"
-            in: "path"
-            description: "ID of service to update"
-            required: true
-            type: integer
-            format: "int64"
-          -
-            name: "x-access-token"
-            description: "your access token"
-            in: "header"
-            type: string
-        responses:
-          "200":
-            description: "toggle response"
-            schema:
-              $ref: "#/definitions/ToggleResponse"
-    /services/sut/{name}:
-      get:
-        description: "retrieves virtual services by system under test"
-        operationId: "getVirtualServicesBySUT"
-        tags:
-          - services
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "name"
-            in: "path"
-            description: "name of system under test"
-            required: true
-            type: string
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              type: array
-              items:
-                type: object
-                $ref: "#/definitions/VirtualService"
-    /services/user/{name}:
-      get:
-        description: "retrieves virtual services by owner"
-        operationId: "getVirtualServicesByOwner"
-        tags:
-          - services
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "name"
-            in: "path"
-            description: "name of user / owner"
-            required: true
-            type: string
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              type: array
-              items:
-                type: object
-                $ref: "#/definitions/VirtualService"
-    /systems:
-      get:
-        description: "retrieves all systems under test"
-        operationId: "getSystemsUnderTest"
-        tags:
-          - systems
-        produces:
-          - "application/json"
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              type: array
-              items:
-                type: object
-                $ref: "#/definitions/SystemUnderTest"
-      post:
-        description: "creates a new system under test"
-        operationId: "addSystemUnderTest"
-        tags:
-          - systems
-        produces:
-          - "application/json"
-        parameters:
-          -
-            name: "sut"
-            description: "the SUT to create"
-            in: "body"
-            schema:
-                $ref: "#/definitions/SystemUnderTest"
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              $ref: "#/definitions/SystemUnderTest"
-    /users:
-      get:
-        description: "retrieves all users"
-        operationId: "getUsers"
-        tags:
-          - users
-        produces:
-          - "application/json"
-        responses:
-          "200":
-            description: "successful response"
-            schema:
-              type: array
-              items:
-                type: object
-                $ref: "#/definitions/UserDetails"
-
-  definitions:
+              description: the SUT to create
+              $ref: '#/components/schemas/SystemUnderTest'
+        required: false
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/SystemUnderTest'
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+    delete:
+      tags:
+      - systems
+      summary: removeSystemUnderTest
+      description: removes a system under test
+      operationId: RemoveSystemUnderTest
+      parameters:
+      - name: name
+        in: path
+        description: name of system to remove
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-access-token
+        in: header
+        required: true
+        description: your access token
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /users:
+    get:
+      tags:
+      - users
+      summary: getUsers
+      description: retrieves all users
+      operationId: GetUsers
+      parameters: []
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDetails'
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+    delete:
+      tags:
+      - users
+      summary: removeUser
+      description: removes a system under test
+      operationId: RemoveSystemUnderTest
+      parameters:
+      - name: name
+        in: path
+        description: uid of user to remove
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-access-token
+        in: header
+        required: true
+        description: your access token
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+components:
+  schemas:
     AuthReq:
+      title: AuthReq
+      required:
+      - username
+      - password
       type: object
       properties:
         username:
           type: string
-          required: true
         password:
           type: string
-          required: true
     AuthRes:
+      title: AuthRes
       type: object
       properties:
         success:
@@ -282,35 +522,41 @@
         message:
           type: string
     VirtualService:
+      title: VirtualService
       type: object
       properties:
         sut:
-          type: object
-          allOf:
-            - $ref: "#/definitions/SystemUnderTest"
+          $ref: '#/components/schemas/SystemUnderTest'
         user:
-          type: object
-          allOf:
-            - $ref: "#/definitions/UserDetails"
+          $ref: '#/components/schemas/UserDetails'
         name:
           type: string
         type:
           type: string
         basePath:
           type: string
+        matchTemplates:
+          type: array
+          items:
+            type: string
         rrpairs:
           type: array
           items:
-            type: object
-            $ref: "#/definitions/ReqResPair"
+            $ref: '#/components/schemas/ReqResPair'
+          description: ''
+        delay:
+          type: integer
+          format: int64
         running:
           type: boolean
     SystemUnderTest:
+      title: SystemUnderTest
       type: object
       properties:
         name:
           type: string
     ReqResPair:
+      title: ReqResPair
       type: object
       properties:
         verb:
@@ -325,11 +571,13 @@
           type: object
         resStatus:
           type: integer
+          format: int64
         resHeaders:
           type: object
         resData:
           type: object
     UserDetails:
+      title: UserDetails
       type: object
       properties:
         uid:
@@ -337,11 +585,19 @@
         mail:
           type: string
     ToggleResponse:
+      title: ToggleResponse
       type: object
       properties:
         message:
           type: string
         service:
-          type: object
-          allOf:
-            - $ref: "#/definitions/VirtualService"
+          $ref: '#/components/schemas/VirtualService'
+tags:
+- name: auth
+  description: ''
+- name: services
+  description: ''
+- name: systems
+  description: ''
+- name: users
+  description: ''
