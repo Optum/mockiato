@@ -8,17 +8,33 @@ const YAML = require('yamljs');
 let id = '';
 let token = '?token=';
 
-const resource = '/api/services';
+const resource    = '/api/services';
+const oasService = './api-docs.yml';
+const wsdlService = './examples/hello-service.wsdl';
 const restService = require('../examples/rest-json-example.json');
 const soapService = require('../examples/soap-example.json');
-const swagService = YAML.load('./api-docs.yml');
-const oasService  = require('../examples/petstore.json');
+
+const oasQuery = {
+    type: 'openapi',
+    name: 'oas-test',
+    group: 'test'
+};
+
+const wsdlQuery = {
+    type: 'wsdl',
+    name: 'wsdl-test',
+    group: 'test'
+};
 
 const mockUser = {
     username: getRandomString(),
     mail: getRandomString() + '@noreply.com',
     password: getRandomString()
 }
+
+const mockGroup = {
+    name: getRandomString()
+};
 
 function getRandomString() {
     return  Math.random().toString(36).substring(2, 15);
@@ -29,6 +45,15 @@ describe('API tests', function() {
 
     before(function(done) {
         app.on('started', done);
+    });
+
+    describe('Get API docs', function() {
+        it('Serves the documentation', function(done) {
+            request
+                .get('/api-docs')
+                .expect(303)
+                .end(done);
+        });
     });
 
     describe('Register new user', function() {
@@ -165,15 +190,64 @@ describe('API tests', function() {
                 .end(done);
         });
     });
-    
-    describe('Retrieve users', function() {
-        it('Responds with the users', function(done) {
+
+    describe('Create service from WSDL', function() {
+        it('Responds with the new service', function(done) {
             request
-                .get('/api/users')
+                .post(resource + '/fromSpec' + token)
+                .query(wsdlQuery)
+                .attach('spec', wsdlService)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    id = res.body._id;
+                })
+                .end(done);
+        });
+    });
+
+    describe('Delete WSDL service', function() {
+        it('Responds with the deleted service', function(done) {
+            request
+                .delete(resource + '/' + id + token)
                 .expect(200)
                 .end(done);
         });
     });
+
+    describe('Create service from OpenAPI', function() {
+        it('Responds with the new service', function(done) {
+            request
+                .post(resource + '/fromSpec' + token)
+                .query(oasQuery)
+                .attach('spec', oasService)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    id = res.body._id;
+                })
+                .end(done);
+        });
+    });
+
+    describe('Delete OpenAPI service', function() {
+        it('Responds with the deleted service', function(done) {
+            request
+                .delete(resource + '/' + id + token)
+                .expect(200)
+                .end(done);
+        });
+    });
+
+    describe('Create new group', function() {
+        it('Responds with the group', function(done) {
+            request
+                .post('/api/systems')
+                .send(mockGroup)
+                .expect(200)
+                .end(done);
+        });
+    });  
     
     describe('Retrieve groups', function() {
         it('Responds with the groups', function(done) {
@@ -183,15 +257,32 @@ describe('API tests', function() {
                 .end(done);
         });
     });
-    
-    describe('Create new group', function() {
-        it('Responds with the group', function(done) {
+
+    describe('Delete group', function() {
+        it('Responds with the deleted system', function(done) {
             request
-                .post('/api/systems')
-                .send({ name: getRandomString() })
+                .delete('/api/systems/' + mockGroup.name + token)
                 .expect(200)
                 .end(done);
         });
-    });  
+    });
+
+    describe('Retrieve users', function() {
+        it('Responds with the users', function(done) {
+            request
+                .get('/api/users')
+                .expect(200)
+                .end(done);
+        });
+    });
+
+    describe('Delete user', function() {
+        it('Responds with the deleted user', function(done) {
+            request
+                .delete('/api/users/' + mockUser.username + token)
+                .expect(200)
+                .end(done);
+        });
+    });
 });
 

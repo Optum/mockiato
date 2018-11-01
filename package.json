@@ -9,7 +9,9 @@
   },
   "nyc": {
     "exclude": [
-      "tests"
+      "tests",
+      "lib/pm2",
+      "lib/remove-route"
     ]
   },
   "dependencies": {
