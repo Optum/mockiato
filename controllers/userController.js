@@ -11,6 +11,17 @@ function getUsers(req, res) {
   });
 }
 
+function delUser(req, res) {
+  User.findOneAndRemove({ uid : req.params.name }, function(err)	{
+    if (err) {
+      handleError(err, res, 400);
+      return;
+    }
+    res.json({ 'message' : 'deleted  user', 'username' : req.params.name });
+  });
+}
+
 module.exports = {
-  getUsers: getUsers
+  getUsers: getUsers,
+  delUser: delUser
 }

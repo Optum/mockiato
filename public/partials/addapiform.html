@@ -20,14 +20,14 @@
     <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
 
     <div class="col-xs-3">
-      <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist" ng-click="dropdown()">
+      <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist">
           <option selected="selected" disabled="true">Select SUT</option>
       </select>
-      <input ng-show="sutChecked" required type="text" ng-pattern="/^\S*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name(no spaces)">
+      <input ng-show="sutChecked" required type="text" ng-pattern="/^\S*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name (no spaces)">
     </div>
     <div class="col-xs-3">
       <p>Check to create new Group
-        &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked"/>
+        &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked" ng-click="dropdown()"/>
       </p>
     </div>
   </div>
@@ -50,11 +50,36 @@
   </div>
 
   <div class="form-group row">
-    <label for="service_delay" class="col-xs-2 col-form-label">Response Delay(ms):</label>
+    <label for="service_delay" class="col-xs-2 col-form-label">Response Delay (ms):</label>
     <div class="col-xs-2">
       <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0">
     </div>
   </div>
+
+  <div class="form-group row">
+      <label class="col-xs-2 col-form-label">Match Templates:</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="template in servicevo.matchTemplates">
+          <div class="row">
+            <div class="col-xs-10">
+              <textarea class="form-control vertResize" ng-model="template.val" placeholder="Define a template for request matching"></textarea><br>
+            </div>
+  
+            <div class="col-xs-1">
+              <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeTemplate($index)">
+                <span class="glyphicon glyphicon-minus"></span>
+              </button>
+            </div>
+  
+            <div class="col-xs-1">
+              <button type="button" class="btn btn-success" ng-show="$last" ng-click="addTemplate()">
+                <span class="glyphicon glyphicon-plus"></span>
+              </button>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </div>
 
   <!-- begin req / res pairs -->
   <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs">
@@ -207,7 +232,6 @@
         <textarea ng-required="servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
       </div>
     </div>
-
 
     <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
       <label for="service_response_status" class="col-xs-2 col-form-label">Response Status</label>

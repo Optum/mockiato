@@ -34,6 +34,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         function($scope,apiHistoryService,sutService,suggestionsService, helperFactory){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
+            $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
             $scope.servicevo.rawpairs = [{
                 id: 0,
                 queriesArr: [{
@@ -47,14 +48,22 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 }]
             }];
 
+            $scope.statusCodes = suggestionsService.getStatusCodes();
+            $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
             $scope.dropdown = function() {
               if($scope.sutChecked == false){
                   $scope.sutlist = sutService.getAllSUT();
                }
             };
 
-            $scope.statusCodes = suggestionsService.getStatusCodes();
-            $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+            $scope.addTemplate = function() {
+              $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+            };
+
+            $scope.removeTemplate = function(index) {
+              $scope.servicevo.matchTemplates.splice(index, 1);
+            };
 
             $scope.addNewRRPair = function() {
               var newItemNo = $scope.servicevo.rawpairs.length;
@@ -158,7 +167,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       basePath: service.basePath
                     };
 
+                    $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
+
+                    if (service.matchTemplates && service.matchTemplates.length) {
+                      service.matchTemplates.forEach(function(template, index) {
+                        $scope.servicevo.matchTemplates.push({ id: index, val: template });
+                      });
+                    }
+                    else {
+                      $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+                    }
+
                     var rrid = 0;
                     service.rrpairs.forEach(function(rr){
                       rr.id = rrid;
@@ -241,6 +261,14 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 });
             };
             this.getService();
+
+            $scope.addTemplate = function() {
+              $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+            };
+
+            $scope.removeTemplate = function(index) {
+              $scope.servicevo.matchTemplates.splice(index, 1);
+            };
 
             $scope.addNewRRPair = function() {
               var newItemNo = $scope.servicevo.rawpairs.length;

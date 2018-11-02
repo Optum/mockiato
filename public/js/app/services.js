@@ -270,12 +270,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rrpairs.push(rrpair);
                 });
 
+                var templates = [];
+                servicevo.matchTemplates.forEach(function(template) {
+                  templates.push(template.val);
+                });
+
                 var servData = {
                     sut: { name: servicevo.sut.name },
                     name: servicevo.name,
                     basePath: '/' + servicevo.basePath,
                     type: servicevo.type,
                     delay: servicevo.delay,
+                    matchTemplates: templates,
                     rrpairs: rrpairs
                 };
 
