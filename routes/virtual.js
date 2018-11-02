@@ -69,8 +69,21 @@ function registerRRPair(service, rrpair) {
         for (let template of templates) {
           if (rrpair.payloadType === 'XML') {
             xml2js.parseString(template, function(err, xmlTemplate) {
+              if (err) {
+                debug(err);
+                return;
+              }
               template = xmlTemplate;
             });
+          }
+          else if (rrpair.payloadType === 'JSON') {
+            try {
+              template = JSON.parse(template);
+            }
+            catch(e) {
+              debug(e);
+              continue;
+            }
           }
   
           const flatTemplate = flattenObject(template);
