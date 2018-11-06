@@ -149,13 +149,6 @@ function init() {
   const users = require('./routes/users');
   app.use('/api/users', users);
 
-  //Error Handling
-  app.use(function(err, req, res, next){ 
-    console.log(err.stack); 
-    res.status(404).send(err.message); 
-  });
-
-
   // ready for testing (see test/test.js)
   app.emit('started');
 }
