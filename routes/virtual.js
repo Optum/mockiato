@@ -66,6 +66,10 @@ function registerRRPair(service, rrpair) {
 
       if (templates && templates.length) {
         for (let template of templates) {
+          if (!template) {
+            break;
+          }
+          
           if (rrpair.payloadType === 'XML') {
             xml2js.parseString(template, function(err, xmlTemplate) {
               if (err) {
@@ -104,8 +108,9 @@ function registerRRPair(service, rrpair) {
           if (match) break;
         }
       }
-      // else match against all fields
-      else {
+
+      // try to match against all fields
+      if (!match) {
         match = deepEquals(payload, reqData);
       }
 
