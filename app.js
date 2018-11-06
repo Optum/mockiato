@@ -149,6 +149,20 @@ function init() {
   const users = require('./routes/users');
   app.use('/api/users', users);
 
+  // handle no match responses
+  app.use(function(req, res, next) {
+    if (req.msgContainer && req.msgContainer.noMatch) {
+      return res.status(404).json(req.msgContainer);
+    }
+    return next();
+  });
+
+  // handle internal errors
+  app.use(function(err, req, res) {
+    debug(err.message);
+    return res.status(500).send(err.message);
+  });
+
   // ready for testing (see test/test.js)
   app.emit('started');
 }
