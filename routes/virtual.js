@@ -62,52 +62,57 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      // match request body based on template
-      let templates = service.matchTemplates;
+      // try exact math
+      match = deepEquals(payload, reqData);
 
-      if (templates && templates.length) {
-        for (let template of templates) {
-          if (rrpair.payloadType === 'XML') {
-            xml2js.parseString(template, function(err, xmlTemplate) {
-              if (err) {
-                debug(err);
-                return;
-              }
-              template = xmlTemplate;
-            });
-          }
-          else if (rrpair.payloadType === 'JSON') {
-            try {
-              template = JSON.parse(template);
+      if (!match) {
+        // match based on template
+        let templates = service.matchTemplates;
+
+        if (templates && templates.length) {
+          for (let template of templates) {
+            if (!template) {
+              break;
             }
-            catch(e) {
-              debug(e);
-              continue;
-            }
-          }
-  
-          const flatTemplate = flattenObject(template);
-          const flatPayload  = flattenObject(payload);
-          const flatReqData  = flattenObject(reqData);
-  
-          const trimmedPayload = {}; const trimmedReqData = {};
             
-          for (let field in flatTemplate) {
-            trimmedPayload[field] = flatPayload[field];
-            trimmedReqData[field] = flatReqData[field];
+            if (rrpair.payloadType === 'XML') {
+              xml2js.parseString(template, function(err, xmlTemplate) {
+                if (err) {
+                  debug(err);
+                  return;
+                }
+                template = xmlTemplate;
+              });
+            }
+            else if (rrpair.payloadType === 'JSON') {
+              try {
+                template = JSON.parse(template);
+              }
+              catch(e) {
+                debug(e);
+                continue;
+              }
+            }
+    
+            const flatTemplate = flattenObject(template);
+            const flatPayload  = flattenObject(payload);
+            const flatReqData  = flattenObject(reqData);
+    
+            const trimmedPayload = {}; const trimmedReqData = {};
+              
+            for (let field in flatTemplate) {
+              trimmedPayload[field] = flatPayload[field];
+              trimmedReqData[field] = flatReqData[field];
+            }
+            
+            debug('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
+            debug('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
+            
+            match = deepEquals(trimmedPayload, trimmedReqData);
+            
+            if (match) break;
           }
-          
-          debug('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
-          debug('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
-          
-          match = deepEquals(trimmedPayload, trimmedReqData);
-          
-          if (match) break;
         }
-      }
-      // else match against all fields
-      else {
-        match = deepEquals(payload, reqData);
       }
 
       if (!rrpair.reqData || match) {

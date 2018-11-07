@@ -8,6 +8,7 @@ services:
       - MONGODB_HOST=mongo
       - MOCKIATOJMS_HOST=mockiato-jms
       - MOCKIATOJMS_PORT=8081
+      - MOCKIATO_NODES=4
     ports:
       - "8080:8080"
     depends_on:
@@ -15,7 +16,7 @@ services:
 
   mockiato-jms:
     container_name: mockiato-jms
-    image: optum/mockiato-mq
+    image: jweeks16/mockiato-jms
     ports:
       - "8081:8081"
     depends_on:
