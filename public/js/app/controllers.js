@@ -30,8 +30,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
-    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory',
-        function($scope,apiHistoryService,sutService,suggestionsService, helperFactory){
+    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'mqService', 'helperFactory',
+        function($scope,apiHistoryService,sutService,suggestionsService,mqService,helperFactory){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
             $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
@@ -50,9 +50,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
             $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+            $scope.mqInfo = mqService.getMQInfo();
+            console.log($scope.mqInfo);
 
             $scope.dropdown = function() {
-              if($scope.sutChecked == false){
+              if ($scope.sutChecked == false){
                   $scope.sutlist = sutService.getAllSUT();
                }
             };

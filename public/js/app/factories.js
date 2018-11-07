@@ -104,6 +104,26 @@ fact.factory('statusCodesFactory', ['$http', function($http) {
     };
 }]);
 
+fact.factory('mqFactory', ['$http', function($http) {
+    return {
+        getMQInfo: function() {
+          var mqInfo = {};
+
+          $http.get('/api/admin/mq/info')
+
+          .then(function(response) {
+              mqInfo = response.data;
+          })
+
+          .catch(function(err) {
+              console.log(err);
+          });
+
+          return mqInfo;
+        }
+    };
+}]);
+
 fact.factory('helperFactory', [function () {
     return {
         isDuplicateReq: function (servicevo) {

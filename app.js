@@ -118,6 +118,18 @@ function init() {
       });
   });
 
+  // expose MQ info
+  const mq = require('./lib/mq');
+  app.get('/api/admin/mq/info', function(req, res) {
+    mq.getInfo()
+      .then(function(info) {
+        res.json(info);
+      })
+      .catch(function(err) {
+        debug(err);
+      });
+  });
+
   // expose API and virtual SOAP / REST services
   const virtual = require('./routes/virtual');
   const api = require('./routes/services');

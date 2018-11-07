@@ -542,21 +542,25 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     .service('userService', ['userFactory',
         function(userFactory) {
             this.getAllUsers = function() {
-                var userlist = userFactory.getAllUsers();
-                return userlist;
+                return userFactory.getAllUsers();
             };
     }])
 
     .service('suggestionsService', ['statusCodesFactory', 'headersFactory',
         function(statusCodesFactory, headersFactory) {
             this.getStatusCodes = function() {
-                var codesList = statusCodesFactory.getStatusCodes();
-                return codesList;
+                return statusCodesFactory.getStatusCodes();
             };
 
             this.getPossibleHeaders = function() {
-                var headerList = headersFactory.getPossibleHeaders();
-                return headerList;
+                return headersFactory.getPossibleHeaders();
+            };
+    }])
+
+    .service('mqService', ['mqFactory',
+        function(mqFactory) {
+            this.getMQInfo = function() {
+                return mqFactory.getMQInfo();
             };
     }])
 
