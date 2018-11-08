@@ -44,7 +44,7 @@
     <div class="col-xs-9">
       <div class="input-group">
         <div class="input-group-addon">/virtual/{{servicevo.sut.name}}/</div>
-        <input required type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path">
+        <input required type="text" ng-pattern="/^\S*$/" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path (no spaces)">
       </div>
     </div>
   </div>
