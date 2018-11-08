@@ -135,13 +135,17 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           $scope.publishservice = function (servicevo) {
             try {
               if (helperFactory.isDuplicateReq(servicevo)) {
-                $('#dupRequest-modal').modal('toggle');
+                $('#genricMsg-dialog').find('.modal-title').text('Duplicate Request Error');
+                $('#genricMsg-dialog').find('.modal-body').text('Two Requests are same. Either change request data or relative path of duplicate requests.');
+                $('#genricMsg-dialog').modal('toggle');
               } else {
                 apiHistoryService.publishServiceToAPI(servicevo);
               }
             }
             catch (e) {
-              $('#failure-modal').modal('toggle');
+              $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+              $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+              $('#genricMsg-dialog').modal('toggle');
             }
           };
     }])
@@ -319,13 +323,17 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.updateService = function(servicevo) {
               try {
                 if (helperFactory.isDuplicateReq(servicevo)) {
-                  $('#dupRequest-modal').modal('toggle');
+                $('#genricMsg-dialog').find('.modal-title').text('Duplicate Request Error');
+                $('#genricMsg-dialog').find('.modal-body').text('Two Requests are same. Either change request data or relative path of duplicate requests.');
+                $('#genricMsg-dialog').modal('toggle');
                 } else {
                   apiHistoryService.publishServiceToAPI(servicevo, true);
                 }
               }
               catch(e) {
-                $('#failure-modal').modal('toggle');
+                $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                $('#genricMsg-dialog').modal('toggle');
               }
             };
 
@@ -360,7 +368,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
               .catch(function(err) {
                   console.log(err);
-                  $('#failure-modal').modal('toggle');
+                    $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                    $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                    $('#genricMsg-dialog').modal('toggle');
               });
             };
 
@@ -495,7 +505,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
                 .catch(function(err) {
                     console.log(err);
-                    $('#failure-modal').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                      $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                      $('#genricMsg-dialog').modal('toggle');
                 });
             };
     }])
@@ -657,7 +669,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
 
             if (location.href.indexOf('#regS') !== -1) {
-              $('#regSuccess-modal').modal('toggle');
+              $('#genricMsg-dialog').find('.modal-title').text('REGISTRATION SUCCESS');
+              $('#genricMsg-dialog').find('.modal-body').html("<p><center><span style='color:#008000;font-weight:bold;font-size: 50px;'>&#x2714;</span><br></br><span style='font-weight:bold;font-size: 16px;'>Registration completed successfully</span><br></br><span>Thank you. You can log in for service virtualization now</span></center></p>");
+              $('#genricMsg-dialog').find('.modal-footer').html('<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>');
+              $('#genricMsg-dialog').modal('toggle');
             }
     }])
 ;

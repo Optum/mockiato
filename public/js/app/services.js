@@ -50,7 +50,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 .catch(function(err) {
                     console.log(err);
-                    $('#loginFail-modal').modal('toggle');
+                    $('#genricMsg-dialog').find('.modal-title').text('Login Error');
+                    $('#genricMsg-dialog').find('.modal-body').text('Invalid credentials. Please try again.');
+                    $('#genricMsg-dialog').modal('toggle');
                 });
             };
 
@@ -295,7 +297,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 })
                 .catch(function(err) {
                     console.log(err);
-                    $('#failure-modal').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                      $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                      $('#genricMsg-dialog').modal('toggle');
                 });
 
                 // update => put (create => post)
@@ -305,8 +309,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .then(function(response) {
                       var data = response.data;
 					            console.log(data);
-                      if(data.error == 'twoSeviceDiffNameSameBasePath')
-                        $('#failure-2servDifNmSmBP-modal').modal('toggle');
+                      if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                      $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                      $('#genricMsg-dialog').find('.modal-body').text('There is another service already exist in our system with same basepath.');
+                      $('#genricMsg-dialog').modal('toggle');
+                      }
                       else{
                       feedbackService.displayServiceInfo(data);
                       $('#success-modal').modal('toggle');
@@ -315,7 +322,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                   .catch(function(err) {
                     console.log(err);
-                      $('#failure-modal').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                      $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                      $('#genricMsg-dialog').modal('toggle');
                   });
                 }
                 else {
@@ -330,7 +339,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                   .catch(function(err) {
                       console.log(err);
-                      $('#failure-modal').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                      $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                      $('#genricMsg-dialog').modal('toggle');
                   });
                 }
             };
@@ -378,7 +389,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
             .catch(function (err) {
               console.log(err);
-              $('#failure-modal').modal('toggle');
+              $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+              $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+              $('#genricMsg-dialog').modal('toggle');
             });
 
           $http.post('/api/services/fromSpec', fd, {
@@ -396,7 +409,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           })
           .catch(function(err){
             console.log(err);
-            $('#failure-modal').modal('toggle');
+              $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+              $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+              $('#genricMsg-dialog').modal('toggle');
           });
         };
     }])
@@ -517,7 +532,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 }
                 catch(e) {
                   console.log(e);
-                  $('#failure-modal').modal('toggle');
+                  $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                  $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                  $('#genricMsg-dialog').modal('toggle');
                   return;
                 }
 
@@ -533,7 +550,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 .catch(function(err) {
                     console.log(err);
-                    $('#failure-modal').modal('toggle');
+                    $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
+                    $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                    $('#genricMsg-dialog').modal('toggle');
                 });
             };
 
