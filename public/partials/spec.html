@@ -3,7 +3,7 @@
 <form name="form" class="well col-xs-12">
     
     <div class="form-group req row">
-        <label for="service_payloadtype" class="col-xs-2 col-form-label">Spec Type</label>
+        <label for="service_payloadtype" class="col-xs-2 col-form-label">Spec Type:</label>
         <div class="col-xs-9">
             <div class="radio">
                 <label class="move-radios">
@@ -18,7 +18,7 @@
     </div>
 
     <div class="form-group req row">
-        <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
+        <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
         <div class="col-xs-3">
             <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="spec.sut" ng-options="sut.name for sut in sutlist">
                 <option selected="selected" disabled="true">Select Group</option>
@@ -33,7 +33,7 @@
     </div>
 
     <div class="form-group req row">
-        <label for="service_name" class="col-xs-2 col-form-label">Name</label>
+        <label for="service_name" class="col-xs-2 col-form-label">Name:</label>
         <div class="col-xs-9">
             <input required type="text" id="service_name" class="form-control" ng-model="spec.name" placeholder="Enter Service Name">
         </div>
@@ -50,7 +50,7 @@
     </div> -->
 
     <div class="form-group req row">
-        <label for="service_name" class="col-xs-2 col-form-label">Spec Source</label>
+        <label for="service_name" class="col-xs-2 col-form-label">Spec Source:</label>
         <div class="col-xs-2">
             <file-field class="btn btn-primary" ng-model="uploadSpec" preview="previewText">
                 <i class="glyphicon glyphicon-import"></i> Upload File</file-field>&nbsp;&nbsp;&nbsp;<b class="tab1">Or</b>
