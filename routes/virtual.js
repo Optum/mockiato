@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const xml2js = require('xml2js');
-const pause = require('connect-pause');
 const debug = require('debug')('matching');
 const Service = require('../models/Service');
 const removeRoute = require('../lib/remove-route');
@@ -14,7 +13,14 @@ function delay(ms) {
       return next();
     };
   }
-  return pause(ms);
+  return function(req, res, next) {
+    if (!req.delayed) {
+      req.delayed = true;
+      return setTimeout(next, ms);
+    }
+
+    return next();
+  };
 }
 
 // function for registering an RR pair on a service
