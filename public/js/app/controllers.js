@@ -30,8 +30,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
-    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory',
-        function($scope,apiHistoryService,sutService,suggestionsService, helperFactory){
+    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
+        function($scope,apiHistoryService,sutService,suggestionsService, helperFactory, ctrlConstants){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
             $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
@@ -135,23 +135,23 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           $scope.publishservice = function (servicevo) {
             try {
               if (helperFactory.isDuplicateReq(servicevo)) {
-                $('#genricMsg-dialog').find('.modal-title').text('Duplicate Request Error');
-                $('#genricMsg-dialog').find('.modal-body').text('Two Requests are same. Either change request data or relative path of duplicate requests.');
+                $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
                 $('#genricMsg-dialog').modal('toggle');
               } else {
                 apiHistoryService.publishServiceToAPI(servicevo);
               }
             }
             catch (e) {
-              $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
-              $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
               $('#genricMsg-dialog').modal('toggle');
             }
           };
     }])
 
-    .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 
-        function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory){
+    .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
+        function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants){
             $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -323,16 +323,16 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.updateService = function(servicevo) {
               try {
                 if (helperFactory.isDuplicateReq(servicevo)) {
-                $('#genricMsg-dialog').find('.modal-title').text('Duplicate Request Error');
-                $('#genricMsg-dialog').find('.modal-body').text('Two Requests are same. Either change request data or relative path of duplicate requests.');
+                $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
                 $('#genricMsg-dialog').modal('toggle');
                 } else {
                   apiHistoryService.publishServiceToAPI(servicevo, true);
                 }
               }
               catch(e) {
-                $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
-                $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
                 $('#genricMsg-dialog').modal('toggle');
               }
             };
@@ -368,8 +368,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
               .catch(function(err) {
                   console.log(err);
-                    $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
-                    $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                    $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
                     $('#genricMsg-dialog').modal('toggle');
               });
             };
@@ -384,8 +384,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
     }])
 
 
-    .controller("serviceHistoryController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob',
-        function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob){
+    .controller("serviceHistoryController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+        function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
             $scope.sutlist = sutService.getAllSUT();
             $scope.userlist = userService.getAllUsers();
             $scope.servicelist = [];
@@ -505,15 +505,15 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
                 .catch(function(err) {
                     console.log(err);
-                      $('#genricMsg-dialog').find('.modal-title').text('Publish Failure Error');
-                      $('#genricMsg-dialog').find('.modal-body').text('Please ensure your request / response pairs are well formed.');
+                      $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
                       $('#genricMsg-dialog').modal('toggle');
                 });
             };
     }])
 
-    .controller("dataGenController", ['$scope', '$parse', 'FileSaver', 'Blob', 'genDataService',
-      function($scope, $parse, FileSaver, Blob, genDataService){
+    .controller("dataGenController", ['$scope', '$parse', 'FileSaver', 'Blob', 'genDataService', 'ctrlConstants', 
+      function($scope, $parse, FileSaver, Blob, genDataService, ctrlConstants){
           $scope.addColumn = newColumn;
           $scope.numRows= 100;
           $scope.gen = {};
@@ -572,7 +572,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
           $scope.printColumns = function() {
                 if($scope.numRows > 1000){
-                  return alert("You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.");
+                  return alert(ctrlConstants.DATAGEN_ALERT_MSG_1000ROWS);
                 }
 
                 if($scope.fileType == "JSON"){
@@ -639,8 +639,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
     }])
 
 
-    .controller("mainController", ['$rootScope', '$location', 'authService',
-        function($rootScope,$location,authService){
+    .controller("mainController", ['$rootScope', '$location', 'authService', 'ctrlConstants', 
+        function($rootScope,$location,authService,ctrlConstants){
             if (window.location.port)
               $rootScope.mockiatoHost = 'http://' + window.location.hostname + ':' + window.location.port;
             else
@@ -669,10 +669,22 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
 
             if (location.href.indexOf('#regS') !== -1) {
-              $('#genricMsg-dialog').find('.modal-title').text('REGISTRATION SUCCESS');
-              $('#genricMsg-dialog').find('.modal-body').html("<p><center><span style='color:#008000;font-weight:bold;font-size: 50px;'>&#x2714;</span><br></br><span style='font-weight:bold;font-size: 16px;'>Registration completed successfully</span><br></br><span>Thank you. You can log in for service virtualization now</span></center></p>");
-              $('#genricMsg-dialog').find('.modal-footer').html('<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>');
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.REG_SUCCESS_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.REG_SUCCESS_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.CLOSE_PRMRY_BTN_FOOTER);
               $('#genricMsg-dialog').modal('toggle');
             }
     }])
 ;
+
+//Put all the hard coding or constants here for controller.      
+ctrl.constant("ctrlConstants", {
+  "DUP_REQ_ERR_TITLE" : "Duplicate Request Error",
+  "DUP_REQ_ERR_BODY" : "Two Requests are same. Either change request data or relative path of duplicate requests.",
+  "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
+  "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
+  "REG_SUCCESS_TITLE" : "REGISTRATION SUCCESS",
+  "REG_SUCCESS_BODY" : "<p><center><span style='color:#008000;font-weight:bold;font-size: 50px;'>&#x2714;</span><br></br><span style='font-weight:bold;font-size: 16px;'>Registration completed successfully</span><br></br><span>Thank you. You can log in for service virtualization now</span></center></p>",
+  "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 
+  "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more." 
+});
