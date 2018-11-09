@@ -431,22 +431,28 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $scope.servicelist = [];
             };
 
-            $scope.deleteService = function(service) {
-                apiHistoryService.deleteServiceAPI(service)
-
-                .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-                    $scope.servicelist.forEach(function(elem, i, arr){
-                        if (elem._id === data.id)
-                            arr.splice(i, 1);
-                    });
+          $scope.deleteService = function (service) {
+            $('#deleteConfirm-modal').modal('toggle');
+            $('#delete_yes_btn').on("click", function () {
+              apiHistoryService.deleteServiceAPI(service)
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist.forEach(function (elem, i, arr) {
+                    if (elem._id === data.id)
+                      arr.splice(i, 1);
+                  });
                 })
-
-                .catch(function(err) {
-                    console.log(err);
+                .catch(function (err) {
+                  console.log(err);
                 });
-            };
+              $('#deleteConfirm-modal').modal('hide');
+            });
+
+            $('#delete_no_btn').on("click", function () {
+              $('#deleteConfirm-modal').modal('hide');
+            });
+          };
 
             $scope.toggleService = function(service) {
                 apiHistoryService.toggleServiceAPI(service)
