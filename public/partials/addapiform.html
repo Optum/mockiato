@@ -1,7 +1,7 @@
 <h2>Mock a REST or SOAP Service</h2>
 <form name="form" class="well col-xs-12">
   <div class="form-group req row">
-    <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type</label>
+    <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
     <div class="col-xs-9">
       <div class="radio">
         <label class="move-radios">
@@ -17,7 +17,7 @@
   </div>
 
   <div class="form-group req row">
-    <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
+    <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
 
     <div class="col-xs-3">
       <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist">
@@ -33,14 +33,14 @@
   </div>
 
   <div class="form-group req row">
-    <label for="service_name" class="col-xs-2 col-form-label">Name</label>
+    <label for="service_name" class="col-xs-2 col-form-label">Name:</label>
     <div class="col-xs-9">
       <input required type="text" id="service_name" class="form-control" ng-model="servicevo.name" placeholder="Enter Service Name">
     </div>
   </div>
 
   <div class="form-group req row" ng-show="servicevo.type !== 'MQ'">
-    <label for="service_base_path" class="col-xs-2 col-form-label">Base Path</label>
+    <label for="service_base_path" class="col-xs-2 col-form-label">Base Path:</label>
     <div class="col-xs-9">
       <div class="input-group">
         <div class="input-group-addon">/virtual/{{servicevo.sut.name}}/</div>
@@ -186,7 +186,7 @@
       </div>
 
     <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
-      <label class="col-xs-2 col-form-label">Request Headers</label>
+      <label class="col-xs-2 col-form-label">Request Headers:</label>
       <div class="col-xs-9">
         <fieldset data-ng-repeat="header in rr.reqHeadersArr">
             <div class="row">
@@ -227,14 +227,14 @@
     </div>
 
     <div class="form-group row" ng-class="rr.method === 'DELETE' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
-      <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload</label>
+      <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
       <div class="col-xs-9">
         <textarea ng-required="servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
       </div>
     </div>
 
     <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
-      <label for="service_response_status" class="col-xs-2 col-form-label">Response Status</label>
+      <label for="service_response_status" class="col-xs-2 col-form-label">Response Status:</label>
       <div class="col-xs-2">
         <div angucomplete-alt
           id="res-status"
@@ -252,7 +252,7 @@
     </div>
 
     <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
-      <label class="col-xs-2 col-form-label">Response Headers</label>
+      <label class="col-xs-2 col-form-label">Response Headers:</label>
       <div class="col-xs-9">
         <fieldset data-ng-repeat="header in rr.resHeadersArr">
             <div class="row">
@@ -293,7 +293,7 @@
     </div>
 
     <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'">
-      <label for="service_response_payload" class="col-xs-2 col-form-label">Response Payload</label>
+      <label for="service_response_payload" class="col-xs-2 col-form-label">Response Payload:</label>
       <div class="col-xs-9">
         <textarea ng-required="servicevo.type === 'SOAP'" id="service_response_payload" class="form-control vertResize" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
       </div>
