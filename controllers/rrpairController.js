@@ -1,1 +1,1 @@
-const RRPair = require('../models/RRPair');
+const RRPair = require('../models/http/RRPair');

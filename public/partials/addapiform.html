@@ -63,7 +63,7 @@
   <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
     <label class="col-xs-2 col-form-label">Queue Manager</label>
     <div class="col-xs-3">
-      <select required class="form-control" ng-model="mqInfo.managers" ng-options="manager.name for manager in managers">
+      <select required class="form-control" ng-model="servicevo.mq.manager" ng-options="manager.name for manager in mqInfo.managers">
           <option selected="selected" disabled="true">Select Manager</option>
       </select>
     </div>
@@ -72,7 +72,7 @@
   <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
     <label class="col-xs-2 col-form-label">Request Queue</label>
     <div class="col-xs-3">
-      <select required class="form-control" ng-model="mqInfo.queues" ng-options="obj.reqQueue for obj in queues">
+      <select required class="form-control" ng-model="servicevo.mq.reqQueue" ng-options="obj.reqQueue for obj in mqInfo.queues">
           <option selected="selected" disabled="true">Select Queue</option>
       </select>
     </div>
@@ -81,7 +81,7 @@
   <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
     <label class="col-xs-2 col-form-label">Response Queue</label>
     <div class="col-xs-3">
-      <select required class="form-control" ng-model="mqInfo.queues" ng-options="obj.resQueue for obj in queues">
+      <select required class="form-control" ng-model="servicevo.mq.resQueue" ng-options="obj.resQueue for obj in mqInfo.queues">
           <option selected="selected" disabled="true">Select Queue</option>
       </select>
     </div>

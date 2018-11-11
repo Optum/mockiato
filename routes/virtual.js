@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const xml2js = require('xml2js');
 const debug = require('debug')('matching');
-const Service = require('../models/Service');
+const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
 const mq = require('../lib/mq');
 

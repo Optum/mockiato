@@ -1,5 +1,5 @@
-const Service = require('../models/Service');
-const RRPair  = require('../models/RRPair');
+const Service = require('../models/http/Service');
+const RRPair  = require('../models/http/RRPair');
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
