@@ -193,13 +193,7 @@ function addService(req, res) {
         }
         // respond with the newly created resource
         res.json(service);
-
-        if (service.type !== 'MQ') {
-          syncWorkers(service._id, 'register');
-        }
-        else {
-          virtual.registerMQPairs(service);
-        }
+        syncWorkers(service._id, 'register');
       });
     }
   });
@@ -358,9 +352,7 @@ function createFromWSDL(file) {
 }
 
 function createFromOpenAPI(spec) {
-  return new Promise(function(resolve, reject) {
-    return resolve(oas.parse(spec));
-  });
+  return oas.parse(spec);
 }
 
 module.exports = {
