@@ -90,7 +90,8 @@
       </div>
 
       <div class="col-xs-1" ng-if="servicevo.rawpairs.length > 1">
-        <button type="button" class="btn btn-danger" ng-click="servicevo.rawpairs.splice($index, 1)">
+      <!-- <button type="button" class="btn btn-danger" ng-click="servicevo.rawpairs.splice($index, 1)">-->
+            <button class="btn btn-default" title="Delete service" ng-click="deleteService(service)"><i class="glyphicon glyphicon-trash"></i></button>
           Delete
         </button>
       </div>
