@@ -1,5 +1,5 @@
-const RRPair = require('../models/RRPair');
-const Service = require('../models/Service');
+const RRPair = require('../models/http/RRPair');
+const Service = require('../models/http/Service');
 
 function getPairsByServiceId(req, res) {
   Service.findById(req.params.serviceId, function(err, service)	{
