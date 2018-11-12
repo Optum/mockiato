@@ -1,5 +1,8 @@
 const RRPair = require('../models/http/RRPair');
+const MQPair = require('../models/mq/MQPair');
+
 const Service = require('../models/http/Service');
+const MQService = require('../models/mq/MQService');
 
 function getPairsByServiceId(req, res) {
   Service.findById(req.params.serviceId, function(err, service)	{
@@ -8,7 +11,19 @@ function getPairsByServiceId(req, res) {
         return;
       }
 
-      res.json(service.rrpairs);
+      if (service) {
+        res.json(service.rrpairs);
+      }
+      else {
+        MQService.findById(req.params.serviceId, function(error, mqService) {
+          if (error)	{
+            handleError(error, res, 500);
+            return;
+          }
+
+          return res.json(mqService.rrpairs);
+        });
+      }
   });
 }
 
