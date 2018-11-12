@@ -45,4 +45,7 @@ router.delete('/:id', servCtrl.deleteService);
 // toggle a service on / off TODO: toggle MQ services
 router.post('/:id/toggle', servCtrl.toggleService);
 
+const rrpairs = require('./rrpairs');
+router.use(rrpairs);
+
 module.exports = router;
