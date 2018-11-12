@@ -120,8 +120,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           };
     }])
 
-    .service('apiHistoryService', ['$http', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
-        function($http, authService, feedbackService, xmlService, servConstants) {
+    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
+        function($http, $location, authService, feedbackService, xmlService, servConstants) {
             this.getServiceForSUT = function(name) {
                 return $http.get('/api/services/sut/' + name);
             };
@@ -305,18 +305,17 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 // update => put (create => post)
                 if (!isUpdate) {
                   $http.post('/api/services?token=' + token, servData)
-
                   .then(function(response) {
                       var data = response.data;
-					            console.log(data);
+                      console.log(data);
                       if(data.error == 'twoSeviceDiffNameSameBasePath'){
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
                       $('#genricMsg-dialog').modal('toggle');
                       }
                       else{
-                      feedbackService.displayServiceInfo(data);
-                      $('#success-modal').modal('toggle');
+                      var data = response.data;
+                      $location.path('/update/' + data._id + '/frmServCreate');
                     }
                   })
 
@@ -403,9 +402,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             var data = response.data;
             console.log(data);
             //redirect to update page for created service
-            $location.path('/update/' + data._id);
-            feedbackService.displayServiceInfo(data);
-            $('#success-modal').modal('toggle');
+            $location.path('/update/' + data._id + '/frmServCreate');
           })
           .catch(function(err){
             console.log(err);

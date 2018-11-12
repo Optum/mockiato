@@ -33,8 +33,8 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                     }]
                 }
             })
-
-            .when("/update/:id", {
+            
+            .when("/update/:id/:frmWher", {
                 templateUrl: "partials/updateForm.html",
                 controller: "updateController",
                 resolve: {
