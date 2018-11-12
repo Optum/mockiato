@@ -380,7 +380,22 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.totalDisplayed += 10;
           };
 
-
+          //To Show Service Success Modal when a new service is created.
+          if($routeParams.frmWher=='frmServCreate'){
+            $http.get('/api/services/' + $routeParams.id)
+              .then(function(response) {
+                  var data = response.data;
+                  console.log(data);
+                  feedbackService.displayServiceInfo(data);
+              })
+              .catch(function(err) {
+                  console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
+              });
+            $('#success-modal').modal('toggle');
+          }
     }])
 
 
