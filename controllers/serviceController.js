@@ -1,5 +1,7 @@
 const Service = require('../models/http/Service');
+const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
+
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
@@ -17,46 +19,109 @@ function getServiceById(req, res) {
         return;
       }
 
-      res.json(service);
+      if (service) {
+        return res.json(service);
+      }
+      else {
+        MQService.find(req.params.id, function(error, mqService) {
+          if (error)	{
+            handleError(error, res, 500);
+            return;
+          }
+
+          return res.json(mqService);
+        });
+      }
   });
 }
 
 function getServicesByUser(req, res) {
-  Service.find({ 'user.uid': req.params.uid }, function(err, services) {
+  let allServices = [];
+
+  const query = { 'user.uid': req.params.uid };
+
+  Service.find(query, function(err, services) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
 
-    res.json(services);
+    allServices = services;
+
+    MQService.find(query, function(error, mqServices) {
+      if (error)	{
+        handleError(error, res, 500);
+        return;
+      }
+
+      if (mqServices.length) {
+        allServices = allServices.concat(mqServices);
+      }
+
+      return res.json(allServices);
+    });
   });
 }
 
 function getServicesBySystem(req, res) {
-  Service.find({ 'sut.name': req.params.name }, function(err, services) {
+  let allServices = [];
+
+  const query = { 'sut.name': req.params.name };
+
+  Service.find(query, function(err, services) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
 
-    res.json(services);
+    allServices = services;
+
+    MQService.find(query, function(error, mqServices) {
+      if (error)	{
+        handleError(error, res, 500);
+        return;
+      }
+
+      if (mqServices.length) {
+        allServices = allServices.concat(mqServices);
+      }
+
+      return res.json(allServices);
+    });
   });
 }
 
 function getServicesByQuery(req, res) {
-  const query = {
-      'sut.name': req.query.sut,
-      'user.uid': req.query.user
-  };
+  const query = {};
+
+  const sut  = req.query.sut;
+  const user = req.query.user;
+
+  if (sut) query['sut.name']  = sut;
+  if (user) query['user.uid'] = user;
 
   // call find function with queries
+  let allServices = [];
   Service.find(query, function(err, services)	{
       if (err)	{
         handleError(err, res, 500);
         return;
       }
 
-      res.json(services);
+      allServices = services;
+
+      MQService.find(query, function(error, mqServices) {
+        if (error)	{
+          handleError(error, res, 500);
+          return;
+        }
+  
+        if (mqServices.length) {
+          allServices = allServices.concat(mqServices);
+        }
+
+        return res.json(allServices);
+      });
   });
 }
 
@@ -143,8 +208,16 @@ function syncWorkers(serviceId, action) {
       }
       else {
         virtual.deregisterById(serviceId);
-        Service.findOneAndRemove({_id : serviceId }, function(err)	{
+        Service.findOneAndRemove({_id : serviceId }, function(err, service)	{
           if (err) debug(err);
+          debug(service);
+          
+          if (!service) {
+            MQService.findOneAndRemove({ _id: serviceId }, function(error, mqService) {
+              if (error) debug(error);
+              debug(mqService);
+            });
+          }
         });
       }
     })
@@ -154,37 +227,21 @@ function syncWorkers(serviceId, action) {
 }
 
 function addService(req, res) {
+  const type = req.body.type;
+
   let serv  = {
     sut: req.body.sut,
     user: req.decoded,
     name: req.body.name,
     type: req.body.type,
-    delay: req.body.delay,
-    basePath: '/' + req.body.sut.name + req.body.basePath,
     matchTemplates: req.body.matchTemplates,
     rrpairs: req.body.rrpairs
   };
 
-  searchDuplicate(serv, function(duplicate) {
-    if (duplicate && duplicate.twoServDiffNmSmBP){
-      res.json({"error":"twoSeviceDiffNameSameBasePath"});
-      return;
-    }
-    else if (duplicate) { 
-      // merge services
-      mergeRRPairs(duplicate, serv);
-      // save merged service
-      duplicate.save(function(err, newService) {
-        if (err) {
-          handleError(err, res, 500);
-          return;
-        }
-        res.json(newService);
-        syncWorkers(newService._id, 'register');
-      });
-    }
-    else {
-      Service.create(serv,
+  if (type === 'MQ') {
+    serv.connInfo = req.body.connInfo;
+
+    MQService.create(serv,
       // handler for db call
       function(err, service) {
         if (err) {
@@ -193,15 +250,53 @@ function addService(req, res) {
         }
         // respond with the newly created resource
         res.json(service);
-        syncWorkers(service._id, 'register');
-      });
-    }
-  });
+    });
+  }
+  else {
+    serv.delay = req.body.delay;
+    serv.basePath =  '/' + req.body.sut.name + req.body.basePath;
+
+    searchDuplicate(serv, function(duplicate) {
+      if (duplicate && duplicate.twoServDiffNmSmBP){
+        res.json({"error":"twoSeviceDiffNameSameBasePath"});
+        return;
+      }
+      else if (duplicate) { 
+        // merge services
+        mergeRRPairs(duplicate, serv);
+        // save merged service
+        duplicate.save(function(err, newService) {
+          if (err) {
+            handleError(err, res, 500);
+            return;
+          }
+          res.json(newService);
+          
+          syncWorkers(newService._id, 'register');
+        });
+      }
+      else {
+        Service.create(serv,
+        function(err, service) {
+          if (err) {
+            handleError(err, res, 500);
+            return;
+          }
+          res.json(service);
+  
+          syncWorkers(service._id, 'register');
+        });
+      }
+    });
+  }
 }
 
 function updateService(req, res) {
+  const type = req.body.type;
+  const BaseService = (type === 'MQ') ? MQService : Service;
+
   // find service by ID and update
-  Service.findById(req.params.id, function (err, service) {
+  BaseService.findById(req.params.id, function (err, service) {
     if (err) {
       handleError(err, res, 400);
       return;
@@ -211,11 +306,13 @@ function updateService(req, res) {
     service.matchTemplates = req.body.matchTemplates;
     service.rrpairs = req.body.rrpairs;
 
-    const delay = req.body.delay;
-    if (delay || delay === 0) {
-      service.delay = req.body.delay;
+    if (service.type !== 'MQ') {
+      const delay = req.body.delay;
+      if (delay || delay === 0) {
+        service.delay = delay;
+      }
     }
-
+    
     // save updated service in DB
     service.save(function (err, newService) {
       if (err) {
@@ -224,13 +321,19 @@ function updateService(req, res) {
       }
 
       res.json(newService);
-      syncWorkers(newService._id, 'register');
+      
+      if (service.type !== 'MQ') {
+        syncWorkers(newService._id, 'register');
+      }
     });
   });
 }
 
 function toggleService(req, res) {
-  Service.findById(req.params.id, function(err, service)	{
+  const type = req.body.type;
+  const BaseService = (type === 'MQ') ? MQService : Service;
+
+  BaseService.findById(req.params.id, function(err, service)	{
     if (err)	{
       handleError(err, res, 500);
       return;
@@ -245,7 +348,10 @@ function toggleService(req, res) {
       }
 
       res.json({'message': 'toggled', 'service': newService });
-      syncWorkers(newService._id, 'register');
+      
+      if (service.type !== 'MQ') {
+        syncWorkers(newService._id, 'register');
+      }
     });
   });
 }

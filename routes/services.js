@@ -12,9 +12,10 @@ router.use(tokenMiddleware);
 // middleware to reject invalid services
 function rejectInvalid(req, res, next) {
   const validTypes = [ 'SOAP', 'REST', 'MQ' ];
-  const type = req.body.type;
 
-  if (validTypes.includes(type)) return next();
+  const type = req.body.type;
+  if (type && validTypes.includes(type)) return next();
+  
   handleError(`Service type ${type} is not supported`, res, 400);
 }
 

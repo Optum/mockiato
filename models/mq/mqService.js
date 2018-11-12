@@ -13,6 +13,7 @@ const mqSchema = new mongoose.Schema({
     type: String, 
     index: true
   },
+  type: String,
   matchTemplates: [mongoose.Schema.Types.Mixed],
   connInfo: MQInfo.schema,
   rrpairs: [MQPair.schema],
