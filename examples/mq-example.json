@@ -1,0 +1,12 @@
+{
+  "sut": {
+      "name": "test"
+  },
+  "name": "mq-test",
+  "type": "MQ",
+  "rrpairs": [{
+      "payloadType": "XML",
+      "reqData": "<message>hi</message>",
+      "resData": "<response>hello, again</response>"
+  }]
+}
