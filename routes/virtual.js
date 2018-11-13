@@ -187,19 +187,27 @@ function registerRRPair(service, rrpair) {
     function setRespHeaders() {
       const resHeaders = rrpair.resHeaders;
 
-      if (!resHeaders) {
-        // set default headers
-        if (rrpair.payloadType === 'XML')
-          resp.set("Content-Type", "text/xml");
-        else if (rrpair.payloadType === 'JSON') {
-          resp.set("Content-Type", "application/json");
+      if (resHeaders) {        
+        if (!resHeaders['Content-Type']) {
+          setContentType();
         }
-        else {
-          resp.set("Content-Type", "text/plain");
-        }
+        
+        resp.set(resHeaders);
+        return;
+      }
+      
+      setContentType();
+    }
+    
+    function setContentType() {
+      // set default headers
+      if (rrpair.payloadType === 'XML')
+        resp.set("Content-Type", "text/xml");
+      else if (rrpair.payloadType === 'JSON') {
+        resp.set("Content-Type", "application/json");
       }
       else {
-        resp.set(resHeaders);
+        resp.set("Content-Type", "text/plain");
       }
     }
   });
