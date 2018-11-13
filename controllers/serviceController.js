@@ -23,7 +23,7 @@ function getServiceById(req, res) {
         return res.json(service);
       }
       else {
-        MQService.find(req.params.id, function(error, mqService) {
+        MQService.findById(req.params.id, function(error, mqService) {
           if (error)	{
             handleError(error, res, 500);
             return;
@@ -295,6 +295,9 @@ function updateService(req, res) {
   const type = req.body.type;
   const BaseService = (type === 'MQ') ? MQService : Service;
 
+  console.log(type);
+  console.log(BaseService);
+
   // find service by ID and update
   BaseService.findById(req.params.id, function (err, service) {
     if (err) {
@@ -330,29 +333,43 @@ function updateService(req, res) {
 }
 
 function toggleService(req, res) {
-  const type = req.body.type;
-  const BaseService = (type === 'MQ') ? MQService : Service;
-
-  BaseService.findById(req.params.id, function(err, service)	{
+  Service.findById(req.params.id, function(err, service)	{
     if (err)	{
       handleError(err, res, 500);
       return;
     }
 
-    // flip the bit & save in DB
-    service.running = !service.running;
-    service.save(function(e, newService) {
-      if (e)	{
-        handleError(e, res, 500);
-        return;
-      }
+    if (service) {
+      // flip the bit & save in DB
+      service.running = !service.running;
+      service.save(function(e, newService) {
+        if (e)	{
+          handleError(e, res, 500);
+          return;
+        }
 
-      res.json({'message': 'toggled', 'service': newService });
-      
-      if (service.type !== 'MQ') {
+        res.json({'message': 'toggled', 'service': newService });
         syncWorkers(newService._id, 'register');
-      }
-    });
+      });
+    }
+    else {
+      MQService.findById(req.params.id, function(error, mqService) {
+        if (error)	{
+          handleError(error, res, 500);
+          return;
+        }
+
+        mqService.running = !mqService.running;
+        mqService.save(function(e2, mqService) {
+          if (e2)	{
+            handleError(e2, res, 500);
+            return;
+          }
+
+          res.json({'message': 'toggled', 'service': mqService });
+        });
+      });
+    }
   });
 }
 
