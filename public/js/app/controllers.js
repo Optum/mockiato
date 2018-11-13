@@ -81,6 +81,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               });
             };
 
+            $scope.removeRRPair = function(index) {
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+              $scope.rrPairNo = index;
+              $('#modal-btn-yes').on("click", function () {
+                  $scope.servicevo.rawpairs.splice($scope.rrPairNo,1);
+                  $scope.$apply();
+                });
+            };
+
             $scope.addNewReqHeader = function(rr) {
               var newItemNo = rr.reqHeadersArr.length;
               rr.reqHeadersArr.push({'id':newItemNo});
@@ -290,6 +302,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               });
             };
 
+            $scope.removeRRPair = function(index) {
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+              $scope.rrPairNo = index;
+              $('#modal-btn-yes').on("click", function () {
+                  $scope.servicevo.rawpairs.splice($scope.rrPairNo,1);
+                  $scope.$apply();
+                });
+            };
+
             $scope.addNewReqHeader = function(rr) {
               var newItemNo = rr.reqHeadersArr.length;
               rr.reqHeadersArr.push({'id':newItemNo});
@@ -474,11 +498,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 .catch(function (err) {
                   console.log(err);
                 });
-              $('#genricMsg-dialog').modal('hide');
-            });
-
-            $('#modal-btn-no').on("click", function () {
-              $('#genricMsg-dialog').modal('hide');
             });
           };
 
@@ -712,6 +731,7 @@ ctrl.constant("ctrlConstants", {
   "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 
   "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.",
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
-  "DEL_CONFIRM_BODY" : "Are you really want to delete this service ?",
-  "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>'
+  "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
+  "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
+  "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?'
 });
