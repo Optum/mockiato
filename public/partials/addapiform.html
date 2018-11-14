@@ -20,7 +20,7 @@
     <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
 
     <div class="col-xs-3">
-      <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist">
+      <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist | orderBy:'name'">
           <option selected="selected" disabled="true">Select SUT</option>
       </select>
       <input ng-show="sutChecked" required type="text" ng-pattern="/^\S*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name (no spaces)">
