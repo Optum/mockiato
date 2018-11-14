@@ -5,9 +5,9 @@
     <form class="form-inline">
         <div class="form-group">
             <label for="system_under_test">Group:</label>
-            <select class="form-control" id="system_under_test" title="Select SUT" ng-model="selectedSut" ng-options="sut.name for sut in sutlist"></select>
+            <select class="form-control" id="system_under_test" title="Select SUT" ng-model="selectedSut" ng-options="sut.name for sut in sutlist | orderBy:'name'"></select>
             <label for="system_under_test">Owner:</label>
-            <select class="form-control" id="user" title="Select Owner" ng-model="selectedUser" ng-options="user.name for user in userlist"></select>&nbsp;
+            <select class="form-control" id="user" title="Select Owner" ng-model="selectedUser" ng-options="user.name for user in userlist | orderBy:'name'"></select>&nbsp;
             <button type="submit" class="btn btn-primary" ng-click="filtersSelected(selectedSut, selectedUser)">Find</button>&nbsp;
             <button type="submit" class="btn btn-default" ng-click="clearSelected()">Clear</button>
         </div>
