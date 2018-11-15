@@ -24,6 +24,7 @@ function delay(ms) {
 
 // function for registering an RR pair on a service
 function registerRRPair(service, rrpair) {
+  let msg;
   let path;
   let matched;
 
@@ -31,6 +32,8 @@ function registerRRPair(service, rrpair) {
   else path = service.basePath;
 
   router.all(path, delay(service.delay), function(req, resp, next) {
+    req.msgContainer = req.msgContainer || {};
+
     if (req.method === rrpair.verb) {
       // convert xml to js object
       if (rrpair.payloadType === 'XML') {
@@ -43,13 +46,20 @@ function registerRRPair(service, rrpair) {
       }
     }
     else {
-      debug("HTTP methods don't match");
+      msg = "HTTP methods don't match";
+      req.msgContainer.noMatch = true;
+      req.msgContainer.reason  = msg;
       return next();
     }
     debug("Request matched? " + matched);
     
     // run the next callback if request not matched
-    if (!matched) return next();
+    if (!matched) {
+      msg = "Request bodies don't match";
+      req.msgContainer.noMatch = true;
+      req.msgContainer.reason  = msg;
+      return next();
+    }
 
     // function for matching requests to responses
     function matchRequest(payload) {
