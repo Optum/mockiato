@@ -125,16 +125,23 @@ function registerRRPair(service, rrpair) {
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
           if (!req.query) {
-            debug("expected query in request");
+            debug("expected queries in request");
             return false;
           }
+          let matchedQueries = true;
 
-          // try the next rr pair if queries do not match
-          if (!deepEquals(rrpair.queries, req.query)) {
-            debug("expected query: " + JSON.stringify(rrpair.queries));
-            debug("received query: " + JSON.stringify(req.query));
-            return false;
-          }
+          const expectedQueries = Object.entries(rrpair.queries);
+          expectedQueries.forEach(function(queryVal) {
+            const sentQuery = req.query[queryVal[0]];
+            
+            if (sentQuery != queryVal[1]) {
+              matchedHeaders = false;
+              debug('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
+              debug('received query: ' + queryVal[0] + ': ' + sentQuery);
+            }
+          });
+
+          if (!matchedQueries) return false;
         }
 
         // check request headers
@@ -146,7 +153,7 @@ function registerRRPair(service, rrpair) {
             // skip content-type header
             if (keyVal[0].toLowerCase() !== 'content-type') {
               const sentVal = req.get(keyVal[0]);
-              if (sentVal !== keyVal[1]) {
+              if (sentVal != keyVal[1]) {
                 // try the next rr pair if headers do not match
                 matchedHeaders = false;
                 debug('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
