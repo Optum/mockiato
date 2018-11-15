@@ -24,15 +24,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $scope.sutlist = sutService.getAllSUT();
             }
           };
-          
-          $scope.publishspec = function (spec) {
-            specService.publishFromSpec(spec, $scope.uploadSpec);
-          };
-          
-          //testing slash
-          $scope.oneSlash = function (input) {
-            return input.replace(/\/\//g, '/');
-          }
     }])
 
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory',
