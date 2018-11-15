@@ -151,10 +151,13 @@ function init() {
 
   // handle no match responses
   app.use(function(req, res, next) {
-    if (req.msgContainer && req.msgContainer.noMatch) {
-      return res.status(404).json(req.msgContainer);
+    if (!req.msgContainer) {
+      req.msgContainer = {};
+      req.msgContainer.reqMatched = false;
+      req.msgContainer.reason = `Path ${req.path} could not be found`;
     }
-    return next();
+
+    return res.status(404).json(req.msgContainer);
   });
 
   // handle internal errors

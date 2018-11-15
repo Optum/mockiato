@@ -33,6 +33,7 @@ function registerRRPair(service, rrpair) {
 
   router.all(path, delay(service.delay), function(req, resp, next) {
     req.msgContainer = req.msgContainer || {};
+    req.msgContainer.reqMatched = false;
 
     if (req.method === rrpair.verb) {
       // convert xml to js object
@@ -47,8 +48,8 @@ function registerRRPair(service, rrpair) {
     }
     else {
       msg = "HTTP methods don't match";
-      req.msgContainer.noMatch = true;
-      req.msgContainer.reason  = msg;
+      req.msgContainer.reason = msg;
+      debug(msg);
       return next();
     }
     debug("Request matched? " + matched);
@@ -56,8 +57,8 @@ function registerRRPair(service, rrpair) {
     // run the next callback if request not matched
     if (!matched) {
       msg = "Request bodies don't match";
-      req.msgContainer.noMatch = true;
-      req.msgContainer.reason  = msg;
+      req.msgContainer.reason = msg;
+      debug(msg);
       return next();
     }
 
