@@ -23,7 +23,7 @@
       <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist | orderBy:'name'">
           <option selected="selected" disabled="true">Select SUT</option>
       </select>
-      <input ng-show="sutChecked" required type="text" ng-pattern="/^\S*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name (no spaces)">
+      <input ng-show="sutChecked" required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name (no spaces)">
     </div>
     <div class="col-xs-3">
       <p>Check to create new Group
@@ -44,7 +44,7 @@
     <div class="col-xs-9">
       <div class="input-group">
         <div class="input-group-addon">/virtual/{{servicevo.sut.name}}/</div>
-        <input required type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path">
+        <input required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path">
       </div>
     </div>
   </div>
@@ -131,7 +131,7 @@
       <div class="col-xs-9">
         <div class="input-group">
           <div class="input-group-addon">/</div>
-          <input type="text" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
+          <input type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
         </div>
       </div>
     </div>
