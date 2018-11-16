@@ -1,7 +1,7 @@
 var serv = angular.module('mockapp.services',['mockapp.factories'])
 
-    .service('authService', ['$http', '$window', '$location', '$rootScope',
-        function($http, $window, $location, $rootScope) {
+    .service('authService', ['$http', '$window', '$location', '$rootScope', 'servConstants', 
+        function($http, $window, $location, $rootScope, servConstants) {
             var userInfo;
 
             // handle page refresh
@@ -50,7 +50,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 .catch(function(err) {
                     console.log(err);
-                    $('#loginFail-modal').modal('toggle');
+                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.LOGIN_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.LOGIN_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
                 });
             };
 
@@ -118,8 +120,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           };
     }])
 
-    .service('apiHistoryService', ['$http', 'authService', 'feedbackService', 'xmlService',
-        function($http, authService, feedbackService, xmlService) {
+    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
+        function($http, $location, authService, feedbackService, xmlService, servConstants) {
             this.getServiceForSUT = function(name) {
                 return $http.get('/api/services/sut/' + name);
             };
@@ -295,27 +297,33 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 })
                 .catch(function(err) {
                     console.log(err);
-                    $('#failure-modal').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');
                 });
 
                 // update => put (create => post)
                 if (!isUpdate) {
                   $http.post('/api/services?token=' + token, servData)
-
                   .then(function(response) {
                       var data = response.data;
-					            console.log(data);
-                      if(data.error == 'twoSeviceDiffNameSameBasePath')
-                        $('#failure-2servDifNmSmBP-modal').modal('toggle');
+                      console.log(data);
+                      if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');
+                      }
                       else{
-                      feedbackService.displayServiceInfo(data);
-                      $('#success-modal').modal('toggle');
+                      var data = response.data;
+                      $location.path('/update/' + data._id + '/frmServCreate');
                     }
                   })
 
                   .catch(function(err) {
                     console.log(err);
-                      $('#failure-modal').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');
                   });
                 }
                 else {
@@ -330,7 +338,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                   .catch(function(err) {
                       console.log(err);
-                      $('#failure-modal').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').modal('toggle');
                   });
                 }
             };
@@ -358,8 +368,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-  .service('specService', ['$http', '$location', 'authService', 'feedbackService',
-    function ($http, $location, authService, feedbackService) {
+  .service('specService', ['$http', '$location', 'authService', 'feedbackService', 'servConstants', 
+    function ($http, $location, authService, feedbackService, servConstants) {
         this.publishFromSpec = function(spec, file) {
           var fd = new FormData();
           fd.append('spec', file);
@@ -378,7 +388,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
             .catch(function (err) {
               console.log(err);
-              $('#failure-modal').modal('toggle');
+              $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').modal('toggle');
             });
 
           $http.post('/api/services/fromSpec', fd, {
@@ -390,13 +402,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             var data = response.data;
             console.log(data);
             //redirect to update page for created service
-            $location.path('/update/' + data._id);
-            feedbackService.displayServiceInfo(data);
-            $('#success-modal').modal('toggle');
+            $location.path('/update/' + data._id + '/frmServCreate');
           })
           .catch(function(err){
             console.log(err);
-            $('#failure-modal').modal('toggle');
+              $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').modal('toggle');
           });
         };
     }])
@@ -506,8 +518,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           }
         }])
 
-    .service('templateService', ['$http', 'authService', 'feedbackService',
-        function($http, authService, feedbackService) {
+    .service('templateService', ['$http', 'authService', 'feedbackService', 'servConstants', 
+        function($http, authService, feedbackService, servConstants) {
             this.importTemplate = function(templateStr) {
                 var template;
 
@@ -517,7 +529,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 }
                 catch(e) {
                   console.log(e);
-                  $('#failure-modal').modal('toggle');
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                  $('#genricMsg-dialog').modal('toggle');
                   return;
                 }
 
@@ -533,7 +547,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 .catch(function(err) {
                     console.log(err);
-                    $('#failure-modal').modal('toggle');
+                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
                 });
             };
 
@@ -590,3 +606,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             return true;
           };
       }]);
+
+//Put all the hard coding or constants here for Services.      
+serv.constant("servConstants", {
+        "LOGIN_ERR_TITLE" : "Login Error",
+        "LOGIN_ERR_BODY" : "Invalid credentials. Please try again.",
+        "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
+        "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
+        "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.", 
+      });
