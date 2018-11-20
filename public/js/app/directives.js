@@ -9,7 +9,7 @@ var dir = angular.module("mockapp.directives",[])
                 // consider empty models to be valid
                 return false;
               }
-              var re = new RegExp("^[0-9]*$");
+              var re = new RegExp("^[0-9]*$");//call regex from constant shouldn't be hardcoded
               if (re.test(viewValue)) {
                 // it is valid
                 return true;
@@ -25,6 +25,5 @@ var dir = angular.module("mockapp.directives",[])
 
 //Put all the hard coding or constants here for directives.      
 dir.constant("dirConstants", {
-    //"INTEGER_REGEXP" : '/^-?\d+$/'
-    "INTEGER_REGEXP" : '/^[0-9]*$/'
+    "INTEGER_REGEXP" : '^[0-9]*$'
 });
