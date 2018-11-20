@@ -1,4 +1,5 @@
 <h2>Mock Data Generation</h2>
+<form name="dataForm" class="well col-xs-12">
 <div class="row">
   <div class="col-xs-3">
     <h3><u>Field Names</u></h3>
@@ -82,7 +83,7 @@
   <div class="form-group row">
     <div class="col-xs-2">
       <label>Number of rows</label>
-      <input type="number" class="form-control"  placeholder="Enter # of rows" ng-model="numRows">
+      <input type="number" class="form-control" placeholder="Number of rows" ng-model="numRows" min="1" ng-pattern="/^[0-9]{1,9}$/" required >
     </div>
     <div class="form-group col-xs-2">
       <label>Output file type</label>
@@ -94,8 +95,9 @@
       </select>
     </div>
     </br>
-    <button type="button" class="btn btn-primary" ng-click="printColumns()" >Download</button>
+    <button ng-disabled="dataForm.$invalid" type="button" class="btn btn-primary" ng-click="printColumns()" >Download</button>
   </div>
+</form>
   <!--<hr>
 
   <p>Below is just for testing</p>
