@@ -44,8 +44,8 @@ function init() {
   });
 
   // parse request body based on content-type
-  app.use(bodyParser.text({ type: [ 'application/soap+xml', 'application/xml', 'text/xml', 'text/plain' ]}));
-  app.use(bodyParser.json({ type: [ 'application/json' ]}));
+  app.use(bodyParser.text({ limit: '5mb', type: [ 'application/soap+xml', 'application/xml', 'text/xml', 'text/plain' ]}));
+  app.use(bodyParser.json({ limit: '5mb', type: [ 'application/json' ]}));
   app.use(bodyParser.urlencoded({ extended: false }));
 
   // expose health info
