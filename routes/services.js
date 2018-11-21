@@ -21,6 +21,9 @@ function rejectInvalid(req, res, next) {
 // create service from OpenAPI spec
 router.post('/fromSpec', upload.single('spec'), servCtrl.createFromSpec);
 
+// create service from RR Pair BulkUpload
+router.post('/fromBulkUpload', upload.single('bulkUpload'), servCtrl.createFromBulkUpload);
+
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
 
