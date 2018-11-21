@@ -5,9 +5,12 @@ const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
 const oas  = require('../lib/openapi/parser');
 const wsdl = require('../lib/wsdl/parser');
+const rrpair = require('../lib/rrpair/parser');
 const request = require('request');
-const fs   = require('fs');
+const fs = require('fs')
+const unzip = require('unzip2');
 const YAML = require('yamljs');
+//const dir = require('node-dir');
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -281,6 +284,47 @@ function isYaml(req) {
   return false;
 }
 
+function createFromBulkUpload(req, res) {
+  const type = req.query.type;
+  const base = req.query.base;
+  const name = req.query.name;
+ // const url  = req.query.url;
+  const sut  = { name: req.query.group };
+ fs.createReadStream(req.file.path).pipe(unzip.Extract({path: '.\\RRPair'}));
+  result = {
+      file:req.file,
+      message:"File has been extracted"
+  };
+  //var i=0;
+  createFromRRPair( type, './RRPair').then(onSuccess).catch(onError);
+   function onSuccess(serv) {
+      // set group, basePath, and owner
+      serv.sut = sut;
+      serv.name = name;
+      serv.type = type;
+      serv.basePath = '/' + serv.sut.name + serv.basePath;
+      serv.user = req.decoded;
+  
+      // save the service
+      Service.create(serv, function(err, service) {
+        if (err) {
+          handleError(err, res, 500);
+        }
+        res.json(service);
+        syncWorkers(service._id, 'register');
+      });
+    }
+  function onError(err) {
+      debug(err);
+      handleError(err, res, 400);
+    }
+}
+function createFromRRPair(type, path) {
+if(type=="REST"){
+ // console.log("Do nothing");
+ return rrpair.parse(path);
+}}
+
 function createFromSpec(req, res) {
   const type = req.query.type;
   const base = req.query.base;
@@ -359,5 +403,6 @@ module.exports = {
   updateService: updateService,
   toggleService: toggleService,
   deleteService: deleteService,
-  createFromSpec: createFromSpec
+  createFromSpec: createFromSpec,
+  createFromBulkUpload: createFromBulkUpload
 };

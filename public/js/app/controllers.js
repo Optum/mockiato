@@ -30,6 +30,21 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
+    .controller("bulkUploadController", ['$scope', 'sutService' , 'bulkUploadService', 
+    function($scope, sutService, bulkUploadService) {
+      $scope.sutlist = sutService.getAllSUT();
+      $scope.bulkUpload = {}; 
+      console.log("In BulkUploadController");
+      $scope.dropdown = function () {
+        if ($scope.sutChecked == false) {
+          $scope.sutlist = sutService.getAllSUT();
+        }
+      };
+      
+      $scope.publishBulkUpload = function (bulkUpload) {
+        bulkUploadService.publishFromRRPair(bulkUpload, $scope.uploadRRPair);
+      };
+}])
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory',
         function($scope,apiHistoryService,sutService,suggestionsService, helperFactory){
             $scope.sutlist = sutService.getAllSUT();

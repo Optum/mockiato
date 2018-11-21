@@ -112,6 +112,23 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                     }]
                 }
             })
+
+            .when("/bulkUpload", {
+                templateUrl: "partials/bulkUpload.html",
+                controller: "bulkUploadController",
+                resolve: {
+                    auth: ['$q', 'authService', function ($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
+
             .when("/mq", {
                 templateUrl: "partials/mq.html"
             })

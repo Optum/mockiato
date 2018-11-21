@@ -395,6 +395,48 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         };
     }])
 
+    .service('bulkUploadService', ['$http', '$location', 'authService', 'feedbackService',
+    function ($http, $location, authService, feedbackService) {
+        this.publishFromRRPair = function(bulkUpload, uploadRRPair) {
+          var fd = new FormData();
+          fd.append('bulkUpload', uploadRRPair);
+          console.log("Success in ServiceWorkerMessageEvent.js");
+          var params = {};
+          params.token = authService.getUserInfo().token;
+          params.group = bulkUpload.sut.name;
+          params.type  = bulkUpload.type;
+          params.name  = bulkUpload.name;
+          console.log(uploadRRPair.file);
+          //add new SUT
+          $http.post('/api/systems/', bulkUpload.sut)
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#failure-modal').modal('toggle');
+            });
+
+          $http.post('/api/services/fromBulkUpload', fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+          })
+          .then(function(response){
+            var data = response.data;
+            console.log(data);
+            //redirect to update page for created service
+            $location.path('/update/' + data._id);
+            feedbackService.displayServiceInfo(data);
+            $('#success-modal').modal('toggle');
+          })
+          .catch(function(err){
+            console.log(err);
+            $('#failure-modal').modal('toggle');
+          });
+        };
+    }])
+
     .service('genDataService', [
         function() {
 
