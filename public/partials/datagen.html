@@ -74,8 +74,10 @@
     <div class="col-xs-3">
       <label>Include row id:  </label>&nbsp;
       <input type="checkbox" ng-model="idBool" /> <br/>
-      <label>Start at:  </label>&nbsp;
-      <input type="text" ng-model="rowOffset" class="small-input"/>
+      <label>Start at:  </label>
+      <input type="number" class="small-input" ng-disabled="!idBool" placeholder="0" ng-model="rowOffset" maxlength="9" 
+        min="0" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? 
+                    null : event.charCode >= 48 && event.charCode <= 57" onpaste="return false" />
     </div>
   </div>
 
@@ -83,7 +85,9 @@
   <div class="form-group row">
     <div class="col-xs-2">
       <label>Number of rows</label>
-      <input type="number" class="form-control" placeholder="Number of rows" ng-model="numRows" min="1" ng-pattern="/^[0-9]{1,9}$/" required >
+      <input type="number" class="form-control" placeholder="Number of rows" ng-model="numRows" min="1" ng-pattern="/^[0-9]{1,9}$/"
+        required onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
     </div>
     <div class="form-group col-xs-2">
       <label>Output file type</label>
