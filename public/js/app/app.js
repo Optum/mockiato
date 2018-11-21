@@ -1,4 +1,4 @@
-var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services','mockapp.factories', 'mockapp.directives', 'ngSanitize','ngRoute','ngMessages', 'bootstrap.fileField','ui.bootstrap','ngFileSaver', 'angucomplete-alt'])
+var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services','mockapp.factories', 'ngSanitize','ngRoute','ngMessages', 'bootstrap.fileField','ui.bootstrap','ngFileSaver', 'angucomplete-alt'])
 
 
     .config(["$routeProvider", "$httpProvider", function($routeProvider, $httpProvider){
