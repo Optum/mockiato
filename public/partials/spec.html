@@ -23,7 +23,7 @@
             <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="spec.sut" ng-options="sut.name for sut in sutlist">
                 <option selected="selected" disabled="true">Select Group</option>
             </select>
-            <input ng-show="sutChecked" required type="text" ng-pattern="/^\S*$/" id="system_under_test" class="form-control" ng-model="spec.sut.name" placeholder="Enter group name(no spaces)">
+            <input ng-show="sutChecked" required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="system_under_test" class="form-control" ng-model="spec.sut.name" placeholder="Enter group name(no spaces)">
         </div>
         <div class="col-xs-3">
             <p>Check to create new Group
