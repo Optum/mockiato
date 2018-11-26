@@ -254,63 +254,29 @@ function registerAllRRPairsForAllServices() {
   });
 }
 
-// retrieve service from database and register it
-function registerById(id) {
-  Service.findById(id, function(err, service) {
-    if (err) {
-      debug('Error registering service: ' + err);
-      return;
-    }
+function deregisterRRPair(service, rrpair) {
+  let relPath = rrpair.path || '';
+  let fullPath = '/virtual' + service.basePath + relPath;
+  removeRoute(require('../app'), fullPath);
+}
 
-    if (service) {
-      try {
-        deregisterService(service);
-  
-        debug('service running: ' + service.running);
-        if (service.running) {
-          service.rrpairs.forEach(function(rrpair){
-            registerRRPair(service, rrpair);
-          });
-        }
-      }
-      catch(e) {
-        debug('Error registering service: ' + e);
-      }
-    }
+function registerService(service) {
+  service.rrpairs.forEach(function(rrpair){
+    registerRRPair(service, rrpair);
   });
 }
 
 function deregisterService(service) {
-  service.rrpairs.forEach(function(rr){
-    let relPath = rr.path || '';
-    let fullPath = '/virtual' + service.basePath + relPath;
-    removeRoute(require('../app'), fullPath);
-  });
-}
-
-function deregisterById(id) {
-  Service.findById(id, function(err, service) {
-    if (err) {
-      debug('Error deregistering service: ' + err);
-      return;
-    }
-
-    if (service) {
-      try {
-        deregisterService(service);
-      }
-      catch(e) {
-        debug('Error deregistering service: ' + e);
-      }
-    }
+  service.rrpairs.forEach(function(rrpair){
+    deregisterRRPair(service, rrpair);
   });
 }
 
 module.exports = {
   router: router,
-  registerById: registerById,
+  registerService: registerService,
   registerRRPair: registerRRPair,
-  deregisterById: deregisterById,
+  deregisterRRPair: deregisterRRPair,
   deregisterService: deregisterService,
   registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
 };

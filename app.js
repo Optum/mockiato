@@ -131,13 +131,14 @@ function init() {
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
       const msg = message.data;
+      const service = msg.service;
+      const action  = msg.action;
       debug(msg);
 
-      if (msg.action === 'register') {
-        virtual.registerById(msg.serviceId);
-      }
-      else {
-        virtual.deregisterById(msg.serviceId);
+      virtual.deregisterService(service);
+
+      if (action === 'register') {
+        virtual.registerService(service);
       }
     });
   }

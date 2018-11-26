@@ -129,21 +129,23 @@ function mergeRRPairs(original, second) {
 }
 
 // propagate changes to all threads
-function syncWorkers(serviceId, action) {
+function syncWorkers(service, action) {
   const msg = {
     action: action,
-    serviceId: serviceId
+    service: service
   };
   
   manager.messageAll(msg)
     .then(function(workerIds) {
       if (workerIds.length) debug(workerIds);
+
+      virtual.deregisterService(service);
+
       if (action === 'register') {
-        virtual.registerById(serviceId);
+        virtual.registerService(service);
       }
       else {
-        virtual.deregisterById(serviceId);
-        Service.findOneAndRemove({_id : serviceId }, function(err)	{
+        Service.findOneAndRemove({_id : service._id }, function(err)	{
           if (err) debug(err);
         });
       }
