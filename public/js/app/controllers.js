@@ -719,19 +719,32 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             }
     }])
 
-    .controller("bulkUploadController", ['$scope', 'sutService' , 'bulkUploadService', 
-    function($scope, sutService, bulkUploadService) {
+    .controller("bulkUploadController", ['$scope', 'sutService' , 'zipUploadAndExtractService', 'publishExtractedRRPairService', 'ctrlConstants', 
+    function($scope, sutService, zipUploadAndExtractService, publishExtractedRRPairService, ctrlConstants) {
       $scope.sutlist = sutService.getAllSUT();
-      $scope.bulkUpload = {}; 
-      console.log("In BulkUploadController");
+      $scope.bulkUpload = {};
       $scope.dropdown = function () {
         if ($scope.sutChecked == false) {
           $scope.sutlist = sutService.getAllSUT();
         }
       };
-      
-      $scope.publishBulkUpload = function (bulkUpload) {
-        bulkUploadService.publishFromRRPair(bulkUpload, $scope.uploadRRPair);
+      $scope.uploadAndExtractZip = function () {
+        $scope.uploadSuccessMessage = "";
+        $scope.uploadErrMessage = "";
+        $scope.uploaded_file_name_id = "";
+        if ($scope.uploadRRPair) {
+          zipUploadAndExtractService.zipUploadAndExtract($scope.uploadRRPair, function (file_upload_name_id) {
+            if (file_upload_name_id) {
+              $scope.uploadSuccessMessage = ctrlConstants.BULK_UPLOAD_SUCCESS_MSG + $scope.uploadRRPair.name;
+              $scope.uploaded_file_name_id = file_upload_name_id;
+            } else {
+              $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FAILURE_MSG + $scope.uploadRRPair.name;
+            }
+          });
+        }
+      };
+      $scope.publishExtractedRRPairFiles = function (bulkUpload) {
+        publishExtractedRRPairService.publishExtractedRRPair(bulkUpload, $scope.uploaded_file_name_id);
       };
 }])
 ;
@@ -749,5 +762,7 @@ ctrl.constant("ctrlConstants", {
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
   "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
-  "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?'
+  "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?',
+  "BULK_UPLOAD_SUCCESS_MSG" : "Bulk Upload Success! File Uploaded - ",
+  "BULK_UPLOAD_FAILURE_MSG" : "Unexpected Error. Bulk Upload Fail. File Uploaded - "
 });

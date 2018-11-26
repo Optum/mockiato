@@ -21,8 +21,12 @@ function rejectInvalid(req, res, next) {
 // create service from OpenAPI spec
 router.post('/fromSpec', upload.single('spec'), servCtrl.createFromSpec);
 
-// create service from RR Pair BulkUpload
-router.post('/fromBulkUpload', upload.single('bulkUpload'), servCtrl.createFromBulkUpload);
+
+//Upload zip in upload directory and extract the zip in RRPair directory
+router.post('/zipUploadAndExtract', upload.single('zipFile'), servCtrl.zipUploadAndExtract);
+
+//create service from RR Pair BulkUpload
+router.post('/publishExtractedRRPairs', servCtrl.publishExtractedRRPairs);
 
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);

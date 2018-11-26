@@ -413,45 +413,59 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         };
     }])
 
-    .service('bulkUploadService', ['$http', '$location', 'authService', 'feedbackService',
-    function ($http, $location, authService, feedbackService) {
-        this.publishFromRRPair = function(bulkUpload, uploadRRPair) {
+    .service('zipUploadAndExtractService', ['$http', '$location', 'authService', 'feedbackService', 'servConstants',
+    function ($http, $location, authService, feedbackService, servConstants) {
+        this.zipUploadAndExtract = function(uploadRRPair, message) {
           var fd = new FormData();
-          fd.append('bulkUpload', uploadRRPair);
-          console.log("Success in ServiceWorkerMessageEvent.js");
+          fd.append('zipFile', uploadRRPair);
           var params = {};
           params.token = authService.getUserInfo().token;
-          params.group = bulkUpload.sut.name;
-          params.type  = bulkUpload.type;
-          params.name  = bulkUpload.name;
-          console.log(uploadRRPair.file);
-          //add new SUT
-          $http.post('/api/systems/', bulkUpload.sut)
-            .then(function (response) {
-              console.log(response.data);
-            })
-            .catch(function (err) {
-              console.log(err);
-              $('#failure-modal').modal('toggle');
-            });
-
-          $http.post('/api/services/fromBulkUpload', fd, {
+          $http.post('/api/services/zipUploadAndExtract', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
           })
           .then(function(response){
-            var data = response.data;
-            console.log(data);
-            //redirect to update page for created service
-            $location.path('/update/' + data._id);
-            feedbackService.displayServiceInfo(data);
-            $('#success-modal').modal('toggle');
+             if(response.data!=""){
+              return message(response.data);
+              }
           })
           .catch(function(err){
             console.log(err);
-            $('#failure-modal').modal('toggle');
+              $('#genricMsg-dialog').find('.modal-title').text(servConstants.UPLOAD_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(servConstants.UPLOAD_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(servConstants.UPLOAD_FAIL_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
           });
+        };
+    }])
+
+    .service('publishExtractedRRPairService', ['$http', '$location', 'authService', 'feedbackService', 'servConstants',
+    function ($http, $location, authService, feedbackService, servConstants) {
+        this.publishExtractedRRPair = function(bulkUpload, uploaded_file_name_id) {
+          var fd = new FormData();
+          var params = {};
+          params.token = authService.getUserInfo().token;
+          params.group = bulkUpload.sut.name;
+          params.type  = bulkUpload.type;
+          params.name  = bulkUpload.name;
+          params.url = bulkUpload.base;
+          params.uploaded_file_name_id = uploaded_file_name_id;
+            $http.post('/api/services/publishExtractedRRPairs', fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+            })
+              .then(function (response) {
+                var data = response.data;
+                $location.path('/update/' + data._id + '/frmServCreate');
+              })
+              .catch(function (err) {
+                console.log(err);
+                $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').modal('toggle');
+              });
         };
     }])
 
@@ -655,5 +669,8 @@ serv.constant("servConstants", {
         "LOGIN_ERR_BODY" : "Invalid credentials. Please try again.",
         "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
         "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
-        "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.", 
+        "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.",
+        "UPLOAD_FAIL_ERR_TITLE" : "Upload Failure Error",
+        "UPLOAD_FAIL_ERR_BODY" : "Error occured in bulk upload.",
+        "UPLOAD_FAIL_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Close</button>'
       });
