@@ -101,24 +101,20 @@
 
       <div class="form-group row" ng-show="servicevo.type === 'REST'">
         <label for="service_method" class="col-xs-2 col-form-label">HTTP Method:</label>
-        <div class="col-xs-9">
+        <div class="col-xs-3">
           <div class="radio">
-            <label class="move-radios">
-                <input ng-model="rr.method" id="service_method" type="radio" ng-value="'POST'" ng-required="servicevo.type === 'REST' && !rr.method">
-                  POST
-            </label>
-            <label class="move-radios">
-                <input ng-model="rr.method" id="service_method" type="radio" ng-value="'GET'" ng-required="servicevo.type === 'REST' && !rr.method">
-                  GET
-            </label>
-            <label class="move-radios">
-                <input ng-model="rr.method" id="service_method" type="radio" ng-value="'PUT'" ng-required="servicevo.type === 'REST' && !rr.method">
-                  PUT
-            </label>
-            <label>
-                <input ng-model="rr.method" id="service_method" type="radio" ng-value="'DELETE'" ng-required="servicevo.type === 'REST' && !rr.method">
-                  DELETE
-            </label>
+              <select ng-model="rr.method" class="form-control"  ng-required="servicevo.type === 'REST' && !rr.method">
+                  <option value="GET" ng-value="'GET'">GET</option>
+                  <option value="POST" ng-value="'POST'">POST</option>
+                  <option value="UPDATE" ng-value="'UPDATE'">UPDATE</option>
+                  <option value="DELETE" ng-value="'DELETE'">DELETE</option>
+                  <option value="PATCH" ng-value="'PATCH'">PATCH</option>
+                  <option value="PUT" ng-value="'PUT'">PUT</option>
+                  <option value="HEAD" ng-value="'HEAD'">HEAD</option>
+                  <option value="CONNECT" ng-value="'CONNECT'">CONNECT</option>
+                  <option value="OPTIONS" ng-value="'OPTIONS'">OPTIONS</option>
+                  <option value="TRACE" ng-value="'TRACE'">TRACE</option>              
+                </select>
           </div>
         </div>
       </div>
