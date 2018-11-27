@@ -7,7 +7,7 @@ const removeRoute = require('../lib/remove-route');
 
 // function to simulate latency
 function delay(ms,msMax) {
-  if (!ms || ms === 1) {
+  if ((!ms || ms === 1) && !msMax && msMax <= 1) {
     return function(req, res, next) {
       return next();
     };
@@ -15,11 +15,12 @@ function delay(ms,msMax) {
   return function(req, res, next) {
     if (!req.delayed) {
       //If we have a random range set, adjust ms delay within that range
+      var finalDelay = ms;
       if(msMax && msMax > ms){
-        ms += Math.round(Math.random() * (msMax - ms));
+        finalDelay += Math.round(Math.random() * (msMax - ms));
       }
       req.delayed = true;
-      return setTimeout(next, ms);
+      return setTimeout(next, finalDelay);
     }
 
     return next();
