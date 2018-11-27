@@ -160,9 +160,11 @@ function addService(req, res) {
     name: req.body.name,
     type: req.body.type,
     delay: req.body.delay,
+    delayMax: req.body.delayMax,
     basePath: '/' + req.body.sut.name + req.body.basePath,
     matchTemplates: req.body.matchTemplates,
     rrpairs: req.body.rrpairs
+    
   };
 
   searchDuplicate(serv, function(duplicate) {
@@ -216,6 +218,10 @@ function updateService(req, res) {
       service.delay = req.body.delay;
     }
 
+    const delayMax = req.body.delayMax;
+    if (delayMax || delayMax === 0) {
+      service.delayMax = req.body.delayMax;
+    }
     // save updated service in DB
     service.save(function (err, newService) {
       if (err) {
