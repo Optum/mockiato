@@ -72,15 +72,3 @@ Formerly known as a "system under test", a group is a convenient way to organize
 
 The service owner is the person who created the service. If Mockiato is running with the LDAP authentication strategy, then the non-ID fields for the owner model are simply a username and email address. These are pulled from AD automatically on your first login.
 
-
-## Original Contributors
-
-+ Rahul Vashishth
-+ Grace Clark
-+ Zak Parks
-+ JD Weeks
-
-## Maintainers
-
-+ Zak Parks
-+ JD Weeks

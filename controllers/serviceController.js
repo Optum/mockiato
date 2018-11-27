@@ -129,21 +129,23 @@ function mergeRRPairs(original, second) {
 }
 
 // propagate changes to all threads
-function syncWorkers(serviceId, action) {
+function syncWorkers(service, action) {
   const msg = {
     action: action,
-    serviceId: serviceId
+    service: service
   };
   
   manager.messageAll(msg)
     .then(function(workerIds) {
-      if (workerIds.length) debug(workerIds);
+      //if (workerIds.length) debug(workerIds);
+
+      virtual.deregisterService(service);
+
       if (action === 'register') {
-        virtual.registerById(serviceId);
+        virtual.registerService(service);
       }
       else {
-        virtual.deregisterById(serviceId);
-        Service.findOneAndRemove({_id : serviceId }, function(err)	{
+        Service.findOneAndRemove({_id : service._id }, function(err)	{
           if (err) debug(err);
         });
       }
@@ -182,7 +184,7 @@ function addService(req, res) {
           return;
         }
         res.json(newService);
-        syncWorkers(newService._id, 'register');
+        syncWorkers(newService, 'register');
       });
     }
     else {
@@ -195,7 +197,7 @@ function addService(req, res) {
         }
         // respond with the newly created resource
         res.json(service);
-        syncWorkers(service._id, 'register');
+        syncWorkers(service, 'register');
       });
     }
   });
@@ -210,9 +212,12 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
-    service.matchTemplates = req.body.matchTemplates;
     service.rrpairs = req.body.rrpairs;
 
+    if (req.body.matchTemplates) {
+      service.matchTemplates = req.body.matchTemplates;
+    }
+    
     const delay = req.body.delay;
     if (delay || delay === 0) {
       service.delay = req.body.delay;
@@ -230,7 +235,7 @@ function updateService(req, res) {
       }
 
       res.json(newService);
-      syncWorkers(newService._id, 'register');
+      syncWorkers(newService, 'register');
     });
   });
 }
@@ -251,14 +256,28 @@ function toggleService(req, res) {
       }
 
       res.json({'message': 'toggled', 'service': newService });
-      syncWorkers(newService._id, 'register');
+      syncWorkers(newService, 'register');
     });
   });
 }
 
 function deleteService(req, res) {
-  res.json({ 'message' : 'deleted', 'id' : req.params.id });
-  syncWorkers(req.params.id, 'delete');
+  Service.findById(req.params.id, function(err, service)	{
+    if (err)	{
+      handleError(err, res, 500);
+      return;
+    }
+
+    service.remove(function(e, oldService) {
+      if (e)	{
+        handleError(e, res, 500);
+        return;
+      }
+
+      res.json({ 'message' : 'deleted', 'id' : oldService._id });
+      syncWorkers(oldService, 'delete');
+    });
+  });
 }
 
 // get spec from url or local filesystem path
@@ -343,7 +362,7 @@ function createFromSpec(req, res) {
       if (err) handleError(err, res, 500);
 
       res.json(service);
-      syncWorkers(service._id, 'register');
+      syncWorkers(service, 'register');
     });
   }
 
