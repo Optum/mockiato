@@ -222,7 +222,7 @@
       </div>
     </div>
 
-    <div class="form-group row" ng-class="rr.method === 'DELETE' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
+    <div class="form-group row" g-class="servicevo.type === 'REST' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
       <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
       <div class="col-xs-9">
         <textarea ng-required="servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
