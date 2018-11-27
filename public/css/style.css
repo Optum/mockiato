@@ -104,3 +104,8 @@ input[type="radio"] {
 .borderless td, .borderless th {
   border: none;
 }
+
+.conjunction{
+  text-align: center;
+  padding-top: 5px;
+}

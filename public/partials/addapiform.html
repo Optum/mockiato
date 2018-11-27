@@ -54,6 +54,10 @@
     <div class="col-xs-2">
       <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0">
     </div>
+    <div class="conjunction">to</div>
+    <div class="col-xs-2">
+        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0">
+      </div>
   </div>
 
   <div class="form-group row">
@@ -106,7 +110,7 @@
       <label for="service_method" class="col-xs-2 col-form-label">HTTP Method</label>
       <div class="col-xs-3">
         <div class="radio">
-            <select class="form-control" ng-model="rr.method"  ng-required="servicevo.type === 'REST' && !rr.method">
+            <select class="form-control" ng-model="rr.method"  ng-required="servicevo.type === 'REST'">
               <option value="GET" ng-value="'GET'">GET</option>
               <option value="POST" ng-value="'POST'">POST</option>
               <option value="UPDATE" ng-value="'UPDATE'">UPDATE</option>
@@ -222,7 +226,7 @@
       </div>
     </div>
 
-    <div class="form-group row" ng-class="rr.method === 'DELETE' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
+    <div class="form-group row" g-class="servicevo.type === 'REST' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
       <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
       <div class="col-xs-9">
         <textarea ng-required="servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
