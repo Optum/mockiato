@@ -316,7 +316,7 @@ function publishExtractedRRPairs(req, res) {
     serv.sut = sut;
     serv.name = name;
     serv.type = type;
-    serv.basePath = '/' + serv.sut.name + base;
+    serv.basePath = '/' + serv.sut.name +'/'+ base;
     serv.user = req.decoded;
     Service.create(serv, function (err, service) {
       if (err) {
