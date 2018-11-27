@@ -6,16 +6,21 @@ const Service = require('../models/Service');
 const removeRoute = require('../lib/remove-route');
 
 // function to simulate latency
-function delay(ms) {
-  if (!ms || ms === 1) {
+function delay(ms,msMax) {
+  if ((!ms || ms === 1) && !msMax && msMax <= 1) {
     return function(req, res, next) {
       return next();
     };
   }
   return function(req, res, next) {
     if (!req.delayed) {
+      //If we have a random range set, adjust ms delay within that range
+      let finalDelay = ms;
+      if(msMax && msMax > ms){
+        finalDelay += Math.round(Math.random() * (msMax - ms));
+      }
       req.delayed = true;
-      return setTimeout(next, ms);
+      return setTimeout(next, finalDelay);
     }
 
     return next();
@@ -31,7 +36,7 @@ function registerRRPair(service, rrpair) {
   if (rrpair.path) path = service.basePath + rrpair.path;
   else path = service.basePath;
 
-  router.all(path, delay(service.delay), function(req, resp, next) {
+  router.all(path, delay(service.delay, service.delayMax), function(req, resp, next) {
     req.msgContainer = req.msgContainer || {};
     req.msgContainer.reqMatched = false;
 

@@ -88,6 +88,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             $rootScope.virt.operations = [];
             $rootScope.virt.baseUrl = '/virtual' + data.basePath;
             $rootScope.virt.delay= data.delay;
+            $rootScope.virt.delayMax= data.delayMax;
             $rootScope.virt.type = data.type;
             $rootScope.virt.name = data.name;
               data.rrpairs.forEach(function(rr) {
@@ -283,6 +284,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     basePath: '/' + servicevo.basePath,
                     type: servicevo.type,
                     delay: servicevo.delay,
+                    delayMax: servicevo.delayMax,
                     matchTemplates: templates,
                     rrpairs: rrpairs
                 };
