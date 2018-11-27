@@ -181,6 +181,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       name: service.name,
                       type: service.type,
                       delay: service.delay,
+                      delayMax: service.delayMax,
                       txnCount: service.txnCount,
                       basePath: service.basePath
                     };

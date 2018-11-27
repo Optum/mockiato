@@ -6,16 +6,21 @@ const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
 
 // function to simulate latency
-function delay(ms) {
-  if (!ms || ms === 1) {
+function delay(ms,msMax) {
+  if ((!ms || ms === 1) && !msMax && msMax <= 1) {
     return function(req, res, next) {
       return next();
     };
   }
   return function(req, res, next) {
     if (!req.delayed) {
+      //If we have a random range set, adjust ms delay within that range
+      let finalDelay = ms;
+      if(msMax && msMax > ms){
+        finalDelay += Math.round(Math.random() * (msMax - ms));
+      }
       req.delayed = true;
-      return setTimeout(next, ms);
+      return setTimeout(next, finalDelay);
     }
 
     return next();
@@ -24,13 +29,17 @@ function delay(ms) {
 
 // function for registering an RR pair on a service
 function registerRRPair(service, rrpair) {
+  let msg;
   let path;
   let matched;
 
   if (rrpair.path) path = service.basePath + rrpair.path;
   else path = service.basePath;
 
-  router.all(path, delay(service.delay), function(req, resp, next) {
+  router.all(path, delay(service.delay, service.delayMax), function(req, resp, next) {
+    req.msgContainer = req.msgContainer || {};
+    req.msgContainer.reqMatched = false;
+
     if (req.method === rrpair.verb) {
       // convert xml to js object
       if (rrpair.payloadType === 'XML') {
@@ -43,13 +52,20 @@ function registerRRPair(service, rrpair) {
       }
     }
     else {
-      debug("HTTP methods don't match");
+      msg = "HTTP methods don't match";
+      req.msgContainer.reason = msg;
+      debug(msg);
       return next();
     }
     debug("Request matched? " + matched);
     
     // run the next callback if request not matched
-    if (!matched) return next();
+    if (!matched) {
+      msg = "Request bodies don't match";
+      req.msgContainer.reason = msg;
+      debug(msg);
+      return next();
+    }
 
     // function for matching requests to responses
     function matchRequest(payload) {
@@ -125,16 +141,23 @@ function registerRRPair(service, rrpair) {
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
           if (!req.query) {
-            debug("expected query in request");
+            debug("expected queries in request");
             return false;
           }
+          let matchedQueries = true;
 
-          // try the next rr pair if queries do not match
-          if (!deepEquals(rrpair.queries, req.query)) {
-            debug("expected query: " + JSON.stringify(rrpair.queries));
-            debug("received query: " + JSON.stringify(req.query));
-            return false;
-          }
+          const expectedQueries = Object.entries(rrpair.queries);
+          expectedQueries.forEach(function(queryVal) {
+            const sentQuery = req.query[queryVal[0]];
+            
+            if (sentQuery != queryVal[1]) {
+              matchedHeaders = false;
+              debug('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
+              debug('received query: ' + queryVal[0] + ': ' + sentQuery);
+            }
+          });
+
+          if (!matchedQueries) return false;
         }
 
         // check request headers
@@ -146,7 +169,7 @@ function registerRRPair(service, rrpair) {
             // skip content-type header
             if (keyVal[0].toLowerCase() !== 'content-type') {
               const sentVal = req.get(keyVal[0]);
-              if (sentVal !== keyVal[1]) {
+              if (sentVal != keyVal[1]) {
                 // try the next rr pair if headers do not match
                 matchedHeaders = false;
                 debug('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
@@ -187,19 +210,27 @@ function registerRRPair(service, rrpair) {
     function setRespHeaders() {
       const resHeaders = rrpair.resHeaders;
 
-      if (!resHeaders) {
-        // set default headers
-        if (rrpair.payloadType === 'XML')
-          resp.set("Content-Type", "text/xml");
-        else if (rrpair.payloadType === 'JSON') {
-          resp.set("Content-Type", "application/json");
+      if (resHeaders) {        
+        if (!resHeaders['Content-Type']) {
+          setContentType();
         }
-        else {
-          resp.set("Content-Type", "text/plain");
-        }
+        
+        resp.set(resHeaders);
+        return;
+      }
+      
+      setContentType();
+    }
+    
+    function setContentType() {
+      // set default headers
+      if (rrpair.payloadType === 'XML')
+        resp.set("Content-Type", "text/xml");
+      else if (rrpair.payloadType === 'JSON') {
+        resp.set("Content-Type", "application/json");
       }
       else {
-        resp.set(resHeaders);
+        resp.set("Content-Type", "text/plain");
       }
     }
   });
@@ -228,63 +259,39 @@ function registerAllRRPairsForAllServices() {
   });
 }
 
-// retrieve service from database and register it
-function registerById(id) {
-  Service.findById(id, function(err, service) {
-    if (err) {
-      debug('Error registering service: ' + err);
-      return;
-    }
+function deregisterRRPair(service, rrpair) {
+  let relPath = rrpair.path || '';
+  let fullPath = '/virtual' + service.basePath + relPath;
+  removeRoute(require('../app'), fullPath);
+}
 
-    if (service) {
-      try {
-        deregisterService(service);
-  
-        debug('service running: ' + service.running);
-        if (service.running) {
-          service.rrpairs.forEach(function(rrpair){
-            registerRRPair(service, rrpair);
-          });
-        }
-      }
-      catch(e) {
-        debug('Error registering service: ' + e);
-      }
-    }
+function registerService(service) {
+  if (!service || !service.rrpairs) {
+    debug('cannot register undefined service');
+    return;
+  }
+
+  service.rrpairs.forEach(function(rrpair){
+    registerRRPair(service, rrpair);
   });
 }
 
 function deregisterService(service) {
-  service.rrpairs.forEach(function(rr){
-    let relPath = rr.path || '';
-    let fullPath = '/virtual' + service.basePath + relPath;
-    removeRoute(require('../app'), fullPath);
-  });
-}
+  if (!service || !service.rrpairs) {
+    debug('cannot deregister undefined service');
+    return;
+  }
 
-function deregisterById(id) {
-  Service.findById(id, function(err, service) {
-    if (err) {
-      debug('Error deregistering service: ' + err);
-      return;
-    }
-
-    if (service) {
-      try {
-        deregisterService(service);
-      }
-      catch(e) {
-        debug('Error deregistering service: ' + e);
-      }
-    }
+  service.rrpairs.forEach(function(rrpair){
+    deregisterRRPair(service, rrpair);
   });
 }
 
 module.exports = {
   router: router,
-  registerById: registerById,
+  registerService: registerService,
   registerRRPair: registerRRPair,
-  deregisterById: deregisterById,
+  deregisterRRPair: deregisterRRPair,
   deregisterService: deregisterService,
   registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
 };

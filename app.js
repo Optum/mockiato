@@ -144,13 +144,14 @@ function init() {
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
       const msg = message.data;
-      debug(msg);
+      const service = msg.service;
+      const action  = msg.action;
+      debug(action);
 
-      if (msg.action === 'register') {
-        virtual.registerById(msg.serviceId);
-      }
-      else {
-        virtual.deregisterById(msg.serviceId);
+      virtual.deregisterService(service);
+
+      if (action === 'register') {
+        virtual.registerService(service);
       }
     });
   }
@@ -161,6 +162,23 @@ function init() {
 
   const users = require('./routes/users');
   app.use('/api/users', users);
+
+  // handle no match responses
+  app.use(function(req, res, next) {
+    if (!req.msgContainer) {
+      req.msgContainer = {};
+      req.msgContainer.reqMatched = false;
+      req.msgContainer.reason = `Path ${req.path} could not be found`;
+    }
+
+    return res.status(404).json(req.msgContainer);
+  });
+
+  // handle internal errors
+  app.use(function(err, req, res) {
+    debug(err.message);
+    return res.status(500).send(err.message);
+  });
 
   // ready for testing (see test/test.js)
   app.emit('started');

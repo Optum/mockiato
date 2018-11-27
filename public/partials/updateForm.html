@@ -72,6 +72,10 @@
           <option selected="selected" disabled="true">Select Queue</option>
       </select>
     </div>
+    <div class="col-xs-1 conjunction">to</div>
+    <div class="col-xs-2">
+        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0">
+      </div>
   </div>
 
   <div class="form-group req row" ng-show="servicevo.type === 'MQ'">

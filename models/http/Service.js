@@ -25,6 +25,13 @@ const serviceSchema = new mongoose.Schema({
     get: function(v) { return Math.round(v); },
     set: function(v) { return Math.round(v); }
   },
+  delayMax: {
+    // force integer only
+    type: Number,
+    default: 0,
+    get: function(v) { return Math.round(v); },
+    set: function(v) { return Math.round(v); }
+  },
   txnCount: {
     type: Number,
     default: 0,
