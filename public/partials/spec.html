@@ -52,25 +52,27 @@
     <div class="form-group req row">
         <label for="service_name" class="col-xs-2 col-form-label">Spec Source:</label>
         <div class="col-xs-2">
-            <file-field class="btn btn-primary" ng-model="uploadSpec" preview="previewText">
+            <file-field class="btn btn-primary" ng-model="uploadSpec" ng-change="callUploadSpec()" preview="previewText">
                 <i class="glyphicon glyphicon-import"></i> Upload File</file-field>&nbsp;&nbsp;&nbsp;<b class="tab1">Or</b>
         </div>
         
         <div class="col-xs-7">
-            <input type="text" id="service_name" class="form-control" ng-model="spec.url" placeholder="Enter URL to spec">
+            <input type="text" id="service_name" class="form-control" ng-model="spec.url" placeholder="Paste URL">
         </div>
     </div>
-
+    <br>
+    <div style='color:#008000;font-weight:normal;font-size: 13px;' ng-show="uploadSuccessMessage">&#x2714;&nbsp;&nbsp;{{uploadSuccessMessage}}</div>
+    <div style='color:#b40037;font-weight:bold;font-size: 13px;' ng-show="uploadErrMessage">&#10060;&nbsp;&nbsp;{{uploadErrMessage}}</div>
     <br>
     <div class="form-group row">
         <div class="col-sm-12">
             <button ng-disabled="form.$invalid || !(spec.url || uploadSpec)" type="button" class="btn btn-xl btn-success center-block" ng-click="publishspec(spec)">Publish</button>
         </div>
     </div>
+    <p class="text-muted" style='font-size: 10.5px;'>**Either upload a spec or paste a URL. If you do both then only URL will be considered.</p>
 
-
-    <div class="form-group row">
-        <div class="col-xs-9" ng-show="previewText">
+    <div class="form-group row" ng-show="uploadSpec">
+        <div class="col-xs-9">
             <h3><i>Preview</i></h3>
             <br>
             {{uploadSpec.name}}

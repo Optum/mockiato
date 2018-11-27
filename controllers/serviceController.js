@@ -307,8 +307,8 @@ function isYaml(req) {
     if (url.includes('yml') || url.includes('yaml'))
       return true;
   }
-  if (req.file) {
-    const name = req.file.originalname;
+  if (req.query.uploaded_file_name!="") {
+    const name = req.query.uploaded_file_name;
     if (name.includes('yml') || name.includes('yaml')) {
       return true;
     }
@@ -325,6 +325,20 @@ function zipUploadAndExtract(req, res) {
   }
   extractZip().then(function (message) {
     res.json(message);
+  }).catch(function (err) {
+    debug(err);
+    handleError(err, res, 400);
+  });
+}
+
+function specUpload(req, res) {
+  let uploadSpec = function () {
+    return new Promise(function (resolve, reject) {
+      resolve(req.file.filename);
+    });
+  }
+  uploadSpec().then(function (message) {
+  res.json(message);
   }).catch(function (err) {
     debug(err);
     handleError(err, res, 400);
@@ -357,12 +371,14 @@ function publishExtractedRRPairs(req, res) {
   }
 }
 
-function createFromSpec(req, res) {
+
+function publishUploadedSpec(req, res) {
   const type = req.query.type;
   const name = req.query.name;
   const url = req.query.url;
   const sut = { name: req.query.group };
-  const specPath = url || req.file.path;
+  const filePath = './uploads/'+req.query.uploaded_file_id;
+  const specPath = url || filePath;
 
   switch (type) {
     case 'wsdl':
@@ -434,7 +450,8 @@ module.exports = {
   updateService: updateService,
   toggleService: toggleService,
   deleteService: deleteService,
-  createFromSpec: createFromSpec,
   zipUploadAndExtract: zipUploadAndExtract,
-  publishExtractedRRPairs: publishExtractedRRPairs
+  publishExtractedRRPairs: publishExtractedRRPairs,
+  specUpload: specUpload,
+  publishUploadedSpec: publishUploadedSpec
 };
