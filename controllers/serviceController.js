@@ -253,8 +253,22 @@ function toggleService(req, res) {
 }
 
 function deleteService(req, res) {
-  res.json({ 'message' : 'deleted', 'id' : req.params.id });
-  syncWorkers({ _id: req.params.id }, 'delete');
+  Service.findById(req.params.id, function(err, service)	{
+    if (err)	{
+      handleError(err, res, 500);
+      return;
+    }
+
+    service.remove(function(e, oldService) {
+      if (e)	{
+        handleError(e, res, 500);
+        return;
+      }
+
+      res.json({ 'message' : 'deleted', 'id' : oldService._id });
+      syncWorkers(oldService, 'delete');
+    });
+  });
 }
 
 // get spec from url or local filesystem path
