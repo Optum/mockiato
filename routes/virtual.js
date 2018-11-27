@@ -261,12 +261,22 @@ function deregisterRRPair(service, rrpair) {
 }
 
 function registerService(service) {
+  if (!service || !service.rrpairs) {
+    debug('cannot register undefined service');
+    return;
+  }
+
   service.rrpairs.forEach(function(rrpair){
     registerRRPair(service, rrpair);
   });
 }
 
 function deregisterService(service) {
+  if (!service || !service.rrpairs) {
+    debug('cannot deregister undefined service');
+    return;
+  }
+
   service.rrpairs.forEach(function(rrpair){
     deregisterRRPair(service, rrpair);
   });

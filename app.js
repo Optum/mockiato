@@ -133,7 +133,7 @@ function init() {
       const msg = message.data;
       const service = msg.service;
       const action  = msg.action;
-      debug(msg);
+      debug(action);
 
       virtual.deregisterService(service);
 

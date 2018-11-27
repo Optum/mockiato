@@ -137,7 +137,7 @@ function syncWorkers(service, action) {
   
   manager.messageAll(msg)
     .then(function(workerIds) {
-      if (workerIds.length) debug(workerIds);
+      //if (workerIds.length) debug(workerIds);
 
       virtual.deregisterService(service);
 
@@ -182,7 +182,7 @@ function addService(req, res) {
           return;
         }
         res.json(newService);
-        syncWorkers(newService._id, 'register');
+        syncWorkers(newService, 'register');
       });
     }
     else {
@@ -195,7 +195,7 @@ function addService(req, res) {
         }
         // respond with the newly created resource
         res.json(service);
-        syncWorkers(service._id, 'register');
+        syncWorkers(service, 'register');
       });
     }
   });
@@ -226,7 +226,7 @@ function updateService(req, res) {
       }
 
       res.json(newService);
-      syncWorkers(newService._id, 'register');
+      syncWorkers(newService, 'register');
     });
   });
 }
@@ -247,14 +247,14 @@ function toggleService(req, res) {
       }
 
       res.json({'message': 'toggled', 'service': newService });
-      syncWorkers(newService._id, 'register');
+      syncWorkers(newService, 'register');
     });
   });
 }
 
 function deleteService(req, res) {
   res.json({ 'message' : 'deleted', 'id' : req.params.id });
-  syncWorkers(req.params.id, 'delete');
+  syncWorkers({ _id: req.params.id }, 'delete');
 }
 
 // get spec from url or local filesystem path
@@ -339,7 +339,7 @@ function createFromSpec(req, res) {
       if (err) handleError(err, res, 500);
 
       res.json(service);
-      syncWorkers(service._id, 'register');
+      syncWorkers(service, 'register');
     });
   }
 
