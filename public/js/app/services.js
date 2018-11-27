@@ -432,10 +432,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           })
           .catch(function(err){
             console.log(err);
-              $('#genricMsg-dialog').find('.modal-title').text(servConstants.UPLOAD_FAIL_ERR_TITLE);
-              $('#genricMsg-dialog').find('.modal-body').text(servConstants.UPLOAD_FAIL_ERR_BODY);
-              $('#genricMsg-dialog').find('.modal-footer').html(servConstants.UPLOAD_FAIL_FOOTER);
-              $('#genricMsg-dialog').modal('toggle');
+            return message();
           });
         };
     }])
