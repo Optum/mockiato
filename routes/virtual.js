@@ -55,6 +55,7 @@ function registerRRPair(service, rrpair) {
       msg = "HTTP methods don't match";
       req.msgContainer.reason = msg;
       debug(msg);
+      logger.info(msg);
       return next();
     }
     debug("Request matched? " + matched);
@@ -64,6 +65,7 @@ function registerRRPair(service, rrpair) {
       msg = "Request bodies don't match";
       req.msgContainer.reason = msg;
       debug(msg);
+      logger.info(msg);
       return next();
     }
 
@@ -100,6 +102,7 @@ function registerRRPair(service, rrpair) {
               xml2js.parseString(template, function(err, xmlTemplate) {
                 if (err) {
                   debug(err);
+                  logger.info(err);
                   return;
                 }
                 template = xmlTemplate;
@@ -128,7 +131,8 @@ function registerRRPair(service, rrpair) {
             
             debug('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
             debug('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
-            
+            logger.info('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
+            logger.info('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
             match = deepEquals(trimmedPayload, trimmedReqData);
             
             if (match) break;
@@ -154,6 +158,8 @@ function registerRRPair(service, rrpair) {
               matchedHeaders = false;
               debug('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
               debug('received query: ' + queryVal[0] + ': ' + sentQuery);
+              logger.info('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
+              logger.info('received query: ' + queryVal[0] + ': ' + sentQuery);
             }
           });
 
@@ -174,6 +180,8 @@ function registerRRPair(service, rrpair) {
                 matchedHeaders = false;
                 debug('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
                 debug('received header: ' + keyVal[0] + ': ' + sentVal);
+                logger.info('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
+                logger.info('received header: ' + keyVal[0] + ': ' + sentVal);
               }
             }
           });
@@ -203,6 +211,8 @@ function registerRRPair(service, rrpair) {
       // request was not matched
       debug("expected payload: " + JSON.stringify(reqData, null, 2));
       debug("received payload: " + JSON.stringify(payload, null, 2));
+      logger.info("expected payload: " + JSON.stringify(reqData, null, 2));
+      logger.info("received payload: " + JSON.stringify(payload, null, 2));
       return false;
     }
 
@@ -241,6 +251,7 @@ function registerAllRRPairsForAllServices() {
   Service.find({ $or: [{ type:'SOAP' }, { type:'REST' }] }, function(err, services) {
     if (err) {
       debug('Error registering services: ' + err);
+      logger.info('Error registering services: ' + err);
       return;
     }
 
@@ -255,6 +266,7 @@ function registerAllRRPairsForAllServices() {
     }
     catch(e) {
       debug('Error registering services: ' + e);
+      logger.debug('Error registering services: ' + e);
     }
   });
 }
@@ -268,6 +280,7 @@ function deregisterRRPair(service, rrpair) {
 function registerService(service) {
   if (!service || !service.rrpairs) {
     debug('cannot register undefined service');
+    logger.info('cannot register undefined service');
     return;
   }
 
@@ -279,6 +292,7 @@ function registerService(service) {
 function deregisterService(service) {
   if (!service || !service.rrpairs) {
     debug('cannot deregister undefined service');
+    logger.info('cannot deregister undefined service');
     return;
   }
 

@@ -25,6 +25,7 @@ function addSystem(req, res) {
     if (!foundSUT) {
       System.create(sut, function(err)	{
           debug('New group created');
+          logger.info('New group created');
           if (err) {
             handleError(err, res, 500);
             return;
