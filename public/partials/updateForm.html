@@ -127,7 +127,7 @@
         <label for="service_endpoint" class="col-xs-2 col-form-label">Relative Path:</label>
         <div class="col-xs-9">
           <div class="input-group">
-            <input type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
+            <input type="text" ng-pattern="/^(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
           </div>
         </div>
       </div>
