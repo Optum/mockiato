@@ -350,7 +350,7 @@ function publishExtractedRRPairs(req, res) {
   const base = req.query.url;
   const name = req.query.name;
   const sut = { name: req.query.group };
-  rrpair.parse('./RRPair/' + req.decoded.uid + req.query.uploaded_file_name_id).then(onSuccess).catch(onError);
+  rrpair.parse('./RRPair/' + req.decoded.uid + req.query.uploaded_file_name_id, type).then(onSuccess).catch(onError);
   function onSuccess(serv) {
     serv.sut = sut;
     serv.name = name;
