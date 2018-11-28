@@ -183,8 +183,16 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
                       try {
-                        if (rr.requestpayload)  reqPayload = JSON.parse(rr.requestpayload);
-                        if (rr.responsepayload) resPayload = JSON.parse(rr.responsepayload);
+                        //Handle empty json object payload
+                        if (rr.responsepayload)  {
+                          var trimmed = rr.responsepayload.trim();
+                          if(trimmed == "{}" || trimmed == "[]"){
+                            resPayload = trimmed;
+                          }else{
+                            resPayload = JSON.parse(rr.responsepayload);
+                          }
+                        }
+                        if (rr.requestpayload) reqPayload = JSON.parse(rr.requestpayload);
                       }
                       catch(e) {
                         console.log(e);
