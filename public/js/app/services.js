@@ -497,7 +497,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               .catch(function (err) {
                 console.log(err);
                 $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_SPEC_FAIL_ERR_BODY);
                 $('#genricMsg-dialog').modal('toggle');
               });
         };
@@ -707,5 +707,6 @@ serv.constant("servConstants", {
         "UPLOAD_FAIL_ERR_TITLE" : "Upload Failure Error",
         "UPLOAD_FAIL_ERR_BODY" : "Error occured in bulk upload.",
         "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
-        "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT."
+        "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
+        "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded."
       });

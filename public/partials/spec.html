@@ -1,19 +1,16 @@
-<h2>Mock from WSDL or OpenAPI</h2>
+<h2>Mock from {{spec.heading}}</h2>
 
 <form name="form" class="well col-xs-12">
     
     <div class="form-group req row">
         <label for="service_payloadtype" class="col-xs-2 col-form-label">Spec Type:</label>
         <div class="col-xs-9">
-            <div class="radio">
-                <label class="move-radios">
-                    <input ng-model="spec.type" ng-click="setContentType(rr, 'text/xml')" id="spec_type" type="radio" ng-value="'wsdl'"
-                        ng-required="!spec.type"> WSDL
+                <label class="move-radios" ng-show="spec.type=='wsdl'">
+                     WSDL
                 </label>
-                <label class="move-radios">
-                    <input ng-model="spec.type" id="spec_type" type="radio" ng-value="'openapi'" ng-required="!spec.type"> OpenAPI
+                <label class="move-radios" ng-show="spec.type=='openapi'">
+                     OpenAPI
                 </label>
-            </div>
         </div>
     </div>
 
@@ -71,7 +68,7 @@
     </div>
     <p class="text-muted" style='font-size: 10.5px;'>**Either upload a spec or paste a URL. If you do both then only URL will be considered.</p>
 
-    <div class="form-group row" ng-show="uploadSpec">
+    <div class="form-group row" ng-show="uploadSpec && uploadSuccessMessage">
         <div class="col-xs-9">
             <h3><i>Preview</i></h3>
             <br>
