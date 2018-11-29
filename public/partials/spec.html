@@ -2,7 +2,7 @@
 
 <form name="form" class="well col-xs-12">
     
-    <div class="form-group req row">
+    <!-- <div class="form-group req row">
         <label for="service_payloadtype" class="col-xs-2 col-form-label">Spec Type:</label>
         <div class="col-xs-9">
                 <label class="move-radios" ng-show="spec.type=='wsdl'">
@@ -12,7 +12,7 @@
                      OpenAPI
                 </label>
         </div>
-    </div>
+    </div> -->
 
     <div class="form-group req row">
         <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
@@ -49,7 +49,7 @@
     <div class="form-group req row">
         <label for="service_name" class="col-xs-2 col-form-label">Spec Source:</label>
         <div class="col-xs-2">
-            <file-field class="btn btn-primary" ng-model="uploadSpec" ng-change="callUploadSpec()" preview="previewText">
+            <file-field class="btn btn-primary" ng-model="uploadSpec" ng-change="callUploadSpec()" preview="previewText" ng-disabled="!spec.name">
                 <i class="glyphicon glyphicon-import"></i> Upload File</file-field>&nbsp;&nbsp;&nbsp;<b class="tab1">Or</b>
         </div>
         
