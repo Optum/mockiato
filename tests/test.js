@@ -18,7 +18,8 @@ const mqService   = require('../examples/mq-example.json');
 const oasQuery = {
     type: 'openapi',
     name: 'oas-test',
-    group: 'test'
+    group: 'test',
+    uploaded_file_name: 'api-docs.yml'
 };
 
 const wsdlQuery = {
@@ -233,12 +234,25 @@ describe('API tests', function() {
         });
     });
 
-    describe('Create service from WSDL', function() {
-        it('Responds with the new service', function(done) {
+    describe('Upload WSDL spec', function() {
+        it('Responds with the WSDL file id which uploaded', function(done) {
             request
-                .post(resource + '/fromSpec' + token)
+                .post(resource + '/specUpload' + token)
+                .attach('specFile', wsdlService)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    wsdlQuery.uploaded_file_id=res.body;
+                })
+                .end(done)
+        });
+    });
+
+    describe('Create service from WSDL spec', function() {
+        it('Responds with the new service id', function(done) {
+            request
+                .post(resource + '/publishUploadedSpec' + token)
                 .query(wsdlQuery)
-                .attach('spec', wsdlService)
                 .send()
                 .expect(200)
                 .expect(function(res) {
@@ -257,12 +271,25 @@ describe('API tests', function() {
         });
     });
 
-    describe('Create service from OpenAPI', function() {
-        it('Responds with the new service', function(done) {
+    describe('Upload openapi spec', function() {
+        it('Responds with the openapi file id which uploaded', function(done) {
             request
-                .post(resource + '/fromSpec' + token)
+                .post(resource + '/specUpload' + token)
+                .attach('specFile', oasService)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    oasQuery.uploaded_file_id=res.body;
+                })
+                .end(done)
+        });
+    });
+
+    describe('Create service from OpenAPI spec', function() {
+        it('Responds with the new service id', function(done) {
+            request
+                .post(resource + '/publishUploadedSpec' + token)
                 .query(oasQuery)
-                .attach('spec', oasService)
                 .send()
                 .expect(200)
                 .expect(function(res) {

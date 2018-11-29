@@ -14,22 +14,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
     }])
 
-    .controller("specController", ['$scope', 'sutService' , 'specService', 
-        function($scope, sutService, specService) {
-          $scope.sutlist = sutService.getAllSUT();
-          $scope.spec = {}; 
-
-          $scope.dropdown = function () {
-            if ($scope.sutChecked == false) {
-              $scope.sutlist = sutService.getAllSUT();
-            }
-          };
-          
-          $scope.publishspec = function (spec) {
-            specService.publishFromSpec(spec, $scope.uploadSpec);
-          };
-    }])
-
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'mqService', 'helperFactory', 'ctrlConstants', 
         function($scope,apiHistoryService,sutService,suggestionsService,mqService,helperFactory,ctrlConstants){
             $scope.sutlist = sutService.getAllSUT();
@@ -721,7 +705,75 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $('#genricMsg-dialog').modal('toggle');
             }
     }])
-;
+
+    .controller("bulkUploadController", ['$scope', 'sutService' , 'zipUploadAndExtractService', 'publishExtractedRRPairService', 'ctrlConstants', 
+    function($scope, sutService, zipUploadAndExtractService, publishExtractedRRPairService, ctrlConstants) {
+      $scope.sutlist = sutService.getAllSUT();
+      $scope.bulkUpload = {};
+      $scope.dropdown = function () {
+        if ($scope.sutChecked == false) {
+          $scope.sutlist = sutService.getAllSUT();
+        }
+      };
+      $scope.uploadAndExtractZip = function () {
+        $scope.uploadSuccessMessage = "";
+        $scope.uploadErrMessage = "";
+        $scope.uploaded_file_name_id = "";
+        if ($scope.uploadRRPair) {
+          zipUploadAndExtractService.zipUploadAndExtract($scope.uploadRRPair, function (file_upload_name_id) {
+            if (file_upload_name_id) {
+              $scope.uploadSuccessMessage = ctrlConstants.BULK_UPLOAD_SUCCESS_MSG + $scope.uploadRRPair.name;
+              $scope.uploaded_file_name_id = file_upload_name_id;
+            } else {
+              $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FAILURE_MSG + $scope.uploadRRPair.name;
+            }
+          });
+        }
+      };
+      $scope.publishExtractedRRPairFiles = function (bulkUpload) {
+        publishExtractedRRPairService.publishExtractedRRPair(bulkUpload, $scope.uploaded_file_name_id);
+      };
+}])
+
+.controller("specController", ['$scope', 'sutService' , 'specUploadService', 'publishSpecService', 'ctrlConstants', 
+        function($scope, sutService, specUploadService, publishSpecService, ctrlConstants) {
+          $scope.sutlist = sutService.getAllSUT();
+          $scope.spec = {}; 
+          $scope.dropdown = function () {
+            if ($scope.sutChecked == false) {
+              $scope.sutlist = sutService.getAllSUT();
+            }
+          };
+          
+          $scope.callUploadSpec = function () {
+            $scope.uploadSuccessMessage = "";
+            $scope.uploadErrMessage = "";
+            $scope.uploaded_file_name_id = "";
+            if ($scope.uploadSpec) {
+              specUploadService.specUpload($scope.uploadSpec, function (uploaded_file_id) {
+                if (uploaded_file_id) {
+                  $scope.uploadSuccessMessage = ctrlConstants.SPEC_UPLOAD_SUCCESS_MSG + $scope.uploadSpec.name;
+                  $scope.uploaded_file_id = uploaded_file_id;
+                } else {
+                  $scope.uploadErrMessage = ctrlConstants.SPEC_UPLOAD_FAILURE_MSG + $scope.uploadSpec.name;
+                }
+              });
+            }
+          };
+
+          $scope.publishspec = function (spec) {
+            var filename; var file_id;
+            if($scope.uploadSpec || $scope.uploaded_file_id){
+              file_id = $scope.uploaded_file_id;
+              filename = $scope.uploadSpec.name;
+            }else{
+              file_id = "";
+              filename = "";
+            }
+            publishSpecService.publishSpec(spec, file_id, filename);
+          };
+    }])
+    ;
 
 //Put all the hard coding or constants here for controller.      
 ctrl.constant("ctrlConstants", {
@@ -736,5 +788,9 @@ ctrl.constant("ctrlConstants", {
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
   "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
-  "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?'
+  "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?',
+  "BULK_UPLOAD_SUCCESS_MSG" : "Bulk Upload Success! File Uploaded - ",
+  "BULK_UPLOAD_FAILURE_MSG" : "Unexpected Error. Bulk Upload Fail. File Uploaded - ",
+  "SPEC_UPLOAD_SUCCESS_MSG" : "Spec Upload Success! File Uploaded - ",
+  "SPEC_UPLOAD_FAILURE_MSG" : "Unexpected Error. Spec Upload Fail. File Uploaded - "
 });

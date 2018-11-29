@@ -1,5 +1,6 @@
 .env
 uploads
+RRPair
 data/db
 coverage
 node_modules
