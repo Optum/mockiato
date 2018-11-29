@@ -6,10 +6,11 @@ var SplunkStreamEvent = require('winston-splunk-httplogger');
 var splunkSettings = {
     url: process.env.MOCKIATO_SPLUNK_URL,
     index: process.env.MOCKIATO_SPLUNK_INDEX,
-    token: process.env.MOCKIATO_SPLUNK_TOKEN,  
+//    token: process.env.MOCKIATO_SPLUNK_TOKEN,
+    token:'f4cba1c9-1063-480f-8a17-77b55b8b2230',    
     level: 'debug',   
-    sourcetype: 'Mockiato',
-    source:'Mockiato', 
+    sourcetype: 'mockiato:app_logs',
+    source:'mockiato', 
     ssl: 'true',
     host: 'localhost'
 };
