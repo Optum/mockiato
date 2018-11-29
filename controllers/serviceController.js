@@ -2,6 +2,7 @@ const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
 
+const rrpairController = require('./rrpairController');
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
@@ -239,6 +240,12 @@ function addService(req, res) {
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
 
+    if (serv.matchTemplates && serv.matchTemplates.length > 0) {
+      for (let rrpair of serv.rrpairs) {
+        rrpair._trimmedReqData = rrpairController.trimRequestData(serv.matchTemplates[0], rrpair.reqData);
+      }
+    }
+    
     MQService.create(serv,
       // handler for db call
       function(err, service) {
@@ -318,6 +325,14 @@ function updateService(req, res) {
         service.delayMax = req.body.delayMax;
       }
     }
+    else {
+      if (service.matchTemplates && service.matchTemplates.length > 0) {
+        for (let rrpair of service.rrpairs) {
+          rrpair._trimmedReqData = rrpairController.trimRequestData(service.matchTemplates[0], rrpair.reqData);
+        }
+      }
+    }
+
     // save updated service in DB
     service.save(function (err, newService) {
       if (err) {
