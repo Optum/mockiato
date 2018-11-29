@@ -376,6 +376,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           var fd = new FormData();
           fd.append('spec', file);
 
+          //testing
+          spec.sut.createdBy = authService.getUserInfo().username;
+
           var params = {};
           params.token = authService.getUserInfo().token;
           params.group = spec.sut.name;
