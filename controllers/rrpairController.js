@@ -34,28 +34,19 @@ function trimRequestData(template, rrpair) {
   if (!template || !rrpair) {
     return;
   }
-
-  let isXML = flase;
   
-  if (rrpair.payloadType === 'XML') {
-    isXML = true;
-    xml2js.parseString(template, function(err, xmlTemplate) {
-      if (err) {
-        debug(err);
-        return;
-      }
-      template = xmlTemplate;
-    });
-  }
-  else if (rrpair.payloadType === 'JSON') {
-    try {
-      template = JSON.parse(template);
-    }
-    catch(e) {
-      debug(e);
+  xml2js.parseString(template, function(err, xmlTemplate) {
+    if (err) {
+      debug(err);
       return;
     }
-  }
+    template = xmlTemplate;
+  });
+
+  let reqData;
+  xml2js.parseString(rrpair.reqData, function(err, data) {
+    reqData = data;
+  });
 
   // flatten request data
   const flatTemplate = flattenObject(template);
@@ -70,11 +61,7 @@ function trimRequestData(template, rrpair) {
   // unflatten the trimmed request data
   const unflatReqData = unflattenObject(trimmedReqData);
 
-  if (isXML) {
-    return xmlBuilder.buildObject(unflatReqData);
-  }
-
-  return unflatReqData;
+  return xmlBuilder.buildObject(unflatReqData);
 }
 
 module.exports = {

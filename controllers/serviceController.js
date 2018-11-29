@@ -242,7 +242,8 @@ function addService(req, res) {
 
     if (serv.matchTemplates && serv.matchTemplates.length > 0) {
       for (let rrpair of serv.rrpairs) {
-        rrpair._trimmedReqData = rrpairController.trimRequestData(serv.matchTemplates[0], rrpair.reqData);
+        let trimmedReqData = rrpairController.trimRequestData(serv.matchTemplates[0], rrpair);
+        rrpair._trimmedReqData = trimmedReqData;
       }
     }
     
@@ -328,7 +329,8 @@ function updateService(req, res) {
     else {
       if (service.matchTemplates && service.matchTemplates.length > 0) {
         for (let rrpair of service.rrpairs) {
-          rrpair._trimmedReqData = rrpairController.trimRequestData(service.matchTemplates[0], rrpair.reqData);
+          let trimmedReqData = rrpairController.trimRequestData(serv.matchTemplates[0], rrpair);
+          rrpair._trimmedReqData = trimmedReqData;
         }
       }
     }
