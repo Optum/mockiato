@@ -37,6 +37,7 @@
     "soap": "^0.24.0",    
     "swagger-ui-express": "^2.0.14",
     "underscore": "^1.9.1",
+    "unzip2": "^0.2.5",
     "winston": "^3.1.0",
     "winston-splunk-httplogger": "^1.2.2",
     "xml2js": "^0.4.17",
