@@ -239,13 +239,6 @@ function addService(req, res) {
 
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
-
-    if (serv.matchTemplates && serv.matchTemplates.length > 0) {
-      for (let rrpair of serv.rrpairs) {
-        let trimmedReqData = rrpairController.trimRequestData(serv.matchTemplates[0], rrpair);
-        rrpair._trimmedReqData = trimmedReqData;
-      }
-    }
     
     MQService.create(serv,
       // handler for db call
@@ -324,14 +317,6 @@ function updateService(req, res) {
       const delayMax = req.body.delayMax;
       if (delayMax || delayMax === 0) {
         service.delayMax = req.body.delayMax;
-      }
-    }
-    else {
-      if (service.matchTemplates && service.matchTemplates.length > 0) {
-        for (let rrpair of service.rrpairs) {
-          let trimmedReqData = rrpairController.trimRequestData(serv.matchTemplates[0], rrpair);
-          rrpair._trimmedReqData = trimmedReqData;
-        }
       }
     }
 
