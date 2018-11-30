@@ -191,6 +191,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       if (rr.payloadType === 'JSON') {
                         rr.requestpayload = JSON.stringify(rr.reqData);
                         rr.responsepayload = JSON.stringify(rr.resData);
+
+                        //Handle empty JSON object- stringify surrounds in "" 
+                        if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                          rr.responsepayload = rr.responsepayload.substring(1,3);
+                        }
                       }
                       else {
                         rr.requestpayload = rr.reqData;
