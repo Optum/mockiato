@@ -370,7 +370,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('zipUploadAndExtractService', ['$http', '$location', 'authService',
+    .service('zipUploadAndExtractService', ['$http', '$location', 'authService', 'servConstants',
     function ($http, $location, authService, servConstants) {
         this.zipUploadAndExtract = function(uploadRRPair, message) {
           var fd = new FormData();
@@ -389,14 +389,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           })
           .catch(function(err){
             console.log(err);
-            return message();
+            return message(servConstants.SOME_ERR_IN_UPLOADING_ZIP);
           });
         };
     }])
 
     .service('publishExtractedRRPairService', ['$http', '$location', 'authService', 'servConstants',
     function ($http, $location, authService, servConstants) {
-        this.publishExtractedRRPair = function(bulkUpload, uploaded_file_name_id) {
+        this.publishExtractedRRPair = function(bulkUpload, uploaded_file_name_id, message) {
           var fd = new FormData();
           var params = {};
           params.token = authService.getUserInfo().token;
@@ -429,10 +429,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 $location.path('/update/' + data._id + '/frmServCreate');
               })
               .catch(function (err) {
-                console.log(err);
-                $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
-                $('#genricMsg-dialog').modal('toggle');
+                console.log(err.data.error);
+                return message(err.data.error);
               });
         };
     }])
@@ -497,7 +495,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               .catch(function (err) {
                 console.log(err);
                 $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_SPEC_FAIL_ERR_BODY);
                 $('#genricMsg-dialog').modal('toggle');
               });
         };
@@ -707,5 +705,7 @@ serv.constant("servConstants", {
         "UPLOAD_FAIL_ERR_TITLE" : "Upload Failure Error",
         "UPLOAD_FAIL_ERR_BODY" : "Error occured in bulk upload.",
         "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
-        "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT."
+        "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
+        "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
+        "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file."
       });

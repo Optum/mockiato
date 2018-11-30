@@ -51,7 +51,7 @@
     <div class="form-group req row">
         <label for="service_name" class="col-xs-2 col-form-label">Bulk Upload</label>
         <div class="col-xs-2">
-            <file-field class="btn btn-primary" ng-model="uploadRRPair" ng-change="uploadAndExtractZip()">
+            <file-field class="btn btn-primary" ng-model="uploadRRPair" ng-change="uploadAndExtractZip()" ng-disabled="!bulkUpload.type || !bulkUpload.name || !bulkUpload.base">
                 <i class="glyphicon glyphicon-import"></i> Upload File</file-field>&nbsp;&nbsp;&nbsp;
         </div>
         <div style='color:#008000;font-weight:normal;font-size: 13px;' ng-show="uploadSuccessMessage">&#x2714;&nbsp;&nbsp;{{uploadSuccessMessage}}</div>
@@ -61,7 +61,7 @@
     <br>
     <div class="form-group row">
         <div class="col-sm-12">
-            <button ng-disabled="form.$invalid || !uploadRRPair" type="button" class="btn btn-xl btn-success center-block" ng-click="publishExtractedRRPairFiles(bulkUpload)">Publish</button>
+            <button ng-disabled="form.$invalid || !uploadRRPair || uploadSuccessMessage == '' " type="button" class="btn btn-xl btn-success center-block" ng-click="publishExtractedRRPairFiles(bulkUpload)">Publish</button>
         </div>
     </div>
 </form>
