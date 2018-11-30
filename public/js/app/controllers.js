@@ -723,25 +723,42 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.uploadErrMessage = "";
         $scope.uploaded_file_name_id = "";
         if ($scope.uploadRRPair) {
-          zipUploadAndExtractService.zipUploadAndExtract($scope.uploadRRPair, function (file_upload_name_id) {
-            if (file_upload_name_id) {
-              $scope.uploadSuccessMessage = ctrlConstants.BULK_UPLOAD_SUCCESS_MSG + $scope.uploadRRPair.name;
-              $scope.uploaded_file_name_id = file_upload_name_id;
-            } else {
-              $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FAILURE_MSG + $scope.uploadRRPair.name;
-            }
-          });
+          $scope.uploadSuccessMessage = "";
+          $scope.uploadErrMessage = "";
+          if($scope.uploadRRPair.name.endsWith(".zip"))
+          {
+            zipUploadAndExtractService.zipUploadAndExtract($scope.uploadRRPair, function (file_upload_name_id) {
+              if (file_upload_name_id) {
+                $scope.uploadSuccessMessage = ctrlConstants.BULK_UPLOAD_SUCCESS_MSG + $scope.uploadRRPair.name;
+                $scope.uploadErrMessage = ""
+                $scope.uploaded_file_name_id = file_upload_name_id;
+              } else {
+                $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FAILURE_MSG + $scope.uploadRRPair.name;
+                $scope.uploadSuccessMessage = "";
+              }
+            });
+          }
+          else{
+            $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FILE_TYPE_FAILURE_MSG + $scope.uploadRRPair.name;
+            $scope.uploadSuccessMessage = "";
+          }
         }
       };
       $scope.publishExtractedRRPairFiles = function (bulkUpload) {
-        publishExtractedRRPairService.publishExtractedRRPair(bulkUpload, $scope.uploaded_file_name_id);
+        publishExtractedRRPairService.publishExtractedRRPair(bulkUpload, $scope.uploaded_file_name_id, function (message){
+          $scope.uploadErrMessage = message;
+          $scope.uploadSuccessMessage = "";
+        });
       };
 }])
 
-.controller("specController", ['$scope', 'sutService' , 'specUploadService', 'publishSpecService', 'ctrlConstants', 
-        function($scope, sutService, specUploadService, publishSpecService, ctrlConstants) {
+.controller("specController", ['$scope','$routeParams' , 'sutService', 'specUploadService', 'publishSpecService', 'ctrlConstants', 
+        function($scope, $routeParams, sutService, specUploadService, publishSpecService, ctrlConstants) {
           $scope.sutlist = sutService.getAllSUT();
           $scope.spec = {}; 
+          $scope.spec.type = $routeParams.specType;
+          if ($scope.spec.type == 'openapi') { $scope.spec.heading = 'OpenAPI' } else if ($scope.spec.type == 'wsdl') { $scope.spec.heading = 'WSDL' }
+
           $scope.dropdown = function () {
             if ($scope.sutChecked == false) {
               $scope.sutlist = sutService.getAllSUT();
@@ -753,27 +770,50 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.uploadErrMessage = "";
             $scope.uploaded_file_name_id = "";
             if ($scope.uploadSpec) {
-              specUploadService.specUpload($scope.uploadSpec, function (uploaded_file_id) {
-                if (uploaded_file_id) {
-                  $scope.uploadSuccessMessage = ctrlConstants.SPEC_UPLOAD_SUCCESS_MSG + $scope.uploadSpec.name;
-                  $scope.uploaded_file_id = uploaded_file_id;
-                } else {
-                  $scope.uploadErrMessage = ctrlConstants.SPEC_UPLOAD_FAILURE_MSG + $scope.uploadSpec.name;
-                }
-              });
+              $scope.uploadSuccessMessage = "";
+              $scope.uploadErrMessage = "";
+              if (($scope.spec.type == 'openapi' && ($scope.uploadSpec.name.endsWith(".yaml") || $scope.uploadSpec.name.endsWith(".yml") || $scope.uploadSpec.name.endsWith(".json")))
+                || ($scope.spec.type == 'wsdl' && $scope.uploadSpec.name.endsWith(".wsdl"))) {
+                specUploadService.specUpload($scope.uploadSpec, function (uploaded_file_id) {
+                  if (uploaded_file_id) {
+                    $scope.uploadSuccessMessage = ctrlConstants.SPEC_UPLOAD_SUCCESS_MSG + $scope.uploadSpec.name;
+                    $scope.uploaded_file_id = uploaded_file_id;
+                    $scope.uploadErrMessage = "";
+                  } else {
+                    $scope.uploadErrMessage = ctrlConstants.SPEC_UPLOAD_FAILURE_MSG + $scope.uploadSpec.name;
+                    $scope.uploadSuccessMessage = "";
+                  }
+                });
+              }
+              else {
+                $scope.uploadErrMessage = ctrlConstants.SPEC_FILE_TYPE_UPLOAD_ERROR + $scope.uploadSpec.name;
+                $scope.uploadSuccessMessage = "";
+              }
             }
           };
-
+          
           $scope.publishspec = function (spec) {
-            var filename; var file_id;
-            if($scope.uploadSpec || $scope.uploaded_file_id){
-              file_id = $scope.uploaded_file_id;
-              filename = $scope.uploadSpec.name;
-            }else{
-              file_id = "";
-              filename = "";
+            $scope.uploadSuccessMessage = "";
+            $scope.uploadErrMessage = "";
+            //conditions are complex here. Any change will break validations. - Pradeep
+            if ((typeof spec.url !== 'undefined' && spec.url !== "" && $scope.spec.type == 'openapi' && (spec.url.endsWith(".yaml") || spec.url.endsWith(".yml") || spec.url.endsWith(".json")))
+              || (typeof spec.url !== 'undefined' && spec.url !== "" && $scope.spec.type == 'wsdl' && spec.url.endsWith("?wsdl"))
+              || ((typeof spec.url == 'undefined' || spec.url == "") && $scope.uploadSpec && $scope.spec.type == 'openapi' && ($scope.uploadSpec.name.endsWith(".yaml") || $scope.uploadSpec.name.endsWith(".yml")  || $scope.uploadSpec.name.endsWith(".json")))
+              || ((typeof spec.url == 'undefined' || spec.url == "") && $scope.uploadSpec && $scope.spec.type == 'wsdl' && $scope.uploadSpec.name.endsWith(".wsdl"))
+            ) {
+              var filename; var file_id;
+              if ($scope.uploadSpec || $scope.uploaded_file_id) {
+                file_id = $scope.uploaded_file_id;
+                filename = $scope.uploadSpec.name;
+              } else {
+                file_id = "";
+                filename = "";
+              }
+              publishSpecService.publishSpec(spec, file_id, filename);
+            } else {
+              $scope.uploadErrMessage = ctrlConstants.SPEC_FILE_TYPE_URL_PUBLISH_ERROR;
+              $scope.uploadSuccessMessage = "";
             }
-            publishSpecService.publishSpec(spec, file_id, filename);
           };
     }])
     ;
@@ -794,6 +834,9 @@ ctrl.constant("ctrlConstants", {
   "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?',
   "BULK_UPLOAD_SUCCESS_MSG" : "Bulk Upload Success! File Uploaded - ",
   "BULK_UPLOAD_FAILURE_MSG" : "Unexpected Error. Bulk Upload Fail. File Uploaded - ",
+  "BULK_UPLOAD_FILE_TYPE_FAILURE_MSG" : "Uploaded file type is not zip. File Uploaded - ",
   "SPEC_UPLOAD_SUCCESS_MSG" : "Spec Upload Success! File Uploaded - ",
-  "SPEC_UPLOAD_FAILURE_MSG" : "Unexpected Error. Spec Upload Fail. File Uploaded - "
+  "SPEC_UPLOAD_FAILURE_MSG" : "Unexpected Error. Spec Upload Fail. File Uploaded - ",
+  "SPEC_FILE_TYPE_URL_PUBLISH_ERROR" : "Your uploaded file type Or URL don't match with Spec type.",
+  "SPEC_FILE_TYPE_UPLOAD_ERROR" : "Upload Fail - Your uploaded file type don't match with Spec type. Uploaded File - ",
 });
