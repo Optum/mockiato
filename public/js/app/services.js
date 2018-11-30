@@ -669,13 +669,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('mqService', ['mqFactory',
-        function(mqFactory) {
-            this.getMQInfo = function() {
-                return mqFactory.getMQInfo();
-            };
-    }])
-
     .service('xmlService', ['$http',
         function($http) {
           this.validateXml = function(txt) {

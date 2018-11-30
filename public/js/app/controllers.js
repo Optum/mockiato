@@ -34,8 +34,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
             $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
-            $scope.mqInfo = mqService.getMQInfo();
-            console.log($scope.mqInfo);
 
             $scope.dropdown = function() {
               if ($scope.sutChecked == false){

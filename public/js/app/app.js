@@ -129,10 +129,6 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
-            .when("/mq", {
-                templateUrl: "partials/mq.html"
-            })
-
             .when("/helppage", {
                 templateUrl: "partials/help.html",
                 controller: "ContactFormController"
