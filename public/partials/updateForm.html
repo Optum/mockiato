@@ -5,20 +5,20 @@
     <div class="col-xs-8">
       <div class="radio">
         <label class="move-radios">
-            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-required="!servicevo.type" ng-disabled="true">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-disabled="true">
               SOAP
         </label>
         <label class="move-radios">
-            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-required="!servicevo.type" ng-disabled="true">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-disabled="true">
               REST
         </label>
         <label class="move-radios">
-          <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-required="!servicevo.type">
+          <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-disabled="true">
             MQ
         </label>
       </div>
     </div>
-    <div class="col-xs-1">
+    <div class="col-xs-1" ng-show="servicevo.type !== 'MQ'">
       <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)">
         <i class="glyphicon glyphicon-info-sign"></i>  View Endpoints
       </button>
@@ -44,7 +44,7 @@
     <div class="col-xs-9">
       <div class="input-group">
         <div class="input-group-addon">/virtual</div>
-        <input required type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path" ng-disabled="true">
+        <input ng-required="servicevo.type !== 'MQ'" type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path" ng-disabled="true">
       </div>
     </div>
   </div>
@@ -55,37 +55,6 @@
       <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0">
     </div>
   </div>
-
-  <!-- <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
-    <label class="col-xs-2 col-form-label">Queue Manager</label>
-    <div class="col-xs-3">
-      <select required class="form-control" ng-model="servicevo.mq.manager" ng-options="manager.name for manager in mqInfo.managers">
-          <option selected="selected" disabled="true">Select Manager</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
-    <label class="col-xs-2 col-form-label">Request Queue</label>
-    <div class="col-xs-3">
-      <select required class="form-control" ng-model="servicevo.mq.reqQueue" ng-options="obj.reqQueue for obj in mqInfo.queues">
-          <option selected="selected" disabled="true">Select Queue</option>
-      </select>
-    </div>
-    <div class="col-xs-1 conjunction">to</div>
-    <div class="col-xs-2">
-        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0">
-      </div>
-  </div>
-
-  <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
-    <label class="col-xs-2 col-form-label">Response Queue</label>
-    <div class="col-xs-3">
-      <select required class="form-control" ng-model="servicevo.mq.resQueue" ng-options="obj.resQueue for obj in mqInfo.queues">
-          <option selected="selected" disabled="true">Select Queue</option>
-      </select>
-    </div>
-  </div> -->
 
   <div class="form-group row">
     <label class="col-xs-2 col-form-label">Match Templates:</label>
@@ -111,7 +80,6 @@
       </fieldset>
     </div>
   </div>
-
 
   <!--begin RR pairs-->
     <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs | limitTo:totalDisplayed">
@@ -257,7 +225,7 @@
       <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
         <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
         <div class="col-xs-9">
-          <textarea ng-required="servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
+          <textarea ng-required="servicevo.type !== 'REST'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
         </div>
       </div>
 
@@ -326,7 +294,7 @@
       <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'">
         <label for="service_response_payload" class="col-xs-2 col-form-label">Response Payload:</label>
         <div class="col-xs-9">
-          <textarea ng-required="servicevo.type === 'SOAP'" id="service_response_payload" class="form-control vertResize" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
+          <textarea ng-required="servicevo.type !== 'REST'" id="service_response_payload" class="form-control vertResize" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
         </div>
       </div>
     </fieldset>
