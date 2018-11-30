@@ -118,6 +118,19 @@ function init() {
       });
   });
 
+  // expose MQ info
+  const MQInfo = require('./models/mq/MQInfo');
+  app.get('/api/admin/mq/info', function(req, res) {
+    MQInfo.find({}, function(err, infoArr) {
+      if (err) {
+        handleError(err, res, 500);
+        return;
+      }
+
+      res.json(infoArr);
+    });
+  });
+
   // expose API and virtual SOAP / REST services
   const virtual = require('./routes/virtual');
   const api = require('./routes/services');

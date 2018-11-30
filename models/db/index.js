@@ -13,7 +13,7 @@ else {
   mongoURI = 'mongodb://' + mongoHost;
 }
 
-const Service = require('../Service');
+const Service = require('../http/Service');
 
 Service.on('index', function(err) {
   if (err) debug(err); // error occurred during index creation

@@ -13,6 +13,7 @@ const oasService = './api-docs.yml';
 const wsdlService = './examples/hello-service.wsdl';
 const restService = require('../examples/rest-json-example.json');
 const soapService = require('../examples/soap-example.json');
+const mqService   = require('../examples/mq-example.json');
 
 const oasQuery = {
     type: 'openapi',
@@ -177,13 +178,54 @@ describe('API tests', function() {
             soapService.rrpairs[0].resHeaders['x-virt-app'] = 'Mockiato';
             request
                 .put(resource + '/' + id + token)
-                .send(restService)
+                .send(soapService)
                 .expect(200)
                 .end(done);
         });
     });
     
     describe('Delete SOAP service', function() {
+        it('Responds with the deleted service', function(done) {
+            request
+                .delete(resource + '/' + id + token)
+                .expect(200)
+                .end(done);
+        });
+    });
+
+    describe('Create MQ service', function() {
+        it('Responds with the new service', function(done) {
+            request
+                .post(resource + token)
+                .send(mqService)
+                .expect(200)
+                .expect(function(res) {
+                    id = res.body._id;
+                }).end(done);
+        });
+    });
+
+    describe('Retrieve MQ service', function() {
+        it('Responds with the correct service', function(done) {
+            request
+                .get(resource + '/' + id)
+                .expect(200)
+                .end(done);
+        });
+    });
+    
+    describe('Update MQ service', function() {
+        it('Responds with the updated service', function(done) {
+            soapService.rrpairs[0].resHeaders['x-virt-app'] = 'Mockiato';
+            request
+                .put(resource + '/' + id + token)
+                .send(mqService)
+                .expect(200)
+                .end(done);
+        });
+    });
+    
+    describe('Delete MQ service', function() {
         it('Responds with the deleted service', function(done) {
             request
                 .delete(resource + '/' + id + token)
