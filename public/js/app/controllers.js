@@ -14,8 +14,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
     }])
 
-    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'mqService', 'helperFactory', 'ctrlConstants', 
-        function($scope,apiHistoryService,sutService,suggestionsService,mqService,helperFactory,ctrlConstants){
+    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
+        function($scope,apiHistoryService,sutService,suggestionsService,helperFactory,ctrlConstants){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
             $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
