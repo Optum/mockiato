@@ -740,7 +740,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         }
       };
       $scope.publishExtractedRRPairFiles = function (bulkUpload) {
-        publishExtractedRRPairService.publishExtractedRRPair(bulkUpload, $scope.uploaded_file_name_id);
+        publishExtractedRRPairService.publishExtractedRRPair(bulkUpload, $scope.uploaded_file_name_id, function (message){
+          $scope.uploadErrMessage = message;
+          $scope.uploadSuccessMessage = "";
+        });
       };
 }])
 

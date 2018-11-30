@@ -367,7 +367,7 @@ function publishExtractedRRPairs(req, res) {
   }
   function onError(err) {
     debug(err);
-    handleError(err, res, 400);
+    handleError(err.message, res, 400);
   }
 }
 
