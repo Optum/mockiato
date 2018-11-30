@@ -97,7 +97,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
             
-            .when("/spec", {
+            .when("/spec/:specType", {
                 templateUrl: "partials/spec.html",
                 controller: "specController",
                 resolve: {

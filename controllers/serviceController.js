@@ -426,12 +426,12 @@ function getSpecString(path) {
 function isYaml(req) {
   const url = req.query.url;
   if (url) {
-    if (url.includes('yml') || url.includes('yaml'))
+    if (url.endsWith('.yml') || url.endsWith('.yaml'))
       return true;
   }
   if (req.query.uploaded_file_name!="") {
     const name = req.query.uploaded_file_name;
-    if (name.includes('yml') || name.includes('yaml')) {
+    if (name.endsWith('.yml') || name.endsWith('.yaml')) {
       return true;
     }
   }
@@ -489,7 +489,7 @@ function publishExtractedRRPairs(req, res) {
   }
   function onError(err) {
     debug(err);
-    handleError(err, res, 400);
+    handleError(err.message, res, 400);
   }
 }
 
