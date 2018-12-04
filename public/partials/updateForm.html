@@ -81,6 +81,16 @@
     </div>
   </div>
 
+  <div class="form-group row">
+    <label class="col-xs-2 col-form-label">Created:</label>
+    <div class="col-xs-3"><input id="created_datetime" class="form-control" ng-model="servicevo.createdAt" ng-disabled="true"></div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-xs-2 col-form-label">Updated:</label>
+    <div class="col-xs-3"><input id="updated_datetime" class="form-control" ng-model="servicevo.updatedAt" ng-disabled="true"></div>
+  </div>
+
   <!--begin RR pairs-->
     <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs | limitTo:totalDisplayed">
     <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
