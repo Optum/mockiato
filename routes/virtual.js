@@ -209,20 +209,16 @@ function registerRRPair(service, rrpair) {
     // function to set headers for response
     function setRespHeaders() {
       const resHeaders = rrpair.resHeaders;
+      resHeaders['Mockiato-RRPair-Label'] = rrpair.label;
       if (resHeaders) {   
         
-        //If rrpair has label, set it as a header
-        if(rrpair.label){
-          resHeaders['Mockiato-RRPair-Label'] = rrpair.label;
-        }  
+       
         if (!resHeaders['Content-Type']) {
           setContentType();
         }
         
         resp.set(resHeaders);
         return;
-      }else{
-        resHeaders = {'Mockiato-RRPair-Label': rrpair.label};
       }
       
       setContentType();
