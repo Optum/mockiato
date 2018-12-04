@@ -224,7 +224,7 @@ function registerRRPair(service, rrpair) {
         return;
       }else if(rrpair.label){
 
-        resHeaders =  { "Mockiato-RRPair-Label": rrpair.label};
+        resp.set( { "Mockiato-RRPair-Label": rrpair.label});
       }
       
       setContentType();
