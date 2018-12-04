@@ -42,7 +42,7 @@ const serviceSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   }
-});
+},{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
 serviceSchema.set('usePushEach', true);
 module.exports = mongoose.model('Service', serviceSchema);
