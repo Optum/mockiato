@@ -41,8 +41,11 @@ const serviceSchema = new mongoose.Schema({
   running: {
     type: Boolean,
     default: true
+  },
+  lastUpdateUser:{
+    type: User.schema
   }
-});
+},{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
 serviceSchema.set('usePushEach', true);
 module.exports = mongoose.model('Service', serviceSchema);
