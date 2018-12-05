@@ -14,24 +14,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
     }])
 
-    .controller("specController", ['$scope', 'sutService' , 'specService', 
-        function($scope, sutService, specService) {
-          $scope.sutlist = sutService.getAllSUT();
-          $scope.spec = {}; 
-
-          $scope.dropdown = function () {
-            if ($scope.sutChecked == false) {
-              $scope.sutlist = sutService.getAllSUT();
-            }
-          };
-          
-          $scope.publishspec = function (spec) {
-            specService.publishFromSpec(spec, $scope.uploadSpec);
-          };
-    }])
-
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
-        function($scope,apiHistoryService,sutService,suggestionsService, helperFactory, ctrlConstants){
+        function($scope,apiHistoryService,sutService,suggestionsService,helperFactory,ctrlConstants){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
             $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
@@ -52,7 +36,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
             $scope.dropdown = function() {
-              if($scope.sutChecked == false){
+              if ($scope.sutChecked == false){
                   $scope.sutlist = sutService.getAllSUT();
                }
             };
@@ -207,6 +191,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       if (rr.payloadType === 'JSON') {
                         rr.requestpayload = JSON.stringify(rr.reqData);
                         rr.responsepayload = JSON.stringify(rr.resData);
+
+                        //Handle empty JSON object- stringify surrounds in "" 
+                        if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                          rr.responsepayload = rr.responsepayload.substring(1,3);
+                        }
                       }
                       else {
                         rr.requestpayload = rr.reqData;
@@ -719,7 +708,115 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $('#genricMsg-dialog').modal('toggle');
             }
     }])
-;
+
+    .controller("bulkUploadController", ['$scope', 'sutService' , 'zipUploadAndExtractService', 'publishExtractedRRPairService', 'ctrlConstants', 
+    function($scope, sutService, zipUploadAndExtractService, publishExtractedRRPairService, ctrlConstants) {
+      $scope.sutlist = sutService.getAllSUT();
+      $scope.bulkUpload = {};
+      $scope.dropdown = function () {
+        if ($scope.sutChecked == false) {
+          $scope.sutlist = sutService.getAllSUT();
+        }
+      };
+      $scope.uploadAndExtractZip = function () {
+        $scope.uploadSuccessMessage = "";
+        $scope.uploadErrMessage = "";
+        $scope.uploaded_file_name_id = "";
+        if ($scope.uploadRRPair) {
+          $scope.uploadSuccessMessage = "";
+          $scope.uploadErrMessage = "";
+          if($scope.uploadRRPair.name.endsWith(".zip"))
+          {
+            zipUploadAndExtractService.zipUploadAndExtract($scope.uploadRRPair, function (file_upload_name_id) {
+              if (file_upload_name_id) {
+                $scope.uploadSuccessMessage = ctrlConstants.BULK_UPLOAD_SUCCESS_MSG + $scope.uploadRRPair.name;
+                $scope.uploadErrMessage = ""
+                $scope.uploaded_file_name_id = file_upload_name_id;
+              } else {
+                $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FAILURE_MSG + $scope.uploadRRPair.name;
+                $scope.uploadSuccessMessage = "";
+              }
+            });
+          }
+          else{
+            $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FILE_TYPE_FAILURE_MSG + $scope.uploadRRPair.name;
+            $scope.uploadSuccessMessage = "";
+          }
+        }
+      };
+      $scope.publishExtractedRRPairFiles = function (bulkUpload) {
+        publishExtractedRRPairService.publishExtractedRRPair(bulkUpload, $scope.uploaded_file_name_id, function (message){
+          $scope.uploadErrMessage = message;
+          $scope.uploadSuccessMessage = "";
+        });
+      };
+}])
+
+.controller("specController", ['$scope','$routeParams' , 'sutService', 'specUploadService', 'publishSpecService', 'ctrlConstants', 
+        function($scope, $routeParams, sutService, specUploadService, publishSpecService, ctrlConstants) {
+          $scope.sutlist = sutService.getAllSUT();
+          $scope.spec = {}; 
+          $scope.spec.type = $routeParams.specType;
+          if ($scope.spec.type == 'openapi') { $scope.spec.heading = 'OpenAPI' } else if ($scope.spec.type == 'wsdl') { $scope.spec.heading = 'WSDL' }
+
+          $scope.dropdown = function () {
+            if ($scope.sutChecked == false) {
+              $scope.sutlist = sutService.getAllSUT();
+            }
+          };
+          
+          $scope.callUploadSpec = function () {
+            $scope.uploadSuccessMessage = "";
+            $scope.uploadErrMessage = "";
+            $scope.uploaded_file_name_id = "";
+            if ($scope.uploadSpec) {
+              $scope.uploadSuccessMessage = "";
+              $scope.uploadErrMessage = "";
+              if (($scope.spec.type == 'openapi' && ($scope.uploadSpec.name.endsWith(".yaml") || $scope.uploadSpec.name.endsWith(".yml") || $scope.uploadSpec.name.endsWith(".json")))
+                || ($scope.spec.type == 'wsdl' && $scope.uploadSpec.name.endsWith(".wsdl"))) {
+                specUploadService.specUpload($scope.uploadSpec, function (uploaded_file_id) {
+                  if (uploaded_file_id) {
+                    $scope.uploadSuccessMessage = ctrlConstants.SPEC_UPLOAD_SUCCESS_MSG + $scope.uploadSpec.name;
+                    $scope.uploaded_file_id = uploaded_file_id;
+                    $scope.uploadErrMessage = "";
+                  } else {
+                    $scope.uploadErrMessage = ctrlConstants.SPEC_UPLOAD_FAILURE_MSG + $scope.uploadSpec.name;
+                    $scope.uploadSuccessMessage = "";
+                  }
+                });
+              }
+              else {
+                $scope.uploadErrMessage = ctrlConstants.SPEC_FILE_TYPE_UPLOAD_ERROR + $scope.uploadSpec.name;
+                $scope.uploadSuccessMessage = "";
+              }
+            }
+          };
+          
+          $scope.publishspec = function (spec) {
+            $scope.uploadSuccessMessage = "";
+            $scope.uploadErrMessage = "";
+            //conditions are complex here. Any change will break validations. - Pradeep
+            if ((typeof spec.url !== 'undefined' && spec.url !== "" && $scope.spec.type == 'openapi' && (spec.url.endsWith(".yaml") || spec.url.endsWith(".yml") || spec.url.endsWith(".json")))
+              || (typeof spec.url !== 'undefined' && spec.url !== "" && $scope.spec.type == 'wsdl' && spec.url.endsWith("?wsdl"))
+              || ((typeof spec.url == 'undefined' || spec.url == "") && $scope.uploadSpec && $scope.spec.type == 'openapi' && ($scope.uploadSpec.name.endsWith(".yaml") || $scope.uploadSpec.name.endsWith(".yml")  || $scope.uploadSpec.name.endsWith(".json")))
+              || ((typeof spec.url == 'undefined' || spec.url == "") && $scope.uploadSpec && $scope.spec.type == 'wsdl' && $scope.uploadSpec.name.endsWith(".wsdl"))
+            ) {
+              var filename; var file_id;
+              if ($scope.uploadSpec || $scope.uploaded_file_id) {
+                file_id = $scope.uploaded_file_id;
+                filename = $scope.uploadSpec.name;
+              } else {
+                file_id = "";
+                filename = "";
+              }
+              publishSpecService.publishSpec(spec, file_id, filename);
+            } else {
+              $scope.uploadErrMessage = ctrlConstants.SPEC_FILE_TYPE_URL_PUBLISH_ERROR;
+              $scope.uploadSuccessMessage = "";
+            }
+          };
+    }])
+    ;
 
 //Put all the hard coding or constants here for controller.      
 ctrl.constant("ctrlConstants", {
@@ -734,5 +831,12 @@ ctrl.constant("ctrlConstants", {
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
   "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
-  "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?'
+  "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?',
+  "BULK_UPLOAD_SUCCESS_MSG" : "Bulk Upload Success! File Uploaded - ",
+  "BULK_UPLOAD_FAILURE_MSG" : "Unexpected Error. Bulk Upload Fail. File Uploaded - ",
+  "BULK_UPLOAD_FILE_TYPE_FAILURE_MSG" : "Uploaded file type is not zip. File Uploaded - ",
+  "SPEC_UPLOAD_SUCCESS_MSG" : "Spec Upload Success! File Uploaded - ",
+  "SPEC_UPLOAD_FAILURE_MSG" : "Unexpected Error. Spec Upload Fail. File Uploaded - ",
+  "SPEC_FILE_TYPE_URL_PUBLISH_ERROR" : "Your uploaded file type Or URL don't match with Spec type.",
+  "SPEC_FILE_TYPE_UPLOAD_ERROR" : "Upload Fail - Your uploaded file type don't match with Spec type. Uploaded File - ",
 });

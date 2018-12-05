@@ -97,7 +97,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
             
-            .when("/spec", {
+            .when("/spec/:specType", {
                 templateUrl: "partials/spec.html",
                 controller: "specController",
                 resolve: {
@@ -112,8 +112,21 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                     }]
                 }
             })
-            .when("/mq", {
-                templateUrl: "partials/mq.html"
+
+            .when("/bulkUpload", {
+                templateUrl: "partials/bulkUpload.html",
+                controller: "bulkUploadController",
+                resolve: {
+                    auth: ['$q', 'authService', function ($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
             })
 
             .when("/helppage", {

@@ -104,6 +104,7 @@ fact.factory('statusCodesFactory', ['$http', function($http) {
     };
 }]);
 
+//Below function is complex one. Any change will break Duplicate Req check. - Pradeep
 fact.factory('helperFactory', [function () {
     return {
         isDuplicateReq: function (servicevo) {
