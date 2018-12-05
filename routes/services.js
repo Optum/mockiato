@@ -19,8 +19,17 @@ function rejectInvalid(req, res, next) {
   handleError(`Service type ${type} is not supported`, res, 400);
 }
 
-// create service from OpenAPI spec
-router.post('/fromSpec', upload.single('spec'), servCtrl.createFromSpec);
+//Upload zip in upload directory and extract the zip in RRPair directory
+router.post('/zipUploadAndExtract', upload.single('zipFile'), servCtrl.zipUploadAndExtract);
+
+//create service from RR Pairs present in RRPair directory
+router.post('/publishExtractedRRPairs', servCtrl.publishExtractedRRPairs);
+
+//Upload openapi or wsdl spec in upload directory.
+router.post('/specUpload', upload.single('specFile'), servCtrl.specUpload);
+
+//create openapi or wsdl service from open spec or wsdl present in upload directory
+router.post('/publishUploadedSpec', servCtrl.publishUploadedSpec);
 
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
