@@ -43,10 +43,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
 
             $scope.checkDuplicateGroup = function (){
-              count=0;
+              var count=0;
               $scope.groupMessage = "";
               if($scope.sutChecked == true){
-                for(i=0; i<$scope.sutlist.length;i++){
+                for(var i=0; i<$scope.sutlist.length;i++){
                  if($scope.sutlist[i].name == $scope.servicevo.sut.name)
                  {
                    count++;
@@ -737,10 +737,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       };
 
       $scope.checkDuplicateGroup = function (){
-        count=0;
+         var count=0;
         $scope.groupMessage = "";
         if($scope.sutChecked == true){
-          for(i=0; i<$scope.sutlist.length;i++){
+          for(var i=0; i<$scope.sutlist.length;i++){
            if($scope.sutlist[i].name == $scope.bulkUpload.sut.name)
            {
              count++;
@@ -799,10 +799,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
           
           $scope.checkDuplicateGroup = function (){
-            count=0;
+           var count=0;
             $scope.groupMessage = "";
             if($scope.sutChecked == true){
-              for(i=0; i<$scope.sutlist.length;i++){
+              for(var i=0; i<$scope.sutlist.length;i++){
                if($scope.sutlist[i].name == $scope.spec.sut.name)
                {
                  count++;
