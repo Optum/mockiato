@@ -234,7 +234,8 @@ function addService(req, res) {
     delayMax: req.body.delayMax,
     basePath: '/' + req.body.sut.name + req.body.basePath,
     matchTemplates: req.body.matchTemplates,
-    rrpairs: req.body.rrpairs
+    rrpairs: req.body.rrpairs,
+    lastUpdateUser: req.decoded
   };
 
   if (type === 'MQ') {
@@ -303,7 +304,7 @@ function updateService(req, res) {
 
     // don't let consumer alter name, base path, etc.
     service.rrpairs = req.body.rrpairs;
-
+    service.lastUpdateUser = req.decoded;
     if (req.body.matchTemplates) {
       service.matchTemplates = req.body.matchTemplates;
     }
@@ -328,7 +329,6 @@ function updateService(req, res) {
       }
 
       res.json(newService);
-      
       if (service.type !== 'MQ') {
         syncWorkers(newService, 'register');
       }
@@ -346,6 +346,7 @@ function toggleService(req, res) {
     if (service) {
       // flip the bit & save in DB
       service.running = !service.running;
+      service.lastUpdateUser = req.decoded;
       service.save(function(e, newService) {
         if (e)	{
           handleError(e, res, 500);
