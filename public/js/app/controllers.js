@@ -38,7 +38,23 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.dropdown = function() {
               if ($scope.sutChecked == false){
                   $scope.sutlist = sutService.getAllSUT();
+                  $scope.groupMessage = "";
                }
+            };
+
+            $scope.checkDuplicateGroup = function (){
+              var count=0;
+              $scope.groupMessage = "";
+              if($scope.sutChecked == true){
+                for(var i=0; i<$scope.sutlist.length;i++){
+                 if($scope.sutlist[i].name == $scope.servicevo.sut.name)
+                 {
+                   count++;
+                 }
+                }
+                if(count!=0){
+                  $scope.groupMessage = "Group Name Already exist.";
+                }}
             };
 
             $scope.addTemplate = function() {
@@ -719,7 +735,23 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       $scope.dropdown = function () {
         if ($scope.sutChecked == false) {
           $scope.sutlist = sutService.getAllSUT();
+          $scope.groupMessage = "";
         }
+      };
+
+      $scope.checkDuplicateGroup = function (){
+         var count=0;
+        $scope.groupMessage = "";
+        if($scope.sutChecked == true){
+          for(var i=0; i<$scope.sutlist.length;i++){
+           if($scope.sutlist[i].name == $scope.bulkUpload.sut.name)
+           {
+             count++;
+           }
+          }
+          if(count!=0){
+            $scope.groupMessage = "Group Name Already exist.";
+          }}
       };
       $scope.uploadAndExtractZip = function () {
         $scope.uploadSuccessMessage = "";
@@ -765,7 +797,23 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           $scope.dropdown = function () {
             if ($scope.sutChecked == false) {
               $scope.sutlist = sutService.getAllSUT();
+              $scope.groupMessage = "";
             }
+          };
+          
+          $scope.checkDuplicateGroup = function (){
+           var count=0;
+            $scope.groupMessage = "";
+            if($scope.sutChecked == true){
+              for(var i=0; i<$scope.sutlist.length;i++){
+               if($scope.sutlist[i].name == $scope.spec.sut.name)
+               {
+                 count++;
+               }
+              }
+              if(count!=0){
+                $scope.groupMessage = "Group Name Already exist.";
+              }}
           };
           
           $scope.callUploadSpec = function () {
