@@ -53,7 +53,7 @@ describe('API tests', function() {
         it('Serves the documentation', function(done) {
             request
                 .get('/api-docs')
-                .expect(303)
+                .expect(301)
                 .end(done);
         });
     });
