@@ -137,6 +137,13 @@
       </div>
     </div>
 
+    <div class="form-group row">
+        <label for="service_method" class="col-xs-2 col-form-label">Pair Label:</label>
+        <div class="col-xs-3">
+          <input type="text" id="service_path" class="form-control" ng-model="rr.label" placeholder="Enter Label for this RR Pair">
+        </div>
+    </div>
+    
     <div class="form-group req row" ng-show="servicevo.type === 'REST'">
       <label for="service_method" class="col-xs-2 col-form-label">HTTP Method</label>
       <div class="col-xs-3">
@@ -217,6 +224,7 @@
       </div>
 
     <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+      
       <label class="col-xs-2 col-form-label">Request Headers:</label>
       <div class="col-xs-9">
         <fieldset data-ng-repeat="header in rr.reqHeadersArr">

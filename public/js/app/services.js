@@ -277,6 +277,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rrpair.resStatus = rr.resStatus;
                     rrpair.resHeaders = rr.resHeaders;
                     rrpair.resData = rr.resData;
+                    rrpair.label = rr.label;
 
                     rrpairs.push(rrpair);
                 });

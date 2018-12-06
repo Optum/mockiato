@@ -181,7 +181,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       delay: service.delay,
                       delayMax: service.delayMax,
                       txnCount: service.txnCount,
-                      basePath: service.basePath
+                      basePath: service.basePath,
+                      createdAt: service.createdAt,
+                      updatedAt: service.updatedAt,
+                      lastUpdateUser: service.lastUpdateUser.uid
                     };
 
                     $scope.servicevo.matchTemplates = [];

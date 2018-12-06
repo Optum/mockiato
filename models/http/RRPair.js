@@ -16,7 +16,8 @@ const rrSchema = new mongoose.Schema({
     set: function(v) { return Math.round(v); }
   },
   resHeaders: mongoose.Schema.Types.Mixed,
-  resData: mongoose.Schema.Types.Mixed
+  resData: mongoose.Schema.Types.Mixed,
+  label: String
 });
 
 module.exports = mongoose.model('RRPair', rrSchema);
