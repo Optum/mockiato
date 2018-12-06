@@ -49,11 +49,19 @@
     </div>
   </div>
 
-  <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+  <div class="form-group row">
     <label for="service_delay" class="col-xs-2 col-form-label">Response Delay (ms):</label>
     <div class="col-xs-2">
-      <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0">
+      <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
     </div>
+    <div class="col-xs-1 conjunction">to</div>
+    <div class="col-xs-2">
+        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
+      </div>
   </div>
 
   <div class="form-group row">
@@ -82,12 +90,12 @@
   </div>
 
   <div class="form-group row">
-    <label class="col-xs-2 col-form-label">Created:</label>
+    <label class="col-xs-2 col-form-label">Created At:</label>
     <div class="col-xs-3"><input id="created_datetime" class="form-control" ng-model="servicevo.createdAt" ng-disabled="true"></div>
   </div>
 
   <div class="form-group row">
-    <label class="col-xs-2 col-form-label">Updated:</label>
+    <label class="col-xs-2 col-form-label">Updated At:</label>
     <div class="col-xs-3"><input id="updated_datetime" class="form-control" ng-model="servicevo.updatedAt" ng-disabled="true"></div>
   </div>
 
@@ -117,8 +125,8 @@
         </div>
       </div>
 
-      <div class="form-group row">
-        <label for="service_method" class="col-xs-2 col-form-label">Pair Label:</label>
+      <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+        <label for="service_method" class="col-xs-2 col-form-label">Label:</label>
         <div class="col-xs-3">
           <input type="text" id="service_path" class="form-control" ng-model="rr.label" placeholder="Enter Label for this RR Pair">
         </div>
@@ -148,7 +156,7 @@
         <label for="service_endpoint" class="col-xs-2 col-form-label">Relative Path:</label>
         <div class="col-xs-9">
           <div class="input-group">
-            <input type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
+              <input type="text" ng-pattern="/^(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
           </div>
         </div>
       </div>
