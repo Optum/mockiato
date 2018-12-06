@@ -1,6 +1,6 @@
 const RRPair = require('../models/http/RRPair');
 const Service = require('../models/http/Service');
-
+const requestNode = require('request');
 
  /**
   * Recorder object
@@ -9,6 +9,11 @@ const Service = require('../models/http/Service');
   */
 var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerMask){
      this.path = path;
+     
+     //Ensure path starts with /
+    if(this.path.substring(0,1) != "/")
+        this.path = "/" + this.path;    
+
      this.sut = sut;
      this.remoteHost = remoteHost;
      this.protocol = protocol || 'REST';
@@ -27,19 +32,21 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
   * Then records host's response, and forwards response to user. 
   */
  Recorder.prototype.incomingRequest = function(req,rsp,next){
-    //onsole.log(this.myService);
+    
     console.log(req);
-    console.log(req.headers);
+
     //Start contructing RRPair, pull info we can from just request side before we forward the request
     var myRRPair = new RRPair();
     myRRPair.verb = req.method;
     myRRPair.reqData = req.body;
+    myRRPair.queries = req.query;
 
     //Get relative path to base path for this RRPair
     var fullBasePath = req.baseUrl + "/" + this.sut + this.path;
     var fullIncomingPath = req.baseUrl + req.path;
     var diff = fullIncomingPath.replace(fullBasePath,"");
-    
+    if(diff == "/")
+        diff = "";
     if(diff)
         myRRPair.path = diff;
 
@@ -52,7 +59,26 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
         });
     }
 
-    console.log(myRRPair);
+    //Start creating req options
+    var options = {}
+    //Create full URL to remote host
+    options.url = (req.secure ? "https" : "http") + "://" + this.remoteHost + ":" + this.remotePort + this.path + diff;
+    options.method = req.method;
+    options.headers = req.headers;
+    if(req._body) options.body = req.body;
+
+    //Handle JSON parsed body
+    if(typeof options.body != "string")
+        options.body = JSON.stringify(options.body);
+    
+    requestNode(options,function(err,remoteRsp,remoteBody){
+        if(err) console.log(err);
+        console.log(remoteRsp);
+        console.log(remoteBody);
+    });
+    
+    console.log(options);
+
 
 
 

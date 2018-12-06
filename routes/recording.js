@@ -4,9 +4,10 @@
 
 const express = require('express');
 const router = express.Router();
+const bodyParser = require('body-parser');
 const recordController = require('../controllers/recorderController');
 
-var testRecorder = new recordController.Recorder("/test/path",'sut','localhost',5000,'SOAP','XML'); 
+var testRecorder = new recordController.Recorder("/",'sut','localhost',8080,'SOAP','XML'); 
 
 router.all("/" + testRecorder.sut + testRecorder.path + "*",testRecorder.incomingRequest.bind(testRecorder));
 
