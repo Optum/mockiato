@@ -29,6 +29,36 @@ fact.factory('sutFactory', ['$http', function($http) {
     };
 }]);
 
+fact.factory('groupFactory', ['$http', function ($http) {
+    return {
+        getMembers: function (selectedSut) {
+            var memberlist = [];
+
+            $http.get('/api/systems/' + selectedSut)
+
+                .then(function (response) {
+                    var data = response.data;
+                    console.log(data);
+
+                    data.forEach(function (sutData) {
+                        var sut = {
+                            members: sutData.members
+                        };
+
+                        memberlist.push(sut.members);
+                    });
+                })
+
+                .catch(function (err) {
+                    console.log(err);
+                });
+
+            return memberlist;
+        }
+    };
+}]);
+
+
 fact.factory('userFactory', ['$http', function($http) {
     return {
         getAllUsers: function() {

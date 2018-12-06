@@ -686,8 +686,14 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
     function ($scope, authService, sutService, ctrlConstants){
         $scope.myUser = authService.getUserInfo().username;
         $scope.sutlist = sutService.getAllSUT();
-        $scope.selectedSut = null;
+       
+        $scope.selectedSut = 'group12';
+        //$scope.selectedSut.members = [];
 
+      $scope.memberlist = [];
+
+      $scope.memberlist = sutService.getMembers($scope.selectedSut);
+        console.log("logging:" + $scope.memberlist);
         
         $scope.removeUser = function (index) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
@@ -701,14 +707,13 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           });
         };
 
+
+
+       //testing 
       function newUser() {
         $scope.sut.name.push({});
       };
-      //not keeping both these
-      function addUser() {
-        var newItemNo = sut.name.length;
-        sut.name.push({ 'id': newItemNo });
-      };
+  
 
     }])
 

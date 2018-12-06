@@ -15,7 +15,7 @@ function getSystems(req, res) {
 function addSystem(req, res) {
   const sut = {
     name: req.body.name,
-    createdBy: req.body.createdBy
+    members: req.body.members
   };
 
   System.findOne(sut, function(err, foundSUT, system) {

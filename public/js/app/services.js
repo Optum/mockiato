@@ -293,7 +293,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 var token = authService.getUserInfo().token;
 
                 //add new SUT
-                servicevo.sut.createdBy = authService.getUserInfo().username; //testing
+                servicevo.sut.members = authService.getUserInfo().username; //testing
 
                 $http.post('/api/systems/', servicevo.sut)
                 .then(function(response) {
@@ -364,11 +364,16 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('sutService', ['sutFactory',
-        function(sutFactory) {
+    .service('sutService', ['sutFactory', 'groupFactory',
+        function(sutFactory, groupFactory) {
             this.getAllSUT = function() {
                 var sutlist = sutFactory.getAllSUT();
                 return sutlist;
+            };
+
+            this.getMembers = function(selectedSut){
+              var memberlist = groupFactory.getMembers(selectedSut)
+              return memberlist;
             };
     }])
 
@@ -378,8 +383,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           var fd = new FormData();
           fd.append('spec', file);
 
-          //testing -works
-          spec.sut.createdBy = authService.getUserInfo().username;
+          //testing
+          spec.sut.members = [];
+          spec.sut.members.push(authService.getUserInfo().username);
 
           var params = {};
           params.token = authService.getUserInfo().token;
