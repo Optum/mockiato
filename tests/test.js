@@ -13,11 +13,13 @@ const oasService = './api-docs.yml';
 const wsdlService = './examples/hello-service.wsdl';
 const restService = require('../examples/rest-json-example.json');
 const soapService = require('../examples/soap-example.json');
+const mqService   = require('../examples/mq-example.json');
 
 const oasQuery = {
     type: 'openapi',
     name: 'oas-test',
-    group: 'test'
+    group: 'test',
+    uploaded_file_name: 'api-docs.yml'
 };
 
 const wsdlQuery = {
@@ -51,7 +53,7 @@ describe('API tests', function() {
         it('Serves the documentation', function(done) {
             request
                 .get('/api-docs')
-                .expect(303)
+                .expect(301)
                 .end(done);
         });
     });
@@ -176,7 +178,7 @@ describe('API tests', function() {
             soapService.rrpairs[0].resHeaders['x-virt-app'] = 'Mockiato';
             request
                 .put(resource + '/' + id + token)
-                .send(restService)
+                .send(soapService)
                 .expect(200)
                 .end(done);
         });
@@ -191,12 +193,66 @@ describe('API tests', function() {
         });
     });
 
-    describe('Create service from WSDL', function() {
+    describe('Create MQ service', function() {
         it('Responds with the new service', function(done) {
             request
-                .post(resource + '/fromSpec' + token)
+                .post(resource + token)
+                .send(mqService)
+                .expect(200)
+                .expect(function(res) {
+                    id = res.body._id;
+                }).end(done);
+        });
+    });
+
+    describe('Retrieve MQ service', function() {
+        it('Responds with the correct service', function(done) {
+            request
+                .get(resource + '/' + id)
+                .expect(200)
+                .end(done);
+        });
+    });
+    
+    describe('Update MQ service', function() {
+        it('Responds with the updated service', function(done) {
+            soapService.rrpairs[0].resHeaders['x-virt-app'] = 'Mockiato';
+            request
+                .put(resource + '/' + id + token)
+                .send(mqService)
+                .expect(200)
+                .end(done);
+        });
+    });
+    
+    describe('Delete MQ service', function() {
+        it('Responds with the deleted service', function(done) {
+            request
+                .delete(resource + '/' + id + token)
+                .expect(200)
+                .end(done);
+        });
+    });
+
+    describe('Upload WSDL spec', function() {
+        it('Responds with the WSDL file id which uploaded', function(done) {
+            request
+                .post(resource + '/specUpload' + token)
+                .attach('specFile', wsdlService)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    wsdlQuery.uploaded_file_id=res.body;
+                })
+                .end(done)
+        });
+    });
+
+    describe('Create service from WSDL spec', function() {
+        it('Responds with the new service id', function(done) {
+            request
+                .post(resource + '/publishUploadedSpec' + token)
                 .query(wsdlQuery)
-                .attach('spec', wsdlService)
                 .send()
                 .expect(200)
                 .expect(function(res) {
@@ -215,12 +271,25 @@ describe('API tests', function() {
         });
     });
 
-    describe('Create service from OpenAPI', function() {
-        it('Responds with the new service', function(done) {
+    describe('Upload openapi spec', function() {
+        it('Responds with the openapi file id which uploaded', function(done) {
             request
-                .post(resource + '/fromSpec' + token)
+                .post(resource + '/specUpload' + token)
+                .attach('specFile', oasService)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    oasQuery.uploaded_file_id=res.body;
+                })
+                .end(done)
+        });
+    });
+
+    describe('Create service from OpenAPI spec', function() {
+        it('Responds with the new service id', function(done) {
+            request
+                .post(resource + '/publishUploadedSpec' + token)
                 .query(oasQuery)
-                .attach('spec', oasService)
                 .send()
                 .expect(200)
                 .expect(function(res) {

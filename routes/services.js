@@ -11,15 +11,25 @@ router.use(tokenMiddleware);
 
 // middleware to reject invalid services
 function rejectInvalid(req, res, next) {
-  const validTypes = [ 'SOAP', 'REST' ];
-  const type = req.body.type;
+  const validTypes = [ 'SOAP', 'REST', 'MQ' ];
 
-  if (validTypes.includes(type)) return next();
+  const type = req.body.type;
+  if (type && validTypes.includes(type)) return next();
+  
   handleError(`Service type ${type} is not supported`, res, 400);
 }
 
-// create service from OpenAPI spec
-router.post('/fromSpec', upload.single('spec'), servCtrl.createFromSpec);
+//Upload zip in upload directory and extract the zip in RRPair directory
+router.post('/zipUploadAndExtract', upload.single('zipFile'), servCtrl.zipUploadAndExtract);
+
+//create service from RR Pairs present in RRPair directory
+router.post('/publishExtractedRRPairs', servCtrl.publishExtractedRRPairs);
+
+//Upload openapi or wsdl spec in upload directory.
+router.post('/specUpload', upload.single('specFile'), servCtrl.specUpload);
+
+//create openapi or wsdl service from open spec or wsdl present in upload directory
+router.post('/publishUploadedSpec', servCtrl.publishUploadedSpec);
 
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
@@ -44,5 +54,8 @@ router.delete('/:id', servCtrl.deleteService);
 
 // toggle a service on / off TODO: toggle MQ services
 router.post('/:id/toggle', servCtrl.toggleService);
+
+const rrpairs = require('./rrpairs');
+router.use(rrpairs);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-const User = require('./User');
-const System = require('./System');
+const User = require('../common/User');
+const System = require('../common/System');
 const RRPair = require('./RRPair');
 
 const serviceSchema = new mongoose.Schema({
@@ -41,8 +41,11 @@ const serviceSchema = new mongoose.Schema({
   running: {
     type: Boolean,
     default: true
+  },
+  lastUpdateUser:{
+    type: User.schema
   }
-});
+},{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
 serviceSchema.set('usePushEach', true);
 module.exports = mongoose.model('Service', serviceSchema);

@@ -183,8 +183,16 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
                       try {
-                        if (rr.requestpayload)  reqPayload = JSON.parse(rr.requestpayload);
-                        if (rr.responsepayload) resPayload = JSON.parse(rr.responsepayload);
+                        //Handle empty json object payload
+                        if (rr.responsepayload)  {
+                          var trimmed = rr.responsepayload.trim();
+                          if(trimmed == "{}" || trimmed == "[]"){
+                            resPayload = trimmed;
+                          }else{
+                            resPayload = JSON.parse(rr.responsepayload);
+                          }
+                        }
+                        if (rr.requestpayload) reqPayload = JSON.parse(rr.requestpayload);
                       }
                       catch(e) {
                         console.log(e);
@@ -269,6 +277,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rrpair.resStatus = rr.resStatus;
                     rrpair.resHeaders = rr.resHeaders;
                     rrpair.resData = rr.resData;
+                    rrpair.label = rr.label;
 
                     rrpairs.push(rrpair);
                 });
@@ -301,8 +310,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 })
                 .catch(function(err) {
                     console.log(err);
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
                       $('#genricMsg-dialog').modal('toggle');
                 });
 
@@ -377,23 +386,111 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-  .service('specService', ['$http', '$location', 'authService', 'feedbackService', 'servConstants', 
-    function ($http, $location, authService, feedbackService, servConstants) {
-        this.publishFromSpec = function(spec, file) {
+    .service('zipUploadAndExtractService', ['$http', '$location', 'authService', 'servConstants',
+    function ($http, $location, authService, servConstants) {
+        this.zipUploadAndExtract = function(uploadRRPair, message) {
           var fd = new FormData();
-          fd.append('spec', file);
+          fd.append('zipFile', uploadRRPair);
+          var params = {};
+          params.token = authService.getUserInfo().token;
+          $http.post('/api/services/zipUploadAndExtract', fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+          })
+          .then(function(response){
+             if(response.data!=""){
+              return message(response.data);
+              }
+          })
+          .catch(function(err){
+            console.log(err);
+            return message(servConstants.SOME_ERR_IN_UPLOADING_ZIP);
+          });
+        };
+    }])
 
-          //testing
-          spec.sut.members = [];
-          spec.sut.members.push(authService.getUserInfo().username);
+    .service('publishExtractedRRPairService', ['$http', '$location', 'authService', 'servConstants',
+    function ($http, $location, authService, servConstants) {
+        this.publishExtractedRRPair = function(bulkUpload, uploaded_file_name_id, message) {
+          var fd = new FormData();
+          var params = {};
+          params.token = authService.getUserInfo().token;
+          params.group = bulkUpload.sut.name;
+          params.type  = bulkUpload.type;
+          params.name  = bulkUpload.name;
+          params.url = bulkUpload.base;
+          params.uploaded_file_name_id = uploaded_file_name_id;
 
+          //add new SUT
+          $http.post('/api/systems/', bulkUpload.sut)
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').modal('toggle');
+            });
+
+
+            $http.post('/api/services/publishExtractedRRPairs', fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+            })
+              .then(function (response) {
+                var data = response.data;
+                $location.path('/update/' + data._id + '/frmServCreate');
+              })
+              .catch(function (err) {
+                console.log(err.data.error);
+                return message(err.data.error);
+              });
+        };
+    }])
+
+    .service('specUploadService', ['$http', '$location', 'authService',
+    function ($http, $location, authService, servConstants) {
+        this.specUpload = function(uploadSpec, message) {
+          var fd = new FormData();
+          fd.append('specFile', uploadSpec);
+          var params = {};
+          params.token = authService.getUserInfo().token;
+          $http.post('/api/services/specUpload', fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+          })
+          .then(function(response){
+             if(response.data!=""){
+              return message(response.data);
+              }
+          })
+          .catch(function(err){
+            console.log(err);
+            return message();
+          });
+        };
+    }])
+
+    .service('publishSpecService', ['$http', '$location', 'authService', 'servConstants',
+    function ($http, $location, authService, servConstants) {
+        this.publishSpec = function(spec, uploaded_file_id, uploaded_file_name) {
+          var fd = new FormData();
           var params = {};
           params.token = authService.getUserInfo().token;
           params.group = spec.sut.name;
           params.type  = spec.type;
           params.name  = spec.name;
           params.url   = spec.url;
-          
+          params.uploaded_file_id = uploaded_file_id;
+          params.uploaded_file_name = uploaded_file_name;
+
+          //testing
+          spec.sut.members = [];
+          spec.sut.members.push(authService.getUserInfo().username);
           //add new SUT
           $http.post('/api/systems/', spec.sut)
             .then(function (response) {
@@ -401,28 +498,26 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
             .catch(function (err) {
               console.log(err);
-              $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-              $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
               $('#genricMsg-dialog').modal('toggle');
             });
 
-          $http.post('/api/services/fromSpec', fd, {
+            $http.post('/api/services/publishUploadedSpec', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
-          })
-          .then(function(response){
-            var data = response.data;
-            console.log(data);
-            //redirect to update page for created service
-            $location.path('/update/' + data._id + '/frmServCreate');
-          })
-          .catch(function(err){
-            console.log(err);
-              $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-              $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
-              $('#genricMsg-dialog').modal('toggle');
-          });
+            })
+              .then(function (response) {
+                var data = response.data;
+                $location.path('/update/' + data._id + '/frmServCreate');
+              })
+              .catch(function (err) {
+                console.log(err);
+                $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_SPEC_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').modal('toggle');
+              });
         };
     }])
 
@@ -571,21 +666,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     .service('userService', ['userFactory',
         function(userFactory) {
             this.getAllUsers = function() {
-                var userlist = userFactory.getAllUsers();
-                return userlist;
+                return userFactory.getAllUsers();
             };
     }])
 
     .service('suggestionsService', ['statusCodesFactory', 'headersFactory',
         function(statusCodesFactory, headersFactory) {
             this.getStatusCodes = function() {
-                var codesList = statusCodesFactory.getStatusCodes();
-                return codesList;
+                return statusCodesFactory.getStatusCodes();
             };
 
             this.getPossibleHeaders = function() {
-                var headerList = headersFactory.getPossibleHeaders();
-                return headerList;
+                return headersFactory.getPossibleHeaders();
             };
     }])
 
@@ -626,5 +718,11 @@ serv.constant("servConstants", {
         "LOGIN_ERR_BODY" : "Invalid credentials. Please try again.",
         "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
         "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
-        "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.", 
+        "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.",
+        "UPLOAD_FAIL_ERR_TITLE" : "Upload Failure Error",
+        "UPLOAD_FAIL_ERR_BODY" : "Error occured in bulk upload.",
+        "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
+        "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
+        "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
+        "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file."
       });

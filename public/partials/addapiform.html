@@ -12,6 +12,10 @@
             <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-required="!servicevo.type">
               REST
         </label>
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-required="!servicevo.type">
+              MQ
+        </label>
       </div>
     </div>
   </div>
@@ -23,11 +27,11 @@
       <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist | orderBy:'name'">
           <option selected="selected" disabled="true">Select SUT</option>
       </select>
-      <input ng-show="sutChecked" required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name (no spaces)">
+      <input ng-show="sutChecked" required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name (no spaces)" ng-change="checkDuplicateGroup()" ng-blur="checkDuplicateGroup()" ng-mouseleave="checkDuplicateGroup()">
     </div>
     <div class="col-xs-3">
       <p>Check to create new Group
-        &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked" ng-click="dropdown()"/>
+        &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked" ng-click="dropdown()"><div style='color:#b40037;font-weight:normal;font-size: 13px;' ng-show="groupMessage && sutChecked">{{groupMessage}}</div>
       </p>
     </div>
   </div>
@@ -44,21 +48,52 @@
     <div class="col-xs-9">
       <div class="input-group">
         <div class="input-group-addon">/virtual/{{servicevo.sut.name}}/</div>
-        <input required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path">
+        <input ng-required="servicevo.type !== 'MQ'" type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path">
       </div>
     </div>
   </div>
 
-  <div class="form-group row">
+  <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
     <label for="service_delay" class="col-xs-2 col-form-label">Response Delay (ms):</label>
     <div class="col-xs-2">
-      <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0">
+      <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
     </div>
     <div class="conjunction col-xs-1">to</div>
     <div class="col-xs-2">
-        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0">
+        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
       </div>
   </div>
+
+  <!-- <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
+    <label class="col-xs-2 col-form-label">Queue Manager</label>
+    <div class="col-xs-3">
+      <select required class="form-control" ng-model="servicevo.mq.manager" ng-options="manager.name for manager in mqInfo.managers">
+          <option selected="selected" disabled="true">Select Manager</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
+    <label class="col-xs-2 col-form-label">Request Queue</label>
+    <div class="col-xs-3">
+      <select required class="form-control" ng-model="servicevo.mq.reqQueue" ng-options="obj.reqQueue for obj in mqInfo.queues">
+          <option selected="selected" disabled="true">Select Queue</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
+    <label class="col-xs-2 col-form-label">Response Queue</label>
+    <div class="col-xs-3">
+      <select required class="form-control" ng-model="servicevo.mq.resQueue" ng-options="obj.resQueue for obj in mqInfo.queues">
+          <option selected="selected" disabled="true">Select Queue</option>
+      </select>
+    </div>
+  </div> -->
 
   <div class="form-group row">
       <label class="col-xs-2 col-form-label">Match Templates:</label>
@@ -106,6 +141,13 @@
       </div>
     </div>
 
+    <div class="form-group row">
+        <label for="service_method" class="col-xs-2 col-form-label">Label:</label>
+        <div class="col-xs-3">
+          <input type="text" id="service_path" class="form-control" ng-model="rr.label" placeholder="Enter Label for this RR Pair">
+        </div>
+    </div>
+    
     <div class="form-group req row" ng-show="servicevo.type === 'REST'">
       <label for="service_method" class="col-xs-2 col-form-label">HTTP Method</label>
       <div class="col-xs-3">
@@ -186,6 +228,7 @@
       </div>
 
     <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+      
       <label class="col-xs-2 col-form-label">Request Headers:</label>
       <div class="col-xs-9">
         <fieldset data-ng-repeat="header in rr.reqHeadersArr">
@@ -226,10 +269,10 @@
       </div>
     </div>
 
-    <div class="form-group row" g-class="servicevo.type === 'REST' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
+    <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
       <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
       <div class="col-xs-9">
-        <textarea ng-required="servicevo.type === 'SOAP'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
+        <textarea ng-required="servicevo.type !== 'REST'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
       </div>
     </div>
 
@@ -302,7 +345,7 @@
 
   <div class="form-group row">
     <div class="col-sm-12">
-      <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishservice(servicevo)">Publish</button>
+      <button ng-disabled="form.$invalid ||(groupMessage && sutChecked)" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishservice(servicevo)">Publish</button>
     </div>
   </div>
 </form>

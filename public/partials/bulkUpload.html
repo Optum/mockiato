@@ -1,0 +1,67 @@
+<h2>Mock a REST or SOAP Service</h2>
+<form name="form" class="well col-xs-12">
+  <div class="form-group req row">
+    <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type</label>
+    <div class="col-xs-9">
+      <div class="radio">
+        <label class="move-radios">
+            <input ng-model="bulkUpload.type" id="service_type" type="radio" ng-value="'SOAP'" ng-required="!servicevo.type">
+              SOAP
+        </label>
+        <label class="move-radios">
+            <input ng-model="bulkUpload.type" id="service_type" type="radio" ng-value="'REST'" ng-required="!servicevo.type">
+              REST
+        </label>
+      </div>
+    </div>
+  </div>
+
+    <div class="form-group req row">
+        <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
+        <div class="col-xs-3">
+            <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="bulkUpload.sut" ng-options="sut.name for sut in sutlist" >
+                <option selected="selected" disabled="true">Select Group</option>
+            </select>
+            <input ng-show="sutChecked" required type="text" ng-pattern="/^\S*$/" id="system_under_test" class="form-control" ng-model="bulkUpload.sut.name" placeholder="Enter group name(no spaces)" ng-change="checkDuplicateGroup()" ng-blur="checkDuplicateGroup()" ng-mouseleave="checkDuplicateGroup()">
+        </div>
+        <div class="col-xs-3">
+            <p>Check to create new Group
+                &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked" ng-click="dropdown()"><div style='color:#b40037;font-weight:normal;font-size: 13px;' ng-show="groupMessage && sutChecked">{{groupMessage}}</div>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group req row">
+        <label for="service_name" class="col-xs-2 col-form-label">Name</label>
+        <div class="col-xs-9">
+            <input required type="text" id="service_name" class="form-control" ng-model="bulkUpload.name" placeholder="Enter Service Name">
+        </div>
+    </div>
+
+    <div class="form-group req row">
+        <label for="service_base_path" class="col-xs-2 col-form-label">Base Path</label>
+        <div class="col-xs-9">
+            <div class="input-group">
+                <div class="input-group-addon">/virtual/{{bulkUpload.sut.name}}/</div>
+                <input required type="text" id="service_endpoint" class="form-control" ng-model="bulkUpload.base" placeholder="Enter Base Path">
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group req row">
+        <label for="service_name" class="col-xs-2 col-form-label">Bulk Upload</label>
+        <div class="col-xs-2">
+            <file-field class="btn btn-primary" ng-model="uploadRRPair" ng-change="uploadAndExtractZip()" ng-disabled="!bulkUpload.type || !bulkUpload.name || !bulkUpload.base">
+                <i class="glyphicon glyphicon-import"></i> Upload File</file-field>&nbsp;&nbsp;&nbsp;
+        </div>
+        <div style='color:#008000;font-weight:normal;font-size: 13px;' ng-show="uploadSuccessMessage">&#x2714;&nbsp;&nbsp;{{uploadSuccessMessage}}</div>
+        <div style='color:#b40037;font-weight:bold;font-size: 13px;' ng-show="uploadErrMessage">&#10060;&nbsp;&nbsp;{{uploadErrMessage}}</div>
+    </div>
+
+    <br>
+    <div class="form-group row">
+        <div class="col-sm-12">
+            <button ng-disabled="form.$invalid || !uploadRRPair || uploadSuccessMessage == '' || (groupMessage && sutChecked)" type="button" class="btn btn-xl btn-success center-block" ng-click="publishExtractedRRPairFiles(bulkUpload)">Publish</button>
+        </div>
+    </div>
+</form>

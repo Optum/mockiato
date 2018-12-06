@@ -1,4 +1,4 @@
-const System = require('../models/System');
+const System = require('../models/common/System');
 const debug  = require('debug')('default');
 
 function getSystems(req, res) {
@@ -51,4 +51,4 @@ module.exports = {
   getSystems: getSystems,
   addSystem: addSystem,
   delSystem: delSystem
-}
+};

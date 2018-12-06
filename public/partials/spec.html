@@ -1,21 +1,18 @@
-<h2>Mock from WSDL or OpenAPI</h2>
+<h2>Mock from {{spec.heading}}</h2>
 
 <form name="form" class="well col-xs-12">
     
-    <div class="form-group req row">
+    <!-- <div class="form-group req row">
         <label for="service_payloadtype" class="col-xs-2 col-form-label">Spec Type:</label>
         <div class="col-xs-9">
-            <div class="radio">
-                <label class="move-radios">
-                    <input ng-model="spec.type" ng-click="setContentType(rr, 'text/xml')" id="spec_type" type="radio" ng-value="'wsdl'"
-                        ng-required="!spec.type"> WSDL
+                <label class="move-radios" ng-show="spec.type=='wsdl'">
+                     WSDL
                 </label>
-                <label class="move-radios">
-                    <input ng-model="spec.type" id="spec_type" type="radio" ng-value="'openapi'" ng-required="!spec.type"> OpenAPI
+                <label class="move-radios" ng-show="spec.type=='openapi'">
+                     OpenAPI
                 </label>
-            </div>
         </div>
-    </div>
+    </div> -->
 
     <div class="form-group req row">
         <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
@@ -23,11 +20,11 @@
             <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="spec.sut" ng-options="sut.name for sut in sutlist">
                 <option selected="selected" disabled="true">Select Group</option>
             </select>
-            <input ng-show="sutChecked" required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="system_under_test" class="form-control" ng-model="spec.sut.name" placeholder="Enter group name(no spaces)">
+            <input ng-show="sutChecked" required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="system_under_test" class="form-control" ng-model="spec.sut.name" placeholder="Enter group name(no spaces)" ng-change="checkDuplicateGroup()" ng-blur="checkDuplicateGroup()" ng-mouseleave="checkDuplicateGroup()">
         </div>
         <div class="col-xs-3">
             <p>Check to create new Group
-                &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked"  ng-click="dropdown()"/>
+                &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked" ng-click="dropdown()"><div style='color:#b40037;font-weight:normal;font-size: 13px;' ng-show="groupMessage && sutChecked">{{groupMessage}}</div>
             </p>
         </div>
     </div>
@@ -52,25 +49,27 @@
     <div class="form-group req row">
         <label for="service_name" class="col-xs-2 col-form-label">Spec Source:</label>
         <div class="col-xs-2">
-            <file-field class="btn btn-primary" ng-model="uploadSpec" preview="previewText">
+            <file-field class="btn btn-primary" ng-model="uploadSpec" ng-change="callUploadSpec()" preview="previewText" ng-disabled="!spec.name">
                 <i class="glyphicon glyphicon-import"></i> Upload File</file-field>&nbsp;&nbsp;&nbsp;<b class="tab1">Or</b>
         </div>
         
         <div class="col-xs-7">
-            <input type="text" id="service_name" class="form-control" ng-model="spec.url" placeholder="Enter URL to spec">
+            <input type="text" id="service_name" class="form-control" ng-model="spec.url" placeholder="Paste URL">
         </div>
     </div>
-
+    <br>
+    <div style='color:#008000;font-weight:normal;font-size: 13px;' ng-show="uploadSuccessMessage">&#x2714;&nbsp;&nbsp;{{uploadSuccessMessage}}</div>
+    <div style='color:#b40037;font-weight:bold;font-size: 13px;' ng-show="uploadErrMessage">&#10060;&nbsp;&nbsp;{{uploadErrMessage}}</div>
     <br>
     <div class="form-group row">
         <div class="col-sm-12">
-            <button ng-disabled="form.$invalid || !(spec.url || uploadSpec)" type="button" class="btn btn-xl btn-success center-block" ng-click="publishspec(spec)">Publish</button>
+            <button ng-disabled="form.$invalid || !(spec.url || uploadSpec)||(groupMessage && sutChecked)" type="button" class="btn btn-xl btn-success center-block" ng-click="publishspec(spec)">Publish</button>
         </div>
     </div>
+    <p class="text-muted" style='font-size: 10.5px;'>**Either upload a spec or paste a URL. If you do both then only URL will be considered.</p>
 
-
-    <div class="form-group row">
-        <div class="col-xs-9" ng-show="previewText">
+    <div class="form-group row" ng-show="uploadSpec && uploadSuccessMessage">
+        <div class="col-xs-9">
             <h3><i>Preview</i></h3>
             <br>
             {{uploadSpec.name}}

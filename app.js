@@ -10,18 +10,24 @@ const app = express();
 const compression = require('compression');
 const debug = require('debug')('default');
 const path = require('path');
-const logger = require('morgan');
+//const logger = require('morgan');
+const morgan = require('morgan')
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const actuator = require('express-actuator');
 
+
+var logger = require('./winston');
+
+
 // connect to database
 const db = require('./models/db');
 db.on('error', function(err)  {throw err; });
 db.once('open', function() {
   debug(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
+  logger.info(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
   // ready to start
   app.emit('ready');
 });
@@ -31,7 +37,8 @@ function init() {
   // register middleware
   app.use(helmet());
   app.use(compression());
-  app.use(logger('dev'));
+  //app.use(logger('dev'));
+  app.use(morgan('combined'));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
 
@@ -65,12 +72,14 @@ function init() {
   // setup local authentication
   if (authType === 'local') {
     debug('Using local auth strategy');
+    logger.info('Using local auth strategy');
     const local = require('./lib/auth/local');
     app.use('/register', local);
   }
   // setup ldap authentication
   else if (authType === 'ldapauth') {
     debug('Using LDAP auth strategy');
+    logger.info('Using LDAP auth strategy');
     require('./lib/auth/ldap');
   }
 
@@ -101,6 +110,7 @@ function init() {
                   return;
                 }
                 debug('New user created: ' + newUser.uid);
+                logger.info('New user created: ' + newUser.uid);
               });
           }
         });
@@ -116,6 +126,19 @@ function init() {
         success: true,
         token: token
       });
+  });
+
+  // expose MQ info
+  const MQInfo = require('./models/mq/MQInfo');
+  app.get('/api/admin/mq/info', function(req, res) {
+    MQInfo.find({}, function(err, infoArr) {
+      if (err) {
+        handleError(err, res, 500);
+        return;
+      }
+
+      res.json(infoArr);
+    });
   });
 
   // expose API and virtual SOAP / REST services
