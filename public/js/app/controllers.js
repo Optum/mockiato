@@ -149,6 +149,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               if (helperFactory.isDuplicateReq(servicevo)) {
                 $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
                 $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
                 $('#genricMsg-dialog').modal('toggle');
               } else {
                 apiHistoryService.publishServiceToAPI(servicevo);
@@ -358,6 +359,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 if (helperFactory.isDuplicateReq(servicevo)) {
                 $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
                 $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
                 $('#genricMsg-dialog').modal('toggle');
                 } else {
                   apiHistoryService.publishServiceToAPI(servicevo, true);
@@ -890,4 +892,5 @@ ctrl.constant("ctrlConstants", {
   "SPEC_UPLOAD_FAILURE_MSG" : "Unexpected Error. Spec Upload Fail. File Uploaded - ",
   "SPEC_FILE_TYPE_URL_PUBLISH_ERROR" : "Your uploaded file type Or URL don't match with Spec type.",
   "SPEC_FILE_TYPE_UPLOAD_ERROR" : "Upload Fail - Your uploaded file type don't match with Spec type. Uploaded File - ",
+  "DUPLICATE_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
 });
