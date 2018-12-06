@@ -52,11 +52,15 @@
   <div class="form-group row">
     <label for="service_delay" class="col-xs-2 col-form-label">Response Delay (ms):</label>
     <div class="col-xs-2">
-      <input required type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0">
+      <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
     </div>
     <div class="col-xs-1 conjunction">to</div>
     <div class="col-xs-2">
-        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0">
+        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
       </div>
   </div>
 
