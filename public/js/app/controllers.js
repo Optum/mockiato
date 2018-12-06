@@ -183,10 +183,17 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       delayMax: service.delayMax,
                       txnCount: service.txnCount,
                       basePath: service.basePath,
-                      createdAt: service.createdAt,
-                      updatedAt: service.updatedAt,
-                      lastUpdateUser: service.lastUpdateUser.uid
+                      
                     };
+                    if(service.lastUpdateUser){
+                      $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+                    }
+                    if(service.createdAt){
+                      $scope.servicevo.createdAt = service.createdAt;
+                    }
+                    if(service.updatedAt){
+                      $scope.servicevo.updatedAt = service.updatedAt;
+                    }
 
                     $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
