@@ -149,6 +149,10 @@ function init() {
   virtual.registerAllRRPairsForAllServices();
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
+  
+  // initialize recording router
+  const recorder = require('./routes/recording');
+  app.use('/recording',recorder.router);
 
   // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
