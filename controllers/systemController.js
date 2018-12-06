@@ -50,4 +50,4 @@ module.exports = {
   getSystems: getSystems,
   addSystem: addSystem,
   delSystem: delSystem
-}
+};
