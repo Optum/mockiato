@@ -81,6 +81,21 @@
     </div>
   </div>
 
+  <div class="form-group row">
+    <label class="col-xs-2 col-form-label">Created:</label>
+    <div class="col-xs-3"><input id="created_datetime" class="form-control" ng-model="servicevo.createdAt" ng-disabled="true"></div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-xs-2 col-form-label">Updated:</label>
+    <div class="col-xs-3"><input id="updated_datetime" class="form-control" ng-model="servicevo.updatedAt" ng-disabled="true"></div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-xs-2 col-form-label">Updated By:</label>
+    <div class="col-xs-3"><input id="updated_user" class="form-control" ng-model="servicevo.lastUpdateUser" ng-disabled="true"></div>
+  </div>
+
   <!--begin RR pairs-->
     <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs | limitTo:totalDisplayed">
     <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
@@ -99,6 +114,13 @@
           <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewRRPair()">
             Add
           </button>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="service_method" class="col-xs-2 col-form-label">Pair Label:</label>
+        <div class="col-xs-3">
+          <input type="text" id="service_path" class="form-control" ng-model="rr.label" placeholder="Enter Label for this RR Pair">
         </div>
       </div>
 
@@ -126,7 +148,7 @@
         <label for="service_endpoint" class="col-xs-2 col-form-label">Relative Path:</label>
         <div class="col-xs-9">
           <div class="input-group">
-            <input type="text" ng-pattern="/^(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
+            <input type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_path" class="form-control" ng-model="rr.path" placeholder="Enter Relative Path">
           </div>
         </div>
       </div>
