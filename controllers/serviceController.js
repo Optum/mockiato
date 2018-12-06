@@ -538,6 +538,7 @@ function publishUploadedSpec(req, res) {
     serv.name = name;
     serv.basePath = '/' + serv.sut.name + serv.basePath;
     serv.user = req.decoded;
+    serv.lastUpdateUser = req.decoded;
 
     // save the service
     Service.create(serv, function (err, service) {
