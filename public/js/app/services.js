@@ -293,6 +293,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 var token = authService.getUserInfo().token;
 
                 //add new SUT
+                servicevo.sut.createdBy = authService.getUserInfo().username; //testing
+
                 $http.post('/api/systems/', servicevo.sut)
                 .then(function(response) {
                     console.log(response.data);
@@ -376,7 +378,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           var fd = new FormData();
           fd.append('spec', file);
 
-          //testing
+          //testing -works
           spec.sut.createdBy = authService.getUserInfo().username;
 
           var params = {};

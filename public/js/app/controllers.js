@@ -14,8 +14,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
     }])
 
-    .controller("specController", ['$scope', 'sutService' , 'specService', 
-        function($scope, sutService, specService) {
+    .controller("specController", ['$scope', 'sutService' , 'specService', 'authService', 
+        function($scope, sutService, specService, authService) {
           $scope.sutlist = sutService.getAllSUT();
           $scope.spec = {}; 
 
