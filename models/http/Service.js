@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-const User = require('./User');
-const System = require('./System');
+const User = require('../common/User');
+const System = require('../common/System');
 const RRPair = require('./RRPair');
 
 const serviceSchema = new mongoose.Schema({
@@ -25,6 +25,13 @@ const serviceSchema = new mongoose.Schema({
     get: function(v) { return Math.round(v); },
     set: function(v) { return Math.round(v); }
   },
+  delayMax: {
+    // force integer only
+    type: Number,
+    default: 0,
+    get: function(v) { return Math.round(v); },
+    set: function(v) { return Math.round(v); }
+  },
   txnCount: {
     type: Number,
     default: 0,
@@ -34,8 +41,11 @@ const serviceSchema = new mongoose.Schema({
   running: {
     type: Boolean,
     default: true
+  },
+  lastUpdateUser:{
+    type: User.schema
   }
-});
+},{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
 serviceSchema.set('usePushEach', true);
 module.exports = mongoose.model('Service', serviceSchema);

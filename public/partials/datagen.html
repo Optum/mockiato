@@ -1,4 +1,5 @@
 <h2>Mock Data Generation</h2>
+<form name="dataForm" class="well col-xs-12">
 <div class="row">
   <div class="col-xs-3">
     <h3><u>Field Names</u></h3>
@@ -73,8 +74,10 @@
     <div class="col-xs-3">
       <label>Include row id:  </label>&nbsp;
       <input type="checkbox" ng-model="idBool" /> <br/>
-      <label>Start at:  </label>&nbsp;
-      <input type="text" ng-model="rowOffset" class="small-input"/>
+      <label>Start at:  </label>
+      <input type="number" class="small-input" ng-disabled="!idBool" placeholder="0" ng-model="rowOffset" maxlength="9" 
+        min="0" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? 
+                    null : event.charCode >= 48 && event.charCode <= 57" onpaste="return false" data-toggle="tooltip" title="Positive whole number and only 9 digits allowed"/>
     </div>
   </div>
 
@@ -82,7 +85,9 @@
   <div class="form-group row">
     <div class="col-xs-2">
       <label>Number of rows</label>
-      <input type="number" class="form-control"  placeholder="Enter # of rows" ng-model="numRows">
+      <input type="number" class="form-control" placeholder="Number of rows" ng-model="numRows" min="1" ng-pattern="/^[0-9]{1,9}$/"
+        required onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" data-toggle="tooltip" title="Positive whole number and only 9 digits allowed"/>
     </div>
     <div class="form-group col-xs-2">
       <label>Output file type</label>
@@ -94,8 +99,10 @@
       </select>
     </div>
     </br>
-    <button type="button" class="btn btn-primary" ng-click="printColumns()" >Download</button>
+    <button ng-disabled="dataForm.$invalid || (gen.columns.length==0)" type="button" class="btn btn-primary" ng-click="printColumns()" >Download</button>
   </div>
+  <p style='color:#b40037;font-weight:bold;font-size: 13px;' ng-show="(gen.columns.length==0)">&#10060;&nbsp;&nbsp;Add Some Field To Dowload Data.</p>
+</form>
   <!--<hr>
 
   <p>Below is just for testing</p>

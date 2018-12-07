@@ -1,7 +1,7 @@
 version: "3"
 services:
-  app:
-    container_name: app
+  mockiato-app:
+    container_name: mockiato-app
     restart: always
     build: .
     environment:
@@ -11,6 +11,7 @@ services:
       - "8080:8080"
     depends_on:
       - mongo
+
   mongo:
     container_name: mongo
     image: mongo
@@ -18,3 +19,4 @@ services:
       - ./data/db:/data/db
     ports:
       - "27017:27017"
+

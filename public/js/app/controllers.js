@@ -14,24 +14,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
     }])
 
-    .controller("specController", ['$scope', 'sutService' , 'specService', 
-        function($scope, sutService, specService) {
-          $scope.sutlist = sutService.getAllSUT();
-          $scope.spec = {}; 
-
-          $scope.dropdown = function () {
-            if ($scope.sutChecked == false) {
-              $scope.sutlist = sutService.getAllSUT();
-            }
-          };
-          
-          $scope.publishspec = function (spec) {
-            specService.publishFromSpec(spec, $scope.uploadSpec);
-          };
-    }])
-
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
-        function($scope,apiHistoryService,sutService,suggestionsService, helperFactory, ctrlConstants){
+        function($scope,apiHistoryService,sutService,suggestionsService,helperFactory,ctrlConstants){
             $scope.sutlist = sutService.getAllSUT();
             $scope.servicevo = {};
             $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
@@ -52,9 +36,25 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
             $scope.dropdown = function() {
-              if($scope.sutChecked == false){
+              if ($scope.sutChecked == false){
                   $scope.sutlist = sutService.getAllSUT();
+                  $scope.groupMessage = "";
                }
+            };
+
+            $scope.checkDuplicateGroup = function (){
+              var count=0;
+              $scope.groupMessage = "";
+              if($scope.sutChecked == true){
+                for(var i=0; i<$scope.sutlist.length;i++){
+                 if($scope.sutlist[i].name == $scope.servicevo.sut.name)
+                 {
+                   count++;
+                 }
+                }
+                if(count!=0){
+                  $scope.groupMessage = "Group Name Already exist.";
+                }}
             };
 
             $scope.addTemplate = function() {
@@ -79,6 +79,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     id: 0
                   }]
               });
+            };
+
+            $scope.removeRRPair = function(index) {
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+              $scope.rrPairNo = index;
+              $('#modal-btn-yes').on("click", function () {
+                  $scope.servicevo.rawpairs.splice($scope.rrPairNo,1);
+                  $scope.$apply();
+                });
             };
 
             $scope.addNewReqHeader = function(rr) {
@@ -137,6 +149,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               if (helperFactory.isDuplicateReq(servicevo)) {
                 $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
                 $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
                 $('#genricMsg-dialog').modal('toggle');
               } else {
                 apiHistoryService.publishServiceToAPI(servicevo);
@@ -167,9 +180,20 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       name: service.name,
                       type: service.type,
                       delay: service.delay,
+                      delayMax: service.delayMax,
                       txnCount: service.txnCount,
-                      basePath: service.basePath
+                      basePath: service.basePath,
+                      
                     };
+                    if(service.lastUpdateUser){
+                      $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+                    }
+                    if(service.createdAt){
+                      $scope.servicevo.createdAt = service.createdAt;
+                    }
+                    if(service.updatedAt){
+                      $scope.servicevo.updatedAt = service.updatedAt;
+                    }
 
                     $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
@@ -194,6 +218,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       if (rr.payloadType === 'JSON') {
                         rr.requestpayload = JSON.stringify(rr.reqData);
                         rr.responsepayload = JSON.stringify(rr.resData);
+
+                        //Handle empty JSON object- stringify surrounds in "" 
+                        if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                          rr.responsepayload = rr.responsepayload.substring(1,3);
+                        }
                       }
                       else {
                         rr.requestpayload = rr.reqData;
@@ -290,6 +319,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               });
             };
 
+            $scope.removeRRPair = function(index) {
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+              $scope.rrPairNo = index;
+              $('#modal-btn-yes').on("click", function () {
+                  $scope.servicevo.rawpairs.splice($scope.rrPairNo,1);
+                  $scope.$apply();
+                });
+            };
+
             $scope.addNewReqHeader = function(rr) {
               var newItemNo = rr.reqHeadersArr.length;
               rr.reqHeadersArr.push({'id':newItemNo});
@@ -325,6 +366,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 if (helperFactory.isDuplicateReq(servicevo)) {
                 $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
                 $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
                 $('#genricMsg-dialog').modal('toggle');
                 } else {
                   apiHistoryService.publishServiceToAPI(servicevo, true);
@@ -380,7 +422,22 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.totalDisplayed += 10;
           };
 
-
+          //To Show Service Success Modal when a new service is created.
+          if($routeParams.frmWher=='frmServCreate'){
+            $http.get('/api/services/' + $routeParams.id)
+              .then(function(response) {
+                  var data = response.data;
+                  console.log(data);
+                  feedbackService.displayServiceInfo(data);
+              })
+              .catch(function(err) {
+                  console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
+              });
+            $('#success-modal').modal('toggle');
+          }
     }])
 
 
@@ -441,22 +498,26 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $scope.servicelist = [];
             };
 
-            $scope.deleteService = function(service) {
-                apiHistoryService.deleteServiceAPI(service)
-
-                .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-                    $scope.servicelist.forEach(function(elem, i, arr){
-                        if (elem._id === data.id)
-                            arr.splice(i, 1);
-                    });
+          $scope.deleteService = function (service) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            $('#modal-btn-yes').on("click", function () {
+              apiHistoryService.deleteServiceAPI(service)
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist.forEach(function (elem, i, arr) {
+                    if (elem._id === data.id)
+                      arr.splice(i, 1);
+                  });
                 })
-
-                .catch(function(err) {
-                    console.log(err);
+                .catch(function (err) {
+                  console.log(err);
                 });
-            };
+            });
+          };
 
             $scope.toggleService = function(service) {
                 apiHistoryService.toggleServiceAPI(service)
@@ -675,7 +736,147 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $('#genricMsg-dialog').modal('toggle');
             }
     }])
-;
+
+    .controller("bulkUploadController", ['$scope', 'sutService' , 'zipUploadAndExtractService', 'publishExtractedRRPairService', 'ctrlConstants', 
+    function($scope, sutService, zipUploadAndExtractService, publishExtractedRRPairService, ctrlConstants) {
+      $scope.sutlist = sutService.getAllSUT();
+      $scope.bulkUpload = {};
+      $scope.dropdown = function () {
+        if ($scope.sutChecked == false) {
+          $scope.sutlist = sutService.getAllSUT();
+          $scope.groupMessage = "";
+        }
+      };
+
+      $scope.checkDuplicateGroup = function (){
+         var count=0;
+        $scope.groupMessage = "";
+        if($scope.sutChecked == true){
+          for(var i=0; i<$scope.sutlist.length;i++){
+           if($scope.sutlist[i].name == $scope.bulkUpload.sut.name)
+           {
+             count++;
+           }
+          }
+          if(count!=0){
+            $scope.groupMessage = "Group Name Already exist.";
+          }}
+      };
+      $scope.uploadAndExtractZip = function () {
+        $scope.uploadSuccessMessage = "";
+        $scope.uploadErrMessage = "";
+        $scope.uploaded_file_name_id = "";
+        if ($scope.uploadRRPair) {
+          $scope.uploadSuccessMessage = "";
+          $scope.uploadErrMessage = "";
+          if($scope.uploadRRPair.name.endsWith(".zip"))
+          {
+            zipUploadAndExtractService.zipUploadAndExtract($scope.uploadRRPair, function (file_upload_name_id) {
+              if (file_upload_name_id) {
+                $scope.uploadSuccessMessage = ctrlConstants.BULK_UPLOAD_SUCCESS_MSG + $scope.uploadRRPair.name;
+                $scope.uploadErrMessage = ""
+                $scope.uploaded_file_name_id = file_upload_name_id;
+              } else {
+                $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FAILURE_MSG + $scope.uploadRRPair.name;
+                $scope.uploadSuccessMessage = "";
+              }
+            });
+          }
+          else{
+            $scope.uploadErrMessage = ctrlConstants.BULK_UPLOAD_FILE_TYPE_FAILURE_MSG + $scope.uploadRRPair.name;
+            $scope.uploadSuccessMessage = "";
+          }
+        }
+      };
+      $scope.publishExtractedRRPairFiles = function (bulkUpload) {
+        publishExtractedRRPairService.publishExtractedRRPair(bulkUpload, $scope.uploaded_file_name_id, function (message){
+          $scope.uploadErrMessage = message;
+          $scope.uploadSuccessMessage = "";
+        });
+      };
+}])
+
+.controller("specController", ['$scope','$routeParams' , 'sutService', 'specUploadService', 'publishSpecService', 'ctrlConstants', 
+        function($scope, $routeParams, sutService, specUploadService, publishSpecService, ctrlConstants) {
+          $scope.sutlist = sutService.getAllSUT();
+          $scope.spec = {}; 
+          $scope.spec.type = $routeParams.specType;
+          if ($scope.spec.type == 'openapi') { $scope.spec.heading = 'OpenAPI' } else if ($scope.spec.type == 'wsdl') { $scope.spec.heading = 'WSDL' }
+
+          $scope.dropdown = function () {
+            if ($scope.sutChecked == false) {
+              $scope.sutlist = sutService.getAllSUT();
+              $scope.groupMessage = "";
+            }
+          };
+          
+          $scope.checkDuplicateGroup = function (){
+           var count=0;
+            $scope.groupMessage = "";
+            if($scope.sutChecked == true){
+              for(var i=0; i<$scope.sutlist.length;i++){
+               if($scope.sutlist[i].name == $scope.spec.sut.name)
+               {
+                 count++;
+               }
+              }
+              if(count!=0){
+                $scope.groupMessage = "Group Name Already exist.";
+              }}
+          };
+          
+          $scope.callUploadSpec = function () {
+            $scope.uploadSuccessMessage = "";
+            $scope.uploadErrMessage = "";
+            $scope.uploaded_file_name_id = "";
+            if ($scope.uploadSpec) {
+              $scope.uploadSuccessMessage = "";
+              $scope.uploadErrMessage = "";
+              if (($scope.spec.type == 'openapi' && ($scope.uploadSpec.name.endsWith(".yaml") || $scope.uploadSpec.name.endsWith(".yml") || $scope.uploadSpec.name.endsWith(".json")))
+                || ($scope.spec.type == 'wsdl' && $scope.uploadSpec.name.endsWith(".wsdl"))) {
+                specUploadService.specUpload($scope.uploadSpec, function (uploaded_file_id) {
+                  if (uploaded_file_id) {
+                    $scope.uploadSuccessMessage = ctrlConstants.SPEC_UPLOAD_SUCCESS_MSG + $scope.uploadSpec.name;
+                    $scope.uploaded_file_id = uploaded_file_id;
+                    $scope.uploadErrMessage = "";
+                  } else {
+                    $scope.uploadErrMessage = ctrlConstants.SPEC_UPLOAD_FAILURE_MSG + $scope.uploadSpec.name;
+                    $scope.uploadSuccessMessage = "";
+                  }
+                });
+              }
+              else {
+                $scope.uploadErrMessage = ctrlConstants.SPEC_FILE_TYPE_UPLOAD_ERROR + $scope.uploadSpec.name;
+                $scope.uploadSuccessMessage = "";
+              }
+            }
+          };
+          
+          $scope.publishspec = function (spec) {
+            $scope.uploadSuccessMessage = "";
+            $scope.uploadErrMessage = "";
+            //conditions are complex here. Any change will break validations. - Pradeep
+            if ((typeof spec.url !== 'undefined' && spec.url !== "" && $scope.spec.type == 'openapi' && (spec.url.endsWith(".yaml") || spec.url.endsWith(".yml") || spec.url.endsWith(".json")))
+              || (typeof spec.url !== 'undefined' && spec.url !== "" && $scope.spec.type == 'wsdl' && spec.url.endsWith("?wsdl"))
+              || ((typeof spec.url == 'undefined' || spec.url == "") && $scope.uploadSpec && $scope.spec.type == 'openapi' && ($scope.uploadSpec.name.endsWith(".yaml") || $scope.uploadSpec.name.endsWith(".yml")  || $scope.uploadSpec.name.endsWith(".json")))
+              || ((typeof spec.url == 'undefined' || spec.url == "") && $scope.uploadSpec && $scope.spec.type == 'wsdl' && $scope.uploadSpec.name.endsWith(".wsdl"))
+            ) {
+              var filename; var file_id;
+              if ($scope.uploadSpec || $scope.uploaded_file_id) {
+                file_id = $scope.uploaded_file_id;
+                filename = $scope.uploadSpec.name;
+              } else {
+                file_id = "";
+                filename = "";
+              }
+              publishSpecService.publishSpec(spec, file_id, filename);
+            } else {
+              $scope.uploadErrMessage = ctrlConstants.SPEC_FILE_TYPE_URL_PUBLISH_ERROR;
+              $scope.uploadSuccessMessage = "";
+            }
+          };
+    }])
+    ;
 
 //Put all the hard coding or constants here for controller.      
 ctrl.constant("ctrlConstants", {
@@ -686,5 +887,17 @@ ctrl.constant("ctrlConstants", {
   "REG_SUCCESS_TITLE" : "REGISTRATION SUCCESS",
   "REG_SUCCESS_BODY" : "<p><center><span style='color:#008000;font-weight:bold;font-size: 50px;'>&#x2714;</span><br></br><span style='font-weight:bold;font-size: 16px;'>Registration completed successfully</span><br></br><span>Thank you. You can log in for service virtualization now</span></center></p>",
   "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 
-  "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more." 
+  "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.",
+  "DEL_CONFIRM_TITLE" : "Delete Confirmation",
+  "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
+  "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
+  "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?',
+  "BULK_UPLOAD_SUCCESS_MSG" : "Bulk Upload Success! File Uploaded - ",
+  "BULK_UPLOAD_FAILURE_MSG" : "Unexpected Error. Bulk Upload Fail. File Uploaded - ",
+  "BULK_UPLOAD_FILE_TYPE_FAILURE_MSG" : "Uploaded file type is not zip. File Uploaded - ",
+  "SPEC_UPLOAD_SUCCESS_MSG" : "Spec Upload Success! File Uploaded - ",
+  "SPEC_UPLOAD_FAILURE_MSG" : "Unexpected Error. Spec Upload Fail. File Uploaded - ",
+  "SPEC_FILE_TYPE_URL_PUBLISH_ERROR" : "Your uploaded file type Or URL don't match with Spec type.",
+  "SPEC_FILE_TYPE_UPLOAD_ERROR" : "Upload Fail - Your uploaded file type don't match with Spec type. Uploaded File - ",
+  "DUPLICATE_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
 });

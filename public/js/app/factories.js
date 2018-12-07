@@ -104,42 +104,55 @@ fact.factory('statusCodesFactory', ['$http', function($http) {
     };
 }]);
 
+//Below function is complex one. Any change will break Duplicate Req check. - Pradeep
 fact.factory('helperFactory', [function () {
     return {
         isDuplicateReq: function (servicevo) {
             var isSameReq = false;
             LOOP1:
             for (var i = 0; i < servicevo.rawpairs.length - 1; i++) {
-                var obj1 = servicevo.rawpairs[i];
+                var rawPair1 = servicevo.rawpairs[i];
+                if (!rawPair1.hasOwnProperty('requestpayload') || (rawPair1.hasOwnProperty('requestpayload') && 
+                                    rawPair1['requestpayload'] == '')) {
+                    rawPair1['requestpayload'] = '';
+                }
                 for (var j = i + 1; j < servicevo.rawpairs.length; j++) {
-                    var obj2 = servicevo.rawpairs[j];
+                    var rawPair2 = servicevo.rawpairs[j];
+                    if(!rawPair2.hasOwnProperty('requestpayload') || (rawPair2.hasOwnProperty('requestpayload') && 
+                                    rawPair2['requestpayload'] == '')){
+                        rawPair2['requestpayload']='';
+                    }
                     var isAnyReqPairDuplicate = true;
                     LOOP2:
-                    for (var ky in obj1) {
-                        var key, value;
-                        if (obj1.hasOwnProperty(ky)) {
-                            key = ky;
-                            value = obj1[ky];
+                    for (var ky in rawPair1) {
+                        var key1, value1;
+                        if (rawPair1.hasOwnProperty(ky)) {
+                            var filterVal = rawPair1[ky];
+                            if (['queriesArr', 'reqHeadersArr'].includes(ky)) {
+                                filterVal = filterVal.filter(o => o.k != undefined);
+                            }
+                            key1 = ky;
+                            value1 = filterVal;
                         }
                         LOOP3:
-                        for (var ki in obj2) {
-                            var k, v;
-                            if (obj2.hasOwnProperty(ki)) {
-                                k = ki;
-                                v = obj2[ki];
+                        for (var ki in rawPair2) {
+                            var key2, value2;
+                            if (rawPair2.hasOwnProperty(ki)) {
+                                var filterVal2 = rawPair2[ki];
+                                if (['queriesArr', 'reqHeadersArr'].includes(ki)) {
+                                    filterVal2 = filterVal2.filter(o => o.k != undefined);
+                                }
+                                key2 = ki;
+                                value2 = filterVal2;
                             }
-                            if (key == 'id' || key == 'resHeadersArr' || key == '$$hashKey' || key == 'responsepayload' ||
-                                key == 'resStatus' || key == 'queries' || key == 'resHeaders' || key == 'reqHeaders' ||
-                                key == 'reqData' || key == 'resData' || key == 'verb' || key == '_id') break;
-                            else if (key !== k || k == 'id' || key == 'resHeadersArr' || key == '$$hashKey' || key == 'responsepayload' ||
-                                key == 'resStatus' || key == 'queries' || key == 'resHeaders' || key == 'reqHeaders' ||
-                                key == 'reqData' || key == 'resData' || key == 'verb' || key == '_id') continue;
-                            else if (
-                                ['path'].includes(key) && ['path'].includes(k) && !angular.equals(v, value)
-                                || ['queriesArr'].includes(key) && ['queriesArr'].includes(k) && !angular.equals(v, value)
-                                || ['reqHeadersArr'].includes(key) && ['reqHeadersArr'].includes(k) && !angular.equals(v, value)
-                                || ['method', 'payloadType', 'requestpayload', 'path', 'queriesArr', 'reqHeadersArr'].includes(key)
-                                && !angular.equals(v, value)
+                            if (key1 == 'id' || key1 == 'resHeadersArr' || key1 == '$$hashKey' || key1 == 'responsepayload' ||
+                                key1 == 'resStatus' || key1 == 'queries' || key1 == 'resHeaders' || key1 == 'reqHeaders' ||
+                                key1 == 'reqData' || key1 == 'resData' || key1 == 'verb' || key1 == '_id') break;
+                            else if (key1 !== key2 || key2 == 'id' || key1 == 'resHeadersArr' || key1 == '$$hashKey' || key1 == 'responsepayload' ||
+                                key1 == 'resStatus' || key1 == 'queries' || key1 == 'resHeaders' || key1 == 'reqHeaders' ||
+                                key1 == 'reqData' || key1 == 'resData' || key1 == 'verb' || key1 == '_id') continue;
+                            else if (['method', 'payloadType', 'path', 'queriesArr', 'reqHeadersArr', 'requestpayload'].includes(key1) &&
+                                !angular.equals(value2, value1)
                             ) {
                                 isAnyReqPairDuplicate = false;
                                 break LOOP2;
