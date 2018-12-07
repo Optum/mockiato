@@ -112,8 +112,16 @@ fact.factory('helperFactory', [function () {
             LOOP1:
             for (var i = 0; i < servicevo.rawpairs.length - 1; i++) {
                 var rawPair1 = servicevo.rawpairs[i];
+                if (!rawPair1.hasOwnProperty('requestpayload') || (rawPair1.hasOwnProperty('requestpayload') && 
+                                    rawPair1['requestpayload'] == '')) {
+                    rawPair1['requestpayload'] = '';
+                }
                 for (var j = i + 1; j < servicevo.rawpairs.length; j++) {
                     var rawPair2 = servicevo.rawpairs[j];
+                    if(!rawPair2.hasOwnProperty('requestpayload') || (rawPair2.hasOwnProperty('requestpayload') && 
+                                    rawPair2['requestpayload'] == '')){
+                        rawPair2['requestpayload']='';
+                    }
                     var isAnyReqPairDuplicate = true;
                     LOOP2:
                     for (var ky in rawPair1) {

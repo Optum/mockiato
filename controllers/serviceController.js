@@ -442,7 +442,7 @@ function isYaml(req) {
 function zipUploadAndExtract(req, res) {
   let extractZip = function () {
     return new Promise(function (resolve, reject) {
-      fs.createReadStream(req.file.path).pipe(unzip.Extract({ path: '.\\RRPair\\' + req.decoded.uid + '_' + req.file.filename + '_' + req.file.originalname }));
+      fs.createReadStream(req.file.path).pipe(unzip.Extract({ path: './uploads/RRPair/' + req.decoded.uid + '_' + req.file.filename + '_' + req.file.originalname }));
       resolve('_' + req.file.filename + '_' + req.file.originalname);
     });
   }
@@ -473,7 +473,7 @@ function publishExtractedRRPairs(req, res) {
   const base = req.query.url;
   const name = req.query.name;
   const sut = { name: req.query.group };
-  rrpair.parse('./RRPair/' + req.decoded.uid + req.query.uploaded_file_name_id, type).then(onSuccess).catch(onError);
+  rrpair.parse('./uploads/RRPair/' + req.decoded.uid + req.query.uploaded_file_name_id, type).then(onSuccess).catch(onError);
   function onSuccess(serv) {
     serv.sut = sut;
     serv.name = name;
@@ -538,6 +538,7 @@ function publishUploadedSpec(req, res) {
     serv.name = name;
     serv.basePath = '/' + serv.sut.name + serv.basePath;
     serv.user = req.decoded;
+    serv.lastUpdateUser = req.decoded;
 
     // save the service
     Service.create(serv, function (err, service) {
