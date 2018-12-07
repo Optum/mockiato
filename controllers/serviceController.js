@@ -2,7 +2,6 @@ const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
 
-const rrpairController = require('./rrpairController');
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
