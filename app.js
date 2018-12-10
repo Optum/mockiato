@@ -178,7 +178,7 @@ function init() {
   app.use('/api/users', users);
 
   // handle no match responses
-  app.use(function(req, res, next) {
+  app.use(/\/((?!recording).)*/,function(req, res, next) {
     if (!req.msgContainer) {
       req.msgContainer = {};
       req.msgContainer.reqMatched = false;
@@ -189,7 +189,7 @@ function init() {
   });
 
   // handle internal errors
-  app.use(function(err, req, res) {
+  app.use(/\/((?!recording).)*/,function(err, req, res) {
     debug(err.message);
     return res.status(500).send(err.message);
   });

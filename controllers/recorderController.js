@@ -1,7 +1,8 @@
 const RRPair = require('../models/http/RRPair');
-const InactiveService = require('../models/http/InactiveService');
 const requestNode = require('request');
 const Recording = require('../models/http/Recording');
+const async = require('async');
+
 
 
  /**
@@ -15,8 +16,6 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
      //Ensure path starts with /
     if(this.path.substring(0,1) != "/")
         this.path = "/" + this.path;    
-    
-    var serv = InactiveService.create({ basePath : "/" + sut + path },(function(err,newServ){
         this.model = Recording.create({
             sut : sut,
             path : path,
@@ -25,7 +24,8 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
             payloadType : datatype || 'JSON',
             remotePort : remotePort || 80,
             headerMask : headerMask || ['Content-Type'],
-            service : newServ
+            service : {basePath : "/" + sut + path},
+            rrpairs : new Array()
         },(function(err,newModel){
             this.model = newModel;
             if(!(this.model.headerMask['Content-Type']))
@@ -35,16 +35,7 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
                     if(err) console.log(err);
                 });
         }).bind(this));
-    }).bind(this));
-   
-
-    
-    
-    
- 
-     
-
-    
+  
  };
 
 
@@ -64,7 +55,7 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
     myRRPair.payloadType = this.model.payloadType;
 
     //Get relative path to base path for this RRPair
-    var fullBasePath = req.baseUrl + "/" + this.model.sut + this.model.path;
+    var fullBasePath = req.baseUrl + "/live/" + this.model.sut + this.model.path;
     var fullIncomingPath = req.baseUrl + req.path;
     var diff = fullIncomingPath.replace(fullBasePath,"");
     if(diff == "/")
@@ -94,43 +85,43 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
         options.body = JSON.stringify(options.body);
     
     //Make request
-    requestNode(options,(function(err,remoteRsp,remoteBody){
-        if(err) { 
-            console.log(err); 
-            return; 
-        }
-        //Collect data for RR Pair
-        myRRPair.resStatus = remoteRsp.statusCode;
-        if(myRRPair.payloadType == "JSON"){
-            myRRPair.resData = JSON.parse(remoteBody);
-        }else{
-            myRRPair.resData = remoteBody;
-        }
-        
-        myRRPair.resHeaders = remoteRsp.headers;
+    return new Promise(function(resolve,reject){
 
-        //Create RR pair model + add to service
-        RRPair.create(myRRPair,(function(err,newRRPair){
-            if(err){
-                console.log(err);
-                return;
+        requestNode(options,(function(err,remoteRsp,remoteBody){
+            if(err) { 
+                return reject(err);
             }
-            this.model.service.rrpairs.push(newRRPair);
-            this.model.save();
+            return resolve(remoteRsp,remoteBody);
         }).bind(this));
+        }).then((function(remoteRsp,remoteBody){
+            var body = remoteBody || remoteRsp.body;
+            //Collect data for RR Pair
+            myRRPair.resStatus = remoteRsp.statusCode;
+            if(myRRPair.payloadType == "JSON"){
+                myRRPair.resData = JSON.parse(body);
+            }else{
+                myRRPair.resData = body;
+            }
+            myRRPair.resHeaders = remoteRsp.headers;
 
+            //Add RRPair to model and save
+            this.model.service.rrpairs.push(myRRPair);
+            this.model.save();
 
-
-    }).bind(this));
+            //Send back response to user
+            rsp.status(remoteRsp.statusCode);
+            rsp.set(remoteRsp.headers);
+            if(body){
+                rsp.send(body);
+            }
+        }).bind(this));
     
-    console.log(options);
-
-
-
-
-   next();
+        
 
 };
+
+
+
 
  module.exports = {
     Recorder: Recorder

@@ -6,13 +6,14 @@ const express = require('express');
 const router = express.Router();
 const bodyParser = require('body-parser');
 const recordController = require('../controllers/recorderController');
+
 var activeRecorders = {};
 
 
 function createRecorder(path,sut,remoteHost,remotePort,protocol,dataType,headerMask){
 
   var testRecorder = new recordController.Recorder(path,sut,remoteHost,remotePort,protocol,dataType,headerMask); 
-  router.all("/" + sut + path + "*",testRecorder.incomingRequest.bind(testRecorder));
+  router.all("/live/" + sut + path + "*",testRecorder.incomingRequest.bind(testRecorder));
   return testRecorder;
   
 }
@@ -27,7 +28,7 @@ function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,dat
   activeRecorders[label] = recorder;
   return recorder;
 }
-createRecorder("/","sut","localhost",8080,"REST","JSON");
+createRecorder("/","sut","localhost",8080,"REST","XML");
 module.exports = {
     router: router,
   };
