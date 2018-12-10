@@ -48,6 +48,6 @@
   "devDependencies": {
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
-    "supertest": "^2.0.0"
+    "supertest": "^3.3.0"
   }
 }
