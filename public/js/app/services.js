@@ -325,7 +325,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       $('#genricMsg-dialog').modal('toggle');
                       }
                       else{
-                      var data = response.data;
                       $location.path('/update/' + data._id + '/frmServCreate');
                     }
                   })
