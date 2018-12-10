@@ -614,13 +614,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           }
         }])
 
-    .service('templateService', ['$http', 'authService', 'feedbackService', 'servConstants', 
-        function($http, authService, feedbackService, servConstants) {
+    .service('templateService', ['$http', '$location', 'authService', 'feedbackService', 'servConstants', 
+        function($http, $location, authService, feedbackService, servConstants) {
             this.importTemplate = function(templateStr) {
                 var template;
 
                 try {
-                  console.log(templateStr);
                   template = JSON.parse(templateStr);
                 }
                 catch(e) {
@@ -636,9 +635,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 .then(function(response) {
                     var data = response.data;
-                    console.log(data);
-                    feedbackService.displayServiceInfo(data);
-                    $('#success-modal').modal('toggle');
+                    $location.path('/update/' + data._id + '/frmServCreate');
                 })
 
                 .catch(function(err) {
