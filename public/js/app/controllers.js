@@ -499,11 +499,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
 
           $scope.deleteService = function (service) {
-            // $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-            // $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_BODY);
-            // $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-            // $('#genricMsg-dialog').modal('toggle');
-            // $('#modal-btn-yes').on("click", function () {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            $('#modal-btn-yes').on("click", function () {
               apiHistoryService.deleteServiceAPI(service)
                 .then(function (response) {
                   var data = response.data;
@@ -516,7 +516,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 .catch(function (err) {
                   console.log(err);
                 });
-            //});
+            });
           };
 
             $scope.toggleService = function(service) {
