@@ -1,6 +1,3 @@
-const RRPair = require('../models/http/RRPair');
-const MQPair = require('../models/mq/MQPair');
-
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 
