@@ -506,7 +506,7 @@ function publishExtractedRRPairs(req, res) {
             handleError(err, res, 500);
           }
           res.json(service);
-          syncWorkers(service._id, 'register');
+          syncWorkers(service , 'register');
         });
       }
     });
