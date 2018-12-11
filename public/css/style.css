@@ -109,3 +109,7 @@ input[type="radio"] {
   text-align: center;
   padding-top: 5px;
 }
+
+.wordwrap{
+  word-wrap: break-word;
+}
