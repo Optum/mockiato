@@ -6,4 +6,7 @@ router.get('/', sysCtrl.getSystems);
 router.post('/', sysCtrl.addSystem);
 router.delete('/:name', tokenMiddleware, sysCtrl.delSystem);
 
+//testing
+router.get('/:name', sysCtrl.getOneSystem);
+
 module.exports = router;

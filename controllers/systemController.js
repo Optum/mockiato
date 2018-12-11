@@ -12,6 +12,18 @@ function getSystems(req, res) {
 });
 }
 
+//testing
+function getOneSystem(req, res) {
+  System.findOne({ name: req.params.name }, function (err) {
+    if (err) {
+      handleError(err, res, 400);
+      return;
+    }
+    res.json({ 'message': 'retrieved group', 'name': req.params.name });
+  });
+}
+
+
 function addSystem(req, res) {
   const sut = {
     name: req.body.name,
@@ -50,5 +62,6 @@ function delSystem(req, res) {
 module.exports = {
   getSystems: getSystems,
   addSystem: addSystem,
-  delSystem: delSystem
+  delSystem: delSystem,
+  getOneSystem: getOneSystem
 };

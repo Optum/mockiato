@@ -948,13 +948,8 @@ ctrl.constant("ctrlConstants", {
   "SPEC_UPLOAD_FAILURE_MSG" : "Unexpected Error. Spec Upload Fail. File Uploaded - ",
   "SPEC_FILE_TYPE_URL_PUBLISH_ERROR" : "Your uploaded file type Or URL don't match with Spec type.",
   "SPEC_FILE_TYPE_UPLOAD_ERROR" : "Upload Fail - Your uploaded file type don't match with Spec type. Uploaded File - ",
-<<<<<<< HEAD
-  "DUPLICATE_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
-
-=======
   "DUPLICATE_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
   "IMPORT_ERR_MSG" : "You should upload only correct json file.",
   "SUCCESS" : "success",
   "GRP_ALREADY_EXIST_MSG" : "Group Name Already exist.",
->>>>>>> master
 });
