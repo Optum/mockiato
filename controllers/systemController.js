@@ -14,12 +14,17 @@ function getSystems(req, res) {
 
 //testing
 function getOneSystem(req, res) {
-  System.findOne({ name: req.params.name }, function (err) {
+  const sut = {
+    name: req.params.name
+  };
+
+  System.findOne(sut, function (err, system) {
     if (err) {
       handleError(err, res, 400);
       return;
     }
-    res.json({ 'message': 'retrieved group', 'name': req.params.name });
+
+    res.json(system);
   });
 }
 

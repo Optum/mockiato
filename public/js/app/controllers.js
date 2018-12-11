@@ -717,14 +717,12 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.myUser = authService.getUserInfo().username;
         $scope.sutlist = sutService.getAllSUT();
        
-        $scope.selectedSut = 'group12';
-        //$scope.selectedSut.members = [];
+        $scope.selectedSut = [];
 
-      $scope.memberlist = [];
+      $scope.$watch('selectedSut', function (newSut) {
+        $scope.memberlist = sutService.getMembers(newSut.name);
+      });
 
-      $scope.memberlist = sutService.getMembers($scope.selectedSut);
-        console.log("logging:" + $scope.memberlist);
-        
         $scope.removeUser = function (index) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
           $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);

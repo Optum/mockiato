@@ -33,26 +33,19 @@ fact.factory('groupFactory', ['$http', function ($http) {
     return {
         getMembers: function (selectedSut) {
             var memberlist = [];
-
+            
             $http.get('/api/systems/' + selectedSut)
-
                 .then(function (response) {
-                    var data = response.data;
-                    console.log(data);
-
-                    data.forEach(function (sutData) {
-                        var sut = {
-                            members: sutData.members
-                        };
-
-                        memberlist.push(sut.members);
-                    });
+                    for (var i = 0; i < response.data.members.length; i++) {
+                        
+                        var member = response.data.members[i];
+                        memberlist.push(member);
+                    }
                 })
 
                 .catch(function (err) {
                     console.log(err);
                 });
-
             return memberlist;
         }
     };
