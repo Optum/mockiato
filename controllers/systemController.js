@@ -12,7 +12,6 @@ function getSystems(req, res) {
 });
 }
 
-//testing
 function getOneSystem(req, res) {
   const sut = {
     name: req.params.name
@@ -28,6 +27,14 @@ function getOneSystem(req, res) {
   });
 }
 
+//testing
+
+function updateGroup(req, res){
+
+
+
+  
+}
 
 function addSystem(req, res) {
   const sut = {
@@ -68,5 +75,6 @@ module.exports = {
   getSystems: getSystems,
   addSystem: addSystem,
   delSystem: delSystem,
-  getOneSystem: getOneSystem
+  getOneSystem: getOneSystem,
+  updateGroup: updateGroup
 };

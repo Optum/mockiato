@@ -714,15 +714,32 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
   .controller("adminController", ['$scope', 'authService', 'sutService', 'ctrlConstants',
     function ($scope, authService, sutService, ctrlConstants){
-        $scope.myUser = authService.getUserInfo().username;
-        $scope.sutlist = sutService.getAllSUT();
-       
-        $scope.selectedSut = [];
+      $scope.myUser = authService.getUserInfo().username;
+      $scope.sutlist = sutService.getAllSUT();
+      $scope.selectedSut = [];
 
       $scope.$watch('selectedSut', function (newSut) {
         $scope.memberlist = sutService.getMembers(newSut.name);
       });
 
+      $scope.addMember = function () {
+        $scope.memberlist.push($scope.member)
+      }
+      
+
+      $scope.removeUser = function (index) {
+        $scope.userNo = index;
+        $scope.memberlist.splice($scope.userNo, 1);
+       // $scope.$apply();
+      };
+
+
+      $scope.saveGroup = function(selectedSut){
+        console.log("members for " + selectedSut.name + ": " + $scope.memberlist);
+        sutService.updateGroup(selectedSut.name, $scope.memberlist);
+      };
+
+      /* TODO add confirmations
         $scope.removeUser = function (index) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
           $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);
@@ -730,18 +747,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           $('#genricMsg-dialog').modal('toggle');
           $scope.userNo = index;
           $('#modal-btn-yes').on("click", function () {
-            $scope.sut.name.splice($scope.rrPairNo, 1);
-            $scope.$apply();
+            $scope.memberlist.splice($scope.userNo, 1);
+           // $scope.$apply();
           });
         };
-
-
-
-       //testing 
-      function newUser() {
-        $scope.sut.name.push({});
-      };
-  
+      */
 
     }])
 
