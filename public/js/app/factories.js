@@ -168,12 +168,12 @@ fact.factory('helperFactory', [function () {
                         for (var ki in rawPair2) {
                             var key2, value2;
                             if (rawPair2.hasOwnProperty(ki)) {
-                                var filterVal = rawPair2[ki];
+                                var filterVal2 = rawPair2[ki];
                                 if (['queriesArr', 'reqHeadersArr'].includes(ki)) {
-                                    filterVal = filterVal.filter(o => o.k != undefined);
+                                    filterVal2 = filterVal2.filter(o => o.k != undefined);
                                 }
                                 key2 = ki;
-                                value2 = filterVal;
+                                value2 = filterVal2;
                             }
                             if (key1 == 'id' || key1 == 'resHeadersArr' || key1 == '$$hashKey' || key1 == 'responsepayload' ||
                                 key1 == 'resStatus' || key1 == 'queries' || key1 == 'resHeaders' || key1 == 'reqHeaders' ||

@@ -91,12 +91,12 @@
                 <div class="modal-body">
                   <p>Your data was successfully submitted.</p>
 									<div ng-show="virt.type === 'REST' || virt.type === 'SOAP'">
-										<p><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
+										<p class="wordwrap"><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
 										<p><b>Response Delay:</b> {{ virt.delay }}(ms)</p>
 										<div ng-show="virt.type === 'REST'">
 											<p><b>Operations:</b></p>
 											<fieldset ng-repeat="op in virt.operations">
-												<p>{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path }}</p>
+												<p class="wordwrap">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path }}</p>
 												<p ng-show="op.verb === 'POST' || op.verb === 'PUT'" class="tab">Required Headers: Name = Content-Type | Value = application/json</p>
 												<p ng-show="op.verb === 'DELETE'" class="tab">Note: if you included a request payload for DELETE, be sure to use the required headers in your request: Name = Content-Type | Value = application/json</p></br>
 											</fieldset>
@@ -120,13 +120,13 @@
 								</div>
 								<div class="modal-body">
 									<div ng-show="virt.type === 'REST' || virt.type === 'SOAP'">
-										<p><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
+										<p class="wordwrap"><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
 										<p><b>Response Delay:</b> {{ virt.delay }}(ms)</p>
 										<div ng-show="virt.type === 'REST'">
 											<p><b>Operations:</b></p>
 											<fieldset ng-repeat="op in virt.operations">
-												<p ng-show="!op.queries">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path }}</p>
-												<p ng-show="op.queries">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path + op.queries }}</p>
+												<p class="wordwrap" ng-show="!op.queries">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path }}</p>
+												<p class="wordwrap" ng-show="op.queries">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path + op.queries }}</p>
 												<p ng-show="op.verb === 'POST' || op.verb === 'PUT'" class="tab">Required Headers: Name = Content-Type | Value = application/json</p>
 												<p ng-show="op.verb === 'DELETE'" class="tab">Note: if you included a request payload for DELETE, be sure to use the required headers in your request: Name = Content-Type | Value = application/json</p></br>
 											</fieldset>

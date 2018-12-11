@@ -155,7 +155,7 @@ function registerRRPair(service, rrpair) {
             const sentQuery = req.query[queryVal[0]];
             
             if (sentQuery != queryVal[1]) {
-              matchedHeaders = false;
+              matchedQueries = false;
               debug('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
               debug('received query: ' + queryVal[0] + ': ' + sentQuery);
               logger.info('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
