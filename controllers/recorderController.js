@@ -16,25 +16,25 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
      //Ensure path starts with /
     if(this.path.substring(0,1) != "/")
         this.path = "/" + this.path;    
-        this.model = Recording.create({
-            sut : sut,
-            path : path,
-            remoteHost : remoteHost,
-            protocol : protocol || 'REST',
-            payloadType : datatype || 'JSON',
-            remotePort : remotePort || 80,
-            headerMask : headerMask || ['Content-Type'],
-            service : {basePath : "/" + sut + path},
-            rrpairs : new Array()
-        },(function(err,newModel){
-            this.model = newModel;
-            if(!(this.model.headerMask['Content-Type']))
-                this.model.headerMask.push('Content-Type');
+    this.model = Recording.create({
+        sut : sut,
+        path : path,
+        remoteHost : remoteHost,
+        protocol : protocol || 'REST',
+        payloadType : datatype || 'JSON',
+        remotePort : remotePort || 80,
+        headerMask : headerMask || ['Content-Type'],
+        service : {basePath : "/" + sut + path},
+        rrpairs : new Array()
+    },(function(err,newModel){
+        this.model = newModel;
+        if(!(this.model.headerMask['Content-Type']))
+            this.model.headerMask.push('Content-Type');
 
-                this.model.save(function(err){
-                    if(err) console.log(err);
-                });
-        }).bind(this));
+            this.model.save(function(err){
+                if(err) console.log(err);
+            });
+    }).bind(this));
   
  };
 
@@ -88,11 +88,11 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
     return new Promise(function(resolve,reject){
 
         requestNode(options,(function(err,remoteRsp,remoteBody){
-            if(err) { 
-                return reject(err);
-            }
-            return resolve(remoteRsp,remoteBody);
-        }).bind(this));
+                if(err) { 
+                    return reject(err);
+                }
+                return resolve(remoteRsp,remoteBody);
+            }).bind(this));
         }).then((function(remoteRsp,remoteBody){
             var body = remoteBody || remoteRsp.body;
             //Collect data for RR Pair
@@ -115,9 +115,6 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
                 rsp.send(body);
             }
         }).bind(this));
-    
-        
-
 };
 
 
