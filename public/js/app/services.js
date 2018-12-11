@@ -434,8 +434,15 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
               .then(function (response) {
                 var data = response.data;
+                if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  }
+                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-              })
+              }})
               .catch(function (err) {
                 console.log(err.data.error);
                 return message(err.data.error);
@@ -488,6 +495,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               console.log(err);
               $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
               $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+              
               $('#genricMsg-dialog').modal('toggle');
             });
 
@@ -498,8 +506,15 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
               .then(function (response) {
                 var data = response.data;
+                if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  }
+                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-              })
+               } })
               .catch(function (err) {
                 console.log(err);
                 $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
@@ -614,13 +629,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           }
         }])
 
-    .service('templateService', ['$http', 'authService', 'feedbackService', 'servConstants', 
-        function($http, authService, feedbackService, servConstants) {
+    .service('templateService', ['$http', '$location', 'authService', 'feedbackService', 'servConstants', 
+        function($http, $location, authService, feedbackService, servConstants) {
             this.importTemplate = function(templateStr) {
                 var template;
 
                 try {
-                  console.log(templateStr);
                   template = JSON.parse(templateStr);
                 }
                 catch(e) {
@@ -636,9 +650,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 .then(function(response) {
                     var data = response.data;
-                    console.log(data);
-                    feedbackService.displayServiceInfo(data);
-                    $('#success-modal').modal('toggle');
+                    $location.path('/update/' + data._id + '/frmServCreate');
                 })
 
                 .catch(function(err) {
@@ -712,5 +724,6 @@ serv.constant("servConstants", {
         "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
         "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
         "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
-        "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file."
+        "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file." ,
+        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>'     
       });
