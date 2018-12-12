@@ -725,32 +725,22 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       $scope.addMember = function () {
         $scope.memberlist.push($scope.member)
       }
-      
 
-      $scope.removeUser = function (index) {
+      $scope.removeMember = function (index) {
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
         $scope.userNo = index;
-        $scope.memberlist.splice($scope.userNo, 1);
-       // $scope.$apply();
+        $('#modal-btn-yes').on("click", function () {
+          $scope.memberlist.splice($scope.userNo, 1);
+          $scope.$apply();
+        });
       };
-
 
       $scope.saveGroup = function(selectedSut){
         sutService.updateGroup(selectedSut.name, $scope.memberlist);
       };
-
-      /* TODO add confirmations
-        $scope.removeUser = function (index) {
-          $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);
-          $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-          $('#genricMsg-dialog').modal('toggle');
-          $scope.userNo = index;
-          $('#modal-btn-yes').on("click", function () {
-            $scope.memberlist.splice($scope.userNo, 1);
-           // $scope.$apply();
-          });
-        };
-      */
 
     }])
 
