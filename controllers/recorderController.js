@@ -10,12 +10,13 @@ const async = require('async');
   *
   * This object is created whenever a new recording session is started. the recording router will route all appropriate transactions to this object 
   */
-var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerMask){
+var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,headerMask){
      this.path = path;
      
      //Ensure path starts with /
     if(this.path.substring(0,1) != "/")
         this.path = "/" + this.path;    
+
     this.model = Recording.create({
         sut : sut,
         path : path,
@@ -25,7 +26,7 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
         remotePort : remotePort || 80,
         headerMask : headerMask || ['Content-Type'],
         service : {basePath : "/" + sut + path},
-        rrpairs : new Array()
+        name: name
     },(function(err,newModel){
         this.model = newModel;
         if(!(this.model.headerMask['Content-Type']))
@@ -120,7 +121,20 @@ var Recorder = function(path,sut,remoteHost,remotePort,protocol,datatype,headerM
 
 
 
+function getRecordings(req,rsp){
+    var recordingsRet; 
+    var q = Recording.find({},function(err,docs){
+        if(err){
+            handleError(err,rsp,500);
+        }
+        rsp.json(docs);
+    });
+}
+
+
+
  module.exports = {
-    Recorder: Recorder
+    Recorder: Recorder,
+    getRecordings : getRecordings
   };
   

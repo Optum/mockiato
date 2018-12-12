@@ -9,8 +9,11 @@ const recordingSchema = new mongoose.Schema({
     remotePort : Number,
     payloadType : String,
     protocol : String,
-    headerMask : Array
+    headerMask : Array,
+    name : String
 });
 
 recordingSchema.set('usePushEach', true);
 module.exports = mongoose.model('Recording', recordingSchema);
+
+

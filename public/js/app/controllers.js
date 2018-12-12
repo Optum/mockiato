@@ -176,6 +176,49 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
+    .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
+      function($scope,apiHistoryService,sutService,suggestionsService,helperFactory,ctrlConstants){
+        $scope.sutlist = sutService.getAllSUT();
+        $scope.servicevo = {};
+        $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
+        $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+        $scope.servicevo.reqHeadersArr = [{id:0}];
+        $scope.dropdown = function() {
+              if ($scope.sutChecked == false){
+                  $scope.sutlist = sutService.getAllSUT();
+                  $scope.groupMessage = "";
+               }
+            };
+        $scope.addNewReqHeader = function(service) {
+          var newItemNo = service.reqHeadersArr.length;
+          service.reqHeadersArr.push({'id':newItemNo});
+        };
+
+        $scope.removeReqHeader = function(service) {
+          var lastItem = service.reqHeadersArr.length-1;
+          service.reqHeadersArr.splice(lastItem);
+        };
+
+        $scope.createRecorder = function (servicevo) {
+          try {
+            if (helperFactory.isDuplicateReq(servicevo)) {
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
+             // $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+            } else {
+              //apiHistoryService.publishServiceToAPI(servicevo);
+            }
+          }
+          catch (e) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+            $('#genricMsg-dialog').modal('toggle');
+          }
+        };
+
+    }])
+
     .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
         function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants){
             $scope.statusCodes = suggestionsService.getStatusCodes();

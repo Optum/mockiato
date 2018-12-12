@@ -145,6 +145,11 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 templateUrl: 'partials/login.html',
                 controller: 'authController'
             })
+            
+            .when('/createRecorder', {
+                templateUrl: 'partials/createRecorderForm.html',
+                controller: 'createRecorderController'
+            })
 
             .otherwise({
                 redirectTo: "/selectService"

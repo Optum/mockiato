@@ -150,9 +150,10 @@ function init() {
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
   
-  // initialize recording router
+  // initialize recording routers
   const recorder = require('./routes/recording');
-  app.use('/recording',recorder.router);
+  app.use('/recording',recorder.recordingRouter);
+  app.use('/api/recording',recorder.apiRouter);
 
   // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
