@@ -374,19 +374,19 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
     .service('sutService', ['sutFactory', 'groupFactory', '$http',
         function(sutFactory, groupFactory, $http) {
-          /* 
-          this.getAllSUT = function() {
+           
+            this.getAllSUT = function() {
                 var sutlist = sutFactory.getAllSUT();
                 return sutlist;
             };
-            */
+            
             this.getMembers = function(selectedSut){
-              var memberlist = sutFactory.getMembers(selectedSut)
+              var memberlist = groupFactory.getMembers(selectedSut)
               return memberlist;
             };
 
             this.getGroupsByUser = function(user){
-              var someGroups = groupFactory.getGroupsByUser(user);
+              var someGroups = sutFactory.getGroupsByUser(user);
               return someGroups;
             }
 

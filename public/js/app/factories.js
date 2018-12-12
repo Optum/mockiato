@@ -28,10 +28,32 @@ fact.factory('sutFactory', ['$http', function($http) {
         },
 
         getGroupsByUser: function(user) {
-            //working here
+            var sutlist = [];
+            $http.get('/api/systems')
 
+                .then(function (response) {
+                    var data = response.data;
+                    console.log(data);
+
+                    data.forEach(function (sutData) {
+                        var sut = {
+                            name: sutData.name,
+                            members: sutData.members
+                        };
+                        sut.members.forEach(function(memberlist){
+                            if(memberlist.indexOf(user) > -1){
+                                sutlist.push(sut);
+                            }
+                        });
+                    });
+                })
+
+                .catch(function (err) {
+                    console.log(err);
+                });
 
             return sutlist;
+
         }
     };
 }]);
