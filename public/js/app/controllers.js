@@ -715,7 +715,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
   .controller("adminController", ['$scope', 'authService', 'sutService', 'ctrlConstants',
     function ($scope, authService, sutService, ctrlConstants){
       $scope.myUser = authService.getUserInfo().username;
-      $scope.sutlist = sutService.getAllSUT();
+      //$scope.sutlist = sutService.getAllSUT();
+      $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.selectedSut = [];
 
       $scope.$watch('selectedSut', function (newSut) {

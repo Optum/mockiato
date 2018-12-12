@@ -25,6 +25,13 @@ fact.factory('sutFactory', ['$http', function($http) {
           });
 
           return sutlist;
+        },
+
+        getGroupsByUser: function(user) {
+            //working here
+
+
+            return sutlist;
         }
     };
 }]);

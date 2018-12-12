@@ -374,15 +374,21 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
     .service('sutService', ['sutFactory', 'groupFactory', '$http',
         function(sutFactory, groupFactory, $http) {
-            this.getAllSUT = function() {
+          /* 
+          this.getAllSUT = function() {
                 var sutlist = sutFactory.getAllSUT();
                 return sutlist;
             };
-
+            */
             this.getMembers = function(selectedSut){
-              var memberlist = groupFactory.getMembers(selectedSut)
+              var memberlist = sutFactory.getMembers(selectedSut)
               return memberlist;
             };
+
+            this.getGroupsByUser = function(user){
+              var someGroups = groupFactory.getGroupsByUser(user);
+              return someGroups;
+            }
 
             this.updateGroup = function(group, memberlist){
 
@@ -390,7 +396,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 name: group,
                 members: memberlist
               };
-              
+
               $http.put('/api/systems/' + group, groupData)
                 .then(function (response) {
                   console.log(response.data);
