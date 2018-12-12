@@ -557,7 +557,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 delete service.__v;
                 delete service.$$hashKey;
 
-                service.basePath = service.basePath.replace('/' + service.sut.name, '');
+                if (service.basePath) {
+                  service.basePath = service.basePath.replace('/' + service.sut.name, '');
+                }
+                
                 service.rrpairs.forEach(function(rr) {
                   delete rr._id;
                 });
