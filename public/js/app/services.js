@@ -119,6 +119,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 $rootScope.virt.operations.push(op);
               });
           };
+
+          this.displayRecorderInfo = function(data){
+            
+          }
     }])
 
     .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
@@ -367,6 +371,50 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             this.toggleServiceAPI = function(service) {
                 var token = authService.getUserInfo().token;
                 return $http.post('/api/services/' + service._id + '/toggle?token=' + token);
+            };
+
+            this.publishRecorderToAPI = function(servicevo){
+
+                //create recorder
+                var recorder = {
+                  type:servicevo.type,
+                  sut:servicevo.sut.name,
+                  name:servicevo.name,
+                  remoteHost:servicevo.remoteHost,
+                  remotePort:servicevo.remotePort,
+                  basePath:servicevo.basePath,
+                  headerMask:[]
+                  
+                }
+
+                
+                //Extract headers
+                for(var i = 0; i < servicevo.reqHeadersArr.length; i ++){
+                  var head = servicevo.reqHeadersArr[i];
+                  if(head.k)
+                    recorder.headerMask.push(head.k.originalObject);
+                }
+                console.log(servicevo);
+
+
+                //publish service
+                var token = authService.getUserInfo().token;
+                $http.put('/api/recording' + '?token=' + token, recorder)
+                
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    feedbackService.displayRecorderInfo(data);
+                    $('#success-modal').modal('toggle');
+                })
+
+                .catch(function(err) {
+                    console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+
             };
     }])
 

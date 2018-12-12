@@ -6,36 +6,37 @@ const express = require('express');
 const recordingRouter = express.Router();
 const apiRouter = express.Router();
 const bodyParser = require('body-parser');
-const recordController = require('../controllers/recorderController');
+
 
 var activeRecorders = {};
 
 
-function createRecorder(path,sut,remoteHost,remotePort,protocol,dataType,headerMask){
 
-  var testRecorder = new recordController.Recorder(path,sut,remoteHost,remotePort,protocol,dataType,headerMask); 
-  recordingRouter.all("/live/" + sut + path + "*",testRecorder.incomingRequest.bind(testRecorder));
-  return testRecorder;
-  
+
+
+function bindRecorderToPath(path,recorder){
+  recordingRouter.all("/live" + path,recorder.incomingRequest.bind(recorder));
 }
 
 
-function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,dataType,headerMask){
-  
-  if(activeRecorders[label]){
-    return null;
-  }
-  var recorder = createRecorder(label,path,sut,remoteHost,remotePort,protocol,dataType,headerMask);
-  activeRecorders[label] = recorder;
-  return recorder;
-}
-beginRecordingSession("NewRecorder","/","sut","localhost",8080,"REST","XML");
+
+
+
+
+
+
+
+
 module.exports = {
-    recordingRouter: recordingRouter,
-    apiRouter : apiRouter
-  };
-  
+  recordingRouter: recordingRouter,
+  apiRouter : apiRouter,
+  bindRecorderToPath, bindRecorderToPath
+};
 
 
-apiRouter.get("/getRecordings",recordController.getRecordings);
+const recordController = require('../controllers/recorderController');
+//Get list of recordings out in db
+apiRouter.get("/",recordController.getRecordings);
 
+//Add a new recorder
+apiRouter.put("/",recordController.addRecorder);

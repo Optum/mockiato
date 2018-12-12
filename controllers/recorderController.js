@@ -2,8 +2,9 @@ const RRPair = require('../models/http/RRPair');
 const requestNode = require('request');
 const Recording = require('../models/http/Recording');
 const async = require('async');
+const routing = require('../routes/recording');
 
-
+var activeRecorders = {};
 
  /**
   * Recorder object
@@ -29,6 +30,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
         name: name
     },(function(err,newModel){
         this.model = newModel;
+        activeRecorders[this.model._id] = this;
         if(!(this.model.headerMask['Content-Type']))
             this.model.headerMask.push('Content-Type');
 
@@ -51,9 +53,19 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
     //Start contructing RRPair, pull info we can from just request side before we forward the request
     var myRRPair = {}
     myRRPair.verb = req.method;
-    myRRPair.reqData = req.body;
     myRRPair.queries = req.query;
     myRRPair.payloadType = this.model.payloadType;
+    if(myRRPair.payloadType == "JSON"){
+        //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+        try{
+            myRRPair.reqData = JSON.parse(req.body);
+        }catch(err){
+            myRRPair.reqData = req.body;
+        }
+    }
+    else
+        myRRPair.reqData = req.body;
+
 
     //Get relative path to base path for this RRPair
     var fullBasePath = req.baseUrl + "/live/" + this.model.sut + this.model.path;
@@ -90,6 +102,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
 
         requestNode(options,(function(err,remoteRsp,remoteBody){
                 if(err) { 
+                    console.log(err);
                     return reject(err);
                 }
                 return resolve(remoteRsp,remoteBody);
@@ -99,7 +112,14 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
             //Collect data for RR Pair
             myRRPair.resStatus = remoteRsp.statusCode;
             if(myRRPair.payloadType == "JSON"){
-                myRRPair.resData = JSON.parse(body);
+
+                //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+                try{
+                    myRRPair.resData = JSON.parse(body);
+                }catch(err){
+                    console.log(err);
+                    myRRPair.resData = body;
+                }
             }else{
                 myRRPair.resData = body;
             }
@@ -114,6 +134,8 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
             rsp.set(remoteRsp.headers);
             if(body){
                 rsp.send(body);
+            }else{
+                rsp.end();
             }
         }).bind(this));
 };
@@ -132,9 +154,43 @@ function getRecordings(req,rsp){
 }
 
 
+    
+/**
+ * Initialize a recording session on /recording/live/{{SUT}}/{{PATH}} 
+ * @param {string} label name of this recorder
+ * @param {string} path sub-path to be recording on
+ * @param {string} sut  SUT this belongs to
+ * @param {string} remoteHost remote host to connect to
+ * @param {integer} remotePort remote port to connect to 
+ * @param {string} protocol  SOAP/REST
+ * @param {string} dataType  XML/JSON/etc
+ * @param {array{string}} headerMask array of headers to save
+ */
+function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,dataType,headerMask){
+    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,dataType,headerMask); 
+    routing.bindRecorderToPath("/" + sut + path + "*",newRecorder);
+    return newRecorder;
+}
+
+/**
+ * API call to add a recorder
+ * TODO: Stop duplicate paths for recorders
+ * @param {*} req express req
+ * @param {*} rsp express rsp
+ */
+function addRecorder(req,rsp){
+    console.log(req.body);
+    var body = req.body;
+    if(body.type == "SOAP")
+        body.payloadType = "XML";
+    var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.payloadType || "JSON",body.headerMask);
+
+    rsp.json(newRecorder);
+}
 
  module.exports = {
     Recorder: Recorder,
-    getRecordings : getRecordings
+    getRecordings : getRecordings,
+    addRecorder : addRecorder
   };
   
