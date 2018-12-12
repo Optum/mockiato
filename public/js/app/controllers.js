@@ -229,8 +229,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       rr.method = rr.verb;
 
                       if (rr.payloadType === 'JSON') {
-                        rr.requestpayload = JSON.stringify(rr.reqData);
-                        rr.responsepayload = JSON.stringify(rr.resData);
+                        rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+                        rr.responsepayload = JSON.stringify(rr.resData, null, 4);
 
                         //Handle empty JSON object- stringify surrounds in "" 
                         if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
