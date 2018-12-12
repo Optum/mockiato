@@ -27,13 +27,28 @@ function getOneSystem(req, res) {
   });
 }
 
-//testing
 
 function updateGroup(req, res){
+  const sut = {
+    name: req.params.name,
+  };
 
+  System.findOne(sut, function (err, system) {
+    if (err) {
+      handleError(err, res, 400);
+      return;
+    }
 
+    system.members = req.body.members;
 
-  
+    system.save(function (err, newSystem) {
+      if (err) {
+        handleError(err, res, 500);
+        return;
+      }
+      res.json(newSystem);
+    });
+  });
 }
 
 function addSystem(req, res) {

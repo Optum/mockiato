@@ -735,7 +735,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
 
       $scope.saveGroup = function(selectedSut){
-        console.log("members for " + selectedSut.name + ": " + $scope.memberlist);
         sutService.updateGroup(selectedSut.name, $scope.memberlist);
       };
 

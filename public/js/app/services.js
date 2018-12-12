@@ -387,11 +387,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             this.updateGroup = function(group, memberlist){
 
               var groupData = {
-                name: group.name,
+                name: group,
                 members: memberlist
               };
-
+              
               $http.put('/api/systems/' + group, groupData)
+                .then(function (response) {
+                  console.log(response.data);
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
             }
     }])
 
