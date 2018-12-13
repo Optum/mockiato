@@ -23,12 +23,14 @@
                 <th>Name</th>
                 <th>Group</th>
                 <th>Type</th>
+                <th>Active</th>
                 <th>Base URL</th>
             </tr>
             <tr ng-repeat="recorder in recordingList" style=" word-break:break-all">
                 <td style="width:120px"><a href="#!viewRecorder/{{ recorder._id }}">{{recorder.name}}</a></td>
                 <td style="width:120px">{{recorder.sut.name}}</td>
                 <td>{{recorder.protocol}}</td>
+                <td>{{recorder.active}}</td>
                 <td class="urlmax">{{ mockiatoHost + '/recording/live/' + recording.basePath }}</td>
             </tr>
         </table>
