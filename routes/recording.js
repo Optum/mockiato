@@ -5,16 +5,29 @@
 const express = require('express');
 const recordingRouter = express.Router();
 const apiRouter = express.Router();
-
+const removeRoute = require('../lib/remove-route');
 
 var activeRecorders = {};
 
 
 
 
-
+/**
+ * Binds a given recorder to a path for all traffic
+ * @param {String} path 
+ * @param {Recorder} recorder 
+ */
 function bindRecorderToPath(path,recorder){
   recordingRouter.all("/live" + path,recorder.incomingRequest.bind(recorder));
+}
+
+
+/**
+ * Unbinds a recorder from live traffic
+ */
+function unbindRecorder(recorder){
+  var path = "/recording/live/" + recorder.model.sut.name + recorder.model.path + "*";
+  removeRoute(require('../app'),path);
 }
 
 
@@ -23,13 +36,12 @@ function bindRecorderToPath(path,recorder){
 
 
 
-
-
-
+//Early exports declaration because of circular dependency from recorderController.js
 module.exports = {
   recordingRouter: recordingRouter,
   apiRouter : apiRouter,
-  bindRecorderToPath : bindRecorderToPath
+  bindRecorderToPath : bindRecorderToPath,
+  unbindRecorder : unbindRecorder
 };
 
 
@@ -45,3 +57,6 @@ apiRouter.get("/:id/:index",recordController.getRecorderRRPairsAfter);
 
 //Add a new recorder
 apiRouter.put("/",recordController.addRecorder);
+
+//Remove a recorder
+apiRouter.delete("/:id",recordController.removeRecorder);

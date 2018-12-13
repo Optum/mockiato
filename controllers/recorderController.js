@@ -236,6 +236,26 @@ function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,hea
     return newRecorder;
 }
 
+function removeRecorder(req,rsp){
+    var id = req.params.id;
+    var recorder = activeRecorders[id];
+    if(recorder){
+        routing.unbindRecorder(recorder);
+        delete activeRecorders[id];
+    }
+    Recording.deleteOne({_id:id},function(err){
+        if(err)
+            handleError(err,rsp,500);
+        else{
+            rsp.status(200);
+            rsp.end();
+        }
+    });
+   
+}
+
+
+
 /**
  * API call to add a recorder
  * TODO: Stop duplicate paths for recorders
@@ -258,6 +278,7 @@ function addRecorder(req,rsp){
     getRecordings : getRecordings,
     addRecorder : addRecorder,
     getRecordingById: getRecordingById,
-    getRecorderRRPairsAfter : getRecorderRRPairsAfter
+    getRecorderRRPairsAfter : getRecorderRRPairsAfter,
+    removeRecorder: removeRecorder
   };
   

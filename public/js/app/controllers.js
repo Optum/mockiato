@@ -402,7 +402,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
             } else {
-              apiHistoryService.publishServiceToAPI(servicevo, false);
+              apiHistoryService.publishServiceToAPI(servicevo, false,true);
+
             }
           }
           catch(e) {

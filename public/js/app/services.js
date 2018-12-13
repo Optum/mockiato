@@ -125,8 +125,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           }
     }])
 
-    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
-        function($http, $location, authService, feedbackService, xmlService, servConstants) {
+    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants','$routeParams',
+        function($http, $location, authService, feedbackService, xmlService, servConstants,$routeParams) {
 
             //gets all recordings, unfiltered
             this.getRecordings = function(){
@@ -154,7 +154,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services?sut=' + sut + '&user=' + user);
             };
 
-            this.publishServiceToAPI = function(servicevo, isUpdate) {
+            this.publishServiceToAPI = function(servicevo, isUpdate, isRecording) {
                 // clean up autosuggest selections
                 servicevo.rawpairs.forEach(function(rr) {
                   var selectedStatus = rr.resStatus;
@@ -344,7 +344,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       $('#genricMsg-dialog').modal('toggle');
                       }
                       else{
-                      $location.path('/update/' + data._id + '/frmServCreate');
+                      if(isRecording){
+                        $http.delete('/api/recording/' + $routeParams.id).then(function(){
+                          console.log("happened");
+                          $location.path('/update/' + data._id + '/frmServCreate');
+                        });
+                      }else{
+                        $location.path('/update/' + data._id + '/frmServCreate');
+                      }
                     }
                   })
 
