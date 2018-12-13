@@ -1,6 +1,6 @@
 var fact = angular.module("mockapp.factories",[]);
 
-fact.factory('sutFactory', ['$http', function($http) {
+fact.factory('sutFactory', ['$http', '$q', function($http, $q) {
     return {
         getAllSUT: function() {
           var sutlist = [];
@@ -8,10 +8,7 @@ fact.factory('sutFactory', ['$http', function($http) {
           $http.get('/api/systems')
 
           .then(function(response) {
-              var data = response.data;
-              console.log(data);
-
-              data.forEach(function(sutData) {
+              response.data.forEach(function(sutData) {
                 var sut = {
                   name: sutData.name
                 };
@@ -32,10 +29,7 @@ fact.factory('sutFactory', ['$http', function($http) {
             $http.get('/api/systems')
 
                 .then(function (response) {
-                    var data = response.data;
-                    console.log(data);
-
-                    data.forEach(function (sutData) {
+                    response.data.forEach(function (sutData) {
                         var sut = {
                             name: sutData.name,
                             members: sutData.members
@@ -51,9 +45,9 @@ fact.factory('sutFactory', ['$http', function($http) {
                 .catch(function (err) {
                     console.log(err);
                 });
-
+                
             return sutlist;
-
+            
         }
     };
 }]);

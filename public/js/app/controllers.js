@@ -176,28 +176,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
-    .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
-        function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService){
+    .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
+        function($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService){
             $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
-/*
-            var myUser = authService.getUserInfo().username;
-            console.log("logging groups up top: " + sutService.getGroupsByUser(myUser));
-      //    console.log("logging service group: " + $scope.servicevo.sut.name);
-            //testing
-            //$scope.canEdit = false;
-       
-            var myUser = authService.getUserInfo().username;
-            var myGroups = sutService.getGroupsByUser(myUser);
-            if (myGroups.indexOf($scope.servicevo.sut.name) > -1) {
-              $scope.canEdit = true;
-            }
-            else{
-              $scope.canEdit = false;
-            }
 
-*/
-            ////////////////
             this.getService = function() {
                 apiHistoryService.getServiceById($routeParams.id)
 
@@ -216,14 +199,33 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       
                     };
                   
+                 //testing
+                  $scope.myUser = authService.getUserInfo().username;
+                  $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+                  //console.log("length " + $scope.sutlist.length);
 
-                      //testing
+                    console.log("current group: " + $scope.servicevo.sut.name);
+                    //console.log("logging: " + $scope.sutlist[1]);
+
+                
+
+                    console.log("logging" + $scope.sutlist.length)
+
+                    /*
+                    sutService.getGroupsByUser($scope.myUser)
+                      .then(function(sutlist) { 
+                        $scope.sutlist=sutlist;
+                        console.log("length: " + $scope.sutlist.length); 
+                      })
+                     .catch(function (error) {
+                       console.error(error);
+                     });
+*/
+                     
+                    /*
+                      
                       console.log("logging service group: " + $scope.servicevo.sut.name);
 
-                      var myUser = authService.getUserInfo().username;
-                      var myGroups = sutService.getGroupsByUser(myUser);
-                      console.log("logging my user" + myUser);
-                      console.log("logging a groups " + myGroups);
                       if (myGroups.indexOf($scope.servicevo.sut.name) > -1) {
                         $scope.canEdit = true;
                         console.log("hit true");
@@ -232,11 +234,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                         $scope.canEdit = false;
                         console.log("hit false");
                       }
-
-                      console.log($scope.canEdit);
-
-                      console.log("logging new : " + sutService.getGroupNamesByUser(myUser));
-
+*/
                       /////////////////////
                     if(service.lastUpdateUser){
                       $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
