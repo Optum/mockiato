@@ -84,8 +84,8 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
     var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name + this.model.path;
     var fullIncomingPath = req.baseUrl + req.path;
     var diff = fullIncomingPath.replace(fullBasePath,"");
-    if(diff == "/")
-        diff = "";
+    if(diff.substring(0,1) == "/")
+        diff = diff.substring(1);
     if(diff)
         myRRPair.path = diff;
 
@@ -101,7 +101,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
     //Start creating req options
     var options = {}
     //Create full URL to remote host
-    options.url = (req.secure ? "https" : "http") + "://" + this.model.remoteHost + ":" + this.model.remotePort + this.model.path + diff;
+    options.url = (req.secure ? "https" : "http") + "://" + this.model.remoteHost + ":" + this.model.remotePort + this.model.path + "/" + diff;
     options.method = req.method;
     options.headers = req.headers;
     if(req._body) options.body = req.body;

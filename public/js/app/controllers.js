@@ -386,7 +386,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             type: service.type,
             basePath: service.basePath
           };
-          
+          $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
           $scope.servicevo.rawpairs = processRRPairs(service.rrpairs);
           totalRRPairs = service.rrpairs.length;
           
@@ -394,6 +394,24 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           pollForNewRRPair(3000);
         });
 
+        $scope.publishService = function(servicevo) {
+          try {
+            if (helperFactory.isDuplicateReq(servicevo)) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            } else {
+              apiHistoryService.publishServiceToAPI(servicevo, false);
+            }
+          }
+          catch(e) {
+            console.log(e);
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+            $('#genricMsg-dialog').modal('toggle');
+          }
+        };
 
 
     }])
