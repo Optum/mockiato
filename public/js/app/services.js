@@ -428,6 +428,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     console.log(data);
                     feedbackService.displayRecorderInfo(data);
                     $('#success-modal').modal('toggle');
+                    $location.path('/viewRecorder/' + data._id);
                 })
 
                 .catch(function(err) {

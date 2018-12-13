@@ -267,8 +267,12 @@ function addRecorder(req,rsp){
     if(body.type == "SOAP")
         body.payloadType = "XML";
     var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask);
-
-    rsp.json(newRecorder);
+    newRecorder.model.then(function(doc){
+        rsp.json(doc);
+    }).catch(function(err){
+        handleError(err,rsp,500);
+    });
+    
 }
 
 

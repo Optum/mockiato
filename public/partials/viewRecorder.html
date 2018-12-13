@@ -327,7 +327,7 @@
 
   <div class="form-group row">
     <div class="col-sm-12">
-      <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishService(servicevo)">Finalize and Publish</button>
+      <button ng-disabled="form.$invalid || (servicevo.rawpairs.length == 0)" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishService(servicevo)">Finalize and Publish</button>
     </div>
   </div>
 </form>
