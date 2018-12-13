@@ -204,7 +204,199 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         };
 
     }])
+    .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', '$timeout',
+      function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants,$timeout){
+        $scope.statusCodes = suggestionsService.getStatusCodes();
+        $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+        var totalRRPairs = 0;
 
+        
+
+        function processRRPairs(rrpairs){
+          var rrpairsRaw = [];
+          var rrid = 0;
+          rrpairs.forEach(function(rr){
+            rr.id = rrid++;
+            console.log(rr);
+            rr.queriesArr = [];
+            rr.reqHeadersArr = [];
+            rr.resHeadersArr = [];
+            rr.method = rr.verb;
+
+            if (rr.payloadType === 'JSON') {
+              rr.requestpayload = JSON.stringify(rr.reqData);
+              rr.responsepayload = JSON.stringify(rr.resData);
+
+              //Handle empty JSON object- stringify surrounds in "" 
+              if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                rr.responsepayload = rr.responsepayload.substring(1,3);
+              }
+            }
+            else {
+              rr.requestpayload = rr.reqData;
+              rr.responsepayload = rr.resData;
+            }
+
+            // map object literals to arrays for Angular view
+            if (rr.reqHeaders) {
+              var reqHeads = Object.entries(rr.reqHeaders);
+              var reqHeadId = 0;
+              reqHeads.forEach(function(elem){
+                var head = {};
+
+                head.id = reqHeadId;
+                head.k = elem[0];
+                head.v = elem[1];
+
+                rr.reqHeadersArr.push(head);
+                reqHeadId++;
+              });
+            }
+            else {
+              rr.reqHeadersArr.push({ id: 0 });
+            }
+
+            if (rr.resHeaders) {
+              var resHeads = Object.entries(rr.resHeaders);
+              var resHeadId = 0;
+              resHeads.forEach(function(elem){
+                var head = {};
+
+                head.id = resHeadId;
+                head.k = elem[0];
+                head.v = elem[1];
+
+                rr.resHeadersArr.push(head);
+                resHeadId++;
+              });
+            }
+            else {
+              rr.resHeadersArr.push({ id: 0 });
+            }
+
+            if (rr.queries) {
+              var qs = Object.entries(rr.queries);
+              var qId = 0;
+              qs.forEach(function(elem){
+                var q = {};
+
+                q.id = qId;
+                q.k = elem[0];
+                q.v = elem[1];
+
+                rr.queriesArr.push(q);
+                qId++;
+              });
+            }
+            else {
+              rr.queriesArr.push({ id: 0 });
+            }
+
+            rrpairsRaw.push(rr);
+          });
+          return rrpairsRaw;
+        }
+
+        //Polls for new data + applies every X millis
+        function pollForNewRRPair(delay){
+          $timeout(function(){
+              apiHistoryService.getRecordingRRPairsWithIndex($routeParams.id,totalRRPairs).then(function(response){
+                if(response.data.length){
+                  console.log(response.data);
+                  var rrpairs = processRRPairs(response.data);
+                  rrpairs.forEach(function(rr){
+                    rr.id = totalRRPairs++;
+                    
+                  });
+                  $scope.servicevo.rawpairs = $scope.servicevo.rawpairs.concat(rrpairs);
+                  console.log(rrpairs);
+                }
+                pollForNewRRPair(delay);
+            }).catch(function(err){
+                pollForNewRRPair(delay);
+            });
+          }
+          
+          ,delay);
+
+        }
+        $scope.addTemplate = function() {
+          $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+        };
+
+        $scope.removeTemplate = function(index) {
+          $scope.servicevo.matchTemplates.splice(index, 1);
+        };
+
+        $scope.addNewRRPair = function() {
+          var newItemNo = $scope.servicevo.rawpairs.length;
+          $scope.servicevo.rawpairs.push({
+              id: newItemNo,
+              queriesArr: [{
+                id: 0
+              }],
+              reqHeadersArr: [{
+                id: 0
+              }],
+              resHeadersArr: [{
+                id: 0
+              }]
+          });
+        };
+
+        $scope.removeReqHeader = function(rr) {
+          var lastItem = rr.reqHeadersArr.length-1;
+          rr.reqHeadersArr.splice(lastItem);
+        };
+
+        $scope.addNewResHeader = function(rr) {
+          var newItemNo = rr.resHeadersArr.length;
+          rr.resHeadersArr.push({'id':newItemNo});
+        };
+
+        $scope.addNewReqHeader = function(rr) {
+          var newItemNo = rr.reqHeadersArr.length;
+          rr.reqHeadersArr.push({'id':newItemNo});
+        }; 
+        
+        $scope.removeResHeader = function(rr) {
+          var lastItem = rr.resHeadersArr.length-1;
+          rr.resHeadersArr.splice(lastItem);
+        };
+
+        $scope.addQuery = function(rr) {
+          var newItemNo = rr.queriesArr.length;
+          rr.queriesArr.push({'id':newItemNo});
+        };
+
+        $scope.removeQuery = function(rr) {
+          var lastItem = rr.queriesArr.length-1;
+          rr.queriesArr.splice(lastItem);
+        };
+        //Get this recorder's data
+        apiHistoryService.getRecordingById($routeParams.id)
+        .then(function(response) {
+          console.log(response);
+          var recorder = response.data;
+          var service = recorder.service;
+          $scope.servicevo = {
+            id: service._id,
+            sut: service.sut,
+            name: service.name,
+            type: service.type,
+            basePath: service.basePath
+          };
+          
+          $scope.servicevo.rawpairs = processRRPairs(service.rrpairs);
+          totalRRPairs = service.rrpairs.length;
+          
+
+          pollForNewRRPair(3000);
+        });
+
+
+
+    }])
     .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
         function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants){
             $scope.statusCodes = suggestionsService.getStatusCodes();
@@ -481,7 +673,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $('#success-modal').modal('toggle');
           }
     }])
+    .controller("recorderListController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+    function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+      $scope.sutlist = sutService.getAllSUT();
+      $scope.userlist = userService.getAllUsers();
+      $scope.recordingList = [];
+      apiHistoryService.getRecordings().then(function(response){
+        var data = response.data;
+        $scope.recordingList = data;
+      });
 
+
+    }])
 
     .controller("serviceHistoryController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
         function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){

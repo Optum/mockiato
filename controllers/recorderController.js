@@ -11,7 +11,7 @@ var activeRecorders = {};
   *
   * This object is created whenever a new recording session is started. the recording router will route all appropriate transactions to this object 
   */
-var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,headerMask){
+var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask){
      this.path = path;
      
      //Ensure path starts with /
@@ -19,24 +19,31 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
         this.path = "/" + this.path;    
 
     this.model = Recording.create({
-        sut : sut,
+        sut : {name:sut},
         path : path,
         remoteHost : remoteHost,
         protocol : protocol || 'REST',
-        payloadType : datatype || 'JSON',
         remotePort : remotePort || 80,
         headerMask : headerMask || ['Content-Type'],
-        service : {basePath : "/" + sut + path},
+        service : {
+            basePath : path,
+            sut:{name:sut},
+            name:name,
+            type:protocol
+        },
         name: name
     },(function(err,newModel){
         this.model = newModel;
         activeRecorders[this.model._id] = this;
+        if(!(this.model.headerMask))
+            this.model.headerMask = [];
+        
         if(!(this.model.headerMask['Content-Type']))
             this.model.headerMask.push('Content-Type');
 
-            this.model.save(function(err){
-                if(err) console.log(err);
-            });
+        this.model.save(function(err){
+            if(err) console.log(err);
+        });
     }).bind(this));
   
  };
@@ -54,7 +61,15 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
     var myRRPair = {}
     myRRPair.verb = req.method;
     myRRPair.queries = req.query;
-    myRRPair.payloadType = this.model.payloadType;
+    var contentType = req.get("content-type");
+    if(contentType == "text/json" || contentType == "application/json"){
+        myRRPair.payloadType = "JSON";
+    }else if(contentType == "text/xml" || contentType == "application/xml"){
+        myRRPair.payloadType = "XML";
+    }else{
+        myRRPair.payloadType = "PLAIN";
+    }
+   
     if(myRRPair.payloadType == "JSON"){
         //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
         try{
@@ -68,7 +83,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
 
 
     //Get relative path to base path for this RRPair
-    var fullBasePath = req.baseUrl + "/live/" + this.model.sut + this.model.path;
+    var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name + this.model.path;
     var fullIncomingPath = req.baseUrl + req.path;
     var diff = fullIncomingPath.replace(fullBasePath,"");
     if(diff == "/")
@@ -142,17 +157,65 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,datatype,he
 
 
 
-
+/**
+ * API Call to get all current recordings
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
 function getRecordings(req,rsp){
     var recordingsRet; 
     var q = Recording.find({},function(err,docs){
         if(err){
             handleError(err,rsp,500);
+            return;
         }
+
+        //If the recorder still exists and is recording, flag it
+        for(var i = 0; i < docs.length; i++){
+            docs[i].active = activeRecorders[docs[i]._id] ? true : false;
+        }
+
+
         rsp.json(docs);
     });
 }
 
+/**
+ * API call to get a specific recording
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
+function getRecordingById(req,rsp){
+    Recording.findById(req.params.id,function(err,docs){
+        if(err){
+            handleError(err,rsp,500);
+            return;
+        }
+        rsp.json(docs);
+        
+    });
+}
+
+/**
+ * API call to get RR pairs for a recorder after a certain index, for use in active update/polling
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
+function getRecorderRRPairsAfter(req,rsp){
+
+    Recording.findById(req.params.id,function(err,docs){
+        if(err){
+            handleError(err,rsp,500);
+            return;
+        }
+
+        if(docs)
+            rsp.json(docs.service.rrpairs.slice(req.params.index));
+        else
+            rsp.json(new Array());
+        
+    });
+}
 
     
 /**
@@ -166,8 +229,8 @@ function getRecordings(req,rsp){
  * @param {string} dataType  XML/JSON/etc
  * @param {array{string}} headerMask array of headers to save
  */
-function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,dataType,headerMask){
-    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,dataType,headerMask); 
+function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask){
+    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask); 
     routing.bindRecorderToPath("/" + sut + path + "*",newRecorder);
     return newRecorder;
 }
@@ -179,18 +242,21 @@ function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,dat
  * @param {*} rsp express rsp
  */
 function addRecorder(req,rsp){
-    console.log(req.body);
     var body = req.body;
     if(body.type == "SOAP")
         body.payloadType = "XML";
-    var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.payloadType || "JSON",body.headerMask);
+    var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask);
 
     rsp.json(newRecorder);
 }
 
+
+
  module.exports = {
     Recorder: Recorder,
     getRecordings : getRecordings,
-    addRecorder : addRecorder
+    addRecorder : addRecorder,
+    getRecordingById: getRecordingById,
+    getRecorderRRPairsAfter : getRecorderRRPairsAfter
   };
   

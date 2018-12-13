@@ -38,5 +38,11 @@ const recordController = require('../controllers/recorderController');
 //Get list of recordings out in db
 apiRouter.get("/",recordController.getRecordings);
 
+//Get recorder by ID
+apiRouter.get("/:id",recordController.getRecordingById);
+
+//Get RR pairs by ID + index to start at
+apiRouter.get("/:id/:index",recordController.getRecorderRRPairsAfter);
+
 //Add a new recorder
 apiRouter.put("/",recordController.addRecorder);

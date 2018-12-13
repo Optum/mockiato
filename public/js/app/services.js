@@ -127,6 +127,21 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
     .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
         function($http, $location, authService, feedbackService, xmlService, servConstants) {
+
+            //gets all recordings, unfiltered
+            this.getRecordings = function(){
+                return $http.get('/api/recording');
+            }
+
+            this.getRecordingById = function(id){
+              return $http.get('/api/recording/' + id);
+            }
+
+            this.getRecordingRRPairsWithIndex = function(id,index){
+              return $http.get('/api/recording/' + id + "/" + index);
+            }
+
+
             this.getServiceForSUT = function(name) {
                 return $http.get('/api/services/sut/' + name);
             };

@@ -150,7 +150,36 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 templateUrl: 'partials/createRecorderForm.html',
                 controller: 'createRecorderController'
             })
+            .when("/fetchrecorders", {
+                templateUrl: "partials/recorderList.html",
+                controller: "recorderListController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
 
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            }) 
+            .when("/viewRecorder/:id", {
+                templateUrl: "partials/viewRecorder.html",
+                controller: "viewRecorderController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
             .otherwise({
                 redirectTo: "/selectService"
             });
