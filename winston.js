@@ -23,7 +23,7 @@ logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.timestamp(),
+        winston.format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
         winston.format.json()        
     ),
     transports: transports
