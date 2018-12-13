@@ -388,7 +388,23 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             this.getGroupsByUser = function(user){
               var someGroups = sutFactory.getGroupsByUser(user);
               return someGroups;
-            }
+            };
+
+          this.getGroupNamesByUser = function (user) {
+            var groupNames = [];
+            var someGroups = sutFactory.getGroupsByUser(user);
+
+            someGroups.forEach(function(sutData){
+              var groups = {
+                name: sutData.name
+              };
+
+              groupNames.push(groups.name);
+
+              console.log(groupNames);
+            });
+            
+          };
 
             this.updateGroup = function(group, memberlist){
 
