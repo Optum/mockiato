@@ -10,12 +10,11 @@ if (process.env.MOCKIATO_SPLUNK_ENABLED) {
         index: process.env.MOCKIATO_SPLUNK_INDEX,
         token: process.env.MOCKIATO_SPLUNK_TOKEN,
         host: process.env.MOCKIATO_SPLUNK_HOST,
-        level: 'info',   
+        level: 'info',
         sourcetype: 'mockiato:app_logs',
         source:'mockiato', 
         ssl: 'true'    
     };
-
     transports.push(new SplunkStreamEvent({ splunk: splunkSettings }));
 }
 
