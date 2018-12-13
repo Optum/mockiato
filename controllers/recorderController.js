@@ -1,7 +1,5 @@
-const RRPair = require('../models/http/RRPair');
 const requestNode = require('request');
 const Recording = require('../models/http/Recording');
-const async = require('async');
 const routing = require('../routes/recording');
 
 var activeRecorders = {};
@@ -16,8 +14,8 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
      
      //Ensure path starts with /
     if(this.path.substring(0,1) != "/")
-        this.path = "/" + this.path;    
-
+        this.path = "/" + this.path;     
+   
     this.model = Recording.create({
         sut : {name:sut},
         path : path,
@@ -163,8 +161,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
  * @param {*} rsp  express rsp
  */
 function getRecordings(req,rsp){
-    var recordingsRet; 
-    var q = Recording.find({},function(err,docs){
+     Recording.find({},function(err,docs){
         if(err){
             handleError(err,rsp,500);
             return;

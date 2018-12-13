@@ -5,7 +5,6 @@
 const express = require('express');
 const recordingRouter = express.Router();
 const apiRouter = express.Router();
-const bodyParser = require('body-parser');
 
 
 var activeRecorders = {};
@@ -30,7 +29,7 @@ function bindRecorderToPath(path,recorder){
 module.exports = {
   recordingRouter: recordingRouter,
   apiRouter : apiRouter,
-  bindRecorderToPath, bindRecorderToPath
+  bindRecorderToPath : bindRecorderToPath
 };
 
 
