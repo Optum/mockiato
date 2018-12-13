@@ -24,7 +24,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
         remotePort : remotePort || 80,
         headerMask : headerMask || ['Content-Type'],
         service : {
-            basePath : path,
+            basePath : path.substring(1),
             sut:{name:sut},
             name:name,
             type:protocol
@@ -84,8 +84,12 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
     var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name + this.model.path;
     var fullIncomingPath = req.baseUrl + req.path;
     var diff = fullIncomingPath.replace(fullBasePath,"");
+    if(diff && diff[diff.length-1] == "/"){
+        diff = diff.substring(0,diff.length-1);
+    }
     if(diff.substring(0,1) == "/")
         diff = diff.substring(1);
+    
     if(diff)
         myRRPair.path = diff;
 
