@@ -246,7 +246,10 @@ function getRecorderRRPairsAfter(req,rsp){
 
 
 
-
+/**
+ * Makes sure no active recorder has the same sut + a path that would overlap with this one. Not actually a 'duplicate' so much as a collision
+ * Returns false if there's no collision
+ */
 function findDuplicateRecorder(sut,path){
     for(let recorder in activeRecorders){
         recorder = activeRecorders[recorder];
@@ -280,6 +283,12 @@ function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,hea
     return newRecorder;
 }
 
+
+/**
+ * API call to remove a recorder based on ID. Returns blank 200 if success, or if no ID found (success guarantees ID does not exist in the DB)
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
 function removeRecorder(req,rsp){
     var id = req.params.id;
     var recorder = activeRecorders[id];
