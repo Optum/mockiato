@@ -47,6 +47,19 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
  };
 
 
+// returns a stripped-down version on the rrpair for logical comparison, request parts only
+function stripRRPairForReq(rrpair) {
+    return {
+      verb: rrpair.verb || '',
+      path: rrpair.path || '',
+      payloadType: rrpair.payloadType || '',
+      queries: rrpair.queries || {},
+      reqHeaders: rrpair.reqHeaders || {},
+      reqData: rrpair.reqData || {}
+    };
+  }
+
+
  /**
   * Event handler for incoming recording requests. Saves incoming request, then forwards to configured host.
   * Then records host's response, and forwards response to user. 
@@ -142,9 +155,22 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
             }
             myRRPair.resHeaders = remoteRsp.headers;
 
+
+            //Test for duplicate
+            var stripped = stripRRPairForReq(myRRPair);
+            var duplicate = false;
+
+            for(let rrpair of this.model.service.rrpairs){
+                if(deepEquals(stripRRPairForReq(rrpair),stripped)){
+                    duplicate = true;
+                    break;
+                }
+            }
             //Add RRPair to model and save
-            this.model.service.rrpairs.push(myRRPair);
-            this.model.save();
+            if(!duplicate){
+                this.model.service.rrpairs.push(myRRPair);
+                this.model.save();
+            }
 
             //Send back response to user
             rsp.status(remoteRsp.statusCode);
