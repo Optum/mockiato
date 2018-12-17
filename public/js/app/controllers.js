@@ -311,9 +311,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   $scope.servicevo.rawpairs = $scope.servicevo.rawpairs.concat(rrpairs);
                   console.log(rrpairs);
                 }
-                pollForNewRRPair(delay);
+                if($routeParams.id)
+                  pollForNewRRPair(delay);
             }).catch(function(err){
-                pollForNewRRPair(delay);
+                if($routeParams.id)
+                  pollForNewRRPair(delay);
             });
           }
           
@@ -1151,6 +1153,8 @@ ctrl.constant("ctrlConstants", {
   "DUP_REQ_ERR_BODY" : "Two Requests are same. Either change request data or relative path of duplicate requests.",
   "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
   "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
+  "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
+  "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.",
   "REG_SUCCESS_TITLE" : "REGISTRATION SUCCESS",
   "REG_SUCCESS_BODY" : "<p><center><span style='color:#008000;font-weight:bold;font-size: 50px;'>&#x2714;</span><br></br><span style='font-weight:bold;font-size: 16px;'>Registration completed successfully</span><br></br><span>Thank you. You can log in for service virtualization now</span></center></p>",
   "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 

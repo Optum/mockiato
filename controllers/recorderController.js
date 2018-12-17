@@ -244,6 +244,22 @@ function getRecorderRRPairsAfter(req,rsp){
     });
 }
 
+
+
+
+function findDuplicateRecorder(sut,path){
+    for(let recorder in activeRecorders){
+        recorder = activeRecorders[recorder];
+        if(recorder.model.sut.name == sut){
+            var recPath = recorder.model.path;
+            if(recPath == path.substring(0,recPath.length) || path == recPath.substring(0,path.length)){
+                return true;
+            }
+            
+        }
+    }
+    return false;
+}
     
 /**
  * Initialize a recording session on /recording/live/{{SUT}}/{{PATH}} 
@@ -258,6 +274,8 @@ function getRecorderRRPairsAfter(req,rsp){
  */
 function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask){
     var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask); 
+
+
     routing.bindRecorderToPath("/" + sut + path + "*",newRecorder);
     return newRecorder;
 }
@@ -292,12 +310,17 @@ function addRecorder(req,rsp){
     var body = req.body;
     if(body.type == "SOAP")
         body.payloadType = "XML";
-    var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask);
-    newRecorder.model.then(function(doc){
-        rsp.json(doc);
-    }).catch(function(err){
-        handleError(err,rsp,500);
-    });
+    if(findDuplicateRecorder(body.sut,body.basePath)){
+        handleError("OverlappingRecorderPathError",rsp,500);
+    }
+    else{
+        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask);
+        newRecorder.model.then(function(doc){
+            rsp.json(doc);
+        }).catch(function(err){
+            handleError(err,rsp,500);
+        });
+    }
     
 }
 

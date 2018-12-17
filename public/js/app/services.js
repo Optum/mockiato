@@ -438,8 +438,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 .catch(function(err) {
                     console.log(err);
-                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                    if(err.data.error == "OverlappingRecorderPathError"){
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.DUP_RECORDER_PATH_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.DUP_RECORDER_PATH_BODY);
+                    }else{
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                    }
                     $('#genricMsg-dialog').modal('toggle');
                 });
 
@@ -814,5 +819,7 @@ serv.constant("servConstants", {
         "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
         "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
         "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file." ,
-        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>'     
+        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>',
+        "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
+        "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.", 
       });
