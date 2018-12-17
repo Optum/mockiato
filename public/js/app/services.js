@@ -121,7 +121,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           };
 
           this.displayRecorderInfo = function(data){
-            
+            $rootScope.virt.operations = [];
+            $rootScope.virt.baseUrl = '/recording/live' + data.path;
+            $rootScope.virt.delay= data.delay;
+            $rootScope.virt.delayMax= data.delayMax;
+            $rootScope.virt.type = data.protocol;
+            $rootScope.virt.name = data.name;
           }
     }])
 
@@ -427,7 +432,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     var data = response.data;
                     console.log(data);
                     feedbackService.displayRecorderInfo(data);
-                    $('#success-modal').modal('toggle');
+                    $('#record-success-modal').modal('toggle');
                     $location.path('/viewRecorder/' + data._id);
                 })
 
