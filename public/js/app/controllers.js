@@ -705,6 +705,27 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       });
 
 
+      $scope.deleteRecording = function (recording) {
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_REC_CONFIRM_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
+        $('#modal-btn-yes').on("click", function () {
+          apiHistoryService.deleteRecording(recording._id)
+            .then(function (response) {
+
+              $scope.recordingList.forEach(function (elem, i, arr) {
+                if (elem._id === recording._id)
+                  arr.splice(i, 1);
+              });
+            })
+            .catch(function (err) {
+              console.log(err);
+            });
+        });
+      };
+
+
     }])
 
     .controller("serviceHistoryController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
@@ -1161,6 +1182,7 @@ ctrl.constant("ctrlConstants", {
   "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.",
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
   "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
+  "DEL_REC_CONFIRM_BODY" : "Do you really want to delete this recording?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
   "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?',
   "BULK_UPLOAD_SUCCESS_MSG" : "Bulk Upload Success! File Uploaded - ",

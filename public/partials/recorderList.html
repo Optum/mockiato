@@ -25,6 +25,7 @@
                 <th>Type</th>
                 <th>Active</th>
                 <th>Base URL</th>
+                <th>Delete</th>
             </tr>
             <tr ng-repeat="recorder in recordingList" style=" word-break:break-all">
                 <td style="width:120px"><a href="#!viewRecorder/{{ recorder._id }}">{{recorder.name}}</a></td>
@@ -32,6 +33,7 @@
                 <td>{{recorder.protocol}}</td>
                 <td>{{recorder.active}}</td>
                 <td class="urlmax">{{ mockiatoHost + '/recording/live' + recorder.path }}</td>
+                <td><button class="btn btn-default" title="Delete recorder" ng-click="deleteRecording(recorder)"><i class="glyphicon glyphicon-trash"></i></button></td>
             </tr>
         </table>
     </div>

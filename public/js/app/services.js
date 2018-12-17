@@ -146,6 +146,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               return $http.get('/api/recording/' + id + "/" + index);
             }
 
+            this.deleteRecording = function(id){
+              return $http.delete('/api/recording/' + id)
+            }
 
             this.getServiceForSUT = function(name) {
                 return $http.get('/api/services/sut/' + name);
@@ -351,7 +354,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       else{
                       if(isRecording){
                         $http.delete('/api/recording/' + $routeParams.id).then(function(){
-                          console.log("happened");
                           $location.path('/update/' + data._id + '/frmServCreate');
                         });
                       }else{
