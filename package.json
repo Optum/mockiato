@@ -20,7 +20,7 @@
     "cookie-parser": "~1.4.3",
     "debug": "^2.6.9",
     "dotenv": "^5.0.1",
-    "express": "^4.16.4",
+    "express": "4.16.4",
     "express-actuator": "^1.1.0",
     "helmet": "^3.12.1",
     "http-string-parser": "0.0.6",
