@@ -66,7 +66,7 @@ function stripRRPairForReq(rrpair) {
   */
  Recorder.prototype.incomingRequest = function(req,rsp,next){
     
-    console.log(req);
+
 
     //Start contructing RRPair, pull info we can from just request side before we forward the request
     var myRRPair = {}
