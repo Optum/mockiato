@@ -7,11 +7,24 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             };
     }])
 
-    .controller("templateController", ['$scope', 'templateService' ,
-        function($scope,templateService) {
-            $scope.import = function(){
-                templateService.importTemplate($scope.previewTemp);
-            };
+  .controller("templateController", ['$scope', 'templateService', 'ctrlConstants',
+    function ($scope, templateService, ctrlConstants) {
+      $scope.uploadSuccessHint = '';
+      $scope.uploadErrMessage = '';
+      $scope.importDoc = function () {
+        $scope.uploadSuccessHint = '';
+        $scope.uploadErrMessage = '';
+        if ($scope.importTemp.name.endsWith('.json')) {
+          $scope.uploadSuccessHint = ctrlConstants.SUCCESS;
+          $scope.uploadErrMessage = '';
+        } else {
+          $scope.uploadErrMessage = ctrlConstants.IMPORT_ERR_MSG;
+          $scope.uploadSuccessHint = '';
+        }
+      };
+      $scope.publish = function () {
+        templateService.importTemplate($scope.previewTemp);
+      };
     }])
 
     .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
@@ -53,7 +66,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                  }
                 }
                 if(count!=0){
-                  $scope.groupMessage = "Group Name Already exist.";
+                  $scope.groupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
                 }}
             };
 
@@ -216,8 +229,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       rr.method = rr.verb;
 
                       if (rr.payloadType === 'JSON') {
-                        rr.requestpayload = JSON.stringify(rr.reqData);
-                        rr.responsepayload = JSON.stringify(rr.resData);
+                        rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+                        rr.responsepayload = JSON.stringify(rr.resData, null, 4);
 
                         //Handle empty JSON object- stringify surrounds in "" 
                         if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
@@ -544,7 +557,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 delete service.__v;
                 delete service.$$hashKey;
 
-                service.basePath = service.basePath.replace('/' + service.sut.name, '');
+                if (service.basePath) {
+                  service.basePath = service.basePath.replace('/' + service.sut.name, '');
+                }
+                
                 service.rrpairs.forEach(function(rr) {
                   delete rr._id;
                 });
@@ -759,7 +775,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
            }
           }
           if(count!=0){
-            $scope.groupMessage = "Group Name Already exist.";
+            $scope.groupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
           }}
       };
       $scope.uploadAndExtractZip = function () {
@@ -821,7 +837,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                }
               }
               if(count!=0){
-                $scope.groupMessage = "Group Name Already exist.";
+                $scope.groupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
               }}
           };
           
@@ -899,5 +915,8 @@ ctrl.constant("ctrlConstants", {
   "SPEC_UPLOAD_FAILURE_MSG" : "Unexpected Error. Spec Upload Fail. File Uploaded - ",
   "SPEC_FILE_TYPE_URL_PUBLISH_ERROR" : "Your uploaded file type Or URL don't match with Spec type.",
   "SPEC_FILE_TYPE_UPLOAD_ERROR" : "Upload Fail - Your uploaded file type don't match with Spec type. Uploaded File - ",
-  "DUPLICATE_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
+  "DUPLICATE_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
+  "IMPORT_ERR_MSG" : "You should upload only correct json file.",
+  "SUCCESS" : "success",
+  "GRP_ALREADY_EXIST_MSG" : "Group Name Already exist.",
 });

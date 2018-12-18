@@ -137,7 +137,7 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      if (!rrpair.reqData || match) {
+      if ((!rrpair.reqData && JSON.stringify(payload, null, 2)=='{}')|| match) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
