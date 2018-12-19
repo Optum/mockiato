@@ -199,43 +199,43 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       
                     };
                   
-                 //testing
+                 //testing 
                   $scope.myUser = authService.getUserInfo().username;
                   $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
-                  //console.log("length " + $scope.sutlist.length);
-
-                    console.log("current group: " + $scope.servicevo.sut.name);
-                    //console.log("logging: " + $scope.sutlist[1]);
-
                 
+                   var newsutlist = [];  
+                   var canEditFunction =
+                     $http.get('/api/systems')
+                       .then(function (response) {
+                         response.data.forEach(function (sutData) {
+                           var sut = {
+                             name: sutData.name,
+                             members: sutData.members
+                           };
+                           sut.members.forEach(function (memberlist) {
+                             if (memberlist.indexOf($scope.myUser) > -1) {
+                              newsutlist.push(sut.name);
+                             }
+                           });
+                         });
+                         console.log("logging factory1: " + newsutlist);
+                         $scope.canEdit = function () {
+                           if (newsutlist.indexOf($scope.servicevo.sut.name) > -1) {
+                             console.log("can edit this form");
+                             return true;
+                           }
+                           else {
+                             console.log("cannot edit this form");
+                             return false;
+                           }
+                         };
+                       })
 
-                    console.log("logging" + $scope.sutlist.length)
+                       .catch(function (err) {
+                         console.log(err);
+                       });
 
-                    /*
-                    sutService.getGroupsByUser($scope.myUser)
-                      .then(function(sutlist) { 
-                        $scope.sutlist=sutlist;
-                        console.log("length: " + $scope.sutlist.length); 
-                      })
-                     .catch(function (error) {
-                       console.error(error);
-                     });
-*/
-                     
-                    /*
-                      
-                      console.log("logging service group: " + $scope.servicevo.sut.name);
-
-                      if (myGroups.indexOf($scope.servicevo.sut.name) > -1) {
-                        $scope.canEdit = true;
-                        console.log("hit true");
-                      }
-                      else{
-                        $scope.canEdit = false;
-                        console.log("hit false");
-                      }
-*/
-                      /////////////////////
+                    /////////////   
                     if(service.lastUpdateUser){
                       $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
                     }

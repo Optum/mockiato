@@ -36,18 +36,22 @@ fact.factory('sutFactory', ['$http', '$q', function($http, $q) {
                         };
                         sut.members.forEach(function(memberlist){
                             if(memberlist.indexOf(user) > -1){
+                  //              sutlist.push(sut.name);
                                 sutlist.push(sut);
                             }
                         });
                     });
+    //                console.log("logging factory1: " + sutlist);
+      //              return sutlist;
                 })
 
                 .catch(function (err) {
                     console.log(err);
                 });
                 
+            console.log("logging factory2: " + sutlist);
             return sutlist;
-            
+           // return $q.all(sutlist);
         }
     };
 }]);
