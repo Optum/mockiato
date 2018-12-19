@@ -1,6 +1,7 @@
 const requestNode = require('request');
 const Recording = require('../models/http/Recording');
 const routing = require('../routes/recording');
+const manager = require('../lib/pm2/manager');
 
 var activeRecorders = {};
 
@@ -32,7 +33,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
         name: name
     },(function(err,newModel){
         this.model = newModel;
-        activeRecorders[this.model._id] = this;
+        
         if(!(this.model.headerMask))
             this.model.headerMask = [];
         
@@ -42,9 +43,20 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
         this.model.save(function(err){
             if(err) console.log(err);
         });
+        syncWorkersToNewRecorder(this);
     }).bind(this));
   
  };
+
+ function syncWorkersToNewRecorder(recorder){
+    var msg = { recorder: recorder};
+    manager.messageAll(msg)
+    .then(function(workerIds) {
+        activeRecorders[recorder.model._id] = recorder;
+        routing.bindRecorderToPath("/" + recorder.model.sut.name + recorder.model.path + "*",recorder);
+    });
+    
+ }
 
 
 // returns a stripped-down version on the rrpair for logical comparison, request parts only
@@ -166,10 +178,24 @@ function stripRRPairForReq(rrpair) {
                     break;
                 }
             }
-            //Add RRPair to model and save
+            //Push RRPair to model, then update our local model  
             if(!duplicate){
-                this.model.service.rrpairs.push(myRRPair);
-                this.model.save();
+                Recording.update({_id : this.model._id} ,
+                    {$push: 
+                        {"service.rrpairs":myRRPair}
+                    },(function(error,doc){
+                        if(error)
+                            console.log(error);
+                        else{
+                            Recording.findOne({_id : this.model._id},(function(err,doc){
+                                if(err)
+                                    console.log(error);
+                                else{
+                                    this.model = doc;
+                                }
+                            }).bind(this));
+                        }
+                    }).bind(this));
             }
 
             //Send back response to user
@@ -277,9 +303,7 @@ function findDuplicateRecorder(sut,path){
  */
 function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask){
     var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask); 
-
-
-    routing.bindRecorderToPath("/" + sut + path + "*",newRecorder);
+   
     return newRecorder;
 }
 
@@ -293,8 +317,12 @@ function removeRecorder(req,rsp){
     var id = req.params.id;
     var recorder = activeRecorders[id];
     if(recorder){
-        routing.unbindRecorder(recorder);
-        delete activeRecorders[id];
+        var msg = { recorder: recorder, id:id};
+        manager.messageAll(msg)
+        .then(function(workerIds) {
+            routing.unbindRecorder(recorder);
+            delete activeRecorders[id];
+        });
     }
     Recording.deleteOne({_id:id},function(err){
         if(err)
