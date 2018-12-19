@@ -114,11 +114,7 @@
           </label>
         </div>
       </div>
-      <div class="col-xs-1" ng-show="servicevo.type !== 'MQ'">
-        <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)">
-          <i class="glyphicon glyphicon-info-sign"></i>  View Endpoints
-        </button>
-      </div>
+      
     </div>
 
     <div class="form-group row">
@@ -129,7 +125,7 @@
   
     </div>
     <div class="form-group row">
-      <label for="remote_port" class="col-xs-2 col-form-label">Remote Host:</label>
+      <label for="remote_port" class="col-xs-2 col-form-label">Remote Port:</label>
       <div class="col-xs-3">
         <input required type="text" id="service_name" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Host Port">
       </div>
@@ -141,6 +137,50 @@
         <input required type="text" id="service_name" class="form-control" ng-model="servicevo.remotePath" placeholder="Enter Remote Base Path">
       </div>
     </div>
+
+    <div class="form-group row" ng-show="servicevo.liveInvokePrePost == 'PRE'">
+      <label for="fail_status" class="col-xs-2 col-form-label">Failover on Status Codes:</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="status in servicevo.failStatuses">
+          <div class="row">
+            <div class="col-xs-3"><input type="text" class="form-control" id="status-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. 404"></div>
+            <div class="col-xs-1">
+              <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeFailStatus($index)">
+                <span class="glyphicon glyphicon-minus"></span>
+              </button>
+            </div>
+
+            <div class="col-xs-1">
+              <button type="button" class="btn btn-success" ng-show="$last" ng-click="addFailStatus()">
+                <span class="glyphicon glyphicon-plus"></span>
+              </button>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="form-group row" ng-show="servicevo.liveInvokePrePost == 'PRE'">
+        <label for="fail_status" class="col-xs-2 col-form-label">Fail if body contains string:</label>
+        <div class="col-xs-9">
+          <fieldset data-ng-repeat="status in servicevo.failStrings">
+            <div class="row">
+              <div class="col-xs-6"><input type="text" class="form-control" id="string-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. error"></div>
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeFailString($index)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+  
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addFailString()">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
   </div>
 
   <div class="form-group row">
