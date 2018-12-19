@@ -48,12 +48,19 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
   
  };
 
+function registerRecorder(recorder){
+    activeRecorders[recorder.model._id] = recorder;
+    routing.bindRecorderToPath("/" + recorder.model.sut.name + recorder.model.path + "*",recorder);
+}
+
  function syncWorkersToNewRecorder(recorder){
-    var msg = { recorder: recorder};
+    var msg = { 
+        recorder: recorder,
+        action: "register"
+    };
     manager.messageAll(msg)
     .then(function(workerIds) {
-        activeRecorders[recorder.model._id] = recorder;
-        routing.bindRecorderToPath("/" + recorder.model.sut.name + recorder.model.path + "*",recorder);
+       registerRecorder(recorder);
     });
     
  }
@@ -314,14 +321,16 @@ function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,hea
  * @param {*} rsp  express rsp
  */
 function removeRecorder(req,rsp){
-    var id = req.params.id;
-    var recorder = activeRecorders[id];
+    var recorder = activeRecorders[req.params.id];
     if(recorder){
-        var msg = { recorder: recorder, id:id};
+        
+        var msg = { 
+            recorder: recorder, 
+            action:"deregister"
+        };
         manager.messageAll(msg)
         .then(function(workerIds) {
-            routing.unbindRecorder(recorder);
-            delete activeRecorders[id];
+            deregisterRecorder(recorder);
         });
     }
     Recording.deleteOne({_id:id},function(err){
@@ -333,6 +342,12 @@ function removeRecorder(req,rsp){
         }
     });
    
+}
+
+function deregisterRecorder(recorder){
+    routing.unbindRecorder(recorder);
+    if(activeRecorders[recorder.model._id])
+        delete activeRecorders[recorder.model._id];
 }
 
 
@@ -369,6 +384,7 @@ function addRecorder(req,rsp){
     addRecorder : addRecorder,
     getRecordingById: getRecordingById,
     getRecorderRRPairsAfter : getRecorderRRPairsAfter,
-    removeRecorder: removeRecorder
+    removeRecorder: removeRecorder,
+    registerRecorder: registerRecorder
   };
   

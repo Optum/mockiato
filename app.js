@@ -158,15 +158,27 @@ function init() {
   // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
+
       const msg = message.data;
-      const service = msg.service;
-      const action  = msg.action;
-      debug(action);
+      if(msg.service){
+        const service = msg.service;
+        const action  = msg.action;
+        debug(action);
 
-      virtual.deregisterService(service);
+        virtual.deregisterService(service);
 
-      if (action === 'register') {
-        virtual.registerService(service);
+        if (action === 'register') {
+          virtual.registerService(service);
+        }
+      }else if(msg.recorder){
+        const rec = msg.recorder;
+        const action  = msg.action;
+        console.log("msg: " + msg);
+        if(action === 'register'){
+          recorder.registerRecorder(rec);
+        }else if(action === 'deregister'){
+          recorder.deregisterRecorder(rec);
+        }
       }
     });
   }
