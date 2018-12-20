@@ -495,8 +495,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.servicelist = [];
 
             //script to assign first group member. only to retroactively assign group member. not needed for the future.
-           // $scope.script=function(){
-              console.log("hitting script");
+            $scope.script=function(){
+              console.log("starting script");
               var sutnames = [];
               $http.get('/api/systems')
                 .then(function (response) {
@@ -536,7 +536,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 .catch(function (err) {
                   console.log(err);
                 });
-          //  }
+            }
             ///////////////////////////end script. to remove
 
             $scope.filtersSelected = function(sut, user) {
