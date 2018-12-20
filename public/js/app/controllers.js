@@ -494,6 +494,51 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.userlist = userService.getAllUsers();
             $scope.servicelist = [];
 
+            //script to assign first group member. only to retroactively assign group member. not needed for the future.
+           // $scope.script=function(){
+              console.log("hitting script");
+              var sutnames = [];
+              $http.get('/api/systems')
+                .then(function (response) {
+                  response.data.forEach(function (sutData) {
+                    var sut = {
+                      name: sutData.name,
+                      members: sutData.members
+                    };
+                    sutnames.push(sut.name);
+                  });
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+
+              $http.get('/api/services')
+                .then(function (response) {
+                  console.log(response.data);
+                  for (var i = 0; i < response.data.length; i++) {
+                    var owner = response.data[i].user.uid;
+                    var sut = response.data[i].sut.name;
+                    
+                    if (sutnames.includes(sut)){
+                      console.log("------------------------------------");
+                      console.log("sut "+ sut + " exists");
+                      console.log(owner + " will be added to group: " + sut);
+                      sutService.updateGroup(sut, owner);
+                    }
+                    else{
+                      console.log("------------------------------------");
+                      console.log("sut " + sut + " does not exist");
+                    }
+                  }
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+          //  }
+            ///////////////////////////end script. to remove
+
             $scope.filtersSelected = function(sut, user) {
                 if (sut && !user) {
                     apiHistoryService.getServiceForSUT(sut.name)
