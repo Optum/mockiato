@@ -1,6 +1,11 @@
+const fs = require('fs');
 const winston = require('winston');
 
-const transports = [ new winston.transports.Console() ];        
+let filename = process.env.MOCKIATO_LOG_FILE || '/dev/null';
+
+const transports = [ new winston.transports.Stream({
+    stream: fs.createWriteStream(filename)
+})];        
 
 if (process.env.MOCKIATO_SPLUNK_ENABLED) {
     const SplunkStreamEvent = require('winston-splunk-httplogger');
@@ -27,9 +32,5 @@ logger = winston.createLogger({
     ),
     transports: transports
 });
-
-logger.info('Mockiato Connected to Splunk');
   
-logger.debug("Winston End");
-
 module.exports = logger;
