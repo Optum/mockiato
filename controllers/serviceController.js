@@ -212,7 +212,7 @@ function syncWorkers(service, action) {
       else {
         Service.findOneAndRemove({_id : service._id }, function(err)	{
           if (err) debug(err);
-          debug(service);
+          //debug(service);
         });
       }
     })
