@@ -202,7 +202,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   
                   $scope.myUser = authService.getUserInfo().username;
                 
-                  var canEditFunction = //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                 //returning a promise from factory didnt seem to work with .then() function here, alternative solution
                      $http.get('/api/systems')
                        .then(function (response) {
                          var newsutlist = [];
@@ -582,7 +582,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     });
                 }
 
-              var canEditFunction = //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+              //returning a promise from factory didnt seem to work with .then() function here, alternative solution
                 $http.get('/api/systems')
                   .then(function (response) {
                     $scope.myUser = authService.getUserInfo().username;
