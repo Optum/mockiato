@@ -18,7 +18,7 @@ var activeRecorders = {};
  * @param {Recorder} recorder 
  */
 function bindRecorderToPath(path,recorder){
-  recordingRouter.all("/live" + path,recorder.incomingRequest.bind(recorder));
+  recordingRouter.all("/live" + path,recordController.Recorder.prototype.incomingRequest.bind(recorder));
 }
 
 
