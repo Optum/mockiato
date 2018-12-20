@@ -10,7 +10,7 @@
 
 <div class="row">
     <div class="col-xs-2">
-        <input ng-model="member" type="text" class="form-control" name="input" placeholder="Enter users here">
+        <select class="form-control" id="user" title="Select user" ng-model="member" ng-options="user.name for user in userlist | orderBy:'name'"></select>
     </div>
     <div class="col-xs-4">
         <button type="button" class="btn btn-success" ng-click="addMember()">
