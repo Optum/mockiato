@@ -152,6 +152,7 @@ function init() {
   
   // initialize recording routers
   const recorder = require('./routes/recording');
+  const recorderController = require('./controllers/recorderController');
   app.use('/recording',recorder.recordingRouter);
   app.use('/api/recording',recorder.apiRouter);
 
@@ -175,9 +176,9 @@ function init() {
         const action  = msg.action;
         console.log("msg: " + msg);
         if(action === 'register'){
-          recorder.registerRecorder(rec);
+          recorderController.registerRecorder(rec);
         }else if(action === 'deregister'){
-          recorder.deregisterRecorder(rec);
+          recorderController.deregisterRecorder(rec);
         }
       }
     });

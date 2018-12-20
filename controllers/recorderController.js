@@ -385,6 +385,7 @@ function addRecorder(req,rsp){
     getRecordingById: getRecordingById,
     getRecorderRRPairsAfter : getRecorderRRPairsAfter,
     removeRecorder: removeRecorder,
-    registerRecorder: registerRecorder
+    registerRecorder: registerRecorder,
+    deregisterRecorder: deregisterRecorder
   };
   
