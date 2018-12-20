@@ -201,9 +201,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     };
                   
                   $scope.myUser = authService.getUserInfo().username;
-                  $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
                 
-                   var canEditFunction =
+                  var canEditFunction = //returning a promise from factory didnt seem to work with .then() function here, alternative solution
                      $http.get('/api/systems')
                        .then(function (response) {
                          var newsutlist = [];
@@ -218,14 +217,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                              }
                            });
                          });
-                         console.log("logging groups you belong to: " + newsutlist);
                          $scope.canEdit = function () {
                            if (newsutlist.includes($scope.servicevo.sut.name)) {
-                             console.log("can edit this form");
                              return true;
                            }
                            else {
-                             console.log("cannot edit this form");
                              return false;
                            }
                          };
@@ -541,7 +537,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     });
                 }
 
-              var canEditFunction =
+              var canEditFunction = //returning a promise from factory didnt seem to work with .then() function here, alternative solution
                 $http.get('/api/systems')
                   .then(function (response) {
                     $scope.myUser = authService.getUserInfo().username;
