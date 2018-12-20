@@ -680,13 +680,25 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 }
 
                 var token = authService.getUserInfo().token;
-                $http.post('/api/services?token=' + token, template)
 
+                // add SUT
+                $http.post('/api/systems/', template.sut)
+                .then(function(response) {
+                    console.log(response.data);
+                })
+                .catch(function(err) {
+                    console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+
+                // add service
+                $http.post('/api/services?token=' + token, template)
                 .then(function(response) {
                     var data = response.data;
                     $location.path('/update/' + data._id + '/frmServCreate');
                 })
-
                 .catch(function(err) {
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
