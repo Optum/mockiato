@@ -783,12 +783,13 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.selectedSut = [];
   
         $scope.$watch('selectedSut', function (newSut) {
-          $scope.memberlist = sutService.getMembers(newSut.name);
-          console.log($scope.memberlist);
-
-          //disallows duplicate user add
-          $scope.removeMembers = function (users) {
-            return $scope.memberlist.indexOf(users.name) === -1;
+          if ($scope.selectedSut != ""){ //removes null response, saves resources
+            $scope.memberlist = sutService.getMembers(newSut.name);
+          
+            //disallows duplicate user add
+            $scope.removeMembers = function (users) {
+              return $scope.memberlist.indexOf(users.name) === -1;
+            }
           }
         });
 
