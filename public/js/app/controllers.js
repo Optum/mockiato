@@ -203,24 +203,25 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   $scope.myUser = authService.getUserInfo().username;
                   $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
                 
-                   var newsutlist = [];  
+                     
                    var canEditFunction =
                      $http.get('/api/systems')
                        .then(function (response) {
+                         var newsutlist = [];
                          response.data.forEach(function (sutData) {
                            var sut = {
                              name: sutData.name,
                              members: sutData.members
                            };
                            sut.members.forEach(function (memberlist) {
-                             if (memberlist.indexOf($scope.myUser) > -1) {
+                             if (memberlist.includes($scope.myUser)) {
                               newsutlist.push(sut.name);
                              }
                            });
                          });
-                         console.log("logging factory1: " + newsutlist);
+                         console.log("logging groups you belong to: " + newsutlist);
                          $scope.canEdit = function () {
-                           if (newsutlist.indexOf($scope.servicevo.sut.name) > -1) {
+                           if (newsutlist.includes($scope.servicevo.sut.name)) {
                              console.log("can edit this form");
                              return true;
                            }
@@ -541,6 +542,29 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                         console.log(err);
                     });
                 }
+
+                //testing restricting actions
+              var canEditFunction =
+                $http.get('/api/systems')
+                  .then(function (response) {
+                    $scope.myUser = authService.getUserInfo().username;
+                     $scope.myGroups = [];
+                    response.data.forEach(function (sutData) {
+                      var sut = {
+                        name: sutData.name,
+                        members: sutData.members
+                      };
+                      sut.members.forEach(function (memberlist) {
+                        if (memberlist.includes($scope.myUser)) {
+                          $scope.myGroups.push(sut.name);
+                        }
+                      });
+                    });
+                  })
+
+                  .catch(function (err) {
+                    console.log(err);
+                  });
             };
             $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 

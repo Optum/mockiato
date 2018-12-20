@@ -36,11 +36,11 @@
                 <td>{{service.txnCount}}</td>
                 <td class="urlmax">{{ mockiatoHost + '/virtual' + service.basePath }}</td>
                 <td>
-                    <button class="btn btn-danger" ng-show="service.running === true" ng-click="toggleService(service)">Stop <i class="glyphicon glyphicon-stop"></i></button>
-                    <button class="btn btn-success" ng-show="service.running === false" ng-click="toggleService(service)">Start <i class="glyphicon glyphicon-play"></i></button>&nbsp;
+                    <button class="btn btn-danger" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === true" ng-click="toggleService(service)">Stop <i class="glyphicon glyphicon-stop"></i></button>
+                    <button class="btn btn-success" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === false" ng-click="toggleService(service)">Start <i class="glyphicon glyphicon-play"></i></button>&nbsp;
                     <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)"><i class="glyphicon glyphicon-info-sign"></i></button>&nbsp;
                     <button class="btn btn-primary" title="Export your service as a JSON file to save, send, or import anytime" ng-click="exportService(service)">Export <i class="glyphicon glyphicon-export"></i></button>&nbsp;
-                    <button class="btn btn-default" title="Delete service" ng-click="deleteService(service)"><i class="glyphicon glyphicon-trash"></i></button>
+                    <button class="btn btn-default" ng-if="myGroups.includes(service.sut.name)" title="Delete service" ng-click="deleteService(service)"><i class="glyphicon glyphicon-trash"></i></button>
                 </td>
             </tr>
         </table>
