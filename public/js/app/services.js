@@ -302,7 +302,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 var token = authService.getUserInfo().token;
 
                 //add new SUT
-                servicevo.sut.members = authService.getUserInfo().username; //testing
+                //pushing group creator to memberlist
+                servicevo.sut.members = authService.getUserInfo().username;
 
                 $http.post('/api/systems/', servicevo.sut)
                 .then(function(response) {
@@ -517,7 +518,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           params.uploaded_file_id = uploaded_file_id;
           params.uploaded_file_name = uploaded_file_name;
 
-          //testing
+          //pushing group creator to memberlist
           spec.sut.members = [];
           spec.sut.members.push(authService.getUserInfo().username);
           //add new SUT
