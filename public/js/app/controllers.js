@@ -177,9 +177,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
-    .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
-      function($scope,apiHistoryService,sutService,suggestionsService,helperFactory,ctrlConstants){
-        $scope.sutlist = sutService.getAllSUT();
+    .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
+      function($scope,apiHistoryService,sutService,authService,suggestionsService,helperFactory,ctrlConstants){
+        $scope.myUser = authService.getUserInfo().username;
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
         $scope.servicevo = {};
         $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
         $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
