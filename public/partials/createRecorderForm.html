@@ -1,0 +1,112 @@
+<h2>Create Recording Instance</h2>
+<form name="form" class="well col-xs-12">
+  <div class="form-group req row">
+    <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
+    <div class="col-xs-9">
+      <div class="radio">
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-required="!servicevo.type">
+              SOAP
+        </label>
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-required="!servicevo.type">
+              REST
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group req row">
+    <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
+
+    <div class="col-xs-3">
+      <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist | orderBy:'name'">
+          <option selected="selected" disabled="true">Select SUT</option>
+      </select>
+      <input ng-show="sutChecked" required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name (no spaces)" ng-change="checkDuplicateGroup()" ng-blur="checkDuplicateGroup()" ng-mouseleave="checkDuplicateGroup()">
+    </div>
+    <div class="col-xs-3">
+      <p>Check to create new Group
+        &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked" ng-click="dropdown()"><div style='color:#b40037;font-weight:normal;font-size: 13px;' ng-show="groupMessage && sutChecked">{{groupMessage}}</div>
+      </p>
+    </div>
+  </div>
+
+  <div class="form-group req row">
+    <label for="service_name" class="col-xs-2 col-form-label">Name:</label>
+    <div class="col-xs-9">
+      <input required type="text" id="service_name" class="form-control" ng-model="servicevo.name" placeholder="Enter Recorder Name">
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="servicevo.type !== 'MQ'">
+    <label for="service_hostname" class="col-xs-2 col-form-label">Remote Host:</label>
+    <div class="col-xs-9">
+      <div class="input-group">
+        <input ng-required="servicevo.type !== 'MQ'" type="text" ng-pattern="/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/" id="service_remotehost" class="form-control" ng-model="servicevo.remoteHost" placeholder="Enter Remote Host">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="servicevo.type !== 'MQ'">
+    <label for="service_port" class="col-xs-2 col-form-label">Remote Port:</label>
+    <div class="col-xs-9">
+      <div class="input-group">
+        <input ng-required="servicevo.type !== 'MQ'" type="text" ng-pattern="/^[0-9]+$/" id="service_remoteport" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Port">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="servicevo.type !== 'MQ'">
+    <label for="service_base_path" class="col-xs-2 col-form-label">Base Path:</label>
+    <div class="col-xs-7">
+      <div class="input-group">
+        <input ng-required="servicevo.type !== 'MQ'" type="text" ng-pattern="/^(/)?([^/\0]+(/)?)+$/" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path">
+      </div>
+    </div>
+  </div>
+
+
+  <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+    
+    <label class="col-xs-2 col-form-label">Headers to Keep:</label>
+    <div class="col-xs-9">
+      <fieldset data-ng-repeat="header in servicevo.reqHeadersArr">
+          <div class="row">
+            <div class="col-xs-5">
+              <div angucomplete-alt
+                id="req-header-{{ header.id }}"
+                placeholder="e.g. Cache-Control"
+                pause="100"
+                selected-object="header.k"
+                local-data="possibleHeaders"
+                override-suggestions="true"
+                search-fields="name"
+                title-field="name"
+                minlength="3"
+                input-class="form-control"
+                match-class="highlight">
+              </div>
+            </div>
+            <div class="col-xs-1">
+              <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeReqHeader(servicevo)">
+                <span class="glyphicon glyphicon-minus"></span>
+              </button>
+            </div>
+
+            <div class="col-xs-1">
+              <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewReqHeader(servicevo)">
+                <span class="glyphicon glyphicon-plus"></span>
+              </button>
+            </div>
+          </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <div class="col-sm-12">
+      <button ng-disabled="form.$invalid ||(groupMessage && sutChecked)" type="button" class="btn btn-xl btn-primary center-block" ng-click="createRecorder(servicevo)">Publish</button>
+    </div>
+  </div>
+</form>

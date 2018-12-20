@@ -50,7 +50,8 @@
             <div class="collapse navbar-collapse" id="myNavbar">
               <ul class="nav navbar-nav navbar-right">
 									<li><a href="#!selectService">Mock</a></li>
-                  <li><a href="#!fetchservices">Browse</a></li>
+									<li><a href="#!fetchservices">Browse</a></li>
+									<li><a href="#!fetchrecorders">Recorders</a></li>
 									<li><a href="#!datagen">Data</a></li>
 									<li><a href="#!admin">Admin</a></li>
                   <li><a target="_blank" href="/api-docs">API</a></li>
@@ -111,6 +112,26 @@
             </div>
 					</div>
 					
+					<div id="record-success-modal" role="dialog" class="modal fade">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" data-dismiss="modal" class="close">&times;</button>
+                  <h4 class="modal-title">Recorder Start Success!</h4>
+                </div>
+                <div class="modal-body">
+                  <p>Your recorder was succesfully started.</p>
+									<div ng-show="virt.type === 'REST' || virt.type === 'SOAP'">
+										<p class="wordwrap"><b>Base URL:</b> {{ mockiatoHost + virt.baseUrl }}</p>
+									</div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" data-dismiss="modal" class="btn btn-success">OK</button>
+                </div>
+              </div>
+            </div>
+					</div>
+
 					<div id="serviceInfo-modal" role="dialog" class="modal fade">
 						<div class="modal-dialog">
 							<div class="modal-content">
