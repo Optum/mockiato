@@ -494,7 +494,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.userlist = userService.getAllUsers();
             $scope.servicelist = [];
 
-            //script to assign first group member. only to retroactively assign group member. not needed for the future.
+            //script to retroactively assign group member. not needed for the future.
             $scope.script=function(){
               console.log("starting script");
               var sutnames = [];
