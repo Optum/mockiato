@@ -174,7 +174,7 @@ function init() {
       }else if(msg.recorder){
         const rec = msg.recorder;
         const action  = msg.action;
-        console.log("msg: " + msg);
+        console.log("msg: " + JSON.stringify(msg));
         if(action === 'register'){
           recorderController.registerRecorder(rec);
         }else if(action === 'deregister'){
