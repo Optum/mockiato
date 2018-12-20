@@ -119,10 +119,37 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 $rootScope.virt.operations.push(op);
               });
           };
+
+          this.displayRecorderInfo = function(data){
+            $rootScope.virt.operations = [];
+            $rootScope.virt.baseUrl = '/recording/live' + data.path;
+            $rootScope.virt.delay= data.delay;
+            $rootScope.virt.delayMax= data.delayMax;
+            $rootScope.virt.type = data.protocol;
+            $rootScope.virt.name = data.name;
+          }
     }])
 
-    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
-        function($http, $location, authService, feedbackService, xmlService, servConstants) {
+    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants','$routeParams',
+        function($http, $location, authService, feedbackService, xmlService, servConstants,$routeParams) {
+
+            //gets all recordings, unfiltered
+            this.getRecordings = function(){
+                return $http.get('/api/recording');
+            }
+
+            this.getRecordingById = function(id){
+              return $http.get('/api/recording/' + id);
+            }
+
+            this.getRecordingRRPairsWithIndex = function(id,index){
+              return $http.get('/api/recording/' + id + "/" + index);
+            }
+
+            this.deleteRecording = function(id){
+              return $http.delete('/api/recording/' + id)
+            }
+
             this.getServiceForSUT = function(name) {
                 return $http.get('/api/services/sut/' + name);
             };
@@ -135,7 +162,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services?sut=' + sut + '&user=' + user);
             };
 
-            this.publishServiceToAPI = function(servicevo, isUpdate) {
+            this.publishServiceToAPI = function(servicevo, isUpdate, isRecording) {
                 // clean up autosuggest selections
                 servicevo.rawpairs.forEach(function(rr) {
                   var selectedStatus = rr.resStatus;
@@ -325,7 +352,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       $('#genricMsg-dialog').modal('toggle');
                       }
                       else{
-                      $location.path('/update/' + data._id + '/frmServCreate');
+                      if(isRecording){
+                        $http.delete('/api/recording/' + $routeParams.id).then(function(){
+                          $location.path('/update/' + data._id + '/frmServCreate');
+                        });
+                      }else{
+                        $location.path('/update/' + data._id + '/frmServCreate');
+                      }
                     }
                   })
 
@@ -367,6 +400,56 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             this.toggleServiceAPI = function(service) {
                 var token = authService.getUserInfo().token;
                 return $http.post('/api/services/' + service._id + '/toggle?token=' + token);
+            };
+
+            this.publishRecorderToAPI = function(servicevo){
+
+                //create recorder
+                var recorder = {
+                  type:servicevo.type,
+                  sut:servicevo.sut.name,
+                  name:servicevo.name,
+                  remoteHost:servicevo.remoteHost,
+                  remotePort:servicevo.remotePort,
+                  basePath:servicevo.basePath,
+                  headerMask:[]
+                  
+                }
+
+                
+                //Extract headers
+                for(var i = 0; i < servicevo.reqHeadersArr.length; i ++){
+                  var head = servicevo.reqHeadersArr[i];
+                  if(head.k)
+                    recorder.headerMask.push(head.k.originalObject);
+                }
+                console.log(servicevo);
+
+
+                //publish service
+                var token = authService.getUserInfo().token;
+                $http.put('/api/recording' + '?token=' + token, recorder)
+                
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    feedbackService.displayRecorderInfo(data);
+                    $('#record-success-modal').modal('toggle');
+                    $location.path('/viewRecorder/' + data._id);
+                })
+
+                .catch(function(err) {
+                    console.log(err);
+                    if(err.data.error == "OverlappingRecorderPathError"){
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.DUP_RECORDER_PATH_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.DUP_RECORDER_PATH_BODY);
+                    }else{
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                    }
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+
             };
     }])
 
@@ -738,5 +821,7 @@ serv.constant("servConstants", {
         "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
         "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
         "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file." ,
-        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>'     
+        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>',
+        "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
+        "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.", 
       });

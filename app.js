@@ -128,19 +128,37 @@ function init() {
   virtual.registerAllRRPairsForAllServices();
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
+  
+  // initialize recording routers
+  const recorder = require('./routes/recording');
+  const recorderController = require('./controllers/recorderController');
+  app.use('/recording',recorder.recordingRouter);
+  app.use('/api/recording',recorder.apiRouter);
 
   // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
+
       const msg = message.data;
-      const service = msg.service;
-      const action  = msg.action;
-      debug(action);
+      if(msg.service){
+        const service = msg.service;
+        const action  = msg.action;
+        debug(action);
 
-      virtual.deregisterService(service);
+        virtual.deregisterService(service);
 
-      if (action === 'register') {
-        virtual.registerService(service);
+        if (action === 'register') {
+          virtual.registerService(service);
+        }
+      }else if(msg.recorder){
+        const rec = msg.recorder;
+        const action  = msg.action;
+        console.log("msg: " + JSON.stringify(msg));
+        if(action === 'register'){
+          recorderController.registerRecorder(rec);
+        }else if(action === 'deregister'){
+          recorderController.deregisterRecorder(rec);
+        }
       }
     });
   }
@@ -153,7 +171,7 @@ function init() {
   app.use('/api/users', users);
 
   // handle no match responses
-  app.use(function(req, res, next) {
+  app.use(/\/((?!recording).)*/,function(req, res, next) {
     if (!req.msgContainer) {
       req.msgContainer = {};
       req.msgContainer.reqMatched = false;
@@ -164,7 +182,7 @@ function init() {
   });
 
   // handle internal errors
-  app.use(function(err, req, res) {
+  app.use(/\/((?!recording).)*/,function(err, req, res) {
     debug(err.message);
     return res.status(500).send(err.message);
   });

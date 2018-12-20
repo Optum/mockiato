@@ -176,6 +176,248 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
+    .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
+      function($scope,apiHistoryService,sutService,suggestionsService,helperFactory,ctrlConstants){
+        $scope.sutlist = sutService.getAllSUT();
+        $scope.servicevo = {};
+        $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
+        $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+        $scope.servicevo.reqHeadersArr = [{id:0}];
+        $scope.dropdown = function() {
+              if ($scope.sutChecked == false){
+                  $scope.sutlist = sutService.getAllSUT();
+                  $scope.groupMessage = "";
+               }
+            };
+        $scope.addNewReqHeader = function(service) {
+          var newItemNo = service.reqHeadersArr.length;
+          service.reqHeadersArr.push({'id':newItemNo});
+        };
+
+        $scope.removeReqHeader = function(service) {
+          var lastItem = service.reqHeadersArr.length-1;
+          service.reqHeadersArr.splice(lastItem);
+        };
+
+        $scope.createRecorder = function (servicevo) {
+          apiHistoryService.publishRecorderToAPI(servicevo);
+        };
+
+    }])
+    .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', '$timeout',
+      function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants,$timeout){
+        $scope.statusCodes = suggestionsService.getStatusCodes();
+        $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+        var totalRRPairs = 0;
+
+        
+
+        function processRRPairs(rrpairs){
+          var rrpairsRaw = [];
+          var rrid = 0;
+          rrpairs.forEach(function(rr){
+            rr.id = rrid++;
+            console.log(rr);
+            rr.queriesArr = [];
+            rr.reqHeadersArr = [];
+            rr.resHeadersArr = [];
+            rr.method = rr.verb;
+
+            if (rr.payloadType === 'JSON') {
+              rr.requestpayload = JSON.stringify(rr.reqData);
+              rr.responsepayload = JSON.stringify(rr.resData);
+
+              //Handle empty JSON object- stringify surrounds in "" 
+              if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                rr.responsepayload = rr.responsepayload.substring(1,3);
+              }
+            }
+            else {
+              rr.requestpayload = rr.reqData;
+              rr.responsepayload = rr.resData;
+            }
+
+            // map object literals to arrays for Angular view
+            if (rr.reqHeaders) {
+              var reqHeads = Object.entries(rr.reqHeaders);
+              var reqHeadId = 0;
+              reqHeads.forEach(function(elem){
+                var head = {};
+
+                head.id = reqHeadId;
+                head.k = elem[0];
+                head.v = elem[1];
+
+                rr.reqHeadersArr.push(head);
+                reqHeadId++;
+              });
+            }
+            else {
+              rr.reqHeadersArr.push({ id: 0 });
+            }
+
+            if (rr.resHeaders) {
+              var resHeads = Object.entries(rr.resHeaders);
+              var resHeadId = 0;
+              resHeads.forEach(function(elem){
+                var head = {};
+
+                head.id = resHeadId;
+                head.k = elem[0];
+                head.v = elem[1];
+
+                rr.resHeadersArr.push(head);
+                resHeadId++;
+              });
+            }
+            else {
+              rr.resHeadersArr.push({ id: 0 });
+            }
+
+            if (rr.queries) {
+              var qs = Object.entries(rr.queries);
+              var qId = 0;
+              qs.forEach(function(elem){
+                var q = {};
+
+                q.id = qId;
+                q.k = elem[0];
+                q.v = elem[1];
+
+                rr.queriesArr.push(q);
+                qId++;
+              });
+            }
+            else {
+              rr.queriesArr.push({ id: 0 });
+            }
+
+            rrpairsRaw.push(rr);
+          });
+          return rrpairsRaw;
+        }
+
+        //Polls for new data + applies every X millis
+        function pollForNewRRPair(delay){
+          $timeout(function(){
+              apiHistoryService.getRecordingRRPairsWithIndex($routeParams.id,totalRRPairs).then(function(response){
+                if(response.data.length){
+                  console.log(response.data);
+                  var rrpairs = processRRPairs(response.data);
+                  rrpairs.forEach(function(rr){
+                    rr.id = totalRRPairs++;
+                    
+                  });
+                  $scope.servicevo.rawpairs = $scope.servicevo.rawpairs.concat(rrpairs);
+                  console.log(rrpairs);
+                }
+                if($routeParams.id)
+                  pollForNewRRPair(delay);
+            }).catch(function(err){
+                if($routeParams.id)
+                  pollForNewRRPair(delay);
+            });
+          }
+          
+          ,delay);
+
+        }
+        $scope.addTemplate = function() {
+          $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+        };
+
+        $scope.removeTemplate = function(index) {
+          $scope.servicevo.matchTemplates.splice(index, 1);
+        };
+
+        $scope.addNewRRPair = function() {
+          var newItemNo = $scope.servicevo.rawpairs.length;
+          $scope.servicevo.rawpairs.push({
+              id: newItemNo,
+              queriesArr: [{
+                id: 0
+              }],
+              reqHeadersArr: [{
+                id: 0
+              }],
+              resHeadersArr: [{
+                id: 0
+              }]
+          });
+        };
+
+        $scope.removeReqHeader = function(rr) {
+          var lastItem = rr.reqHeadersArr.length-1;
+          rr.reqHeadersArr.splice(lastItem);
+        };
+
+        $scope.addNewResHeader = function(rr) {
+          var newItemNo = rr.resHeadersArr.length;
+          rr.resHeadersArr.push({'id':newItemNo});
+        };
+
+        $scope.addNewReqHeader = function(rr) {
+          var newItemNo = rr.reqHeadersArr.length;
+          rr.reqHeadersArr.push({'id':newItemNo});
+        }; 
+        
+        $scope.removeResHeader = function(rr) {
+          var lastItem = rr.resHeadersArr.length-1;
+          rr.resHeadersArr.splice(lastItem);
+        };
+
+        $scope.addQuery = function(rr) {
+          var newItemNo = rr.queriesArr.length;
+          rr.queriesArr.push({'id':newItemNo});
+        };
+
+        $scope.removeQuery = function(rr) {
+          var lastItem = rr.queriesArr.length-1;
+          rr.queriesArr.splice(lastItem);
+        };
+        //Get this recorder's data
+        apiHistoryService.getRecordingById($routeParams.id)
+        .then(function(response) {
+          console.log(response);
+          var recorder = response.data;
+          var service = recorder.service;
+          $scope.servicevo = {
+            id: service._id,
+            sut: service.sut,
+            name: service.name,
+            type: service.type,
+            basePath: service.basePath
+          };
+          $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
+          $scope.servicevo.rawpairs = processRRPairs(service.rrpairs);
+          totalRRPairs = service.rrpairs.length;
+          
+
+          pollForNewRRPair(3000);
+        });
+
+        $scope.publishService = function(servicevo) {
+          try {
+            if (helperFactory.isDuplicateReq(servicevo)) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            } else {
+              apiHistoryService.publishServiceToAPI(servicevo, false,true);
+
+            }
+          }
+          catch(e) {
+            console.log(e);
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+            $('#genricMsg-dialog').modal('toggle');
+          }
+        };
+
+
+    }])
     .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
         function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants){
             $scope.statusCodes = suggestionsService.getStatusCodes();
@@ -452,7 +694,39 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $('#success-modal').modal('toggle');
           }
     }])
+    .controller("recorderListController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+    function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+      $scope.sutlist = sutService.getAllSUT();
+      $scope.userlist = userService.getAllUsers();
+      $scope.recordingList = [];
+      apiHistoryService.getRecordings().then(function(response){
+        var data = response.data;
+        $scope.recordingList = data;
+      });
 
+
+      $scope.deleteRecording = function (recording) {
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_REC_CONFIRM_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
+        $('#modal-btn-yes').on("click", function () {
+          apiHistoryService.deleteRecording(recording._id)
+            .then(function (response) {
+
+              $scope.recordingList.forEach(function (elem, i, arr) {
+                if (elem._id === recording._id)
+                  arr.splice(i, 1);
+              });
+            })
+            .catch(function (err) {
+              console.log(err);
+            });
+        });
+      };
+
+
+    }])
 
     .controller("serviceHistoryController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
         function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
@@ -900,12 +1174,15 @@ ctrl.constant("ctrlConstants", {
   "DUP_REQ_ERR_BODY" : "Two Requests are same. Either change request data or relative path of duplicate requests.",
   "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
   "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
+  "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
+  "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.",
   "REG_SUCCESS_TITLE" : "REGISTRATION SUCCESS",
   "REG_SUCCESS_BODY" : "<p><center><span style='color:#008000;font-weight:bold;font-size: 50px;'>&#x2714;</span><br></br><span style='font-weight:bold;font-size: 16px;'>Registration completed successfully</span><br></br><span>Thank you. You can log in for service virtualization now</span></center></p>",
   "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 
   "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.",
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
   "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
+  "DEL_REC_CONFIRM_BODY" : "Do you really want to delete this recording?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
   "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?',
   "BULK_UPLOAD_SUCCESS_MSG" : "Bulk Upload Success! File Uploaded - ",
