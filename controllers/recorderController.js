@@ -333,7 +333,7 @@ function removeRecorder(req,rsp){
             deregisterRecorder(recorder);
         });
     }
-    Recording.deleteOne({_id:id},function(err){
+    Recording.deleteOne({_id:req.params.id},function(err){
         if(err)
             handleError(err,rsp,500);
         else{
