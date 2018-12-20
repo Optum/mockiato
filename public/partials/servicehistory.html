@@ -24,7 +24,6 @@
                 <th>Owner</th>
                 <th>Group</th>
                 <th>Type</th>
-                <th>Txn Count</th>
                 <th>Base URL</th>
                 <th>Action</th>
             </tr>
@@ -33,8 +32,7 @@
                 <td>{{service.user.uid}}</td>
                 <td style="width:120px">{{service.sut.name}}</td>
                 <td>{{service.type}}</td>
-                <td>{{service.txnCount}}</td>
-                <td class="urlmax">{{ mockiatoHost + '/virtual' + service.basePath }}</td>
+                <td class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
                 <td>
                     <button class="btn btn-danger" ng-show="service.running === true" ng-click="toggleService(service)">Stop <i class="glyphicon glyphicon-stop"></i></button>
                     <button class="btn btn-success" ng-show="service.running === false" ng-click="toggleService(service)">Start <i class="glyphicon glyphicon-play"></i></button>&nbsp;
