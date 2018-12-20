@@ -10,10 +10,10 @@
 
 <div class="row">
     <div class="col-xs-2">
-        <select class="form-control" id="user" title="Select user" ng-model="member" ng-options="user.name for user in userlist | orderBy:'name'"></select>
+        <select class="form-control" id="user" title="Select user" ng-model="member" ng-options="user.name for user in userlist | orderBy:'name' | filter: removeMembers"></select>
     </div>
     <div class="col-xs-4">
-        <button type="button" class="btn btn-success" ng-click="addMember()">
+        <button type="button" class="btn btn-success" ng-disabled="!member" ng-click="addMember()">
             <span class="glyphicon glyphicon-plus"></span>
             Add member
         </button>
@@ -38,14 +38,5 @@
 </div>
 </ul>
 <!--ng-repeat end here-->
-
-
-<div class="form-group row">
-    <div class="col-sm-12">
-        <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-primary center-block" ng-click="saveGroup(selectedSut)">Save</button>
-    </div>
-</div>
-
-
 
 </form>

@@ -781,13 +781,24 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
         $scope.userlist = userService.getAllUsers();
         $scope.selectedSut = [];
-
+  
         $scope.$watch('selectedSut', function (newSut) {
           $scope.memberlist = sutService.getMembers(newSut.name);
+          console.log($scope.memberlist);
+
+          //disallows duplicate user add
+          $scope.removeMembers = function (users) {
+            return $scope.memberlist.indexOf(users.name) === -1;
+          }
         });
+
+        $scope.saveGroup = function (selectedSut) {
+          sutService.updateGroup(selectedSut.name, $scope.memberlist);
+        };
 
         $scope.addMember = function () {
           $scope.memberlist.push($scope.member.name);
+          $scope.saveGroup($scope.selectedSut);
         }
 
         $scope.removeMember = function (index) {
@@ -799,11 +810,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           $('#modal-btn-yes').on("click", function () {
             $scope.memberlist.splice($scope.userNo, 1);
             $scope.$apply();
+            $scope.saveGroup($scope.selectedSut);
           });
-        };
-
-        $scope.saveGroup = function(selectedSut){
-          sutService.updateGroup(selectedSut.name, $scope.memberlist);
         };
 
       }])
