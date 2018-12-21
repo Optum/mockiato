@@ -419,6 +419,22 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   
                 }
 
+              //pushing group creator to memberlist
+              servicevo.sut.members = [];
+              servicevo.sut.members.push(authService.getUserInfo().username);
+
+              //add new SUT
+              $http.post('/api/systems/', servicevo.sut)
+                .then(function (response) {
+                  console.log(response.data);
+                })
+                .catch(function (err) {
+                  console.log(err);
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+                  $('#genricMsg-dialog').modal('toggle');
+                });
+
                 
                 //Extract headers
                 for(var i = 0; i < servicevo.reqHeadersArr.length; i ++){
@@ -527,6 +543,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           params.name  = bulkUpload.name;
           params.url = bulkUpload.base;
           params.uploaded_file_name_id = uploaded_file_name_id;
+
+          //pushing group creator to memberlist
+          bulkUpload.sut.members = [];
+          bulkUpload.sut.members.push(authService.getUserInfo().username);
 
           //add new SUT
           $http.post('/api/systems/', bulkUpload.sut)
