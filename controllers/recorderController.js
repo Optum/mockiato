@@ -193,15 +193,6 @@ function stripRRPairForReq(rrpair) {
                     },(function(error,doc){
                         if(error)
                             console.log(error);
-                        else{
-                            Recording.findOne({_id : this.model._id},(function(err,doc){
-                                if(err)
-                                    console.log(error);
-                                else{
-                                    this.model = doc;
-                                }
-                            }).bind(this));
-                        }
                     }).bind(this));
             }
 
