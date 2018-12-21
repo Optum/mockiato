@@ -122,7 +122,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
           this.displayRecorderInfo = function(data){
             $rootScope.virt.operations = [];
-            $rootScope.virt.baseUrl = '/recording/live' + data.path;
+            $rootScope.virt.baseUrl = '/recording/live/' + data.sut.name + data.path;
             $rootScope.virt.delay= data.delay;
             $rootScope.virt.delayMax= data.delayMax;
             $rootScope.virt.type = data.protocol;

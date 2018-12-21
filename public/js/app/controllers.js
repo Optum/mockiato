@@ -324,6 +324,19 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           ,delay);
 
         }
+
+        $scope.removeRRPair = function(index) {
+          $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+          $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
+          $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+          $('#genricMsg-dialog').modal('toggle');
+          $scope.rrPairNo = index;
+          $('#modal-btn-yes').on("click", function () {
+              $scope.servicevo.rawpairs.splice($scope.rrPairNo,1);
+              $scope.$apply();
+            });
+        };
+        
         $scope.addTemplate = function() {
           $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
         };
