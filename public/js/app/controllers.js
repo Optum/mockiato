@@ -27,9 +27,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       };
     }])
 
-    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
-        function($scope,apiHistoryService,sutService,suggestionsService,helperFactory,ctrlConstants){
-            $scope.sutlist = sutService.getAllSUT();
+    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
+      function ($scope, apiHistoryService, sutService,authService,suggestionsService,helperFactory,ctrlConstants){
+            $scope.myUser = authService.getUserInfo().username;
+            $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
             $scope.servicevo = {};
             $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
             $scope.servicevo.rawpairs = [{
@@ -176,9 +177,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
-    .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
-      function($scope,apiHistoryService,sutService,suggestionsService,helperFactory,ctrlConstants){
-        $scope.sutlist = sutService.getAllSUT();
+    .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
+      function($scope,apiHistoryService,sutService,authService,suggestionsService,helperFactory,ctrlConstants){
+        $scope.myUser = authService.getUserInfo().username;
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
         $scope.servicevo = {};
         $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
         $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -431,9 +433,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
 
     }])
-    .controller("updateController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
-        function($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants){
-            $scope.statusCodes = suggestionsService.getStatusCodes();
+
+    .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
+        function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
+          
+          $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
             this.getService = function() {
@@ -453,6 +457,38 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       basePath: service.basePath,
                       
                     };
+                  
+                  $scope.myUser = authService.getUserInfo().username;
+                
+                 //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                     $http.get('/api/systems')
+                       .then(function (response) {
+                         var newsutlist = [];
+                         response.data.forEach(function (sutData) {
+                           var sut = {
+                             name: sutData.name,
+                             members: sutData.members
+                           };
+                           sut.members.forEach(function (memberlist) {
+                             if (memberlist.includes($scope.myUser)) {
+                              newsutlist.push(sut.name);
+                             }
+                           });
+                         });
+                         $scope.canEdit = function () {
+                           if (newsutlist.includes($scope.servicevo.sut.name)) {
+                             return true;
+                           }
+                           else {
+                             return false;
+                           }
+                         };
+                       })
+
+                       .catch(function (err) {
+                         console.log(err);
+                       });
+
                     if(service.lastUpdateUser){
                       $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
                     }
@@ -562,6 +598,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 });
             };
             this.getService();
+           
 
             $scope.addTemplate = function() {
               $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
@@ -747,6 +784,51 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.userlist = userService.getAllUsers();
             $scope.servicelist = [];
 
+            //script to retroactively assign group member. not needed for the future.
+            $scope.script=function(){
+              console.log("starting script");
+              var sutnames = [];
+              $http.get('/api/systems')
+                .then(function (response) {
+                  response.data.forEach(function (sutData) {
+                    var sut = {
+                      name: sutData.name,
+                      members: sutData.members
+                    };
+                    sutnames.push(sut.name);
+                  });
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+
+              $http.get('/api/services')
+                .then(function (response) {
+                  console.log(response.data);
+                  for (var i = 0; i < response.data.length; i++) {
+                    var owner = response.data[i].user.uid;
+                    var sut = response.data[i].sut.name;
+                    
+                    if (sutnames.includes(sut)){
+                      console.log("------------------------------------");
+                      console.log("sut "+ sut + " exists");
+                      console.log(owner + " will be added to group: " + sut);
+                      sutService.updateGroup(sut, owner);
+                    }
+                    else{
+                      console.log("------------------------------------");
+                      console.log("sut " + sut + " does not exist");
+                    }
+                  }
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
+            ///////////////////////////end script. to remove
+
             $scope.filtersSelected = function(sut, user) {
                 if (sut && !user) {
                     apiHistoryService.getServiceForSUT(sut.name)
@@ -789,6 +871,28 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                         console.log(err);
                     });
                 }
+
+              //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                $http.get('/api/systems')
+                  .then(function (response) {
+                    $scope.myUser = authService.getUserInfo().username;
+                     $scope.myGroups = [];
+                    response.data.forEach(function (sutData) {
+                      var sut = {
+                        name: sutData.name,
+                        members: sutData.members
+                      };
+                      sut.members.forEach(function (memberlist) {
+                        if (memberlist.includes($scope.myUser)) {
+                          $scope.myGroups.push(sut.name);
+                        }
+                      });
+                    });
+                  })
+
+                  .catch(function (err) {
+                    console.log(err);
+                  });
             };
             $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
@@ -1002,6 +1106,48 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
     }])
 
+    .controller("adminController", ['$scope', 'authService', 'userService', 'sutService', 'ctrlConstants',
+      function ($scope, authService, userService, sutService, ctrlConstants){
+        $scope.myUser = authService.getUserInfo().username;
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.userlist = userService.getAllUsers();
+        $scope.selectedSut = [];
+  
+        $scope.$watch('selectedSut', function (newSut) {
+          if ($scope.selectedSut != ""){ //removes null response, saves resources
+            $scope.memberlist = sutService.getMembers(newSut.name);
+          
+            //disallows duplicate user add
+            $scope.removeMembers = function (users) {
+              return $scope.memberlist.indexOf(users.name) === -1;
+            }
+          }
+        });
+
+        $scope.saveGroup = function (selectedSut) {
+          sutService.updateGroup(selectedSut.name, $scope.memberlist);
+        };
+
+        $scope.addMember = function () {
+          $scope.memberlist.push($scope.member.name);
+          $scope.saveGroup($scope.selectedSut);
+        }
+
+        $scope.removeMember = function (index) {
+          $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+          $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);
+          $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+          $('#genricMsg-dialog').modal('toggle');
+          $scope.userNo = index;
+          $('#modal-btn-yes').on("click", function () {
+            $scope.memberlist.splice($scope.userNo, 1);
+            $scope.$apply();
+            $scope.saveGroup($scope.selectedSut);
+          });
+        };
+
+      }])
+
 
     .controller("mainController", ['$rootScope', '$location', 'authService', 'ctrlConstants', 
         function($rootScope,$location,authService,ctrlConstants){
@@ -1040,9 +1186,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             }
     }])
 
-    .controller("bulkUploadController", ['$scope', 'sutService' , 'zipUploadAndExtractService', 'publishExtractedRRPairService', 'ctrlConstants', 
-    function($scope, sutService, zipUploadAndExtractService, publishExtractedRRPairService, ctrlConstants) {
-      $scope.sutlist = sutService.getAllSUT();
+    .controller("bulkUploadController", ['$scope', 'sutService' , 'authService', 'zipUploadAndExtractService', 'publishExtractedRRPairService', 'ctrlConstants', 
+      function ($scope, sutService, authService, zipUploadAndExtractService, publishExtractedRRPairService, ctrlConstants) {
+      $scope.myUser = authService.getUserInfo().username;
+      $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.bulkUpload = {};
       $scope.dropdown = function () {
         if ($scope.sutChecked == false) {
@@ -1099,9 +1246,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       };
 }])
 
-.controller("specController", ['$scope','$routeParams' , 'sutService', 'specUploadService', 'publishSpecService', 'ctrlConstants', 
-        function($scope, $routeParams, sutService, specUploadService, publishSpecService, ctrlConstants) {
-          $scope.sutlist = sutService.getAllSUT();
+.controller("specController", ['$scope','$routeParams' , 'sutService', 'authService', 'specUploadService', 'publishSpecService', 'ctrlConstants', 
+        function($scope, $routeParams, sutService, authService, specUploadService, publishSpecService, ctrlConstants) {
+          $scope.myUser = authService.getUserInfo().username;
+          $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
           $scope.spec = {}; 
           $scope.spec.type = $routeParams.specType;
           if ($scope.spec.type == 'openapi') { $scope.spec.heading = 'OpenAPI' } else if ($scope.spec.type == 'wsdl') { $scope.spec.heading = 'WSDL' }
@@ -1197,6 +1345,7 @@ ctrl.constant("ctrlConstants", {
   "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
   "DEL_REC_CONFIRM_BODY" : "Do you really want to delete this recording?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
+  "DEL_CONFIRM_USER_BODY": 'Do you really want to remove this user from the group?',
   "DEL_CONFIRM_RRPAIR_BODY" : 'Do you really want to delete this RRPair ?',
   "BULK_UPLOAD_SUCCESS_MSG" : "Bulk Upload Success! File Uploaded - ",
   "BULK_UPLOAD_FAILURE_MSG" : "Unexpected Error. Bulk Upload Fail. File Uploaded - ",
