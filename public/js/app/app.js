@@ -113,6 +113,22 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
+            .when("/admin", {
+                templateUrl: "partials/admin.html",
+                controller: "adminController",
+                resolve: {
+                    auth: ['$q', 'authService', function ($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
+
             .when("/bulkUpload", {
                 templateUrl: "partials/bulkUpload.html",
                 controller: "bulkUploadController",
@@ -145,7 +161,41 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 templateUrl: 'partials/login.html',
                 controller: 'authController'
             })
+            
+            .when('/createRecorder', {
+                templateUrl: 'partials/createRecorderForm.html',
+                controller: 'createRecorderController'
+            })
+            .when("/fetchrecorders", {
+                templateUrl: "partials/recorderList.html",
+                controller: "recorderListController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
 
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            }) 
+            .when("/viewRecorder/:id", {
+                templateUrl: "partials/viewRecorder.html",
+                controller: "viewRecorderController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
             .otherwise({
                 redirectTo: "/selectService"
             });

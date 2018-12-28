@@ -1,6 +1,6 @@
 var fact = angular.module("mockapp.factories",[]);
 
-fact.factory('sutFactory', ['$http', function($http) {
+fact.factory('sutFactory', ['$http', '$q', function($http, $q) {
     return {
         getAllSUT: function() {
           var sutlist = [];
@@ -8,10 +8,7 @@ fact.factory('sutFactory', ['$http', function($http) {
           $http.get('/api/systems')
 
           .then(function(response) {
-              var data = response.data;
-              console.log(data);
-
-              data.forEach(function(sutData) {
+              response.data.forEach(function(sutData) {
                 var sut = {
                   name: sutData.name
                 };
@@ -25,9 +22,56 @@ fact.factory('sutFactory', ['$http', function($http) {
           });
 
           return sutlist;
+        },
+
+        getGroupsByUser: function(user) {
+            var sutlist = [];
+            $http.get('/api/systems')
+
+                .then(function (response) {
+                    response.data.forEach(function (sutData) {
+                        var sut = {
+                            name: sutData.name,
+                            members: sutData.members
+                        };
+                        sut.members.forEach(function(memberlist){
+                            if(memberlist.indexOf(user) > -1){
+                                sutlist.push(sut);
+                            }
+                        });
+                    });
+                })
+
+                .catch(function (err) {
+                    console.log(err);
+                });
+            return sutlist;
         }
     };
 }]);
+
+fact.factory('groupFactory', ['$http', function ($http) {
+    return {
+        getMembers: function (selectedSut) {
+            var memberlist = [];
+            
+            $http.get('/api/systems/' + selectedSut)
+                .then(function (response) {
+                    for (var i = 0; i < response.data.members.length; i++) {
+                        
+                        var member = response.data.members[i];
+                        memberlist.push(member);
+                    }
+                })
+
+                .catch(function (err) {
+                    console.log(err);
+                });
+            return memberlist;
+        }
+    };
+}]);
+
 
 fact.factory('userFactory', ['$http', function($http) {
     return {

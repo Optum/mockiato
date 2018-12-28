@@ -119,10 +119,37 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 $rootScope.virt.operations.push(op);
               });
           };
+
+          this.displayRecorderInfo = function(data){
+            $rootScope.virt.operations = [];
+            $rootScope.virt.baseUrl = '/recording/live/' + data.sut.name + data.path;
+            $rootScope.virt.delay= data.delay;
+            $rootScope.virt.delayMax= data.delayMax;
+            $rootScope.virt.type = data.protocol;
+            $rootScope.virt.name = data.name;
+          }
     }])
 
-    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
-        function($http, $location, authService, feedbackService, xmlService, servConstants) {
+    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants','$routeParams',
+        function($http, $location, authService, feedbackService, xmlService, servConstants,$routeParams) {
+
+            //gets all recordings, unfiltered
+            this.getRecordings = function(){
+                return $http.get('/api/recording');
+            }
+
+            this.getRecordingById = function(id){
+              return $http.get('/api/recording/' + id);
+            }
+
+            this.getRecordingRRPairsWithIndex = function(id,index){
+              return $http.get('/api/recording/' + id + "/" + index);
+            }
+
+            this.deleteRecording = function(id){
+              return $http.delete('/api/recording/' + id)
+            }
+
             this.getServiceForSUT = function(name) {
                 return $http.get('/api/services/sut/' + name);
             };
@@ -135,7 +162,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services?sut=' + sut + '&user=' + user);
             };
 
-            this.publishServiceToAPI = function(servicevo, isUpdate) {
+            this.publishServiceToAPI = function(servicevo, isUpdate, isRecording) {
                 // clean up autosuggest selections
                 servicevo.rawpairs.forEach(function(rr) {
                   var selectedStatus = rr.resStatus;
@@ -302,6 +329,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 var token = authService.getUserInfo().token;
 
                 //add new SUT
+                //pushing group creator to memberlist
+                servicevo.sut.members = authService.getUserInfo().username;
+
                 $http.post('/api/systems/', servicevo.sut)
                 .then(function(response) {
                     console.log(response.data);
@@ -325,7 +355,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       $('#genricMsg-dialog').modal('toggle');
                       }
                       else{
-                      $location.path('/update/' + data._id + '/frmServCreate');
+                      if(isRecording){
+                        $http.delete('/api/recording/' + $routeParams.id).then(function(){
+                          $location.path('/update/' + data._id + '/frmServCreate');
+                        });
+                      }else{
+                        $location.path('/update/' + data._id + '/frmServCreate');
+                      }
                     }
                   })
 
@@ -368,14 +404,108 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 var token = authService.getUserInfo().token;
                 return $http.post('/api/services/' + service._id + '/toggle?token=' + token);
             };
+
+            this.publishRecorderToAPI = function(servicevo){
+
+                //create recorder
+                var recorder = {
+                  type:servicevo.type,
+                  sut:servicevo.sut.name,
+                  name:servicevo.name,
+                  remoteHost:servicevo.remoteHost,
+                  remotePort:servicevo.remotePort,
+                  basePath:servicevo.basePath,
+                  headerMask:[]
+                  
+                }
+
+              //pushing group creator to memberlist
+              servicevo.sut.members = [];
+              servicevo.sut.members.push(authService.getUserInfo().username);
+
+              //add new SUT
+              $http.post('/api/systems/', servicevo.sut)
+                .then(function (response) {
+                  console.log(response.data);
+                })
+                .catch(function (err) {
+                  console.log(err);
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+                  $('#genricMsg-dialog').modal('toggle');
+                });
+
+                
+                //Extract headers
+                for(var i = 0; i < servicevo.reqHeadersArr.length; i ++){
+                  var head = servicevo.reqHeadersArr[i];
+                  if(head.k)
+                    recorder.headerMask.push(head.k.originalObject);
+                }
+                console.log(servicevo);
+
+
+                //publish service
+                var token = authService.getUserInfo().token;
+                $http.put('/api/recording' + '?token=' + token, recorder)
+                
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    feedbackService.displayRecorderInfo(data);
+                    $('#record-success-modal').modal('toggle');
+                    $location.path('/viewRecorder/' + data._id);
+                })
+
+                .catch(function(err) {
+                    console.log(err);
+                    if(err.data.error == "OverlappingRecorderPathError"){
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.DUP_RECORDER_PATH_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.DUP_RECORDER_PATH_BODY);
+                    }else{
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                    }
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+
+            };
     }])
 
-    .service('sutService', ['sutFactory',
-        function(sutFactory) {
+    .service('sutService', ['sutFactory', 'groupFactory', '$http', '$q',
+        function(sutFactory, groupFactory, $http, $q) {
+           
             this.getAllSUT = function() {
                 var sutlist = sutFactory.getAllSUT();
                 return sutlist;
             };
+            
+            this.getMembers = function(selectedSut){
+              var memberlist = groupFactory.getMembers(selectedSut)
+              return memberlist;
+            };
+
+            this.getGroupsByUser = function(user){
+              var someGroups = sutFactory.getGroupsByUser(user);
+              return someGroups;
+            };
+
+            this.updateGroup = function(group, memberlist){
+
+              var groupData = {
+                name: group,
+                members: memberlist
+              };
+
+              $http.put('/api/systems/' + group, groupData)
+                .then(function (response) {
+                  console.log(response.data);
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
     }])
 
     .service('zipUploadAndExtractService', ['$http', '$location', 'authService', 'servConstants',
@@ -414,6 +544,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           params.url = bulkUpload.base;
           params.uploaded_file_name_id = uploaded_file_name_id;
 
+          //pushing group creator to memberlist
+          bulkUpload.sut.members = [];
+          bulkUpload.sut.members.push(authService.getUserInfo().username);
+
           //add new SUT
           $http.post('/api/systems/', bulkUpload.sut)
             .then(function (response) {
@@ -434,8 +568,15 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
               .then(function (response) {
                 var data = response.data;
+                if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  }
+                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-              })
+              }})
               .catch(function (err) {
                 console.log(err.data.error);
                 return message(err.data.error);
@@ -479,6 +620,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           params.url   = spec.url;
           params.uploaded_file_id = uploaded_file_id;
           params.uploaded_file_name = uploaded_file_name;
+
+          //pushing group creator to memberlist
+          spec.sut.members = [];
+          spec.sut.members.push(authService.getUserInfo().username);
           //add new SUT
           $http.post('/api/systems/', spec.sut)
             .then(function (response) {
@@ -488,6 +633,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               console.log(err);
               $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
               $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+              
               $('#genricMsg-dialog').modal('toggle');
             });
 
@@ -498,8 +644,15 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
               .then(function (response) {
                 var data = response.data;
+                if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  }
+                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-              })
+               } })
               .catch(function (err) {
                 console.log(err);
                 $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
@@ -614,33 +767,42 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           }
         }])
 
-    .service('templateService', ['$http', 'authService', 'feedbackService', 'servConstants', 
-        function($http, authService, feedbackService, servConstants) {
+    .service('templateService', ['$http', '$location', 'authService', 'feedbackService', 'servConstants', 
+        function($http, $location, authService, feedbackService, servConstants) {
             this.importTemplate = function(templateStr) {
                 var template;
 
                 try {
-                  console.log(templateStr);
                   template = JSON.parse(templateStr);
                 }
                 catch(e) {
                   console.log(e);
                   $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY_IMPORT_TEMPLATE);
                   $('#genricMsg-dialog').modal('toggle');
                   return;
                 }
 
                 var token = authService.getUserInfo().token;
-                $http.post('/api/services?token=' + token, template)
 
+                // add SUT
+                $http.post('/api/systems/', template.sut)
+                .then(function(response) {
+                    console.log(response.data);
+                })
+                .catch(function(err) {
+                    console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+
+                // add service
+                $http.post('/api/services?token=' + token, template)
                 .then(function(response) {
                     var data = response.data;
-                    console.log(data);
-                    feedbackService.displayServiceInfo(data);
-                    $('#success-modal').modal('toggle');
+                    $location.path('/update/' + data._id + '/frmServCreate');
                 })
-
                 .catch(function(err) {
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
@@ -706,11 +868,15 @@ serv.constant("servConstants", {
         "LOGIN_ERR_BODY" : "Invalid credentials. Please try again.",
         "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
         "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
+        "PUB_FAIL_ERR_BODY_IMPORT_TEMPLATE" : "Please ensure you have uploaded a file in JSON format.",
         "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.",
         "UPLOAD_FAIL_ERR_TITLE" : "Upload Failure Error",
         "UPLOAD_FAIL_ERR_BODY" : "Error occured in bulk upload.",
         "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
         "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
         "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
-        "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file."
+        "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file." ,
+        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>',
+        "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
+        "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.", 
       });

@@ -1,6 +1,11 @@
+const fs = require('fs');
 const winston = require('winston');
 
-const transports = [ new winston.transports.Console() ];        
+let filename = process.env.MOCKIATO_LOG_FILE || '/dev/null';
+
+const transports = [ new winston.transports.Stream({
+    stream: fs.createWriteStream(filename)
+})];        
 
 if (process.env.MOCKIATO_SPLUNK_ENABLED) {
     const SplunkStreamEvent = require('winston-splunk-httplogger');
@@ -10,12 +15,11 @@ if (process.env.MOCKIATO_SPLUNK_ENABLED) {
         index: process.env.MOCKIATO_SPLUNK_INDEX,
         token: process.env.MOCKIATO_SPLUNK_TOKEN,
         host: process.env.MOCKIATO_SPLUNK_HOST,
-        level: 'info',   
+        level: 'info',
         sourcetype: 'mockiato:app_logs',
         source:'mockiato', 
         ssl: 'true'    
     };
-
     transports.push(new SplunkStreamEvent({ splunk: splunkSettings }));
 }
 
@@ -23,14 +27,10 @@ logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.timestamp(),
+        winston.format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
         winston.format.json()        
     ),
     transports: transports
 });
-
-logger.info('Mockiato Connected to Splunk');
   
-logger.debug("Winston End");
-
 module.exports = logger;

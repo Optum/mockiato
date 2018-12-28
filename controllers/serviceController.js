@@ -212,7 +212,7 @@ function syncWorkers(service, action) {
       else {
         Service.findOneAndRemove({_id : service._id }, function(err)	{
           if (err) debug(err);
-          debug(service);
+          //debug(service);
         });
       }
     })
@@ -479,13 +479,37 @@ function publishExtractedRRPairs(req, res) {
     serv.type = type;
     serv.basePath = '/' + serv.sut.name +'/'+ base;
     serv.user = req.decoded;
-    Service.create(serv, function (err, service) {
-      if (err) {
-        handleError(err, res, 500);
+
+    searchDuplicate(serv, function(duplicate) {
+      if (duplicate && duplicate.twoServDiffNmSmBP){
+        res.json({"error":"twoSeviceDiffNameSameBasePath"});
+        return;
       }
-      res.json(service);
-      syncWorkers(service, 'register');
+      else if (duplicate) { 
+        // merge services
+        mergeRRPairs(duplicate, serv);
+        // save merged service
+        duplicate.save(function(err, newService) {
+          if (err) {
+            handleError(err, res, 500);
+            return;
+          }
+          res.json(newService);
+          
+          syncWorkers(newService, 'register');
+        });
+      }
+      else {
+        Service.create(serv, function (err, service) {
+          if (err) {
+            handleError(err, res, 500);
+          }
+          res.json(service);
+          syncWorkers(service , 'register');
+        });
+      }
     });
+   
   }
   function onError(err) {
     debug(err);
@@ -539,13 +563,37 @@ function publishUploadedSpec(req, res) {
     serv.user = req.decoded;
     serv.lastUpdateUser = req.decoded;
 
-    // save the service
-    Service.create(serv, function (err, service) {
-      if (err) handleError(err, res, 500);
-
-      res.json(service);
-      syncWorkers(service, 'register');
+    searchDuplicate(serv, function(duplicate) {
+      if (duplicate && duplicate.twoServDiffNmSmBP){
+        res.json({"error":"twoSeviceDiffNameSameBasePath"});
+        return;
+      }
+      else if (duplicate) { 
+        // merge services
+        mergeRRPairs(duplicate, serv);
+        // save merged service
+        duplicate.save(function(err, newService) {
+          if (err) {
+            handleError(err, res, 500);
+            return;
+          }
+          res.json(newService);
+          
+          syncWorkers(newService, 'register');
+        });
+      }
+      else {
+        Service.create(serv, function (err, service) {
+          if (err) handleError(err, res, 500);
+    
+          res.json(service);
+          syncWorkers(service, 'register');
+        });
+      }
     });
+
+    // save the service
+   
   }
 
   function onError(err) {

@@ -1,0 +1,42 @@
+<h2>Admin and Security for <u>{{myUser}}</u></h2>
+<form name="adminForm" class="well col-xs-12">
+
+    <div class="form-group row">
+        <label for="system_under_test" class="col-xs-3 col-form-label">Select a group to view/edit users</label>
+        <div class="col-xs-3">
+            <select class="form-control" id="system_under_test" ng-model="selectedSut" ng-options="sut.name for sut in sutlist | orderBy:'name'"></select>
+        </div>
+    </div>
+
+<div class="row">
+    <div class="col-xs-2">
+        <select class="form-control" id="user" title="Select user" ng-model="member" ng-options="user.name for user in userlist | orderBy:'name' | filter: removeMembers"></select>
+    </div>
+    <div class="col-xs-4">
+        <button type="button" class="btn btn-success" ng-disabled="!member" ng-click="addMember()">
+            <span class="glyphicon glyphicon-plus"></span>
+            Add member
+        </button>
+    </div>
+</div>
+<br>
+
+<!--ng-repeat start here-->
+<ul class="row">
+<div data-ng-repeat="member in memberlist track by $index" class="row">
+    <div class="col-xs-2">
+        {{member}}
+    </div>
+
+    <div class="col-xs-4">
+        <button type="button" class="btn btn-sm btn-danger" ng-click="removeMember($index)">
+            <span class="glyphicon glyphicon-minus"></span>
+                Remove
+        </button>
+    </div>
+    <br></br>
+</div>
+</ul>
+<!--ng-repeat end here-->
+
+</form>
