@@ -38,7 +38,7 @@ function init() {
   app.use(helmet());
   app.use(compression());
   //app.use(logger('dev'));
-  app.use(morgan('combined'));
+  app.use(morgan('dev'));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
 
