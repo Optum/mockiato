@@ -191,6 +191,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   $scope.groupMessage = "";
                }
             };
+
+        $scope.showRecorderHelp = function(){
+          $('#recordingHelp-modal').modal('toggle');
+        }
         $scope.addNewReqHeader = function(service) {
           var newItemNo = service.reqHeadersArr.length;
           service.reqHeadersArr.push({'id':newItemNo});
