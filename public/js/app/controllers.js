@@ -1462,7 +1462,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
             $('#modal-btn-yes').on("click", function () {
-              apiHistoryService.deleteServiceAPI(service)
+              apiHistoryService.deleteServiceArchive(service)
                 .then(function (response) {
                   var data = response.data;
                   console.log(data);

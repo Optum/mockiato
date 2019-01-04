@@ -735,6 +735,29 @@ function createFromOpenAPI(spec) {
   return oas.parse(spec);
 }
 
+function permanentDeleteService(req, res) {
+  Archive.findById(req.params.id, function(err, service)	{
+    if (err)	{
+      handleError(err, res, 500);
+      return;
+    }
+
+    if (service) {
+      Archive.findOneAndRemove({ _id: req.params.id }, function(error, oldService) {
+        if (error) debug(error);
+        res.json({ 'message' : 'deleted', 'id' : oldService._id });
+        //syncWorkers(oldService, 'delete');
+      });
+    }
+    else {
+      MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
+        if (error) debug(error);
+        res.json({ 'message' : 'deleted', 'id' : mqService._id });
+      });
+    }
+  });
+}
+
 module.exports = {
   getServiceById: getServiceById,
   getServicesByUser: getServicesByUser,
@@ -750,5 +773,6 @@ module.exports = {
   zipUploadAndExtract: zipUploadAndExtract,
   publishExtractedRRPairs: publishExtractedRRPairs,
   specUpload: specUpload,
-  publishUploadedSpec: publishUploadedSpec
+  publishUploadedSpec: publishUploadedSpec,
+  permanentDeleteService: permanentDeleteService
 };

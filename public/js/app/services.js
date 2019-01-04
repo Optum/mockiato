@@ -412,6 +412,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.delete('/api/services/' + service._id + '?token=' + token);
             };
 
+            this.deleteServiceArchive = function(service) {
+              var token = authService.getUserInfo().token;
+              return $http.delete('/api/services/archive/' + service._id + '?token=' + token);
+          };
+
             this.toggleServiceAPI = function(service) {
                 var token = authService.getUserInfo().token;
                 return $http.post('/api/services/' + service._id + '/toggle?token=' + token);

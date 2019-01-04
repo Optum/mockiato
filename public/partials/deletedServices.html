@@ -38,7 +38,8 @@
                 <td>
                     <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)"><i class="glyphicon glyphicon-info-sign"></i></button>&nbsp;
                     <button class="btn btn-primary" title="Export your service as a JSON file to save, send, or import anytime" ng-click="exportService(service)">Export <i class="glyphicon glyphicon-export"></i></button>&nbsp;
-                    <button class="btn btn-default" ng-if="myGroups.includes(service.sut.name)" title="Permanent Delete" ng-click="deleteService(service)"><i class="glyphicon glyphicon-remove"></i></button>
+                    <button class="btn btn-success" ng-if="myGroups.includes(service.sut.name)" title="Restore Service" ng-click="restore(service)">Restore <i class="glyphicon glyphicon-repeat"></i></button>
+                    <button class="btn btn-danger" ng-if="myGroups.includes(service.sut.name)" title="Permanent Delete" ng-click="deleteService(service)">Delete <i class="glyphicon glyphicon-remove"></i></button>
                 </td>
             </tr>
         </table>

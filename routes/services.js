@@ -34,6 +34,9 @@ router.post('/publishUploadedSpec', servCtrl.publishUploadedSpec);
 // retrieve archive services
 router.get('/archive', servCtrl.getArchiveServices);
 
+// delete a virtual service from Archive
+router.delete('/archive/:id', servCtrl.permanentDeleteService);
+
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
 
