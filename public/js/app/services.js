@@ -154,12 +154,24 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services/sut/' + name);
             };
 
+            this.getServiceForArchiveSUT = function(name) {
+              return $http.get('/api/services/sut/archive/' + name);
+            };
+
             this.getServiceByUser = function(name) {
                 return $http.get('/api/services/user/' + name);
+            };
+            
+            this.getServiceByArchiveUser = function(name) {
+              return $http.get('/api/services/user/archive/' + name);
             };
 
             this.getServicesFiltered = function(sut, user) {
                 return $http.get('/api/services?sut=' + sut + '&user=' + user);
+            };
+
+            this.getServicesArchiveFiltered = function(sut, user) {
+              return $http.get('/api/services/archive?sut=' + sut + '&user=' + user);
             };
 
             this.publishServiceToAPI = function(servicevo, isUpdate, isRecording) {

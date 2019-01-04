@@ -1,6 +1,7 @@
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
+const Archive  = require('../models/common/Archive');
 
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
@@ -65,6 +66,36 @@ function getServicesByUser(req, res) {
   });
 }
 
+function getArchiveServicesByUser(req, res) {
+  let allServices = [];
+
+  const query = { 'user.uid': req.params.uid };
+
+  Archive.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+    allServices = services;
+
+    // MQService.find(query, function(error, mqServices) {
+    //   if (error)	{
+    //     handleError(error, res, 500);
+    //     return;
+    //   }
+
+    //   if (mqServices.length) {
+    //     allServices = allServices.concat(mqServices);
+    //   }
+
+    //   return res.json(allServices);
+    // });
+
+    return res.json(allServices);
+  });
+}
+
 function getServicesBySystem(req, res) {
   let allServices = [];
 
@@ -90,6 +121,36 @@ function getServicesBySystem(req, res) {
 
       return res.json(allServices);
     });
+  });
+}
+
+function getServicesArchiveBySystem(req, res) {
+  let allServices = [];
+
+  const query = { 'sut.name': req.params.name };
+
+  Archive.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+    allServices = services;
+
+    // MQService.find(query, function(error, mqServices) {
+    //   if (error)	{
+    //     handleError(error, res, 500);
+    //     return;
+    //   }
+
+    //   if (mqServices.length) {
+    //     allServices = allServices.concat(mqServices);
+    //   }
+    //   return res.json(allServices);
+    //   });
+
+      return res.json(allServices);
+    
   });
 }
 
@@ -124,6 +185,41 @@ function getServicesByQuery(req, res) {
 
         return res.json(allServices);
       });
+  });
+}
+
+function getArchiveServices(req, res) {
+  const query = {};
+
+  const sut  = req.query.sut;
+  const user = req.query.user;
+
+  if (sut) query['sut.name']  = sut;
+  if (user) query['user.uid'] = user;
+
+  // call find function with queries
+  let allServices = [];
+  Archive.find(query, function(err, services)	{
+      if (err)	{
+        handleError(err, res, 500);
+        return;
+      }
+
+      allServices = services;
+
+      // MQService.find(query, function(error, mqServices) {
+      //   if (error)	{
+      //     handleError(error, res, 500);
+      //     return;
+      //   }
+  
+      //   if (mqServices.length) {
+      //     allServices = allServices.concat(mqServices);
+      //   }
+      //   return res.json(allServices);
+    //   });
+
+      return res.json(allServices);
   });
 }
 
@@ -383,8 +479,30 @@ function deleteService(req, res) {
       handleError(err, res, 500);
       return;
     }
-
+    
     if (service) {
+      let archive  = {
+        sut: service.sut,
+        user: service.user,
+        name: service.name,
+        type: service.type,
+        delay: service.delay,
+        delayMax: service.delayMax,
+        basePath: service.basePath,
+        txnCount: 0,
+        running: false,
+        matchTemplates: service.matchTemplates,
+        rrpairs: service.rrpairs,
+        lastUpdateUser: service.lastUpdateUser
+      };
+      Archive.create(archive, function (err, callback) {
+        if (err) {
+          handleError(err, res, 500);
+        }
+      });
+
+      //Also need to create MQ service in MQ Archive
+      
       service.remove(function(e, oldService) {
         if (e)	{
           handleError(e, res, 500);
@@ -615,6 +733,9 @@ module.exports = {
   getServicesByUser: getServicesByUser,
   getServicesBySystem: getServicesBySystem,
   getServicesByQuery: getServicesByQuery,
+  getArchiveServices: getArchiveServices,
+  getServicesArchiveBySystem: getServicesArchiveBySystem,
+  getArchiveServicesByUser: getArchiveServicesByUser,
   addService: addService,
   updateService: updateService,
   toggleService: toggleService,

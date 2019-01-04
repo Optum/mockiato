@@ -1331,6 +1331,194 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             }
           };
     }])
+
+    .controller("deletedServiceController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+        function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+            $scope.sutlist = sutService.getAllSUT();
+            $scope.userlist = userService.getAllUsers();
+            $scope.servicelist = [];
+
+            //script to retroactively assign group member. not needed for the future.
+            $scope.script=function(){
+              console.log("starting script");
+              var sutnames = [];
+              $http.get('/api/systems')
+                .then(function (response) {
+                  response.data.forEach(function (sutData) {
+                    var sut = {
+                      name: sutData.name,
+                      members: sutData.members
+                    };
+                    sutnames.push(sut.name);
+                  });
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+
+              $http.get('/api/services/archive')
+                .then(function (response) {
+                  console.log(response.data);
+                  for (var i = 0; i < response.data.length; i++) {
+                    var owner = response.data[i].user.uid;
+                    var sut = response.data[i].sut.name;
+                    
+                    if (sutnames.includes(sut)){
+                      console.log("------------------------------------");
+                      console.log("sut "+ sut + " exists");
+                      console.log(owner + " will be added to group: " + sut);
+                      sutService.updateGroup(sut, owner);
+                    }
+                    else{
+                      console.log("------------------------------------");
+                      console.log("sut " + sut + " does not exist");
+                    }
+                  }
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
+            ///////////////////////////end script. to remove
+
+            $scope.filtersSelected = function(sut, user) {
+                if (sut && !user) {
+                    apiHistoryService.getServiceForArchiveSUT(sut.name)
+
+                    .then(function(response) {
+                        var data = response.data;
+                        console.log(data);
+                        $scope.servicelist = data;
+                      })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
+                else if (user && !sut) {
+                    apiHistoryService.getServiceByArchiveUser(user.name)
+
+                    .then(function(response) {
+                      var data = response.data;
+                      console.log(data);
+                      $scope.servicelist = data;
+                    })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
+                else if (user && sut) {
+                    apiHistoryService.getServicesArchiveFiltered(sut.name, user.name)
+
+                    .then(function(response) {
+                      var data = response.data;
+                      console.log(data);
+                      $scope.servicelist = data;
+                    })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
+              //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                $http.get('/api/systems')
+                  .then(function (response) {
+                    $scope.myUser = authService.getUserInfo().username;
+                     $scope.myGroups = [];
+                    response.data.forEach(function (sutData) {
+                      var sut = {
+                        name: sutData.name,
+                        members: sutData.members
+                      };
+                      sut.members.forEach(function (memberlist) {
+                        if (memberlist.includes($scope.myUser)) {
+                          $scope.myGroups.push(sut.name);
+                        }
+                      });
+                    });
+                  })
+
+                  .catch(function (err) {
+                    console.log(err);
+                  });
+            };
+            $scope.filtersSelected(null, { name: authService.getUserInfo().username });
+
+            $scope.clearSelected = function() {
+              $scope.selectedSut = null;
+              $scope.selectedUser = null;
+              $scope.servicelist = [];
+            };
+
+          $scope.deleteService = function (service) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_Permanent_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            $('#modal-btn-yes').on("click", function () {
+              apiHistoryService.deleteServiceAPI(service)
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist.forEach(function (elem, i, arr) {
+                    if (elem._id === data.id)
+                      arr.splice(i, 1);
+                  });
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            });
+          };
+
+            $scope.exportService = function(serv) {
+                // clone the service
+                var service = JSON.parse(JSON.stringify(serv));
+
+                // clean up data before export
+                delete service._id;
+                delete service.sut._id;
+                delete service.user;
+                delete service.__v;
+                delete service.$$hashKey;
+
+                if (service.basePath) {
+                  service.basePath = service.basePath.replace('/' + service.sut.name, '');
+                }
+                
+                service.rrpairs.forEach(function(rr) {
+                  delete rr._id;
+                });
+
+                var data = new Blob([JSON.stringify(service, null, "  ")], { type: 'application/json;charset=utf-8' });
+                FileSaver.saveAs(data, service.name + '.json');
+            };
+
+            $scope.serviceInfo = function(serviceID) {
+              console.log('printing service id: ' + serviceID);
+                $http.get('/api/services/' + serviceID)
+
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    feedbackService.displayServiceInfo(data);
+                    $('#serviceInfo-modal').modal('toggle');
+                })
+
+                .catch(function(err) {
+                    console.log(err);
+                      $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');
+                });
+            };
+    }])
     ;
 
 //Put all the hard coding or constants here for controller.      
@@ -1346,7 +1534,7 @@ ctrl.constant("ctrlConstants", {
   "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 
   "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.",
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
-  "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
+  "DEL_CONFIRM_BODY" : "This service will be deleted and moved to Archive. Do you want to continue ?",
   "DEL_REC_CONFIRM_BODY" : "Do you really want to delete this recording?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
   "DEL_CONFIRM_USER_BODY": 'Do you really want to remove this user from the group?',
@@ -1362,4 +1550,5 @@ ctrl.constant("ctrlConstants", {
   "IMPORT_ERR_MSG" : "You should upload only correct json file.",
   "SUCCESS" : "success",
   "GRP_ALREADY_EXIST_MSG" : "Group Name Already exist.",
+  "DEL_Permanent_CONFIRM_BODY" : "This service will be deleted permanently. Do you want to continue ?"
 });
