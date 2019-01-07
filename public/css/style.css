@@ -113,3 +113,15 @@ input[type="radio"] {
 .wordwrap{
   word-wrap: break-word;
 }
+
+.white{
+  background-color: #fff;
+}
+
+.greenText{
+  color: green;
+}
+
+.blueText{
+  color:blue;
+}

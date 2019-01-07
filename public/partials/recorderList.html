@@ -1,0 +1,39 @@
+<h2>Browse Recorders</h2>
+<div class="clearfix"></div>
+<br>
+    <div class="col-xs-12" >
+    <!--<form class="form-inline">
+        <div class="form-group">
+            <label for="system_under_test">Group:</label>
+            <select class="form-control" id="system_under_test" title="Select SUT" ng-model="selectedSut" ng-options="sut.name for sut in sutlist | orderBy:'name'"></select>
+            <label for="system_under_test">Owner:</label>
+            <select class="form-control" id="user" title="Select Owner" ng-model="selectedUser" ng-options="user.name for user in userlist | orderBy:'name'"></select>&nbsp;
+            <button type="submit" class="btn btn-primary" ng-click="filtersSelected(selectedSut, selectedUser)">Find</button>&nbsp;
+            <button type="submit" class="btn btn-default" ng-click="clearSelected()">Clear</button>
+        </div>
+    </form>-->
+    </div>
+    <div class="clearfix">
+        <br>
+        <br>
+    </div>
+    <div class="col-xs-12" >
+        <table class="table table-bordered table-striped well">
+            <tr>
+                <th>Name</th>
+                <th>Group</th>
+                <th>Type</th>
+                <th>Active</th>
+                <th>Base URL</th>
+                <th>Delete</th>
+            </tr>
+            <tr ng-repeat="recorder in recordingList" style=" word-break:break-all">
+                <td style="width:120px"><a href="#!viewRecorder/{{ recorder._id }}">{{recorder.name}}</a></td>
+                <td style="width:120px">{{recorder.sut.name}}</td>
+                <td>{{recorder.protocol}}</td>
+                <td>{{recorder.active}}</td>
+                <td class="urlmax">{{ mockiatoHost + '/recording/live/' + recorder.sut.name + recorder.path }}</td>
+                <td><button class="btn btn-default" title="Delete recorder" ng-click="deleteRecording(recorder)"><i class="glyphicon glyphicon-trash"></i></button></td>
+            </tr>
+        </table>
+    </div>
