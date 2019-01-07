@@ -117,3 +117,11 @@ input[type="radio"] {
 .white{
   background-color: #fff;
 }
+
+.greenText{
+  color: green;
+}
+
+.blueText{
+  color:blue;
+}
