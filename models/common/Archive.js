@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const User = require('./User');
 const System = require('./System');
 const RRPair = require('../http/RRPair');
+const MQPair = require('../mq/MQPair');
+const MQInfo = require('../mq/MQInfo');
 
 const archiveSchema = new mongoose.Schema({
   sut: System.schema,
@@ -44,7 +46,9 @@ const archiveSchema = new mongoose.Schema({
   },
   lastUpdateUser:{
     type: User.schema
-  }
+  },
+  connInfo: MQInfo.schema,
+  mqRRpairs: [MQPair.schema]
 },{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
 archiveSchema.set('usePushEach', true);

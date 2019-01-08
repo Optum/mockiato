@@ -2,7 +2,6 @@ const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
 const Archive  = require('../models/common/Archive');
-const MQArchive  = require('../models/common/MQArchive');
 
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
@@ -36,6 +35,30 @@ function getServiceById(req, res) {
           return res.json(mqService);
         });
       }
+  });
+}
+
+function getArchiveServiceInfo(req, res) {
+  // call find by id function for db
+  Archive.findById(req.params.id, function (err, service) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+      if (service) {
+        return res.json(service);
+      }
+      // else {
+      //   MQService.findById(req.params.id, function(error, mqService) {
+      //     if (error)	{
+      //       handleError(error, res, 500);
+      //       return;
+      //     }
+
+      //     return res.json(mqService);
+      //   });
+      // }
   });
 }
 
@@ -80,18 +103,20 @@ function getArchiveServicesByUser(req, res) {
 
     allServices = services;
 
-    MQArchive.find(query, function(error, mqServices) {
-      if (error)	{
-        handleError(error, res, 500);
-        return;
-      }
+    // MQArchive.find(query, function(error, mqServices) {
+    //   if (error)	{
+    //     handleError(error, res, 500);
+    //     return;
+    //   }
 
-      if (mqServices.length) {
-        allServices = allServices.concat(mqServices);
-      }
+    //   if (mqServices.length) {
+    //     allServices = allServices.concat(mqServices);
+    //   }
 
-      return res.json(allServices);
-    });
+    //   return res.json(allServices);
+    // });
+
+    return res.json(allServices);
   });
 }
 
@@ -136,17 +161,19 @@ function getServicesArchiveBySystem(req, res) {
 
     allServices = services;
 
-    MQArchive.find(query, function(error, mqServices) {
-      if (error)	{
-        handleError(error, res, 500);
-        return;
-      }
+    // MQArchive.find(query, function(error, mqServices) {
+    //   if (error)	{
+    //     handleError(error, res, 500);
+    //     return;
+    //   }
 
-      if (mqServices.length) {
-        allServices = allServices.concat(mqServices);
-      }
-      return res.json(allServices);
-      });
+    //   if (mqServices.length) {
+    //     allServices = allServices.concat(mqServices);
+    //   }
+    //   return res.json(allServices);
+    //   });
+
+    return res.json(allServices);
   });
 }
 
@@ -203,17 +230,19 @@ function getArchiveServices(req, res) {
 
       allServices = services;
 
-      MQArchive.find(query, function(error, mqServices) {
-        if (error)	{
-          handleError(error, res, 500);
-          return;
-        }
+      // MQArchive.find(query, function(error, mqServices) {
+      //   if (error)	{
+      //     handleError(error, res, 500);
+      //     return;
+      //   }
   
-        if (mqServices.length) {
-          allServices = allServices.concat(mqServices);
-        }
-        return res.json(allServices);
-      });
+      //   if (mqServices.length) {
+      //     allServices = allServices.concat(mqServices);
+      //   }
+      //   return res.json(allServices);
+      // });
+
+      return res.json(allServices);
   });
 }
 
@@ -515,10 +544,10 @@ function deleteService(req, res) {
           type: mqService.type,
           running: false,
           matchTemplates: mqService.matchTemplates,
-          rrpairs: mqService.rrpairs,
+          mqRRpairs: mqService.rrpairs,
           connInfo: mqService.connInfo
         };
-        MQArchive.create(archive, function (err, callback) {
+        Archive.create(archive, function (err, callback) {
           if (err) {
             handleError(err, res, 500);
           }
@@ -528,6 +557,65 @@ function deleteService(req, res) {
     }
   });
 }
+
+function restoreService(req, res) {
+  Archive.findById(req.params.id, function(err, service)	{
+    if (err)	{
+      handleError(err, res, 500);
+      return;
+    }
+    
+    if (service.type !== 'MQ') {
+      let archive  = {
+        sut: service.sut,
+        user: service.user,
+        name: service.name,
+        type: service.type,
+        delay: service.delay,
+        delayMax: service.delayMax,
+        basePath: service.basePath,
+        txnCount: 0,
+        running: false,
+        matchTemplates: service.matchTemplates,
+        rrpairs: service.rrpairs,
+        lastUpdateUser: service.lastUpdateUser
+      };
+      Service.create(archive, function (err, callback) {
+        if (err) {
+          handleError(err, res, 500);
+        }
+      });
+
+      Archive.findOneAndRemove({ _id: req.params.id }, function(error, oldService) {
+        if (error) debug(error);
+        res.json({ 'message' : 'deleted', 'id' : oldService._id });
+        //syncWorkers(oldService, 'delete');
+      });
+    }
+    else {
+      Archive.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
+        if (error) debug(error);
+        let archive  = {
+          sut: mqService.sut,
+          user: mqService.user,
+          name: mqService.name,
+          type: mqService.type,
+          running: false,
+          matchTemplates: mqService.matchTemplates,
+          rrpairs: mqService.mqRRpairs,
+          connInfo: mqService.connInfo
+        };
+        MQService.create(archive, function (err, callback) {
+          if (err) {
+            handleError(err, res, 500);
+          }
+        });
+        res.json({ 'message' : 'deleted', 'id' : mqService._id });
+      });
+    }
+  });
+}
+
 
 // get spec from url or local filesystem path
 function getSpecString(path) {
@@ -749,31 +837,33 @@ function createFromOpenAPI(spec) {
   return oas.parse(spec);
 }
 
-function permanentDeleteService(req, res) {
-  Archive.findById(req.params.id, function(err, service)	{
-    if (err)	{
-      handleError(err, res, 500);
-      return;
-    }
+//Permanenet delete from Archieve. Not required right now.
+// function permanentDeleteService(req, res) {
+//   Archive.findById(req.params.id, function(err, service)	{
+//     if (err)	{
+//       handleError(err, res, 500);
+//       return;
+//     }
 
-    if (service) {
-      Archive.findOneAndRemove({ _id: req.params.id }, function(error, oldService) {
-        if (error) debug(error);
-        res.json({ 'message' : 'deleted', 'id' : oldService._id });
-        //syncWorkers(oldService, 'delete');
-      });
-    }
-    else {
-      MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
-        if (error) debug(error);
-        res.json({ 'message' : 'deleted', 'id' : mqService._id });
-      });
-    }
-  });
-}
+//     if (service) {
+//       Archive.findOneAndRemove({ _id: req.params.id }, function(error, oldService) {
+//         if (error) debug(error);
+//         res.json({ 'message' : 'deleted', 'id' : oldService._id });
+//         //syncWorkers(oldService, 'delete');
+//       });
+//     }
+//     else {
+//       MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
+//         if (error) debug(error);
+//         res.json({ 'message' : 'deleted', 'id' : mqService._id });
+//       });
+//     }
+//   });
+// }
 
 module.exports = {
   getServiceById: getServiceById,
+  getArchiveServiceInfo: getArchiveServiceInfo,
   getServicesByUser: getServicesByUser,
   getServicesBySystem: getServicesBySystem,
   getServicesByQuery: getServicesByQuery,
@@ -788,5 +878,6 @@ module.exports = {
   publishExtractedRRPairs: publishExtractedRRPairs,
   specUpload: specUpload,
   publishUploadedSpec: publishUploadedSpec,
-  permanentDeleteService: permanentDeleteService
+  //permanentDeleteService: permanentDeleteService,
+  restoreService: restoreService
 };

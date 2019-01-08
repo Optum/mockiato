@@ -407,14 +407,23 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services/' + id);
             };
 
+            this.getArchiveServiceById = function(id) {
+              return $http.get('/api/services/infoFrmArchive/' + id);
+          };
+
             this.deleteServiceAPI = function(service) {
                 var token = authService.getUserInfo().token;
                 return $http.delete('/api/services/' + service._id + '?token=' + token);
             };
 
-            this.deleteServiceArchive = function(service) {
-              var token = authService.getUserInfo().token;
-              return $http.delete('/api/services/archive/' + service._id + '?token=' + token);
+            // this.deleteServiceArchive = function(service) {
+            //   var token = authService.getUserInfo().token;
+            //   return $http.delete('/api/services/deleteFrmArchive/' + service._id + '?token=' + token);
+            // };
+
+          this.restoreService = function(service) {
+            var token = authService.getUserInfo().token;
+            return $http.delete('/api/services/restoreFrmArchive/' + service._id + '?token=' + token);
           };
 
             this.toggleServiceAPI = function(service) {

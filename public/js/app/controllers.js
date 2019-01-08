@@ -438,6 +438,251 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
     }])
 
+    
+    .controller("showArchiveController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
+        function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
+          
+          $scope.statusCodes = suggestionsService.getStatusCodes();
+            $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
+              this.getService = function() {
+                  apiHistoryService.getArchiveServiceById($routeParams.id)
+                  .then(function(response) {
+                      var service = response.data;
+                      console.log(service);
+                      $scope.servicevo = {
+                        id: service._id,
+                        sut: service.sut,
+                        name: service.name,
+                        type: service.type,
+                        delay: service.delay,
+                        delayMax: service.delayMax,
+                        txnCount: service.txnCount,
+                        basePath: service.basePath,
+                        
+                      };
+                    
+                    $scope.myUser = authService.getUserInfo().username;
+                  
+                   //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                       $http.get('/api/systems')
+                         .then(function (response) {
+                           var newsutlist = [];
+                           response.data.forEach(function (sutData) {
+                             var sut = {
+                               name: sutData.name,
+                               members: sutData.members
+                             };
+                             sut.members.forEach(function (memberlist) {
+                               if (memberlist.includes($scope.myUser)) {
+                                newsutlist.push(sut.name);
+                               }
+                             });
+                           });
+                           $scope.canEdit = function () {
+                               return false;
+                           };
+                         })
+  
+                         .catch(function (err) {
+                           console.log(err);
+                         });
+  
+                      if(service.lastUpdateUser){
+                        $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+                      }
+                      if(service.createdAt){
+                        $scope.servicevo.createdAt = service.createdAt;
+                      }
+                      if(service.updatedAt){
+                        $scope.servicevo.updatedAt = service.updatedAt;
+                      }
+  
+                      $scope.servicevo.matchTemplates = [];
+                      $scope.servicevo.rawpairs = [];
+  
+                      if (service.matchTemplates && service.matchTemplates.length) {
+                        service.matchTemplates.forEach(function(template, index) {
+                          $scope.servicevo.matchTemplates.push({ id: index, val: template });
+                        });
+                      }
+                      else {
+                        $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+                      }
+  
+                      var rrid = 0;
+                      service.rrpairs.forEach(function(rr){
+                        rr.id = rrid;
+                        rr.queriesArr = [];
+                        rr.reqHeadersArr = [];
+                        rr.resHeadersArr = [];
+                        rr.method = rr.verb;
+  
+                        if (rr.payloadType === 'JSON') {
+                          rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+                          rr.responsepayload = JSON.stringify(rr.resData, null, 4);
+  
+                          //Handle empty JSON object- stringify surrounds in "" 
+                          if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                            rr.responsepayload = rr.responsepayload.substring(1,3);
+                          }
+                        }
+                        else {
+                          rr.requestpayload = rr.reqData;
+                          rr.responsepayload = rr.resData;
+                        }
+  
+                        // map object literals to arrays for Angular view
+                        if (rr.reqHeaders) {
+                          var reqHeads = Object.entries(rr.reqHeaders);
+                          var reqHeadId = 0;
+                          reqHeads.forEach(function(elem){
+                            var head = {};
+  
+                            head.id = reqHeadId;
+                            head.k = elem[0];
+                            head.v = elem[1];
+  
+                            rr.reqHeadersArr.push(head);
+                            reqHeadId++;
+                          });
+                        }
+                        else {
+                          rr.reqHeadersArr.push({ id: 0 });
+                        }
+  
+                        if (rr.resHeaders) {
+                          var resHeads = Object.entries(rr.resHeaders);
+                          var resHeadId = 0;
+                          resHeads.forEach(function(elem){
+                            var head = {};
+  
+                            head.id = resHeadId;
+                            head.k = elem[0];
+                            head.v = elem[1];
+  
+                            rr.resHeadersArr.push(head);
+                            resHeadId++;
+                          });
+                        }
+                        else {
+                          rr.resHeadersArr.push({ id: 0 });
+                        }
+  
+                        if (rr.queries) {
+                          var qs = Object.entries(rr.queries);
+                          var qId = 0;
+                          qs.forEach(function(elem){
+                            var q = {};
+  
+                            q.id = qId;
+                            q.k = elem[0];
+                            q.v = elem[1];
+  
+                            rr.queriesArr.push(q);
+                            qId++;
+                          });
+                        }
+                        else {
+                          rr.queriesArr.push({ id: 0 });
+                        }
+  
+                        $scope.servicevo.rawpairs.push(rr);
+                        rrid++;
+                      });
+
+
+
+                      service.mqRRpairs.forEach(function(rr){
+                        rr.id = rrid;
+                        rr.queriesArr = [];
+                        rr.reqHeadersArr = [];
+                        rr.resHeadersArr = [];
+                        rr.method = rr.verb;
+  
+                        if (rr.payloadType === 'JSON') {
+                          rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+                          rr.responsepayload = JSON.stringify(rr.resData, null, 4);
+  
+                          //Handle empty JSON object- stringify surrounds in "" 
+                          if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                            rr.responsepayload = rr.responsepayload.substring(1,3);
+                          }
+                        }
+                        else {
+                          rr.requestpayload = rr.reqData;
+                          rr.responsepayload = rr.resData;
+                        }
+  
+                        // map object literals to arrays for Angular view
+                        if (rr.reqHeaders) {
+                          var reqHeads = Object.entries(rr.reqHeaders);
+                          var reqHeadId = 0;
+                          reqHeads.forEach(function(elem){
+                            var head = {};
+  
+                            head.id = reqHeadId;
+                            head.k = elem[0];
+                            head.v = elem[1];
+  
+                            rr.reqHeadersArr.push(head);
+                            reqHeadId++;
+                          });
+                        }
+                        else {
+                          rr.reqHeadersArr.push({ id: 0 });
+                        }
+  
+                        if (rr.resHeaders) {
+                          var resHeads = Object.entries(rr.resHeaders);
+                          var resHeadId = 0;
+                          resHeads.forEach(function(elem){
+                            var head = {};
+  
+                            head.id = resHeadId;
+                            head.k = elem[0];
+                            head.v = elem[1];
+  
+                            rr.resHeadersArr.push(head);
+                            resHeadId++;
+                          });
+                        }
+                        else {
+                          rr.resHeadersArr.push({ id: 0 });
+                        }
+  
+                        if (rr.queries) {
+                          var qs = Object.entries(rr.queries);
+                          var qId = 0;
+                          qs.forEach(function(elem){
+                            var q = {};
+  
+                            q.id = qId;
+                            q.k = elem[0];
+                            q.v = elem[1];
+  
+                            rr.queriesArr.push(q);
+                            qId++;
+                          });
+                        }
+                        else {
+                          rr.queriesArr.push({ id: 0 });
+                        }
+  
+                        $scope.servicevo.rawpairs.push(rr);
+                        rrid++;
+                      });
+
+
+                  })
+  
+                  .catch(function(err) {
+                      console.log(err);
+                  });
+              };
+              this.getService();
+      }])
+          
     .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
         function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
           
@@ -480,13 +725,13 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                            });
                          });
                          $scope.canEdit = function () {
-                           if (newsutlist.includes($scope.servicevo.sut.name)) {
-                             return true;
-                           }
-                           else {
-                             return false;
-                           }
-                         };
+                          if (newsutlist.includes($scope.servicevo.sut.name )) {
+                            return true;
+                          }
+                          else {
+                            return false;
+                          }
+                        };
                        })
 
                        .catch(function (err) {
@@ -602,8 +847,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 });
             };
             this.getService();
+          
            
-
             $scope.addTemplate = function() {
               $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
             };
@@ -1456,13 +1701,34 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $scope.servicelist = [];
             };
 
-          $scope.deleteService = function (service) {
+          // $scope.deleteService = function (service) {
+          //   $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+          //   $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_Permanent_CONFIRM_BODY);
+          //   $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+          //   $('#genricMsg-dialog').modal('toggle');
+          //   $('#modal-btn-yes').on("click", function () {
+          //     apiHistoryService.deleteServiceArchive(service)
+          //       .then(function (response) {
+          //         var data = response.data;
+          //         console.log(data);
+          //         $scope.servicelist.forEach(function (elem, i, arr) {
+          //           if (elem._id === data.id)
+          //             arr.splice(i, 1);
+          //         });
+          //       })
+          //       .catch(function (err) {
+          //         console.log(err);
+          //       });
+          //   });
+          // };
+
+          $scope.restoreService = function (service) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_Permanent_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.RESTORE_CONFIRM_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
             $('#modal-btn-yes').on("click", function () {
-              apiHistoryService.deleteServiceArchive(service)
+              apiHistoryService.restoreService(service)
                 .then(function (response) {
                   var data = response.data;
                   console.log(data);
@@ -1502,7 +1768,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
             $scope.serviceInfo = function(serviceID) {
               console.log('printing service id: ' + serviceID);
-                $http.get('/api/services/' + serviceID)
+                $http.get('/api/services/infoFrmArchive/' + serviceID)
 
                 .then(function(response) {
                     var data = response.data;
@@ -1550,5 +1816,6 @@ ctrl.constant("ctrlConstants", {
   "IMPORT_ERR_MSG" : "You should upload only correct json file.",
   "SUCCESS" : "success",
   "GRP_ALREADY_EXIST_MSG" : "Group Name Already exist.",
-  "DEL_Permanent_CONFIRM_BODY" : "This service will be deleted permanently. Do you want to continue ?"
+  //"DEL_Permanent_CONFIRM_BODY" : "This service will be deleted permanently. Do you want to continue ?",
+  "RESTORE_CONFIRM_BODY" : "This service will be restored. You can find this service in browse tab. Continue ?"
 });
