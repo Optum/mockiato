@@ -113,11 +113,11 @@ function stripRRPairForReq(rrpair) {
 
 
     //Get relative path to base path for this RRPair
-    var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name + this.model.path;
+    var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name.toLowerCase() + this.model.path;
     var fullIncomingPath = req.baseUrl + req.path;
     var diff = fullIncomingPath.replace(fullBasePath,"");
     if(diff && diff[diff.length-1] == "/"){
-        diff = diff.substring(0,diff.length-1);
+        diff = diff.substring(0,diff.length-1); 
     }
     if(diff.substring(0,1) == "/")
         diff = diff.substring(1);
@@ -137,9 +137,14 @@ function stripRRPairForReq(rrpair) {
     //Start creating req options
     var options = {}
     //Create full URL to remote host
-    options.url = (req.secure ? "https" : "http") + "://" + this.model.remoteHost + ":" + this.model.remotePort + this.model.path + "/" + diff;
+    options.url = (req.secure ? "https" : "http") + "://" + this.model.remoteHost + ":" + this.model.remotePort + this.model.path + (diff ? "/" + diff : "");
     options.method = req.method;
     options.headers = req.headers;
+
+    if(options.headers['content-length'])
+        delete options.headers['content-length'];
+
+    options.qs = req.query;
     if(req._body) options.body = req.body;
 
     //Handle JSON parsed body
@@ -147,64 +152,70 @@ function stripRRPairForReq(rrpair) {
         options.body = JSON.stringify(options.body);
     
     //Make request
-    return new Promise(function(resolve,reject){
+    var promise =  new Promise(function(resolve,reject){
 
         requestNode(options,(function(err,remoteRsp,remoteBody){
-                if(err) { 
-                    console.log(err);
-                    return reject(err);
-                }
-                return resolve(remoteRsp,remoteBody);
-            }).bind(this));
-        }).then((function(remoteRsp,remoteBody){
-            var body = remoteBody || remoteRsp.body;
-            //Collect data for RR Pair
-            myRRPair.resStatus = remoteRsp.statusCode;
-            if(myRRPair.payloadType == "JSON"){
+                
+            if(err) { 
+                return reject(err);
+            }
+            return resolve(remoteRsp,remoteBody);
+        }).bind(this));
 
-                //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
-                try{
-                    myRRPair.resData = JSON.parse(body);
-                }catch(err){
-                    console.log(err);
-                    myRRPair.resData = body;
-                }
-            }else{
+    }).then((function(remoteRsp,remoteBody){
+        var body = remoteBody || remoteRsp.body;
+        //Collect data for RR Pair
+        myRRPair.resStatus = remoteRsp.statusCode;
+        if(myRRPair.payloadType == "JSON"){
+
+            //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+            try{
+                myRRPair.resData = JSON.parse(body);
+            }catch(err){
                 myRRPair.resData = body;
             }
-            myRRPair.resHeaders = remoteRsp.headers;
+        }else{
+            myRRPair.resData = body;
+        }
+        myRRPair.resHeaders = remoteRsp.headers;
+        if(myRRPair.resHeaders['content-type'] == "text")
+            myRRPair.resHeaders['content-type'] = "text/plain";
 
 
-            //Test for duplicate
-            var stripped = stripRRPairForReq(myRRPair);
-            var duplicate = false;
+        //Test for duplicate
+        var stripped = stripRRPairForReq(myRRPair);
+        var duplicate = false;
 
-            for(let rrpair of this.model.service.rrpairs){
-                if(deepEquals(stripRRPairForReq(rrpair),stripped)){
-                    duplicate = true;
-                    break;
-                }
+        for(let rrpair of this.model.service.rrpairs){
+            if(deepEquals(stripRRPairForReq(rrpair),stripped)){
+                duplicate = true;
+                break;
             }
-            //Push RRPair to model, then update our local model  
-            if(!duplicate){
-                Recording.update({_id : this.model._id} ,
-                    {$push: 
-                        {"service.rrpairs":myRRPair}
-                    },(function(error,doc){
-                        if(error)
-                            console.log(error);
-                    }).bind(this));
-            }
+        }
+        //Push RRPair to model, then update our local model  
+        if(!duplicate){
+            Recording.update({_id : this.model._id} ,
+                {$push: 
+                    {"service.rrpairs":myRRPair}
+                },(function(error,doc){
+                    if(error)
+                        console.log(error);
+                }).bind(this));
+        }
 
-            //Send back response to user
-            rsp.status(remoteRsp.statusCode);
-            rsp.set(remoteRsp.headers);
-            if(body){
-                rsp.send(body);
-            }else{
-                rsp.end();
-            }
-        }).bind(this));
+        //Send back response to user
+        rsp.status(remoteRsp.statusCode);
+        rsp.set(remoteRsp.headers);
+        if(body){
+            rsp.send(body);
+        }else{
+            rsp.end();
+        }
+    }).bind(this));
+
+    promise.catch(function(err){
+        handleError(err,rsp,500);
+    });
 };
 
 
