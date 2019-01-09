@@ -44,6 +44,16 @@ const serviceSchema = new mongoose.Schema({
   },
   lastUpdateUser:{
     type: User.schema
+  },liveInvocation:{
+    enabled: Boolean,
+    liveFirst: Boolean,
+    remoteHost : String,
+    remotePort : Number,
+    remoteBasePath : String,
+    failStatusCodes : [Number],
+    failStrings : [String]
+
+    
   }
 },{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
