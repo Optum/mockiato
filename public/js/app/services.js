@@ -624,6 +624,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           //pushing group creator to memberlist
           spec.sut.members = [];
           spec.sut.members.push(authService.getUserInfo().username);
+
           //add new SUT
           $http.post('/api/systems/', spec.sut)
             .then(function (response) {
