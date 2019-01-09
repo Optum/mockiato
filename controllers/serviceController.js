@@ -236,6 +236,9 @@ function addService(req, res) {
     rrpairs: req.body.rrpairs,
     lastUpdateUser: req.decoded
   };
+  if(req.body.liveInvocation){
+    serv.liveInvocation = req.body.liveInvocation;
+  }
 
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
