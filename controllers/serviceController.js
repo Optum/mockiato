@@ -304,6 +304,9 @@ function updateService(req, res) {
     // don't let consumer alter name, base path, etc.
     service.rrpairs = req.body.rrpairs;
     service.lastUpdateUser = req.decoded;
+    if(req.body.liveInvocation){
+      service.liveInvocation = req.body.liveInvocation;
+    }
     if (req.body.matchTemplates) {
       service.matchTemplates = req.body.matchTemplates;
     }

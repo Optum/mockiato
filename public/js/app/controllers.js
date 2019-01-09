@@ -460,7 +460,38 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       txnCount: service.txnCount,
                       basePath: service.basePath,
                       
+                      
                     };
+                    
+                    if(service.liveInvocation){
+                      
+                      $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+                      $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+                      $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+                      $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+
+                      //Extract and build out codes/strings for failures
+                      var failStatusCodes = service.liveInvocation.failStatusCodes;
+                      var failStrings = service.liveInvocation.failStrings;
+                      $scope.servicevo.failStatuses = [];
+                      $scope.servicevo.failStrings = [];
+                      for(var i = 0; i < failStatusCodes.length; i++){
+                        $scope.servicevo.failStatuses[i] = {'id': i, 'val' : failStatusCodes[i]};
+
+                      }
+                      for(var i = 0; i < failStrings.length; i++){
+                        $scope.servicevo.failStrings[i] = {'id': i, 'val' : failStrings[i]};
+                      }
+
+                      //Select correct radio
+                      if(service.liveInvocation.liveFirst)
+                        $scope.servicevo.liveInvokePrePost = 'PRE';
+                      else  
+                        $scope.servicevo.liveInvokePrePost = 'POST';
+                      
+                    }
+                    console.log($scope.servicevo);
+
                   
                   $scope.myUser = authService.getUserInfo().username;
                 
@@ -505,8 +536,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
                     $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
-                    $scope.servicevo.failStatuses = [{val:''}];
-                    $scope.servicevo.failStrings = [{val:''}];
 
 
                     if (service.matchTemplates && service.matchTemplates.length) {
