@@ -811,7 +811,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 .then(function (response) {
                   console.log(response.data);
                   for (var i = 0; i < response.data.length; i++) {
-                    var owner = response.data[i].user.uid;
+                    var owner = ["mockiato", response.data[i].user.uid];//change superuser name if neccesary
                     var sut = response.data[i].sut.name;
                     
                     if (sutnames.includes(sut)){
