@@ -52,6 +52,11 @@ function updateGroup(req, res){
 }
 
 function addSystem(req, res) {
+  //adds super user to all groups created
+  if (process.env.MOCKIATO_ADMIN){
+    req.body.members.unshift(process.env.MOCKIATO_ADMIN);
+  }
+  
   const sut = {
     name: req.body.name,
     members: req.body.members
@@ -69,7 +74,6 @@ function addSystem(req, res) {
             handleError(err, res, 500);
             return;
           }
-
       });
     }
     res.json(system);
