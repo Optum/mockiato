@@ -51,7 +51,8 @@ const serviceSchema = new mongoose.Schema({
     remotePort : Number,
     remoteBasePath : String,
     failStatusCodes : [Number],
-    failStrings : [String]
+    failStrings : [String],
+    ssl: Boolean
 
     
   }

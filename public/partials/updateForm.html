@@ -100,9 +100,10 @@
   </div>
   
   <div id="live_invocation_fields"  ng-show="servicevo.liveInvocationCheck">
-
+    
+    <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
     <div class="form-group row">
-      <label for="service_preorpost" class="col-xs-2 col-form-label">Service Type:</label>
+      <label for="service_preorpost" class="col-xs-2 col-form-label">Invoke Pre or Post Virtual:</label>
       <div class="col-xs-8">
         <div class="radio">
           <label class="move-radios">
@@ -182,6 +183,14 @@
           </fieldset>
         </div>
       </div>
+      <div class="form-group row">
+        <label for="system_under_test" class="col-xs-2 col-form-label">Use HTTPS:</label>
+        <div class="col-xs-3">
+          <input type="checkbox" id="sutcheck" ng-model="servicevo.invokeSSL">
+        </div>
+      </div>
+      
+    <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
   </div>
 
   <div class="form-group row">

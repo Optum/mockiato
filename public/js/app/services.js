@@ -342,6 +342,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     remoteBasePath : servicevo.remotePath,
                     failStatusCodes : failCodesArray,
                     failStrings : failStringsArray,
+                    ssl : servicevo.invokeSSL,
                     liveFirst : servicevo.liveInvokePrePost == 'PRE'
                   };
                   

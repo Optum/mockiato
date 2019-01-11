@@ -129,17 +129,18 @@
     </div>
     
     <div id="live_invocation_fields"  ng-show="servicevo.liveInvocationCheck">
-  
-      <div class="form-group row">
-        <label for="service_preorpost" class="col-xs-2 col-form-label">Service Type:</label>
+      
+    <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+      <div class="form-group req row">
+        <label for="service_preorpost" class="col-xs-2 col-form-label">Invoke Pre or Post Virtual:</label>
         <div class="col-xs-8">
           <div class="radio">
             <label class="move-radios">
-                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'PRE'">
+                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'PRE'" ng-required="!liveInvokePrePost.servicevo">
                   Use Live Service First
             </label>
             <label class="move-radios">
-                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'POST'">
+                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'POST'" ng-required="!liveInvokePrePost.servicevo">
                   Use Virtual Service First
             </label>
           </div>
@@ -147,21 +148,21 @@
         
       </div>
   
-      <div class="form-group row">
+      <div class="form-group req row">
         <label for="remote_host" class="col-xs-2 col-form-label">Remote Host:</label>
         <div class="col-xs-3">
           <input required type="text" id="service_name" class="form-control" ng-model="servicevo.remoteHost" placeholder="Enter Remote Hostname">
         </div>
     
       </div>
-      <div class="form-group row">
+      <div class="form-group req row">
         <label for="remote_port" class="col-xs-2 col-form-label">Remote Port:</label>
         <div class="col-xs-3">
           <input required type="text" id="service_name" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Host Port">
         </div>
       </div>
   
-      <div class="form-group row">
+      <div class="form-group req row">
         <label for="remote_port" class="col-xs-2 col-form-label">Remote Base Path:</label>
         <div class="col-xs-5">
           <input required type="text" id="service_name" class="form-control" ng-model="servicevo.remotePath" placeholder="Enter Remote Base Path">
@@ -211,6 +212,13 @@
             </fieldset>
           </div>
         </div>
+        <div class="form-group row">
+          <label for="system_under_test" class="col-xs-2 col-form-label">Use HTTPS:</label>
+          <div class="col-xs-3">
+            <input type="checkbox" id="sutcheck" ng-model="servicevo.invokeSSL">
+          </div>
+        </div>
+        
     </div>
 
   <!-- begin req / res pairs -->
