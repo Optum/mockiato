@@ -19,15 +19,9 @@
     <div class="form-group req row">
         <label for="system_under_test" class="col-xs-2 col-form-label">Group</label>
         <div class="col-xs-3">
-            <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="bulkUpload.sut" ng-options="sut.name for sut in sutlist" >
+            <select required class="form-control" id="system_under_test" ng-model="bulkUpload.sut" ng-options="sut.name for sut in sutlist" >
                 <option selected="selected" disabled="true">Select Group</option>
             </select>
-            <input ng-show="sutChecked" required type="text" ng-pattern="/^\S*$/" id="system_under_test" class="form-control" ng-model="bulkUpload.sut.name" placeholder="Enter group name(no spaces)" ng-change="checkDuplicateGroup()" ng-blur="checkDuplicateGroup()" ng-mouseleave="checkDuplicateGroup()">
-        </div>
-        <div class="col-xs-3">
-            <p>Check to create new Group
-                &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked" ng-click="dropdown()"><div style='color:#b40037;font-weight:normal;font-size: 13px;' ng-show="groupMessage && sutChecked">{{groupMessage}}</div>
-            </p>
         </div>
     </div>
 
@@ -61,7 +55,7 @@
     <br>
     <div class="form-group row">
         <div class="col-sm-12">
-            <button ng-disabled="form.$invalid || !uploadRRPair || uploadSuccessMessage == '' || (groupMessage && sutChecked)" type="button" class="btn btn-xl btn-success center-block" ng-click="publishExtractedRRPairFiles(bulkUpload)">Publish</button>
+            <button ng-disabled="form.$invalid || !uploadRRPair || uploadSuccessMessage == '' " type="button" class="btn btn-xl btn-success center-block" ng-click="publishExtractedRRPairFiles(bulkUpload)">Publish</button>
         </div>
     </div>
 </form>

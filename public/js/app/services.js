@@ -472,8 +472,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('sutService', ['sutFactory', 'groupFactory', '$http', '$q',
-        function(sutFactory, groupFactory, $http, $q) {
+    .service('sutService', ['sutFactory', 'groupFactory', 'authService' , 'servConstants' , '$http', '$q',
+        function(sutFactory, groupFactory, authService, servConstants, $http, $q) {
            
             this.getAllSUT = function() {
                 var sutlist = sutFactory.getAllSUT();
@@ -506,6 +506,30 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   console.log(err);
                 });
             }
+
+
+
+            this.addGroup = function(createSut){
+
+            createSut.members = authService.getUserInfo().username;
+           
+            $http.post('/api/systems/' , createSut)
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').modal('toggle');
+            });}
+
+          
+            this.deleteGroup = function(deleteSut){
+              var token = authService.getUserInfo().token;
+             return  $http.delete('/api/systems/' +'?token=' + token, deleteSut);
+            };
+            
     }])
 
     .service('zipUploadAndExtractService', ['$http', '$location', 'authService', 'servConstants',
