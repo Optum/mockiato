@@ -1,55 +1,12 @@
 const mongoose = require('mongoose');
 
-const User = require('./User');
-const System = require('./System');
-const RRPair = require('../http/RRPair');
-const MQPair = require('../mq/MQPair');
-const MQInfo = require('../mq/MQInfo');
+const Service = require('../http/Service');
+const MQService = require('../mq/MQService');
 
 const archiveSchema = new mongoose.Schema({
-  sut: System.schema,
-  user: User.schema,
-  name: { 
-    type: String, 
-    index: true
-  },
-  type: String,
-  basePath: { 
-    type: String, 
-    index: true
-  },
-  matchTemplates: [mongoose.Schema.Types.Mixed],
-  rrpairs: [RRPair.schema],
-  delay: {
-    // force integer only
-    type: Number,
-    default: 0,
-    get: function(v) { return Math.round(v); },
-    set: function(v) { return Math.round(v); }
-  },
-  delayMax: {
-    // force integer only
-    type: Number,
-    default: 0,
-    get: function(v) { return Math.round(v); },
-    set: function(v) { return Math.round(v); }
-  },
-  txnCount: {
-    type: Number,
-    default: 0,
-    get: function(v) { return Math.round(v); },
-    set: function(v) { return Math.round(v); }
-  },
-  running: {
-    type: Boolean,
-    default: true
-  },
-  lastUpdateUser:{
-    type: User.schema
-  },
-  connInfo: MQInfo.schema,
-  mqRRpairs: [MQPair.schema]
-},{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
+    service: Service.schema,
+    mqservice: MQService.schema,
+});
 
 archiveSchema.set('usePushEach', true);
 module.exports = mongoose.model('Archive', archiveSchema);

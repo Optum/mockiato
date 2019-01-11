@@ -448,7 +448,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               this.getService = function() {
                   apiHistoryService.getArchiveServiceById($routeParams.id)
                   .then(function(response) {
-                      var service = response.data;
+                      var service;
+                      if(response.data.service) service = response.data.service;
+                      if(response.data.mqservice) service = response.data.mqservice;
                       console.log(service);
                       $scope.servicevo = {
                         id: service._id,
@@ -593,85 +595,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
 
 
-                      service.mqRRpairs.forEach(function(rr){
-                        rr.id = rrid;
-                        rr.queriesArr = [];
-                        rr.reqHeadersArr = [];
-                        rr.resHeadersArr = [];
-                        rr.method = rr.verb;
-  
-                        if (rr.payloadType === 'JSON') {
-                          rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
-                          rr.responsepayload = JSON.stringify(rr.resData, null, 4);
-  
-                          //Handle empty JSON object- stringify surrounds in "" 
-                          if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
-                            rr.responsepayload = rr.responsepayload.substring(1,3);
-                          }
-                        }
-                        else {
-                          rr.requestpayload = rr.reqData;
-                          rr.responsepayload = rr.resData;
-                        }
-  
-                        // map object literals to arrays for Angular view
-                        if (rr.reqHeaders) {
-                          var reqHeads = Object.entries(rr.reqHeaders);
-                          var reqHeadId = 0;
-                          reqHeads.forEach(function(elem){
-                            var head = {};
-  
-                            head.id = reqHeadId;
-                            head.k = elem[0];
-                            head.v = elem[1];
-  
-                            rr.reqHeadersArr.push(head);
-                            reqHeadId++;
-                          });
-                        }
-                        else {
-                          rr.reqHeadersArr.push({ id: 0 });
-                        }
-  
-                        if (rr.resHeaders) {
-                          var resHeads = Object.entries(rr.resHeaders);
-                          var resHeadId = 0;
-                          resHeads.forEach(function(elem){
-                            var head = {};
-  
-                            head.id = resHeadId;
-                            head.k = elem[0];
-                            head.v = elem[1];
-  
-                            rr.resHeadersArr.push(head);
-                            resHeadId++;
-                          });
-                        }
-                        else {
-                          rr.resHeadersArr.push({ id: 0 });
-                        }
-  
-                        if (rr.queries) {
-                          var qs = Object.entries(rr.queries);
-                          var qId = 0;
-                          qs.forEach(function(elem){
-                            var q = {};
-  
-                            q.id = qId;
-                            q.k = elem[0];
-                            q.v = elem[1];
-  
-                            rr.queriesArr.push(q);
-                            qId++;
-                          });
-                        }
-                        else {
-                          rr.queriesArr.push({ id: 0 });
-                        }
-  
-                        $scope.servicevo.rawpairs.push(rr);
-                        rrid++;
-                      });
+                      
 
 
                   })
@@ -1635,7 +1559,12 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     .then(function(response) {
                         var data = response.data;
                         console.log(data);
-                        $scope.servicelist = data;
+                        var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                        $scope.servicelist = arryListOfService;
                       })
 
                     .catch(function(err) {
@@ -1645,11 +1574,15 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
                 else if (user && !sut) {
                     apiHistoryService.getServiceByArchiveUser(user.name)
-
                     .then(function(response) {
                       var data = response.data;
                       console.log(data);
-                      $scope.servicelist = data;
+                      var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                      $scope.servicelist = arryListOfService;
                     })
 
                     .catch(function(err) {
@@ -1663,7 +1596,12 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     .then(function(response) {
                       var data = response.data;
                       console.log(data);
-                      $scope.servicelist = data;
+                      var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                      $scope.servicelist = arryListOfService;
                     })
 
                     .catch(function(err) {
@@ -1769,14 +1707,13 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.serviceInfo = function(serviceID) {
               console.log('printing service id: ' + serviceID);
                 $http.get('/api/services/infoFrmArchive/' + serviceID)
-
                 .then(function(response) {
                     var data = response.data;
                     console.log(data);
-                    feedbackService.displayServiceInfo(data);
+                    if(data.service)feedbackService.displayServiceInfo(data.service);
+                    if(data.mqservice)feedbackService.displayServiceInfo(data.mqservice);
                     $('#serviceInfo-modal').modal('toggle');
                 })
-
                 .catch(function(err) {
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);

@@ -39,26 +39,17 @@ function getServiceById(req, res) {
 }
 
 function getArchiveServiceInfo(req, res) {
-  // call find by id function for db
-  Archive.findById(req.params.id, function (err, service) {
+  // call find by id of service or mqservice function for db
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.find(query, function (err, services) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
 
-      if (service) {
-        return res.json(service);
+      if (services) {
+        return res.json(services[0]);
       }
-      // else {
-      //   MQService.findById(req.params.id, function(error, mqService) {
-      //     if (error)	{
-      //       handleError(error, res, 500);
-      //       return;
-      //     }
-
-      //     return res.json(mqService);
-      //   });
-      // }
   });
 }
 
@@ -92,30 +83,13 @@ function getServicesByUser(req, res) {
 
 function getArchiveServicesByUser(req, res) {
   let allServices = [];
-
-  const query = { 'user.uid': req.params.uid };
-
+  const query = { $or: [ { 'service.user.uid': req.params.uid }, { 'mqservice.user.uid': req.params.uid } ] };
   Archive.find(query, function(err, services) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
-
     allServices = services;
-
-    // MQArchive.find(query, function(error, mqServices) {
-    //   if (error)	{
-    //     handleError(error, res, 500);
-    //     return;
-    //   }
-
-    //   if (mqServices.length) {
-    //     allServices = allServices.concat(mqServices);
-    //   }
-
-    //   return res.json(allServices);
-    // });
-
     return res.json(allServices);
   });
 }
@@ -151,7 +125,7 @@ function getServicesBySystem(req, res) {
 function getServicesArchiveBySystem(req, res) {
   let allServices = [];
 
-  const query = { 'sut.name': req.params.name };
+  const query = { $or: [ { 'service.sut.name': req.params.name }, { 'mqservice.sut.name': req.params.name } ] };
 
   Archive.find(query, function(err, services) {
     if (err) {
@@ -160,19 +134,6 @@ function getServicesArchiveBySystem(req, res) {
     }
 
     allServices = services;
-
-    // MQArchive.find(query, function(error, mqServices) {
-    //   if (error)	{
-    //     handleError(error, res, 500);
-    //     return;
-    //   }
-
-    //   if (mqServices.length) {
-    //     allServices = allServices.concat(mqServices);
-    //   }
-    //   return res.json(allServices);
-    //   });
-
     return res.json(allServices);
   });
 }
@@ -212,37 +173,18 @@ function getServicesByQuery(req, res) {
 }
 
 function getArchiveServices(req, res) {
-  const query = {};
-
   const sut  = req.query.sut;
   const user = req.query.user;
 
-  if (sut) query['sut.name']  = sut;
-  if (user) query['user.uid'] = user;
+  const query = { $or: [ { 'service.sut.name': sut }, { 'mqservice.sut.name': sut },{ 'service.user.uid': user }, 
+            { 'mqservice.user.uid': user } ] };
 
-  // call find function with queries
-  let allServices = [];
   Archive.find(query, function(err, services)	{
       if (err)	{
         handleError(err, res, 500);
         return;
       }
-
-      allServices = services;
-
-      // MQArchive.find(query, function(error, mqServices) {
-      //   if (error)	{
-      //     handleError(error, res, 500);
-      //     return;
-      //   }
-  
-      //   if (mqServices.length) {
-      //     allServices = allServices.concat(mqServices);
-      //   }
-      //   return res.json(allServices);
-      // });
-
-      return res.json(allServices);
+      return res.json(services);
   });
 }
 
@@ -504,20 +446,9 @@ function deleteService(req, res) {
     }
     
     if (service) {
-      let archive  = {
-        sut: service.sut,
-        user: service.user,
-        name: service.name,
-        type: service.type,
-        delay: service.delay,
-        delayMax: service.delayMax,
-        basePath: service.basePath,
-        txnCount: 0,
-        running: false,
-        matchTemplates: service.matchTemplates,
-        rrpairs: service.rrpairs,
-        lastUpdateUser: service.lastUpdateUser
-      };
+      service.txnCount=0;
+      service.running=false;
+      let archive  = {service:service};
       Archive.create(archive, function (err, callback) {
         if (err) {
           handleError(err, res, 500);
@@ -537,16 +468,8 @@ function deleteService(req, res) {
     else {
       MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
         if (error) debug(error);
-        let archive  = {
-          sut: mqService.sut,
-          user: mqService.user,
-          name: mqService.name,
-          type: mqService.type,
-          running: false,
-          matchTemplates: mqService.matchTemplates,
-          mqRRpairs: mqService.rrpairs,
-          connInfo: mqService.connInfo
-        };
+        mqService.running=false;
+        let archive  = {mqservice:mqService};
         Archive.create(archive, function (err, callback) {
           if (err) {
             handleError(err, res, 500);
@@ -559,59 +482,51 @@ function deleteService(req, res) {
 }
 
 function restoreService(req, res) {
-  Archive.findById(req.params.id, function(err, service)	{
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.findOneAndRemove(query, function(err, archive)	{
     if (err)	{
       handleError(err, res, 500);
       return;
     }
-    
-    if (service.type !== 'MQ') {
-      let archive  = {
-        sut: service.sut,
-        user: service.user,
-        name: service.name,
-        type: service.type,
-        delay: service.delay,
-        delayMax: service.delayMax,
-        basePath: service.basePath,
+    if (archive.service) {
+      let newService  = {
+        sut: archive.service.sut,
+        user: archive.service.user,
+        name: archive.service.name,
+        type: archive.service.type,
+        delay: archive.service.delay,
+        delayMax: archive.service.delayMax,
+        basePath: archive.service.basePath,
         txnCount: 0,
         running: false,
-        matchTemplates: service.matchTemplates,
-        rrpairs: service.rrpairs,
-        lastUpdateUser: service.lastUpdateUser
+        matchTemplates: archive.service.matchTemplates,
+        rrpairs: archive.service.rrpairs,
+        lastUpdateUser: archive.service.lastUpdateUser
       };
-      Service.create(archive, function (err, callback) {
+      Service.create(newService, function (err, callback) {
         if (err) {
           handleError(err, res, 500);
         }
       });
-
-      Archive.findOneAndRemove({ _id: req.params.id }, function(error, oldService) {
-        if (error) debug(error);
-        res.json({ 'message' : 'deleted', 'id' : oldService._id });
-        //syncWorkers(oldService, 'delete');
-      });
+      res.json({ 'message' : 'restored', 'id' : archive.service._id });
     }
     else {
-      Archive.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
-        if (error) debug(error);
-        let archive  = {
-          sut: mqService.sut,
-          user: mqService.user,
-          name: mqService.name,
-          type: mqService.type,
+        let newMQService  = {
+          sut: archive.mqservice.sut,
+          user: archive.mqservice.user,
+          name: archive.mqservice.name,
+          type: archive.mqservice.type,
           running: false,
-          matchTemplates: mqService.matchTemplates,
-          rrpairs: mqService.mqRRpairs,
-          connInfo: mqService.connInfo
+          matchTemplates: archive.mqservice.matchTemplates,
+          rrpairs: archive.mqservice.rrpairs,
+          connInfo: archive.mqservice.connInfo
         };
-        MQService.create(archive, function (err, callback) {
+        MQService.create(newMQService, function (err, callback) {
           if (err) {
             handleError(err, res, 500);
           }
         });
-        res.json({ 'message' : 'deleted', 'id' : mqService._id });
-      });
+        res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
     }
   });
 }
