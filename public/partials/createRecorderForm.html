@@ -71,6 +71,14 @@
     </div>
   </div>
 
+  <div class="form-group row"  ng-show="servicevo.type !== 'MQ'">
+    <label for="system_under_test" class="col-xs-2 col-form-label">Use SSL:</label>
+
+    
+    <div class="col-xs-3">
+        <input type="checkbox" id="sutcheck" ng-model="servicevo.ssl">
+    </div>
+  </div>
 
   <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
     
