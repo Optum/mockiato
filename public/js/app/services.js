@@ -122,7 +122,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
           this.displayRecorderInfo = function(data){
             $rootScope.virt.operations = [];
-            $rootScope.virt.baseUrl = '/recording/live/' + data.sut.name + data.path;
+            $rootScope.virt.baseUrl = '/recording/live/' + data.sut.name.toLowerCase() + data.path;
             $rootScope.virt.delay= data.delay;
             $rootScope.virt.delayMax= data.delayMax;
             $rootScope.virt.type = data.protocol;
@@ -648,6 +648,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           //pushing group creator to memberlist
           spec.sut.members = [];
           spec.sut.members.push(authService.getUserInfo().username);
+
           //add new SUT
           $http.post('/api/systems/', spec.sut)
             .then(function (response) {

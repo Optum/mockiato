@@ -136,7 +136,7 @@
       </div>
     </div>
 
-    <div class="form-group row">
+    <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
         <label for="service_method" class="col-xs-2 col-form-label">Label:</label>
         <div class="col-xs-3">
           <input type="text" id="service_path" class="form-control" ng-model="rr.label" placeholder="Enter Label for this RR Pair">
