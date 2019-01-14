@@ -1534,13 +1534,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     var sut = response.data[i].sut.name;
                     
                     if (sutnames.includes(sut)){
-                      console.log("------------------------------------");
                       console.log("sut "+ sut + " exists");
                       console.log(owner + " will be added to group: " + sut);
                       sutService.updateGroup(sut, owner);
                     }
                     else{
-                      console.log("------------------------------------");
                       console.log("sut " + sut + " does not exist");
                     }
                   }
@@ -1630,6 +1628,17 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   .catch(function (err) {
                     console.log(err);
                   });
+
+
+                  $http.get('/api/users/admin')
+                    .then(function(response) {
+                        $scope.adminUser = response.data;
+                        })
+    
+                  .catch(function(err) {
+                      console.log(err);
+                  });
+
             };
             $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
@@ -1639,26 +1648,26 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $scope.servicelist = [];
             };
 
-          // $scope.deleteService = function (service) {
-          //   $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-          //   $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_Permanent_CONFIRM_BODY);
-          //   $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-          //   $('#genricMsg-dialog').modal('toggle');
-          //   $('#modal-btn-yes').on("click", function () {
-          //     apiHistoryService.deleteServiceArchive(service)
-          //       .then(function (response) {
-          //         var data = response.data;
-          //         console.log(data);
-          //         $scope.servicelist.forEach(function (elem, i, arr) {
-          //           if (elem._id === data.id)
-          //             arr.splice(i, 1);
-          //         });
-          //       })
-          //       .catch(function (err) {
-          //         console.log(err);
-          //       });
-          //   });
-          // };
+          $scope.deleteArchiveService = function (service) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_Permanent_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            $('#modal-btn-yes').on("click", function () {
+              apiHistoryService.deleteServiceArchive(service)
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist.forEach(function (elem, i, arr) {
+                    if (elem._id === data.id)
+                      arr.splice(i, 1);
+                  });
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            });
+          };
 
           $scope.restoreService = function (service) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
@@ -1753,6 +1762,6 @@ ctrl.constant("ctrlConstants", {
   "IMPORT_ERR_MSG" : "You should upload only correct json file.",
   "SUCCESS" : "success",
   "GRP_ALREADY_EXIST_MSG" : "Group Name Already exist.",
-  //"DEL_Permanent_CONFIRM_BODY" : "This service will be deleted permanently. Do you want to continue ?",
+  "DEL_Permanent_CONFIRM_BODY" : "This service will be deleted permanently. Do you want to continue ?",
   "RESTORE_CONFIRM_BODY" : "This service will be restored. You can find this service in browse tab. Continue ?"
 });

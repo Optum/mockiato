@@ -753,28 +753,17 @@ function createFromOpenAPI(spec) {
 }
 
 //Permanenet delete from Archieve. Not required right now.
-// function permanentDeleteService(req, res) {
-//   Archive.findById(req.params.id, function(err, service)	{
-//     if (err)	{
-//       handleError(err, res, 500);
-//       return;
-//     }
-
-//     if (service) {
-//       Archive.findOneAndRemove({ _id: req.params.id }, function(error, oldService) {
-//         if (error) debug(error);
-//         res.json({ 'message' : 'deleted', 'id' : oldService._id });
-//         //syncWorkers(oldService, 'delete');
-//       });
-//     }
-//     else {
-//       MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
-//         if (error) debug(error);
-//         res.json({ 'message' : 'deleted', 'id' : mqService._id });
-//       });
-//     }
-//   });
-// }
+function permanentDeleteService(req, res) {
+  // call find by id of service or mqservice function for db
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.findOneAndRemove(query, function (err, service) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+    res.json({ 'message' : 'deleted', 'id' : service._id });
+  });
+}
 
 module.exports = {
   getServiceById: getServiceById,
@@ -793,6 +782,6 @@ module.exports = {
   publishExtractedRRPairs: publishExtractedRRPairs,
   specUpload: specUpload,
   publishUploadedSpec: publishUploadedSpec,
-  //permanentDeleteService: permanentDeleteService,
+  permanentDeleteService: permanentDeleteService,
   restoreService: restoreService
 };

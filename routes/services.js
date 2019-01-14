@@ -34,8 +34,8 @@ router.post('/publishUploadedSpec', servCtrl.publishUploadedSpec);
 // retrieve archive services
 router.get('/archive', servCtrl.getArchiveServices);
 
-// delete a virtual service from Archive
-// router.delete('/deleteFrmArchive/:id', servCtrl.permanentDeleteService);
+//delete a virtual service from Archive
+router.delete('/deleteFrmArchive/:id', servCtrl.permanentDeleteService);
 
 // restore a virtual service from Archive
 router.delete('/restoreFrmArchive/:id', servCtrl.restoreService);
