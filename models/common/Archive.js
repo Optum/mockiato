@@ -6,6 +6,7 @@ const MQService = require('../mq/MQService');
 const archiveSchema = new mongoose.Schema({
     service: Service.schema,
     mqservice: MQService.schema,
+    createdAt: { type: Date, default: Date.now }
 });
 
 archiveSchema.set('usePushEach', true);
