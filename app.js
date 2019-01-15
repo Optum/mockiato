@@ -169,7 +169,7 @@ function init() {
   if (process.env.MOCKIATO_MODE !== 'single' && process.env.NODE_APP_INSTANCE === '0') {
     let priorDate_30days = new Date(new Date().setDate(new Date().getDate() - 30));
     let rule = process.env.MOCKIATO_ARCHIVE;
-    let archive_Job = schedule.scheduleJob(rule, function(){
+    schedule.scheduleJob(rule, function(){
       console.log('******cron job run for cleaning Archive collection by only master cluster (single process)****** Node Instance Id :- --'+ process.env.NODE_APP_INSTANCE);
       const query =  { 'createdAt': { $lt: priorDate_30days } };
       Archive.find(query, function(error, services) {
@@ -185,7 +185,7 @@ function init() {
    /*     else if(process.env.MOCKIATO_MODE === 'single'){
             let priorDate_30days = new Date(new Date().setDate(new Date().getDate() - 30));
             let rule = process.env.MOCKIATO_ARCHIVE;
-            var archive_Job = schedule.scheduleJob(rule, function(){
+            schedule.scheduleJob(rule, function(){
               console.log('******cron job run for cleaning Archive collection on single instance mode');
               const query =  { 'createdAt': { $lt: priorDate_30days } };
               Archive.find(query, function(error, services) {
