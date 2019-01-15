@@ -324,7 +324,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     matchTemplates: templates,
                     rrpairs: rrpairs
                 };
-                if(servicevo.liveInvocationCheck){
                   failStringsArray = [];
                   servicevo.failStrings.forEach(function(item){
                     failStringsArray.push(item.val);
@@ -336,7 +335,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                   servData.liveInvocation = 
                   {
-                    enabled : true,
+                    enabled : servicevo.liveInvocationCheck,
                     remoteHost : servicevo.remoteHost,
                     remotePort : servicevo.remotePort,
                     remoteBasePath : servicevo.remotePath,
@@ -346,7 +345,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     liveFirst : servicevo.liveInvokePrePost == 'PRE'
                   };
                   
-                }
+                
 
                 // publish the virtual service
                 var token = authService.getUserInfo().token;
