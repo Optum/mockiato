@@ -756,12 +756,13 @@ function createFromOpenAPI(spec) {
 function permanentDeleteService(req, res) {
   // call find by id of service or mqservice function for db
   const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
-  Archive.findOneAndRemove(query, function (err, service) {
+  Archive.findOneAndRemove(query, function (err, archive) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
-    res.json({ 'message' : 'deleted', 'id' : service._id });
+    if(archive.service) res.json({ 'message' : 'deleted', 'id' : archive.service._id });
+    else if(archive.mqservice) res.json({ 'message' : 'deleted', 'id' : archive.mqservice._id });
   });
 }
 
