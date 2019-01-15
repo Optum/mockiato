@@ -5,117 +5,10 @@ const debug = require('debug')('matching');
 const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
 const logger = require('../winston');
-const requestNode = require('request');
+const invoke = require('./invoke');
 
 
-/**
- * Takes a response from a remote host and maps into express's response to give to the client
- * @param {*} remoteRsp Response from remote host
- * @param {*} rsp Express response
- */
-function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
-  var body = remoteBody || remoteRsp.body;
-  rsp.status(remoteRsp.statusCode);
-  
-  rsp.set(remoteRsp.headers);
-  if(remoteRsp.headers['content-type'] == "text"){
-    rsp.set('content-type','text/plain');
-  }
-  if(body){
-      rsp.send(body);
-  }else{
-      rsp.end();
-  }
-}
 
-
-/**
- * Makes a backend request based on the incoming request and the service associated. 
- * Returns promise for response
- * @param {*} service Service associated with this request
- * @param {*} req Express request
- */
-function invokeBackend(service,req){
-  
-    //Extract and convert req params to options for our remote request
-    var options = {};
-    options.method = req.method;
-    options.headers = req.headers;
-  
-    if(options.headers['content-length'])
-      delete options.headers['content-length'];
-  
-    options.qs = req.query;
-  
-    if(req._body) 
-      options.body = req.body;
-  
-    //Handle JSON parsed body
-    if(typeof options.body != "string")
-      options.body = JSON.stringify(options.body);
-  
-    //Build URL
-    var invokeOptions = service.liveInvocation;
-    var reg = new RegExp("/" + service.sut.name,"i");
-    var basePath = service.basePath.replace(reg,"");
-    if(service.liveInvocation.remoteBasePath){
-      basePath = service.liveInvocation.remoteBasePath;
-    }
-  
-    //Find subpath + append
-    var diffReg = new RegExp(service.basePath,'i');
-    var diff = req.path.replace(diffReg,"");
-    var url = (invokeOptions.ssl ? "https://" : "http://") + invokeOptions.remoteHost + ":" + invokeOptions.remotePort + basePath + diff;
-    options.url = url;
-  
-    //Make request, return promise
-    return new Promise(function(resolve,reject){
-      
-              requestNode(options,(function(err,remoteRsp,remoteBody){
-                      
-                  if(err) { 
-                      return reject(err);
-                  }
-                  return resolve(remoteRsp,remoteBody);
-              }).bind(this));
-      
-          });
-  
-  
-  
-  }
-  
-  /**
-   * Invokes the backend specified in this service, and responds with response if successful
-   * Returns promise. Promise rejects if this service fails (either error or matches a failure code/string), resolves otherwise.
-   * @param {*} service Service associated with this request
-   * @param {*} req Express request
-   * @param {*} rsp Express response
-   */
-  function invokeBackendVerify(service,req,rsp){
-  
-    //Make request
-    var request = invokeBackend(service,req);
-    return new Promise(function(resolve,reject){
-      request.then(function(remoteRsp,remoteRspBody){
-  
-        //Check for failure status codes + strings
-        var remoteStatus = remoteRsp.statusCode;
-        if(service.liveInvocation.failStatusCodes.includes(remoteStatus)){
-          reject(new Error("Found Status Code " + remoteStatus));
-        }
-        service.liveInvocation.failStrings.forEach(function(failString){
-          if((remoteRspBody && remoteRspBody.includes(failString)) || (remoteRsp.body && remoteRsp.body.includes(failString))){
-            reject(new Error("Found String " + failString + " in response body."));
-          }
-        });
-  
-        resolve(remoteRsp,remoteRspBody);
-      },function(err){
-        reject(err);
-      });
-    });
-  }
   
 // function to simulate latency
 function delay(ms,msMax) {
@@ -360,11 +253,11 @@ function registerRRPair(service, rrpair) {
 
     //If live invocation is enabled, and invoke first is selected, and we haven't run this yet...
     if(service.liveInvocation && service.liveInvocation.enabled && service.liveInvocation.liveFirst &&  !req._mockiatoLiveInvokeHasRun){
-      var prom = invokeBackendVerify(service,req);
+      var prom = invoke.invokeBackendVerify(service,req);
       req._mockiatoLiveInvokeHasRun = true;
       prom.then(function(remoteRsp,remoteRspBody){
         resp.set('_mockiato-is-live-backend','true');
-        mapRemoteResponseToResponse(resp,remoteRsp,remoteRspBody);
+        invoke.mapRemoteResponseToResponse(resp,remoteRsp,remoteRspBody);
         
       },function(err){
         resp.set('_mockiato-is-live-backend','false');
@@ -392,10 +285,14 @@ function registerAllRRPairsForAllServices() {
           service.rrpairs.forEach(function(rrpair){
             registerRRPair(service, rrpair);
           });
+          if(service.liveInvocation && service.liveInvocation.enabled){
+            invoke.registerServiceInvoke(service);
+          }
         }
       });
     }
     catch(e) {
+      console.log(e);
       logEvent('Error registering services: ' + e);
     }
   });
@@ -440,8 +337,5 @@ module.exports = {
   registerRRPair: registerRRPair,
   deregisterRRPair: deregisterRRPair,
   deregisterService: deregisterService,
-  registerAllRRPairsForAllServices: registerAllRRPairsForAllServices,
-  invokeBackend : invokeBackend,
-  invokeBackendVerify : invokeBackendVerify,
-  mapRemoteResponseToResponse: mapRemoteResponseToResponse
+  registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
 };

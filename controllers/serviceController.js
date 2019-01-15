@@ -11,6 +11,8 @@ const request = require('request');
 const fs   = require('fs');
 const unzip = require('unzip2');
 const YAML = require('yamljs');
+const invoke = require('../routes/invoke'); 
+
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -204,9 +206,13 @@ function syncWorkers(service, action) {
   manager.messageAll(msg)
     .then(function(workerIds) {
       virtual.deregisterService(service);
+      invoke.deregisterServiceInvoke(service);
 
       if (action === 'register') {
         virtual.registerService(service);
+        if(service.liveInvocation && service.liveInvocation.enabled){
+          invoke.registerServiceInvoke(service);
+        }
       }
       else {
         Service.findOneAndRemove({_id : service._id }, function(err)	{
