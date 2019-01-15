@@ -1,7 +1,6 @@
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
-const requestNode = require('request');
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
@@ -630,93 +629,6 @@ function createFromOpenAPI(spec) {
   return oas.parse(spec);
 }
 
-/**
- * Makes a backend request based on the incoming request and the service associated. 
- * Returns promise for response
- * @param {*} service Service associated with this request
- * @param {*} req Express request
- */
-function invokeBackend(service,req){
-
-  //Extract and convert req params to options for our remote request
-  var options = {};
-  options.method = req.method;
-  options.headers = req.headers;
-
-  if(options.headers['content-length'])
-    delete options.headers['content-length'];
-
-  options.qs = req.query;
-
-  if(req._body) 
-    options.body = req.body;
-
-  //Handle JSON parsed body
-  if(typeof options.body != "string")
-    options.body = JSON.stringify(options.body);
-
-  //Build URL
-  var invokeOptions = service.liveInvocation;
-  var reg = new RegExp("/" + service.sut.name,"i");
-  var basePath = service.basePath.replace(reg,"");
-  if(service.liveInvocation.remoteBasePath){
-    basePath = service.liveInvocation.remoteBasePath;
-  }
-
-  //Find subpath + append
-  var diffReg = new RegExp(service.basePath,'i');
-  var diff = req.path.replace(diffReg,"");
-  var url = (invokeOptions.ssl ? "https://" : "http://") + invokeOptions.remoteHost + ":" + invokeOptions.remotePort + basePath + diff;
-  options.url = url;
-
-  //Make request, return promise
-  return new Promise(function(resolve,reject){
-    
-            requestNode(options,(function(err,remoteRsp,remoteBody){
-                    
-                if(err) { 
-                    return reject(err);
-                }
-                return resolve(remoteRsp,remoteBody);
-            }).bind(this));
-    
-        });
-
-
-
-}
-
-/**
- * Invokes the backend specified in this service, and responds with response if successful
- * Returns promise. Promise rejects if this service fails (either error or matches a failure code/string), resolves otherwise.
- * @param {*} service Service associated with this request
- * @param {*} req Express request
- * @param {*} rsp Express response
- */
-function invokeBackendVerify(service,req,rsp){
-
-  //Make request
-  var request = invokeBackend(service,req);
-  return new Promise(function(resolve,reject){
-    request.then(function(remoteRsp,remoteRspBody){
-
-      //Check for failure status codes + strings
-      var remoteStatus = remoteRsp.statusCode;
-      if(service.liveInvocation.failStatusCodes.includes(remoteStatus)){
-        reject(new Error("Found Status Code " + remoteStatus));
-      }
-      service.liveInvocation.failStrings.forEach(function(failString){
-        if((remoteRspBody && remoteRspBody.includes(failString)) || (remoteRsp.body && remoteRsp.body.includes(failString))){
-          reject(new Error("Found String " + failString + " in response body."));
-        }
-      });
-
-      resolve(remoteRsp,remoteRspBody);
-    },function(err){
-      reject(err);
-    });
-  });
-}
 
 
 module.exports = {
@@ -731,7 +643,5 @@ module.exports = {
   zipUploadAndExtract: zipUploadAndExtract,
   publishExtractedRRPairs: publishExtractedRRPairs,
   specUpload: specUpload,
-  publishUploadedSpec: publishUploadedSpec,
-  invokeBackend: invokeBackend,
-  invokeBackendVerify : invokeBackendVerify
+  publishUploadedSpec: publishUploadedSpec
 };
