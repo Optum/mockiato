@@ -441,7 +441,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   remoteHost:servicevo.remoteHost,
                   remotePort:servicevo.remotePort,
                   basePath:servicevo.basePath,
-                  headerMask:[]
+                  headerMask:[],
+                  ssl:servicevo.ssl
                   
                 }
 
