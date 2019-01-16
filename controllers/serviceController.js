@@ -1,7 +1,7 @@
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
-
+const Archive  = require('../models/common/Archive');
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
@@ -12,6 +12,8 @@ const request = require('request');
 const fs   = require('fs');
 const unzip = require('unzip2');
 const YAML = require('yamljs');
+const invoke = require('../routes/invoke'); 
+
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -33,6 +35,21 @@ function getServiceById(req, res) {
 
           return res.json(mqService);
         });
+      }
+  });
+}
+
+function getArchiveServiceInfo(req, res) {
+  // call find by id of service or mqservice function for db
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.find(query, function (err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+      if (services) {
+        return res.json(services[0]);
       }
   });
 }
@@ -65,6 +82,19 @@ function getServicesByUser(req, res) {
   });
 }
 
+function getArchiveServicesByUser(req, res) {
+  let allServices = [];
+  const query = { $or: [ { 'service.user.uid': req.params.uid }, { 'mqservice.user.uid': req.params.uid } ] };
+  Archive.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+    allServices = services;
+    return res.json(allServices);
+  });
+}
+
 function getServicesBySystem(req, res) {
   let allServices = [];
 
@@ -90,6 +120,22 @@ function getServicesBySystem(req, res) {
 
       return res.json(allServices);
     });
+  });
+}
+
+function getServicesArchiveBySystem(req, res) {
+  let allServices = [];
+
+  const query = { $or: [ { 'service.sut.name': req.params.name }, { 'mqservice.sut.name': req.params.name } ] };
+
+  Archive.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+    allServices = services;
+    return res.json(allServices);
   });
 }
 
@@ -124,6 +170,22 @@ function getServicesByQuery(req, res) {
 
         return res.json(allServices);
       });
+  });
+}
+
+function getArchiveServices(req, res) {
+  const sut  = req.query.sut;
+  const user = req.query.user;
+
+  const query = { $or: [ { 'service.sut.name': sut }, { 'mqservice.sut.name': sut },{ 'service.user.uid': user }, 
+            { 'mqservice.user.uid': user } ] };
+
+  Archive.find(query, function(err, services)	{
+      if (err)	{
+        handleError(err, res, 500);
+        return;
+      }
+      return res.json(services);
   });
 }
 
@@ -205,9 +267,13 @@ function syncWorkers(service, action) {
   manager.messageAll(msg)
     .then(function(workerIds) {
       virtual.deregisterService(service);
+      invoke.deregisterServiceInvoke(service);
 
       if (action === 'register') {
         virtual.registerService(service);
+        if(service.liveInvocation && service.liveInvocation.enabled){
+          invoke.registerServiceInvoke(service);
+        }
       }
       else {
         Service.findOneAndRemove({_id : service._id }, function(err)	{
@@ -236,6 +302,9 @@ function addService(req, res) {
     rrpairs: req.body.rrpairs,
     lastUpdateUser: req.decoded
   };
+  if(req.body.liveInvocation){
+    serv.liveInvocation = req.body.liveInvocation;
+  }
 
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
@@ -304,6 +373,9 @@ function updateService(req, res) {
     // don't let consumer alter name, base path, etc.
     service.rrpairs = req.body.rrpairs;
     service.lastUpdateUser = req.decoded;
+    if(req.body.liveInvocation){
+      service.liveInvocation = req.body.liveInvocation;
+    }
     if (req.body.matchTemplates) {
       service.matchTemplates = req.body.matchTemplates;
     }
@@ -383,8 +455,17 @@ function deleteService(req, res) {
       handleError(err, res, 500);
       return;
     }
-
+    
     if (service) {
+      service.txnCount=0;
+      service.running=false;
+      let archive  = {service:service};
+      Archive.create(archive, function (err, callback) {
+        if (err) {
+          handleError(err, res, 500);
+        }
+      });
+
       service.remove(function(e, oldService) {
         if (e)	{
           handleError(e, res, 500);
@@ -398,11 +479,69 @@ function deleteService(req, res) {
     else {
       MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
         if (error) debug(error);
+        mqService.running=false;
+        let archive  = {mqservice:mqService};
+        Archive.create(archive, function (err, callback) {
+          if (err) {
+            handleError(err, res, 500);
+          }
+        });
         res.json({ 'message' : 'deleted', 'id' : mqService._id });
       });
     }
   });
 }
+
+function restoreService(req, res) {
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.findOneAndRemove(query, function(err, archive)	{
+    if (err)	{
+      handleError(err, res, 500);
+      return;
+    }
+    if (archive.service) {
+      let newService  = {
+        sut: archive.service.sut,
+        user: archive.service.user,
+        name: archive.service.name,
+        type: archive.service.type,
+        delay: archive.service.delay,
+        delayMax: archive.service.delayMax,
+        basePath: archive.service.basePath,
+        txnCount: 0,
+        running: false,
+        matchTemplates: archive.service.matchTemplates,
+        rrpairs: archive.service.rrpairs,
+        lastUpdateUser: archive.service.lastUpdateUser
+      };
+      Service.create(newService, function (err, callback) {
+        if (err) {
+          handleError(err, res, 500);
+        }
+      });
+      res.json({ 'message' : 'restored', 'id' : archive.service._id });
+    }
+    else {
+        let newMQService  = {
+          sut: archive.mqservice.sut,
+          user: archive.mqservice.user,
+          name: archive.mqservice.name,
+          type: archive.mqservice.type,
+          running: false,
+          matchTemplates: archive.mqservice.matchTemplates,
+          rrpairs: archive.mqservice.rrpairs,
+          connInfo: archive.mqservice.connInfo
+        };
+        MQService.create(newMQService, function (err, callback) {
+          if (err) {
+            handleError(err, res, 500);
+          }
+        });
+        res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
+    }
+  });
+}
+
 
 // get spec from url or local filesystem path
 function getSpecString(path) {
@@ -624,11 +763,29 @@ function createFromOpenAPI(spec) {
   return oas.parse(spec);
 }
 
+//Permanenet delete from Archieve. Not required right now.
+function permanentDeleteService(req, res) {
+  // call find by id of service or mqservice function for db
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.findOneAndRemove(query, function (err, archive) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+    if(archive.service) res.json({ 'message' : 'deleted', 'id' : archive.service._id });
+    else if(archive.mqservice) res.json({ 'message' : 'deleted', 'id' : archive.mqservice._id });
+  });
+}
+
 module.exports = {
   getServiceById: getServiceById,
+  getArchiveServiceInfo: getArchiveServiceInfo,
   getServicesByUser: getServicesByUser,
   getServicesBySystem: getServicesBySystem,
   getServicesByQuery: getServicesByQuery,
+  getArchiveServices: getArchiveServices,
+  getServicesArchiveBySystem: getServicesArchiveBySystem,
+  getArchiveServicesByUser: getArchiveServicesByUser,
   addService: addService,
   updateService: updateService,
   toggleService: toggleService,
@@ -636,5 +793,7 @@ module.exports = {
   zipUploadAndExtract: zipUploadAndExtract,
   publishExtractedRRPairs: publishExtractedRRPairs,
   specUpload: specUpload,
-  publishUploadedSpec: publishUploadedSpec
+  publishUploadedSpec: publishUploadedSpec,
+  permanentDeleteService: permanentDeleteService,
+  restoreService: restoreService
 };

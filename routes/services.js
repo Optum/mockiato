@@ -31,6 +31,18 @@ router.post('/specUpload', upload.single('specFile'), servCtrl.specUpload);
 //create openapi or wsdl service from open spec or wsdl present in upload directory
 router.post('/publishUploadedSpec', servCtrl.publishUploadedSpec);
 
+// retrieve archive services
+router.get('/archive', servCtrl.getArchiveServices);
+
+//delete a virtual service from Archive
+router.delete('/deleteFrmArchive/:id', servCtrl.permanentDeleteService);
+
+// restore a virtual service from Archive
+router.delete('/restoreFrmArchive/:id', servCtrl.restoreService);
+
+// get Service Info for a virtual service from Archive
+router.get('/infoFrmArchive/:id', servCtrl.getArchiveServiceInfo);
+
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
 
@@ -43,8 +55,14 @@ router.get('/', servCtrl.getServicesByQuery);
 // retrieve services by SUT
 router.get('/sut/:name', servCtrl.getServicesBySystem);
 
+// retrieve services by SUT Archive
+router.get('/sut/archive/:name', servCtrl.getServicesArchiveBySystem);
+
 // retrieve services by user
 router.get('/user/:uid', servCtrl.getServicesByUser);
+
+// retrieve services by user Archive
+router.get('/user/archive/:uid', servCtrl.getArchiveServicesByUser);
 
 // update a virtual service by ID
 router.put('/:id', servCtrl.updateService);

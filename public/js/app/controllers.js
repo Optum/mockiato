@@ -33,6 +33,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
             $scope.servicevo = {};
             $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
+            $scope.servicevo.failStatuses = [{ id: 0, val: '' }];
+            $scope.servicevo.failStrings = [{ id: 0, val: '' }];
             $scope.servicevo.rawpairs = [{
                 id: 0,
                 queriesArr: [{
@@ -71,6 +73,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 }}
             };
 
+            $scope.addFailStatus = function(){
+              $scope.servicevo.failStatuses.push({val:''});
+            }
+            $scope.removeFailStatus= function(index){
+              $scope.servicevo.failStatuses.splice(index,1);
+            }
+            $scope.addFailString = function(){
+              $scope.servicevo.failStrings.push({val:''});
+            }
+            $scope.removeFailString= function(index){
+              $scope.servicevo.failStrings.splice(index,1);
+            }
             $scope.addTemplate = function() {
               $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
             };
@@ -438,6 +452,175 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
     }])
 
+    
+    .controller("showArchiveController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
+        function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
+          
+          $scope.statusCodes = suggestionsService.getStatusCodes();
+            $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
+              this.getService = function() {
+                  apiHistoryService.getArchiveServiceById($routeParams.id)
+                  .then(function(response) {
+                      var service;
+                      if(response.data.service) service = response.data.service;
+                      if(response.data.mqservice) service = response.data.mqservice;
+                      console.log(service);
+                      $scope.servicevo = {
+                        id: service._id,
+                        sut: service.sut,
+                        name: service.name,
+                        type: service.type,
+                        delay: service.delay,
+                        delayMax: service.delayMax,
+                        txnCount: service.txnCount,
+                        basePath: service.basePath,
+                        
+                      };
+                    
+                    $scope.myUser = authService.getUserInfo().username;
+                  
+                   //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                       $http.get('/api/systems')
+                         .then(function (response) {
+                           var newsutlist = [];
+                           response.data.forEach(function (sutData) {
+                             var sut = {
+                               name: sutData.name,
+                               members: sutData.members
+                             };
+                             sut.members.forEach(function (memberlist) {
+                               if (memberlist.includes($scope.myUser)) {
+                                newsutlist.push(sut.name);
+                               }
+                             });
+                           });
+                           $scope.canEdit = function () {
+                               return false;
+                           };
+                         })
+  
+                         .catch(function (err) {
+                           console.log(err);
+                         });
+  
+                      if(service.lastUpdateUser){
+                        $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+                      }
+                      if(service.createdAt){
+                        $scope.servicevo.createdAt = service.createdAt;
+                      }
+                      if(service.updatedAt){
+                        $scope.servicevo.updatedAt = service.updatedAt;
+                      }
+  
+                      $scope.servicevo.matchTemplates = [];
+                      $scope.servicevo.rawpairs = [];
+  
+                      if (service.matchTemplates && service.matchTemplates.length) {
+                        service.matchTemplates.forEach(function(template, index) {
+                          $scope.servicevo.matchTemplates.push({ id: index, val: template });
+                        });
+                      }
+                      else {
+                        $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+                      }
+  
+                      var rrid = 0;
+                      service.rrpairs.forEach(function(rr){
+                        rr.id = rrid;
+                        rr.queriesArr = [];
+                        rr.reqHeadersArr = [];
+                        rr.resHeadersArr = [];
+                        rr.method = rr.verb;
+  
+                        if (rr.payloadType === 'JSON') {
+                          rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+                          rr.responsepayload = JSON.stringify(rr.resData, null, 4);
+  
+                          //Handle empty JSON object- stringify surrounds in "" 
+                          if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                            rr.responsepayload = rr.responsepayload.substring(1,3);
+                          }
+                        }
+                        else {
+                          rr.requestpayload = rr.reqData;
+                          rr.responsepayload = rr.resData;
+                        }
+  
+                        // map object literals to arrays for Angular view
+                        if (rr.reqHeaders) {
+                          var reqHeads = Object.entries(rr.reqHeaders);
+                          var reqHeadId = 0;
+                          reqHeads.forEach(function(elem){
+                            var head = {};
+  
+                            head.id = reqHeadId;
+                            head.k = elem[0];
+                            head.v = elem[1];
+  
+                            rr.reqHeadersArr.push(head);
+                            reqHeadId++;
+                          });
+                        }
+                        else {
+                          rr.reqHeadersArr.push({ id: 0 });
+                        }
+  
+                        if (rr.resHeaders) {
+                          var resHeads = Object.entries(rr.resHeaders);
+                          var resHeadId = 0;
+                          resHeads.forEach(function(elem){
+                            var head = {};
+  
+                            head.id = resHeadId;
+                            head.k = elem[0];
+                            head.v = elem[1];
+  
+                            rr.resHeadersArr.push(head);
+                            resHeadId++;
+                          });
+                        }
+                        else {
+                          rr.resHeadersArr.push({ id: 0 });
+                        }
+  
+                        if (rr.queries) {
+                          var qs = Object.entries(rr.queries);
+                          var qId = 0;
+                          qs.forEach(function(elem){
+                            var q = {};
+  
+                            q.id = qId;
+                            q.k = elem[0];
+                            q.v = elem[1];
+  
+                            rr.queriesArr.push(q);
+                            qId++;
+                          });
+                        }
+                        else {
+                          rr.queriesArr.push({ id: 0 });
+                        }
+  
+                        $scope.servicevo.rawpairs.push(rr);
+                        rrid++;
+                      });
+
+
+
+                      
+
+
+                  })
+  
+                  .catch(function(err) {
+                      console.log(err);
+                  });
+              };
+              this.getService();
+      }])
+          
     .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
         function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
           
@@ -460,7 +643,38 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       txnCount: service.txnCount,
                       basePath: service.basePath,
                       
+                      
                     };
+                    
+                    if(service.liveInvocation){
+                      
+                      $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+                      $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+                      $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+                      $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+                      $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+                      //Extract and build out codes/strings for failures
+                      var failStatusCodes = service.liveInvocation.failStatusCodes;
+                      var failStrings = service.liveInvocation.failStrings;
+                      $scope.servicevo.failStatuses = [];
+                      $scope.servicevo.failStrings = [];
+                      for(var i = 0; i < failStatusCodes.length; i++){
+                        $scope.servicevo.failStatuses[i] = {'id': i, 'val' : failStatusCodes[i]};
+
+                      }
+                      for(var i = 0; i < failStrings.length; i++){
+                        $scope.servicevo.failStrings[i] = {'id': i, 'val' : failStrings[i]};
+                      }
+
+                      //Select correct radio
+                      if(service.liveInvocation.liveFirst)
+                        $scope.servicevo.liveInvokePrePost = 'PRE';
+                      else  
+                        $scope.servicevo.liveInvokePrePost = 'POST';
+                      
+                    }
+                    console.log($scope.servicevo);
+
                   
                   $scope.myUser = authService.getUserInfo().username;
                 
@@ -480,13 +694,13 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                            });
                          });
                          $scope.canEdit = function () {
-                           if (newsutlist.includes($scope.servicevo.sut.name)) {
-                             return true;
-                           }
-                           else {
-                             return false;
-                           }
-                         };
+                          if (newsutlist.includes($scope.servicevo.sut.name )) {
+                            return true;
+                          }
+                          else {
+                            return false;
+                          }
+                        };
                        })
 
                        .catch(function (err) {
@@ -505,6 +719,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
                     $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
+
 
                     if (service.matchTemplates && service.matchTemplates.length) {
                       service.matchTemplates.forEach(function(template, index) {
@@ -602,8 +817,22 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 });
             };
             this.getService();
+          
            
 
+
+            $scope.addFailStatus = function(){
+              $scope.servicevo.failStatuses.push({val:''});
+            }
+            $scope.removeFailStatus= function(index){
+              $scope.servicevo.failStatuses.splice(index,1);
+            }
+            $scope.addFailString = function(){
+              $scope.servicevo.failStrings.push({val:''});
+            }
+            $scope.removeFailString= function(index){
+              $scope.servicevo.failStrings.splice(index,1);
+            }
             $scope.addTemplate = function() {
               $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
             };
@@ -1331,6 +1560,237 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             }
           };
     }])
+
+    .controller("deletedServiceController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+        function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+            $scope.sutlist = sutService.getAllSUT();
+            $scope.userlist = userService.getAllUsers();
+            $scope.servicelist = [];
+
+            //script to retroactively assign group member. not needed for the future.
+            $scope.script=function(){
+              console.log("starting script");
+              var sutnames = [];
+              $http.get('/api/systems')
+                .then(function (response) {
+                  response.data.forEach(function (sutData) {
+                    var sut = {
+                      name: sutData.name,
+                      members: sutData.members
+                    };
+                    sutnames.push(sut.name);
+                  });
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+
+              $http.get('/api/services/archive')
+                .then(function (response) {
+                  console.log(response.data);
+                  for (var i = 0; i < response.data.length; i++) {
+                    var owner = response.data[i].user.uid;
+                    var sut = response.data[i].sut.name;
+                    
+                    if (sutnames.includes(sut)){
+                      console.log("sut "+ sut + " exists");
+                      console.log(owner + " will be added to group: " + sut);
+                      sutService.updateGroup(sut, owner);
+                    }
+                    else{
+                      console.log("sut " + sut + " does not exist");
+                    }
+                  }
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
+            ///////////////////////////end script. to remove
+
+            $scope.filtersSelected = function(sut, user) {
+                if (sut && !user) {
+                    apiHistoryService.getServiceForArchiveSUT(sut.name)
+
+                    .then(function(response) {
+                        var data = response.data;
+                        console.log(data);
+                        var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                        $scope.servicelist = arryListOfService;
+                      })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
+                else if (user && !sut) {
+                    apiHistoryService.getServiceByArchiveUser(user.name)
+                    .then(function(response) {
+                      var data = response.data;
+                      console.log(data);
+                      var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                      $scope.servicelist = arryListOfService;
+                    })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
+                else if (user && sut) {
+                    apiHistoryService.getServicesArchiveFiltered(sut.name, user.name)
+
+                    .then(function(response) {
+                      var data = response.data;
+                      console.log(data);
+                      var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                      $scope.servicelist = arryListOfService;
+                    })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
+              //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                $http.get('/api/systems')
+                  .then(function (response) {
+                    $scope.myUser = authService.getUserInfo().username;
+                     $scope.myGroups = [];
+                    response.data.forEach(function (sutData) {
+                      var sut = {
+                        name: sutData.name,
+                        members: sutData.members
+                      };
+                      sut.members.forEach(function (memberlist) {
+                        if (memberlist.includes($scope.myUser)) {
+                          $scope.myGroups.push(sut.name);
+                        }
+                      });
+                    });
+                  })
+
+                  .catch(function (err) {
+                    console.log(err);
+                  });
+
+
+                  $http.get('/api/users/admin')
+                    .then(function(response) {
+                        $scope.adminUser = response.data;
+                        })
+    
+                  .catch(function(err) {
+                      console.log(err);
+                  });
+
+            };
+            $scope.filtersSelected(null, { name: authService.getUserInfo().username });
+
+            $scope.clearSelected = function() {
+              $scope.selectedSut = null;
+              $scope.selectedUser = null;
+              $scope.servicelist = [];
+            };
+
+          $scope.deleteArchiveService = function (service) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_Permanent_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            $('#modal-btn-yes').on("click", function () {
+              apiHistoryService.deleteServiceArchive(service)
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist.forEach(function (elem, i, arr) {
+                    if (elem._id === data.id)
+                      arr.splice(i, 1);
+                  });
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            });
+          };
+
+          $scope.restoreService = function (service) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.RESTORE_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            $('#modal-btn-yes').on("click", function () {
+              apiHistoryService.restoreService(service)
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist.forEach(function (elem, i, arr) {
+                    if (elem._id === data.id)
+                      arr.splice(i, 1);
+                  });
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            });
+          };
+
+            $scope.exportService = function(serv) {
+                // clone the service
+                var service = JSON.parse(JSON.stringify(serv));
+
+                // clean up data before export
+                delete service._id;
+                delete service.sut._id;
+                delete service.user;
+                delete service.__v;
+                delete service.$$hashKey;
+
+                if (service.basePath) {
+                  service.basePath = service.basePath.replace('/' + service.sut.name, '');
+                }
+                
+                service.rrpairs.forEach(function(rr) {
+                  delete rr._id;
+                });
+
+                var data = new Blob([JSON.stringify(service, null, "  ")], { type: 'application/json;charset=utf-8' });
+                FileSaver.saveAs(data, service.name + '.json');
+            };
+
+            $scope.serviceInfo = function(serviceID) {
+              console.log('printing service id: ' + serviceID);
+                $http.get('/api/services/infoFrmArchive/' + serviceID)
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    if(data.service)feedbackService.displayServiceInfo(data.service);
+                    if(data.mqservice)feedbackService.displayServiceInfo(data.mqservice);
+                    $('#serviceInfo-modal').modal('toggle');
+                })
+                .catch(function(err) {
+                    console.log(err);
+                      $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');
+                });
+            };
+    }])
     ;
 
 //Put all the hard coding or constants here for controller.      
@@ -1346,7 +1806,7 @@ ctrl.constant("ctrlConstants", {
   "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 
   "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.",
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
-  "DEL_CONFIRM_BODY" : "Do you really want to delete this service ?",
+  "DEL_CONFIRM_BODY" : "This service will be deleted and moved to Archive. Do you want to continue ?",
   "DEL_REC_CONFIRM_BODY" : "Do you really want to delete this recording?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
   "DEL_CONFIRM_USER_BODY": 'Do you really want to remove this user from the group?',
@@ -1362,4 +1822,6 @@ ctrl.constant("ctrlConstants", {
   "IMPORT_ERR_MSG" : "You should upload only correct json file.",
   "SUCCESS" : "success",
   "GRP_ALREADY_EXIST_MSG" : "Group Name Already exist.",
+  "DEL_Permanent_CONFIRM_BODY" : "This service will be deleted permanently. Do you want to continue ?",
+  "RESTORE_CONFIRM_BODY" : "This service will be restored. You can find this service in browse tab. Continue ?"
 });
