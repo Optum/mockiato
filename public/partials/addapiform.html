@@ -136,11 +136,11 @@
         <div class="col-xs-8">
           <div class="radio">
             <label class="move-radios">
-                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'PRE'" ng-required="!liveInvokePrePost.servicevo">
+                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'PRE'" ng-required="servicevo.liveInvocationCheck">
                   Use Live Service First
             </label>
             <label class="move-radios">
-                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'POST'" ng-required="!liveInvokePrePost.servicevo">
+                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'POST'" ng-required="servicevo.liveInvocationCheck">
                   Use Virtual Service First
             </label>
           </div>
@@ -151,21 +151,21 @@
       <div class="form-group req row">
         <label for="remote_host" class="col-xs-2 col-form-label">Remote Host:</label>
         <div class="col-xs-3">
-          <input required type="text" id="service_name" class="form-control" ng-model="servicevo.remoteHost" placeholder="Enter Remote Hostname">
+          <input ng-required="servicevo.liveInvocationCheck" type="text" id="service_name" class="form-control" ng-model="servicevo.remoteHost" placeholder="Enter Remote Hostname">
         </div>
     
       </div>
       <div class="form-group req row">
         <label for="remote_port" class="col-xs-2 col-form-label">Remote Port:</label>
         <div class="col-xs-3">
-          <input required type="text" id="service_name" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Host Port">
+          <input ng-required="servicevo.liveInvocationCheck" type="text" id="service_name" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Host Port">
         </div>
       </div>
   
-      <div class="form-group req row">
+      <div class="form-group row">
         <label for="remote_port" class="col-xs-2 col-form-label">Remote Base Path:</label>
         <div class="col-xs-5">
-          <input required type="text" id="service_name" class="form-control" ng-model="servicevo.remotePath" placeholder="Enter Remote Base Path">
+          <input type="text" id="service_name" class="form-control" ng-model="servicevo.remotePath" placeholder="Enter Remote Base Path">
         </div>
       </div>
   
