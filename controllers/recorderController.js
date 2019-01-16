@@ -10,7 +10,7 @@ var activeRecorders = {};
   *
   * This object is created whenever a new recording session is started. the recording router will route all appropriate transactions to this object 
   */
-var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask){
+var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl){
      this.path = path;
      
      //Ensure path starts with /
@@ -30,7 +30,8 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask)
             name:name,
             type:protocol
         },
-        name: name
+        name: name,
+        ssl:ssl
     },(function(err,newModel){
         this.model = newModel;
         
@@ -137,7 +138,7 @@ function stripRRPairForReq(rrpair) {
     //Start creating req options
     var options = {}
     //Create full URL to remote host
-    options.url = (req.secure ? "https" : "http") + "://" + this.model.remoteHost + ":" + this.model.remotePort + this.model.path + (diff ? "/" + diff : "");
+    options.url = (this.model.ssl ? "https" : "http") + "://" + this.model.remoteHost + ":" + this.model.remotePort + this.model.path + (diff ? "/" + diff : "");
     options.method = req.method;
     options.headers = req.headers;
 
@@ -310,8 +311,8 @@ function findDuplicateRecorder(sut,path){
  * @param {string} dataType  XML/JSON/etc
  * @param {array{string}} headerMask array of headers to save
  */
-function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask){
-    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask); 
+function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl){
+    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl); 
    
     return newRecorder;
 }
@@ -368,7 +369,7 @@ function addRecorder(req,rsp){
         handleError("OverlappingRecorderPathError",rsp,500);
     }
     else{
-        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask);
+        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask,body.ssl);
         newRecorder.model.then(function(doc){
             rsp.json(doc);
         }).catch(function(err){
