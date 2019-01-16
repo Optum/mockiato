@@ -336,6 +336,28 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     matchTemplates: templates,
                     rrpairs: rrpairs
                 };
+                  failStringsArray = [];
+                  servicevo.failStrings.forEach(function(item){
+                    failStringsArray.push(item.val);
+                  });
+                  failCodesArray = [];
+                  servicevo.failStatuses.forEach(function(item){
+                    failCodesArray.push(item.val);
+                  });
+
+                  servData.liveInvocation = 
+                  {
+                    enabled : servicevo.liveInvocationCheck,
+                    remoteHost : servicevo.remoteHost,
+                    remotePort : servicevo.remotePort,
+                    remoteBasePath : servicevo.remotePath,
+                    failStatusCodes : failCodesArray,
+                    failStrings : failStringsArray,
+                    ssl : servicevo.invokeSSL,
+                    liveFirst : servicevo.liveInvokePrePost == 'PRE'
+                  };
+                  
+                
 
                 // publish the virtual service
                 var token = authService.getUserInfo().token;

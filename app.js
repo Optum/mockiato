@@ -125,12 +125,14 @@ function init() {
   // expose API and virtual SOAP / REST services
   const virtual = require('./routes/virtual');
   const api = require('./routes/services');
+  const invoke = require('./routes/invoke');
 
   // register SOAP / REST virts from DB
   virtual.registerAllRRPairsForAllServices();
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
-  
+  app.use('/virtual',invoke.router);
+
   // initialize recording routers
   const recorder = require('./routes/recording');
   const recorderController = require('./controllers/recorderController');
@@ -148,9 +150,13 @@ function init() {
         debug(action);
 
         virtual.deregisterService(service);
-
+        invoke.deregisterServiceInvoke(service);
         if (action === 'register') {
           virtual.registerService(service);
+          
+          if(service.liveInvocation && service.liveInvocation.enabled){
+            invoke.registerServiceInvoke(service);
+          }
         }
       }else if(msg.recorder){
         const rec = msg.recorder;

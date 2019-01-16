@@ -33,6 +33,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
             $scope.servicevo = {};
             $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
+            $scope.servicevo.failStatuses = [{ id: 0, val: '' }];
+            $scope.servicevo.failStrings = [{ id: 0, val: '' }];
             $scope.servicevo.rawpairs = [{
                 id: 0,
                 queriesArr: [{
@@ -71,6 +73,18 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 }}
             };
 
+            $scope.addFailStatus = function(){
+              $scope.servicevo.failStatuses.push({val:''});
+            }
+            $scope.removeFailStatus= function(index){
+              $scope.servicevo.failStatuses.splice(index,1);
+            }
+            $scope.addFailString = function(){
+              $scope.servicevo.failStrings.push({val:''});
+            }
+            $scope.removeFailString= function(index){
+              $scope.servicevo.failStrings.splice(index,1);
+            }
             $scope.addTemplate = function() {
               $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
             };
@@ -629,7 +643,38 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       txnCount: service.txnCount,
                       basePath: service.basePath,
                       
+                      
                     };
+                    
+                    if(service.liveInvocation){
+                      
+                      $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+                      $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+                      $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+                      $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+                      $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+                      //Extract and build out codes/strings for failures
+                      var failStatusCodes = service.liveInvocation.failStatusCodes;
+                      var failStrings = service.liveInvocation.failStrings;
+                      $scope.servicevo.failStatuses = [];
+                      $scope.servicevo.failStrings = [];
+                      for(var i = 0; i < failStatusCodes.length; i++){
+                        $scope.servicevo.failStatuses[i] = {'id': i, 'val' : failStatusCodes[i]};
+
+                      }
+                      for(var i = 0; i < failStrings.length; i++){
+                        $scope.servicevo.failStrings[i] = {'id': i, 'val' : failStrings[i]};
+                      }
+
+                      //Select correct radio
+                      if(service.liveInvocation.liveFirst)
+                        $scope.servicevo.liveInvokePrePost = 'PRE';
+                      else  
+                        $scope.servicevo.liveInvokePrePost = 'POST';
+                      
+                    }
+                    console.log($scope.servicevo);
+
                   
                   $scope.myUser = authService.getUserInfo().username;
                 
@@ -674,6 +719,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
                     $scope.servicevo.matchTemplates = [];
                     $scope.servicevo.rawpairs = [];
+
 
                     if (service.matchTemplates && service.matchTemplates.length) {
                       service.matchTemplates.forEach(function(template, index) {
@@ -773,6 +819,20 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             this.getService();
           
            
+
+
+            $scope.addFailStatus = function(){
+              $scope.servicevo.failStatuses.push({val:''});
+            }
+            $scope.removeFailStatus= function(index){
+              $scope.servicevo.failStatuses.splice(index,1);
+            }
+            $scope.addFailString = function(){
+              $scope.servicevo.failStrings.push({val:''});
+            }
+            $scope.removeFailString= function(index){
+              $scope.servicevo.failStrings.splice(index,1);
+            }
             $scope.addTemplate = function() {
               $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
             };

@@ -2,7 +2,6 @@ const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
 const Archive  = require('../models/common/Archive');
-
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
@@ -13,6 +12,8 @@ const request = require('request');
 const fs   = require('fs');
 const unzip = require('unzip2');
 const YAML = require('yamljs');
+const invoke = require('../routes/invoke'); 
+
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -266,9 +267,13 @@ function syncWorkers(service, action) {
   manager.messageAll(msg)
     .then(function(workerIds) {
       virtual.deregisterService(service);
+      invoke.deregisterServiceInvoke(service);
 
       if (action === 'register') {
         virtual.registerService(service);
+        if(service.liveInvocation && service.liveInvocation.enabled){
+          invoke.registerServiceInvoke(service);
+        }
       }
       else {
         Service.findOneAndRemove({_id : service._id }, function(err)	{
@@ -297,6 +302,9 @@ function addService(req, res) {
     rrpairs: req.body.rrpairs,
     lastUpdateUser: req.decoded
   };
+  if(req.body.liveInvocation){
+    serv.liveInvocation = req.body.liveInvocation;
+  }
 
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
@@ -365,6 +373,9 @@ function updateService(req, res) {
     // don't let consumer alter name, base path, etc.
     service.rrpairs = req.body.rrpairs;
     service.lastUpdateUser = req.decoded;
+    if(req.body.liveInvocation){
+      service.liveInvocation = req.body.liveInvocation;
+    }
     if (req.body.matchTemplates) {
       service.matchTemplates = req.body.matchTemplates;
     }
