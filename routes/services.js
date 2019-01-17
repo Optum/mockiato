@@ -46,6 +46,10 @@ router.get('/infoFrmArchive/:id', servCtrl.getArchiveServiceInfo);
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
 
+//Search services
+router.get("/search/:id",servCtrl.searchServices);
+router.get("/search",servCtrl.searchServices);
+
 // retrieve a virtual service by ID (in JSON)
 router.get('/:id', servCtrl.getServiceById);
 
@@ -72,6 +76,9 @@ router.delete('/:id', servCtrl.deleteService);
 
 // toggle a service on / off TODO: toggle MQ services
 router.post('/:id/toggle', servCtrl.toggleService);
+
+
+
 
 const rrpairs = require('./rrpairs');
 router.use(rrpairs);

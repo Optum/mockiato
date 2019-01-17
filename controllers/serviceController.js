@@ -14,6 +14,113 @@ const unzip = require('unzip2');
 const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 
+/**
+ * Helper function for search. Trims down an HTTP service for return, and filters + trims rrpairs. 
+ * @param {*} doc Service doc from mongoose
+ * @param {*} searchOnReq text to filter Request on
+ * @param {*} searchOnRsp text to filter Response on
+ */
+function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
+  //Trim service
+  var service = {
+    id : doc.id,
+    name : doc.name,
+    sut : {name : doc.sut.name, _id : doc.sut._id},
+    type : doc.type,
+    user : {uid : doc.user.uid, _id : doc.user._id},
+    basePath : doc.basePath
+  };
+
+  //If we have RRpairs to filter...
+  if(doc.rrpairs){
+    service.rrpairs = [];
+    doc.rrpairs.forEach(function(rrpair){
+      var addThisRRPair = true;
+
+      //If req/rsp don't contain search string, fail this one
+      if(searchOnReq && rrpair.reqDataString){
+        addThisRRPair = rrpair.reqDataString.toLowerCase().includes(searchOnReq.toLowerCase());
+      }
+      if(searchOnRsp && addThisRRPair && rrpair.resDataString){
+        addThisRRPair = rrpair.resDataString.toLowerCase().includes(searchOnRsp.toLowerCase());;
+      }
+
+      //If req/rsp search is enabled and it has no req/rsp, fail it
+      if(searchOnReq && !(rrpair.reqDataString)){
+        addThisRRPair = false;
+      }
+      if(searchOnRsp && !(rrpair.resDataString)){
+        addThisRRPair = false;
+      }
+
+      //If we're still supposed to add this..
+      if(addThisRRPair){
+        
+        //Pull object names from RRPair's schema. Trim out reqDataString and rspDataString and copy the rest.
+        var trimmedRRPair = {};
+        for(var key in RRPair.schema.obj){
+          if(key != 'resDataString' && key != 'reqDataString'){
+            trimmedRRPair[key] = rrpair[key];
+          }
+        }
+        trimmedRRPair._id = rrpair._id;
+        service.rrpairs.push(trimmedRRPair);
+      }
+
+    });
+
+  }
+  return service;
+}
+
+
+/**
+ * Handles API call for search services
+ * path param: ID of a service to limit this search to this param
+ * queries-
+ * requestContains: Filters only services that have rr pairs that contain this string in their request. Only returns rrpairs that match this as well.
+ * responseContains: Filters only services that have rr pairs that contain this string in their response. Only returns rrpairs that match this as well.
+ * @param {*} req 
+ * @param {*} rsp 
+ */
+function searchServices(req,rsp){
+
+  //Build search query
+  var search = {};
+  if(req.params.id){
+    search._id = req.params.id;
+   }
+   var query = req.query;
+   var searchOnReq = false;
+   var searchOnRsp = false;
+   if(query.requestContains){
+     searchOnReq = query.requestContains;
+     search['rrpairs.reqDataString'] = {$regex:searchOnReq,$options:'i'};
+   }
+   if(query.responseContains){
+    searchOnRsp = query.responseContains;
+    search['rrpairs.resDataString'] = {$regex:searchOnRsp,$options:'i'};
+  }
+
+  //Perform search
+   Service.find(search,function(err,docs){
+      var results = [];
+
+      if(err){
+        handleError(rsp,err,500);
+      }
+
+      //Trim down service and add it to list of services to return
+      docs.forEach(function(doc){
+        var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
+        results.push(service);
+      });
+      
+      return rsp.json(results);
+   });
+}
+
+
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -312,7 +419,7 @@ function addService(req, res) {
         rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
     });
   }
-  
+
   if(req.body.liveInvocation){
     serv.liveInvocation = req.body.liveInvocation;
   }
@@ -816,5 +923,6 @@ module.exports = {
   specUpload: specUpload,
   publishUploadedSpec: publishUploadedSpec,
   permanentDeleteService: permanentDeleteService,
-  restoreService: restoreService
+  restoreService: restoreService,
+  searchServices:searchServices
 };
