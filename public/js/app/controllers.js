@@ -665,13 +665,23 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       for(var i = 0; i < failStrings.length; i++){
                         $scope.servicevo.failStrings[i] = {'id': i, 'val' : failStrings[i]};
                       }
-
+                      if(!$scope.servicevo.failStatuses.length){
+                        $scope.servicevo.failStatuses[0] = {'id': 0,val:''};  
+                      }
+                      if(!$scope.servicevo.failStrings.length){
+                        $scope.servicevo.failStrings[0] = {'id': 0,val:''};
+                      }
                       //Select correct radio
                       if(service.liveInvocation.liveFirst)
                         $scope.servicevo.liveInvokePrePost = 'PRE';
                       else  
                         $scope.servicevo.liveInvokePrePost = 'POST';
                       
+                    }else{
+                      $scope.servicevo.failStatuses = [];
+                      $scope.servicevo.failStrings = [];
+                      $scope.servicevo.failStatuses[0] = {'id': 0,val:''};      
+                      $scope.servicevo.failStrings[0] = {'id': 0,val:''};
                     }
                     console.log($scope.servicevo);
 

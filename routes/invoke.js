@@ -120,12 +120,11 @@ function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
  */
 function registerServiceInvoke(service){
     //Catch all paths under service basepath
-    var path = service.basePath + "/*";
+    var path = service.basePath + "/?*";
     router.all(path,function(req,rsp,next){
 
         
         if(service.liveInvocation && service.liveInvocation.enabled){
-
             //This should trigger only if it is a "pre-invoke" and the service itself doesn't catch it at all (no sub-path match)
             if(service.liveInvocation.liveFirst && !req._mockiatoLiveInvokeHasRun){
                 invokeBackendVerify(service,req).then(function(remoteRsp,remoteRspBody){
@@ -158,7 +157,7 @@ function registerServiceInvoke(service){
  * @param {*} service  Service to unregister
  */
 function deregisterServiceInvoke(service){
-    var path = service.basePath + "/*";
+    var path = service.basePath + "/?*";
     removeRoute(require('../app'), path);
 }
 
