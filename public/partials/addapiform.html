@@ -119,7 +119,7 @@
         </fieldset>
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
       <label for="live_invocation_enable" class="col-xs-2 col-form-label">Perform Live Invocation:</label>
   
       
@@ -128,7 +128,7 @@
       </div>
     </div>
     
-    <div id="live_invocation_fields"  ng-show="servicevo.liveInvocationCheck">
+    <div id="live_invocation_fields"  ng-show="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'">
       
     <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
       <div class="form-group req row">
@@ -151,14 +151,14 @@
       <div class="form-group req row">
         <label for="remote_host" class="col-xs-2 col-form-label">Remote Host:</label>
         <div class="col-xs-3">
-          <input ng-required="servicevo.liveInvocationCheck" type="text" id="service_name" class="form-control" ng-model="servicevo.remoteHost" placeholder="Enter Remote Hostname">
+          <input ng-required="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'" type="text" id="service_name" class="form-control" ng-model="servicevo.remoteHost" placeholder="Enter Remote Hostname">
         </div>
     
       </div>
       <div class="form-group req row">
         <label for="remote_port" class="col-xs-2 col-form-label">Remote Port:</label>
         <div class="col-xs-3">
-          <input ng-required="servicevo.liveInvocationCheck" type="text" id="service_name" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Host Port">
+          <input ng-required="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'" type="text" id="service_name" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Host Port">
         </div>
       </div>
   
