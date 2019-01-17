@@ -302,6 +302,17 @@ function addService(req, res) {
     rrpairs: req.body.rrpairs,
     lastUpdateUser: req.decoded
   };
+
+  //Save req and res data string cache
+  if(serv.rrpairs){
+    serv.rrpairs.forEach(function(rrpair){
+      if(rrpair.reqData)
+        rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+      if(rrpair.resData)
+        rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+    });
+  }
+  
   if(req.body.liveInvocation){
     serv.liveInvocation = req.body.liveInvocation;
   }
@@ -373,6 +384,16 @@ function updateService(req, res) {
     // don't let consumer alter name, base path, etc.
     service.rrpairs = req.body.rrpairs;
     service.lastUpdateUser = req.decoded;
+
+    //Cache string of reqData + rspData
+    if(service.rrpairs){
+      service.rrpairs.forEach(function(rrpair){
+        if(rrpair.reqData)
+          rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+        if(rrpair.resData)
+          rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+      });
+    }
     if(req.body.liveInvocation){
       service.liveInvocation = req.body.liveInvocation;
     }
