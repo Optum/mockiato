@@ -340,7 +340,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if(servicevo.failStrings){
                     
                     servicevo.failStrings.forEach(function(item){
-                      ailStringsArray.push(item.val);
+                      failStringsArray.push(item.val);
                    });
                   }
                   
