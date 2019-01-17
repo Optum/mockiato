@@ -46,7 +46,36 @@ fact.factory('sutFactory', ['$http', '$q', function($http, $q) {
                     console.log(err);
                 });
             return sutlist;
+        },
+
+        getGroupsToBeDeleted: function(user) {
+            var deleteSutList = [];
+            $http.get('/api/systems')
+
+                .then(function (response) {
+                    response.data.forEach(function (sutData) {
+                        var sut = {
+                            name: sutData.name,
+                            members: sutData.members
+                        };
+                        sut.members.forEach(function(memberlist){
+                            if(memberlist.indexOf(user) > -1){
+                        $http.get('/api/services/sut/' + sut.name)
+                        .then(function (response) {
+                                if(response.data.length==0){
+                                    deleteSutList.push(sut);
+                                }
+                            
+                        })
+                    }});
+                });
+            })
+                .catch(function (err) {
+                    console.log(err);
+                });
+            return deleteSutList;
         }
+
     };
 }]);
 

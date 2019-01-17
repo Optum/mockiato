@@ -479,7 +479,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 var sutlist = sutFactory.getAllSUT();
                 return sutlist;
             };
-            
+
+          this.getGroupsToBeDeleted = function(user){
+              var deleteSutList = sutFactory.getGroupsToBeDeleted(user);
+              return deleteSutList;
+          };
             this.getMembers = function(selectedSut){
               var memberlist = groupFactory.getMembers(selectedSut)
               return memberlist;
@@ -512,8 +516,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             this.addGroup = function(createSut){
 
             createSut.members = authService.getUserInfo().username;
-           
-            $http.post('/api/systems/' , createSut)
+            var token = authService.getUserInfo().token;
+            $http.post('/api/systems/'+'?token=' + token , createSut )
             .then(function (response) {
               console.log(response.data);
             })
@@ -526,8 +530,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
           
             this.deleteGroup = function(deleteSut){
-              var token = authService.getUserInfo().token;
-             return  $http.delete('/api/systems/' +'?token=' + token, deleteSut);
+             var token = authService.getUserInfo().token;
+             return  $http.delete('/api/systems/'+deleteSut.name +'?token=' + token, deleteSut);
             };
             
     }])

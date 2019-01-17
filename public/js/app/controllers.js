@@ -1089,7 +1089,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.userlist = userService.getAllUsers();
       $scope.selectedSut = [];
       $scope.allSUT = sutService.getAllSUT();
-    
+      $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
 
       $scope.checkAndAddGroup = function (createSut) {
         var count = 0;
@@ -1105,48 +1105,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         else {
           sutService.addGroup($scope.createSut);
           $scope.createGroupMessage = ctrlConstants.GRP_CREATED_SUCCESS_MSG;
+          window.location.reload(true);
         }
       };
-
-      $scope.deleteGroupDropdown = function () { 
-        var j=0;
-        $scope.deleteSutList = [];
-        for (let i = 0; i < $scope.sutlist.length; i++) {
-          var servicelist = [];
-         let sut = $scope.sutlist[i];
-        apiHistoryService.getServiceForSUT($scope.sutlist[i].name)
-        
-                    .then(function (response) {
-                      var data = response.data;
-                     servicelist = data;
-                      if(servicelist.length==0){
-                        $scope.deleteSutList[j] = sut;
-                        j++;
-                     } })
-                    .catch(function (err) {
-                      console.log(err);
-                    });} 
-                //   console.log($scope.deleteSutList);
-                   };
-
-        $scope.deleteSelectedGroup = function (deleteSut){
-          console.log($scope.deleteSut.name);
-          
-        };
-      
-        $scope.removeGroup = function (index) {
-          $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);
-          $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-          $('#genricMsg-dialog').modal('toggle');
-          $scope.userNo = index;
-          $('#modal-btn-yes').on("click", function () {
-            $scope.deleteSutList.splice($scope.userNo, 1);
-            $scope.$apply();
-            sutService.deleteGroup($scope.deleteSut);
-            $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG;  
-          });
-        }; 
+   
+        $scope.removeGroup = function (deleteSut) {
+        sutService.deleteGroup( deleteSut);
+            $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG; 
+            window.location.reload(true);
+          }; 
 
 
 
