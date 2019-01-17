@@ -5,7 +5,11 @@ const debug = require('debug')('matching');
 const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
 const logger = require('../winston');
+const invoke = require('./invoke');
 
+
+
+  
 // function to simulate latency
 function delay(ms,msMax) {
   if ((!ms || ms === 1) && (!msMax || msMax <= 1)) {
@@ -38,34 +42,37 @@ function registerRRPair(service, rrpair) {
   else path = service.basePath;
 
   router.all(path, delay(service.delay, service.delayMax), function(req, resp, next) {
-    req.msgContainer = req.msgContainer || {};
-    req.msgContainer.reqMatched = false;
+    //Function for handling incoming req against this RR pair
+    var processRRPair = function(){
+      req.msgContainer = req.msgContainer || {};
+      req.msgContainer.reqMatched = false;
 
-    if (req.method === rrpair.verb) {
-      // convert xml to js object
-      if (rrpair.payloadType === 'XML') {
-        xml2js.parseString(req.body, function(err, xmlReq) {
-          matched = matchRequest(xmlReq);
-        });
+      if (req.method === rrpair.verb) {
+        // convert xml to js object
+        if (rrpair.payloadType === 'XML') {
+          xml2js.parseString(req.body, function(err, xmlReq) {
+            matched = matchRequest(xmlReq);
+          });
+        }
+        else {
+          matched = matchRequest(req.body);
+        }
       }
       else {
-        matched = matchRequest(req.body);
+        msg = "HTTP methods don't match";
+        req.msgContainer.reason = msg;
+        logEvent(msg);
+        return next();
       }
-    }
-    else {
-      msg = "HTTP methods don't match";
-      req.msgContainer.reason = msg;
-      logEvent(msg);
-      return next();
-    }
-    debug("Request matched? " + matched);
-    
-    // run the next callback if request not matched
-    if (!matched) {
-      msg = "Request bodies don't match";
-      req.msgContainer.reason = msg;
-      logEvent(msg);
-      return next();
+      debug("Request matched? " + matched);
+      
+      // run the next callback if request not matched
+      if (!matched) {
+        msg = "Request bodies don't match";
+        req.msgContainer.reason = msg;
+        logEvent(msg);
+        return next();
+      }
     }
 
     // function for matching requests to responses
@@ -243,6 +250,24 @@ function registerRRPair(service, rrpair) {
         resp.set("Content-Type", "text/plain");
       }
     }
+
+    //If live invocation is enabled, and invoke first is selected, and we haven't run this yet...
+    if(service.liveInvocation && service.liveInvocation.enabled && service.liveInvocation.liveFirst &&  !req._mockiatoLiveInvokeHasRun){
+      var prom = invoke.invokeBackendVerify(service,req);
+      req._mockiatoLiveInvokeHasRun = true;
+      prom.then(function(remoteRsp,remoteRspBody){
+        resp.set('_mockiato-is-live-backend','true');
+        invoke.mapRemoteResponseToResponse(resp,remoteRsp,remoteRspBody);
+        
+      },function(err){
+        resp.set('_mockiato-is-live-backend','false');
+        resp.set('_mockiato-live-fail-reason',err.message);
+        processRRPair();
+      });
+    }else{
+      resp.set('_mockiato-is-live-backend','false');
+      processRRPair();
+    }
   });
 }
 
@@ -260,10 +285,14 @@ function registerAllRRPairsForAllServices() {
           service.rrpairs.forEach(function(rrpair){
             registerRRPair(service, rrpair);
           });
+          if(service.liveInvocation && service.liveInvocation.enabled){
+            invoke.registerServiceInvoke(service);
+          }
         }
       });
     }
     catch(e) {
+      console.log(e);
       logEvent('Error registering services: ' + e);
     }
   });

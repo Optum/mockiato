@@ -154,12 +154,24 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services/sut/' + name);
             };
 
+            this.getServiceForArchiveSUT = function(name) {
+              return $http.get('/api/services/sut/archive/' + name);
+            };
+
             this.getServiceByUser = function(name) {
                 return $http.get('/api/services/user/' + name);
+            };
+            
+            this.getServiceByArchiveUser = function(name) {
+              return $http.get('/api/services/user/archive/' + name);
             };
 
             this.getServicesFiltered = function(sut, user) {
                 return $http.get('/api/services?sut=' + sut + '&user=' + user);
+            };
+
+            this.getServicesArchiveFiltered = function(sut, user) {
+              return $http.get('/api/services/archive?sut=' + sut + '&user=' + user);
             };
 
             this.publishServiceToAPI = function(servicevo, isUpdate, isRecording) {
@@ -324,6 +336,28 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     matchTemplates: templates,
                     rrpairs: rrpairs
                 };
+                  failStringsArray = [];
+                  servicevo.failStrings.forEach(function(item){
+                    failStringsArray.push(item.val);
+                  });
+                  failCodesArray = [];
+                  servicevo.failStatuses.forEach(function(item){
+                    failCodesArray.push(item.val);
+                  });
+
+                  servData.liveInvocation = 
+                  {
+                    enabled : servicevo.liveInvocationCheck,
+                    remoteHost : servicevo.remoteHost,
+                    remotePort : servicevo.remotePort,
+                    remoteBasePath : servicevo.remotePath,
+                    failStatusCodes : failCodesArray,
+                    failStrings : failStringsArray,
+                    ssl : servicevo.invokeSSL,
+                    liveFirst : servicevo.liveInvokePrePost == 'PRE'
+                  };
+                  
+                
 
                 // publish the virtual service
                 var token = authService.getUserInfo().token;
@@ -395,10 +429,24 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services/' + id);
             };
 
+            this.getArchiveServiceById = function(id) {
+              return $http.get('/api/services/infoFrmArchive/' + id);
+          };
+
             this.deleteServiceAPI = function(service) {
                 var token = authService.getUserInfo().token;
                 return $http.delete('/api/services/' + service._id + '?token=' + token);
             };
+
+            this.deleteServiceArchive = function(service) {
+              var token = authService.getUserInfo().token;
+              return $http.delete('/api/services/deleteFrmArchive/' + service._id + '?token=' + token);
+            };
+
+          this.restoreService = function(service) {
+            var token = authService.getUserInfo().token;
+            return $http.delete('/api/services/restoreFrmArchive/' + service._id + '?token=' + token);
+          };
 
             this.toggleServiceAPI = function(service) {
                 var token = authService.getUserInfo().token;
@@ -415,7 +463,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   remoteHost:servicevo.remoteHost,
                   remotePort:servicevo.remotePort,
                   basePath:servicevo.basePath,
-                  headerMask:[]
+                  headerMask:[],
+                  ssl:servicevo.ssl
                   
                 }
 
