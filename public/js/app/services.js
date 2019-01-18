@@ -336,15 +336,20 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     matchTemplates: templates,
                     rrpairs: rrpairs
                 };
-                  failStringsArray = [];
-                  servicevo.failStrings.forEach(function(item){
-                    failStringsArray.push(item.val);
-                  });
+                failStringsArray = [];
+                  if(servicevo.failStrings){
+                    
+                    servicevo.failStrings.forEach(function(item){
+                      failStringsArray.push(item.val);
+                   });
+                  }
+                  
                   failCodesArray = [];
-                  servicevo.failStatuses.forEach(function(item){
-                    failCodesArray.push(item.val);
-                  });
-
+                  if(servicevo.failStatuses){
+                    servicevo.failStatuses.forEach(function(item){
+                      failCodesArray.push(item.val);
+                    });
+                  }
                   servData.liveInvocation = 
                   {
                     enabled : servicevo.liveInvocationCheck,
