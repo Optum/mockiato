@@ -192,10 +192,18 @@ function registerRRPair(service, rrpair) {
         // send matched data back to client
         setRespHeaders();
         if (rrpair.resStatus && rrpair.resData) {
-          resp.status(rrpair.resStatus).send(new Buffer(rrpair.resData));
+          //Give .send a buffer instead of a string so it won't yell at us about content-types
+          if(typeof rrpair.resData === "object")
+            resp.status(rrpair.resStatus).send(new Buffer(JSON.stringify(rrpair.resData)));
+          else
+            resp.status(rrpair.resStatus).send(new Buffer(rrpair.resData));
         }
         else if (!rrpair.resStatus && rrpair.resData) {
-          resp.send(new Buffer(rrpair.resData));
+          //Give .send a buffer instead of a string so it won't yell at us about content-types
+          if(typeof rrpair.resData === "object")
+            resp.send(new Buffer(JSON.stringify(rrpair.resData)));
+          else
+            resp.send(new Buffer(rrpair.resData));
         }
         else if (rrpair.resStatus && !rrpair.resData) {
           resp.sendStatus(rrpair.resStatus);
