@@ -200,7 +200,14 @@ paths:
         IsMultiContentStreaming: false
 
   # TO DO
+  /services/{id}/rrpairs:
+    get:
+      tags:
+      - services
   /services/specUpload:
+    post:
+      tags:
+      - services
   /services/publishUploadedSpec:
     post:
       tags:
@@ -265,7 +272,13 @@ paths:
   
   # TO DO
   /services/zipUploadAndExtract:
+    post:
+      tags:
+      - services
   /services/publishExtractedRRPairs:
+    post:
+      tags:
+      - services
 
   /services/{id}/toggle:
     post:
