@@ -192,10 +192,10 @@ function registerRRPair(service, rrpair) {
         // send matched data back to client
         setRespHeaders();
         if (rrpair.resStatus && rrpair.resData) {
-          resp.status(rrpair.resStatus).send(rrpair.resData);
+          resp.status(rrpair.resStatus).send(new Buffer(rrpair.resData));
         }
         else if (!rrpair.resStatus && rrpair.resData) {
-          resp.send(rrpair.resData);
+          resp.send(new Buffer(rrpair.resData));
         }
         else if (rrpair.resStatus && !rrpair.resData) {
           resp.sendStatus(rrpair.resStatus);
