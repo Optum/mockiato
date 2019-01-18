@@ -5,15 +5,16 @@ info:
   contact: {}
   version: '1.0.0'
 servers:
-- url: '{mockiatoUrl}'
+- url: '{mockiatoUrl}/api'
   variables:
     mockiatoUrl:
-      default: http://mockiato.optum.com/api
+      default: http://mockiato.optum.com
+
 paths:
   /login:
     post:
       tags:
-      - auth
+      - token
       summary: getAccessToken
       description: returns an access token for the user
       operationId: GetAccessToken
@@ -53,6 +54,8 @@ paths:
       summary: addVirtualService
       description: creates a new virtual service
       operationId: AddVirtualService
+      security:
+        JWT: []
       parameters:
       - name: x-access-token
         in: header
@@ -625,6 +628,13 @@ paths:
         IsMultiContentStreaming: false
         
 components:
+  securitySchemes:
+    JWT:
+      type: apiKey
+      description: "Access token retrieved by POSTing credentials to /api/login"
+      name: x-access-token
+      in: header
+
   schemas:
     AuthReq:
       title: AuthReq
@@ -637,6 +647,7 @@ components:
           type: string
         password:
           type: string
+          format: password
 
     AuthRes:
       title: AuthRes
@@ -735,7 +746,7 @@ components:
       type: object
 
 tags:
-- name: auth
+- name: token
   description: ''
 - name: services
   description: ''
