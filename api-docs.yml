@@ -45,6 +45,7 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
+
   /services:
     post:
       tags:
@@ -82,67 +83,7 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
-  /services/fromSpec:
-    post:
-      tags:
-      - services
-      summary: createVirtualServiceFromSpec
-      description: creates a virtual service from OpenAPI or WSDL
-      operationId: CreateVirtualServiceFromSpec
-      parameters:
-      - name: x-access-token
-        in: header
-        required: true
-        description: your access token
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: name
-        in: query
-        description: name of service to create
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: type
-        in: query
-        description: type of spec (e.g. openapi, wsdl)
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: group
-        in: query
-        description: group to add the service to
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: url
-        in: query
-        description: the url to the spec
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      responses:
-        200:
-          description: successful response
-          content:
-            application/json:
-              schema:
-                description: successful response
-                $ref: '#/components/schemas/VirtualService'
-      x-operation-settings:
-        CollectParameters: false
-        AllowDynamicQueryParameters: false
-        AllowDynamicFormParameters: false
-        IsMultiContentStreaming: false
+
   /services/{id}:
     get:
       tags:
@@ -254,7 +195,76 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
-  /api/services/{id}/toggle:
+
+  # TO DO
+  /services/specUpload:
+  /services/publishUploadedSpec:
+    post:
+      tags:
+      - services
+      summary: createVirtualServiceFromSpec
+      description: creates a virtual service from OpenAPI or WSDL
+      operationId: CreateVirtualServiceFromSpec
+      parameters:
+      - name: x-access-token
+        in: header
+        required: true
+        description: your access token
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: name of service to create
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: type of spec (e.g. openapi, wsdl)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: group
+        in: query
+        description: group to add the service to
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: url
+        in: query
+        description: the url to the spec
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/VirtualService'
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  
+  # TO DO
+  /services/zipUploadAndExtract:
+  /services/publishExtractedRRPairs:
+
+  /services/{id}/toggle:
     post:
       tags:
       - services
@@ -292,6 +302,7 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
+
   /services/sut/{name}:
     get:
       tags:
@@ -323,6 +334,7 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
+
   /services/user/{name}:
     get:
       tags:
@@ -354,6 +366,107 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
+
+  /services/archive:
+    get:
+      tags:
+      - archives
+  /services/deleteFrmArchive/{id}:
+    delete:
+      tags:
+      - archives
+  /services/restoreFrmArchive/{id}:
+    delete:
+      tags:
+      - archives
+  /services/infoFrmArchive/{id}:
+    get:
+      tags:
+      - archives
+
+  /services/archive/sut/{name}:
+    get:
+      tags:
+      - archives
+      summary: getArchivedServicesBySUT
+      description: retrieves archived services by system under test
+      operationId: GetArchivedServicesBySUT
+      parameters:
+      - name: name
+        in: path
+        description: name of system under test
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VirtualService'
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+
+  /services/archive/user/{name}:
+    get:
+      tags:
+      - archives
+      summary: getArchivedServicesByOwner
+      description: retrieves archived services by owner
+      operationId: GetArchivedServicesByOwner
+      parameters:
+      - name: name
+        in: path
+        description: name of user / owner
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VirtualService'
+                description: successful response
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  
+  /recording:
+    get:
+      tags:
+      - recordings
+    put:
+      tags:
+      - recordings
+  /recording/{id}:
+    get:
+      tags:
+      - recordings
+    delete:
+      tags:
+      - recordings
+  /recording/{id}/{index}:
+    get:
+      tags:
+      - recordings
+
   /systems:
     get:
       tags:
@@ -405,6 +518,15 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
+
+  # TO DO
+  /systems/{name}:
+    get:
+      tags:
+      - systems
+    put:
+      tags:
+      - systems
     delete:
       tags:
       - systems
@@ -440,6 +562,7 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
+
   /users:
     get:
       tags:
@@ -463,6 +586,8 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
+
+  /users/{name}:
     delete:
       tags:
       - users
@@ -498,6 +623,7 @@ paths:
         AllowDynamicQueryParameters: false
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
+        
 components:
   schemas:
     AuthReq:
@@ -511,6 +637,7 @@ components:
           type: string
         password:
           type: string
+
     AuthRes:
       title: AuthRes
       type: object
@@ -521,8 +648,9 @@ components:
           type: string
         message:
           type: string
+
     VirtualService:
-      title: VirtualService
+      title: HttpService
       type: object
       properties:
         sut:
@@ -549,12 +677,18 @@ components:
           format: int64
         running:
           type: boolean
+
     SystemUnderTest:
       title: SystemUnderTest
       type: object
       properties:
         name:
           type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDetails'
+
     ReqResPair:
       title: ReqResPair
       type: object
@@ -576,6 +710,7 @@ components:
           type: object
         resData:
           type: object
+
     UserDetails:
       title: UserDetails
       type: object
@@ -584,6 +719,7 @@ components:
           type: string
         mail:
           type: string
+
     ToggleResponse:
       title: ToggleResponse
       type: object
@@ -592,10 +728,20 @@ components:
           type: string
         service:
           $ref: '#/components/schemas/VirtualService'
+
+    # TO DO
+    Recording:
+      title: Recording
+      type: object
+
 tags:
 - name: auth
   description: ''
 - name: services
+  description: ''
+- name: recordings
+  description: ''
+- name: archives
   description: ''
 - name: systems
   description: ''
