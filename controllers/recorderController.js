@@ -5,6 +5,12 @@ const manager = require('../lib/pm2/manager');
 
 var activeRecorders = {};
 
+
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  }
+
  /**
   * Recorder object
   *
@@ -114,9 +120,9 @@ function stripRRPairForReq(rrpair) {
 
 
     //Get relative path to base path for this RRPair
-    var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name.toLowerCase() + this.model.path;
+    var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name + this.model.path;
     var fullIncomingPath = req.baseUrl + req.path;
-    var diff = fullIncomingPath.replace(fullBasePath,"");
+    var diff = fullIncomingPath.replace(new RegExp(escapeRegExp(fullBasePath),"i"),"");
     if(diff && diff[diff.length-1] == "/"){
         diff = diff.substring(0,diff.length-1); 
     }
