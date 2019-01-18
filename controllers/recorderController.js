@@ -185,8 +185,6 @@ function stripRRPairForReq(rrpair) {
             myRRPair.resData = body;
         }
         myRRPair.resHeaders = remoteRsp.headers;
-        if(myRRPair.resHeaders['content-type'] == "text")
-            myRRPair.resHeaders['content-type'] = "text/plain";
 
 
         //Test for duplicate
