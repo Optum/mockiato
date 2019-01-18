@@ -206,9 +206,14 @@ function stripRRPairForReq(rrpair) {
 
         //Send back response to user
         rsp.status(remoteRsp.statusCode);
+        var headers = remoteRsp.headers;
+        if(headers['content-type']){
+            rsp.type(headers['content-type'])
+            delete headers['content-type'];
+        }
         rsp.set(remoteRsp.headers);
         if(body){
-            rsp.send(body);
+            rsp.send(new Buffer(body));
         }else{
             rsp.end();
         }
