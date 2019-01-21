@@ -1699,7 +1699,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
 
           $scope.restoreService = function (service) {
-            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.RESTORE_CONFIRM_TITLE);
             $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.RESTORE_CONFIRM_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
@@ -1775,6 +1775,7 @@ ctrl.constant("ctrlConstants", {
   "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 
   "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.",
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
+  "RESTORE_CONFIRM_TITLE" : "Restore Confirmation",
   "DEL_CONFIRM_BODY" : "This service will be deleted and moved to Archive. Do you want to continue ?",
   "DEL_REC_CONFIRM_BODY" : "Do you really want to delete this recording?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
