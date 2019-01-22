@@ -145,6 +145,10 @@ function registerServiceInvoke(service){
                     next();
                 });
             }
+            else{
+                rsp.set('_mockiato-is-live-backend','false');
+                next();
+            }
         }
     });
 }
