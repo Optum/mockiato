@@ -41,7 +41,7 @@ router.delete('/archive/:id', servCtrl.permanentDeleteService);
 router.post('/archive/:id/restore', servCtrl.restoreService);
 
 // get Service Info for a virtual service from Archive
-router.get('/:id', servCtrl.getArchiveServiceInfo);
+router.get('/archive/:id', servCtrl.getArchiveServiceInfo);
 
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
