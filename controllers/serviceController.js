@@ -28,7 +28,9 @@ function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
     sut : {name : doc.sut.name, _id : doc.sut._id},
     type : doc.type,
     user : {uid : doc.user.uid, _id : doc.user._id},
-    basePath : doc.basePath
+    basePath : doc.basePath,
+    createdAt : doc.createdAt,
+    updatedAt : doc.updatedAt
   };
 
   //If we have RRpairs to filter...
@@ -80,8 +82,11 @@ function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
  * queries-
  * requestContains: Filters only services that have rr pairs that contain this string in their request. Only returns rrpairs that match this as well.
  * responseContains: Filters only services that have rr pairs that contain this string in their response. Only returns rrpairs that match this as well.
- * @param {*} req 
- * @param {*} rsp 
+ * name: Filters on name of servie
+ * sortBy: created sorts on created datetime, updated sorts on updated datetime
+ * asc: if set (any value or none), sort ascending instead of descending
+ * @param {*} req express req
+ * @param {*} rsp express rsp
  */
 function searchServices(req,rsp){
 
@@ -89,27 +94,58 @@ function searchServices(req,rsp){
   var search = {};
   if(req.params.id){
     search._id = req.params.id;
-   }
-   var query = req.query;
-   var searchOnReq = false;
-   var searchOnRsp = false;
-   if(query.requestContains){
-     searchOnReq = query.requestContains;
-     search['rrpairs.reqDataString'] = {$regex:searchOnReq,$options:'i'};
-   }
-   if(query.responseContains){
+  }
+  var query = req.query;
+  var searchOnReq = false;
+  var searchOnRsp = false;
+  if(query.requestContains){
+    searchOnReq = query.requestContains;
+    search['rrpairs.reqDataString'] = {$regex:searchOnReq,$options:'i'};
+  }
+  if(query.responseContains){
     searchOnRsp = query.responseContains;
     search['rrpairs.resDataString'] = {$regex:searchOnRsp,$options:'i'};
   }
+  if(query.name){
+    search.name = {$regex:query.name,$options:'i'};
+  }
+
+  //Get our sorting + limit arguments
+  var sortBy;
+  if(query.sortBy){
+    if(query.sortBy == "created"){
+      sortBy = 'createdAt';
+    }else if(query.sortBy == "updated"){
+      sortBy = 'updatedAt';
+    }
+  }
+  var ascDesc = "desc";
+  if(typeof query.asc !== 'undefined'){
+    ascDesc = "asc";
+  }
+  var limit;
+  if(query.limit){
+    limit = query.limit;
+  }
+
 
   //Perform search
-   Service.find(search,function(err,docs){
+   var mongooseQuery = Service.find(search);
+   if(sortBy){
+    var sort = {};
+    sort[sortBy] = ascDesc;
+    mongooseQuery.sort(sort);
+   }
+   if(limit){
+    mongooseQuery.limit(parseInt(limit));
+   }
+   mongooseQuery.exec(function(err,docs){
       var results = [];
 
       if(err){
-        handleError(rsp,err,500);
+        handleError(err,rsp,500);
       }
-
+      else{
       //Trim down service and add it to list of services to return
       docs.forEach(function(doc){
         var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
@@ -117,6 +153,7 @@ function searchServices(req,rsp){
       });
       
       return rsp.json(results);
+    }
    });
 }
 
