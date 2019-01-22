@@ -13,11 +13,8 @@ function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
     rsp.status(remoteRsp.statusCode);
     
     rsp.set(remoteRsp.headers);
-    if(remoteRsp.headers['content-type'] == "text"){
-      rsp.set('content-type','text/plain');
-    }
     if(body){
-        rsp.send(body);
+        rsp.send(new Buffer(body));
     }else{
         rsp.end();
     }
