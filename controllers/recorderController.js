@@ -5,6 +5,12 @@ const manager = require('../lib/pm2/manager');
 
 var activeRecorders = {};
 
+
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  }
+
  /**
   * Recorder object
   *
@@ -114,9 +120,9 @@ function stripRRPairForReq(rrpair) {
 
 
     //Get relative path to base path for this RRPair
-    var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name.toLowerCase() + this.model.path;
+    var fullBasePath = req.baseUrl + "/live/" + this.model.sut.name + this.model.path;
     var fullIncomingPath = req.baseUrl + req.path;
-    var diff = fullIncomingPath.replace(fullBasePath,"");
+    var diff = fullIncomingPath.replace(new RegExp(escapeRegExp(fullBasePath),"i"),"");
     if(diff && diff[diff.length-1] == "/"){
         diff = diff.substring(0,diff.length-1); 
     }
@@ -179,8 +185,6 @@ function stripRRPairForReq(rrpair) {
             myRRPair.resData = body;
         }
         myRRPair.resHeaders = remoteRsp.headers;
-        if(myRRPair.resHeaders['content-type'] == "text")
-            myRRPair.resHeaders['content-type'] = "text/plain";
 
 
         //Test for duplicate
@@ -206,9 +210,14 @@ function stripRRPairForReq(rrpair) {
 
         //Send back response to user
         rsp.status(remoteRsp.statusCode);
+        var headers = remoteRsp.headers;
+        if(headers['content-type']){
+            rsp.type(headers['content-type'])
+            delete headers['content-type'];
+        }
         rsp.set(remoteRsp.headers);
         if(body){
-            rsp.send(body);
+            rsp.send(new Buffer(body));
         }else{
             rsp.end();
         }

@@ -51,28 +51,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
-            $scope.dropdown = function() {
-              if ($scope.sutChecked == false){
-                  $scope.sutlist = sutService.getAllSUT();
-                  $scope.groupMessage = "";
-               }
-            };
-
-            $scope.checkDuplicateGroup = function (){
-              var count=0;
-              $scope.groupMessage = "";
-              if($scope.sutChecked == true){
-                for(var i=0; i<$scope.sutlist.length;i++){
-                 if($scope.sutlist[i].name == $scope.servicevo.sut.name)
-                 {
-                   count++;
-                 }
-                }
-                if(count!=0){
-                  $scope.groupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
-                }}
-            };
-
             $scope.addFailStatus = function(){
               $scope.servicevo.failStatuses.push({val:''});
             }
@@ -199,12 +177,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
         $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
         $scope.servicevo.reqHeadersArr = [{id:0}];
-        $scope.dropdown = function() {
-              if ($scope.sutChecked == false){
-                  $scope.sutlist = sutService.getAllSUT();
-                  $scope.groupMessage = "";
-               }
-            };
 
         $scope.showRecorderHelp = function(){
           $('#recordingHelp-modal').modal('toggle');
@@ -1355,6 +1327,36 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
         $scope.userlist = userService.getAllUsers();
         $scope.selectedSut = [];
+      $scope.allSUT = sutService.getAllSUT();
+      $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+
+      $scope.checkAndAddGroup = function (createSut) {
+        var count = 0;
+        $scope.createGroupMessage = "";
+        for (var i = 0; i < $scope.allSUT.length; i++) {
+          if ($scope.allSUT[i].name.toUpperCase() == $scope.createSut.name.toUpperCase()) {
+            count++;
+          }
+        }
+        if (count != 0) {
+          $scope.createGroupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
+        }
+        else {
+          sutService.addGroup($scope.createSut);
+          $scope.createGroupMessage = ctrlConstants.GRP_CREATED_SUCCESS_MSG;
+          
+        }
+        window.location.reload(true);
+      };
+   
+        $scope.removeGroup = function (deleteSut) {
+        sutService.deleteGroup( deleteSut);
+            $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG; 
+            window.location.reload(true);
+          }; 
+
+
+
   
         $scope.$watch('selectedSut', function (newSut) {
           if ($scope.selectedSut != ""){ //removes null response, saves resources
@@ -1434,27 +1436,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       $scope.myUser = authService.getUserInfo().username;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.bulkUpload = {};
-      $scope.dropdown = function () {
-        if ($scope.sutChecked == false) {
-          $scope.sutlist = sutService.getAllSUT();
-          $scope.groupMessage = "";
-        }
-      };
-
-      $scope.checkDuplicateGroup = function (){
-         var count=0;
-        $scope.groupMessage = "";
-        if($scope.sutChecked == true){
-          for(var i=0; i<$scope.sutlist.length;i++){
-           if($scope.sutlist[i].name == $scope.bulkUpload.sut.name)
-           {
-             count++;
-           }
-          }
-          if(count!=0){
-            $scope.groupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
-          }}
-      };
       $scope.uploadAndExtractZip = function () {
         $scope.uploadSuccessMessage = "";
         $scope.uploadErrMessage = "";
@@ -1497,27 +1478,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           $scope.spec.type = $routeParams.specType;
           if ($scope.spec.type == 'openapi') { $scope.spec.heading = 'OpenAPI' } else if ($scope.spec.type == 'wsdl') { $scope.spec.heading = 'WSDL' }
 
-          $scope.dropdown = function () {
-            if ($scope.sutChecked == false) {
-              $scope.sutlist = sutService.getAllSUT();
-              $scope.groupMessage = "";
-            }
-          };
-          
-          $scope.checkDuplicateGroup = function (){
-           var count=0;
-            $scope.groupMessage = "";
-            if($scope.sutChecked == true){
-              for(var i=0; i<$scope.sutlist.length;i++){
-               if($scope.sutlist[i].name == $scope.spec.sut.name)
-               {
-                 count++;
-               }
-              }
-              if(count!=0){
-                $scope.groupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
-              }}
-          };
           
           $scope.callUploadSpec = function () {
             $scope.uploadSuccessMessage = "";
@@ -1740,7 +1700,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
 
           $scope.restoreService = function (service) {
-            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.RESTORE_CONFIRM_TITLE);
             $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.RESTORE_CONFIRM_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
@@ -1816,6 +1776,7 @@ ctrl.constant("ctrlConstants", {
   "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>', 
   "DATAGEN_ALERT_MSG_1000ROWS" : "You may generate up to 1,000 rows of data at a time. Utilize the row id index for more.",
   "DEL_CONFIRM_TITLE" : "Delete Confirmation",
+  "RESTORE_CONFIRM_TITLE" : "Restore Confirmation",
   "DEL_CONFIRM_BODY" : "This service will be deleted and moved to Archive. Do you want to continue ?",
   "DEL_REC_CONFIRM_BODY" : "Do you really want to delete this recording?",
   "DEL_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-warning" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
@@ -1833,5 +1794,7 @@ ctrl.constant("ctrlConstants", {
   "SUCCESS" : "success",
   "GRP_ALREADY_EXIST_MSG" : "Group Name Already exist.",
   "DEL_Permanent_CONFIRM_BODY" : "This service will be deleted permanently. Do you want to continue ?",
-  "RESTORE_CONFIRM_BODY" : "This service will be restored. You can find this service in browse tab. Continue ?"
+  "RESTORE_CONFIRM_BODY" : "This service will be restored. You can find this service in browse tab. Continue ?",
+  "GRP_CREATED_SUCCESS_MSG": "Group Created Successfully",
+  "GRP_DELETION_SUCCESS_MSG" : "Group Deleted Successfully"
 });

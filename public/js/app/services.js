@@ -527,14 +527,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
     }])
 
-    .service('sutService', ['sutFactory', 'groupFactory', '$http', '$q',
-        function(sutFactory, groupFactory, $http, $q) {
+    .service('sutService', ['sutFactory', 'groupFactory', 'authService' , 'servConstants' , '$http', '$q',
+        function(sutFactory, groupFactory, authService, servConstants, $http, $q) {
            
             this.getAllSUT = function() {
                 var sutlist = sutFactory.getAllSUT();
                 return sutlist;
             };
-            
+
+          this.getGroupsToBeDeleted = function(user){
+              var deleteSutList = sutFactory.getGroupsToBeDeleted(user);
+              return deleteSutList;
+          };
             this.getMembers = function(selectedSut){
               var memberlist = groupFactory.getMembers(selectedSut)
               return memberlist;
@@ -561,6 +565,30 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   console.log(err);
                 });
             }
+
+
+
+            this.addGroup = function(createSut){
+              createSut.members = [];
+            createSut.members.push(authService.getUserInfo().username);
+            var token = authService.getUserInfo().token;
+            $http.post('/api/systems/'+'?token=' + token , createSut )
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').modal('toggle');
+            });}
+
+          
+            this.deleteGroup = function(deleteSut){
+             var token = authService.getUserInfo().token;
+             return  $http.delete('/api/systems/'+deleteSut.name +'?token=' + token, deleteSut);
+            };
+            
     }])
 
     .service('zipUploadAndExtractService', ['$http', '$location', 'authService', 'servConstants',
