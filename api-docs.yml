@@ -204,11 +204,11 @@ paths:
     get:
       tags:
       - services
-  /services/specUpload:
+  /services/fromSpec/upload:
     post:
       tags:
       - services
-  /services/publishUploadedSpec:
+  /services/fromSpec/publish:
     post:
       tags:
       - services
@@ -271,11 +271,11 @@ paths:
         IsMultiContentStreaming: false
   
   # TO DO
-  /services/zipUploadAndExtract:
+  /services/fromPairs/upload:
     post:
       tags:
       - services
-  /services/publishExtractedRRPairs:
+  /services/fromPairs/publish:
     post:
       tags:
       - services
@@ -387,20 +387,20 @@ paths:
     get:
       tags:
       - archives
-  /services/deleteFrmArchive/{id}:
+  /services/archive/{id}:
     delete:
       tags:
       - archives
-  /services/restoreFrmArchive/{id}:
-    delete:
+  /services/archive/{id}/restore:
+    post:
       tags:
       - archives
-  /services/infoFrmArchive/{id}:
+  /services/archive/{id}:
     get:
       tags:
       - archives
 
-  /services/archive/sut/{name}:
+  /services/sut/{name}/archive:
     get:
       tags:
       - archives
@@ -432,7 +432,7 @@ paths:
         AllowDynamicFormParameters: false
         IsMultiContentStreaming: false
 
-  /services/archive/user/{name}:
+  /services/user/{name}/archive:
     get:
       tags:
       - archives

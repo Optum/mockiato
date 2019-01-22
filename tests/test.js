@@ -237,7 +237,7 @@ describe('API tests', function() {
     describe('Upload WSDL spec', function() {
         it('Responds with the WSDL file id which uploaded', function(done) {
             request
-                .post(resource + '/specUpload' + token)
+                .post(resource + '/fromSpec/upload' + token)
                 .attach('specFile', wsdlService)
                 .send()
                 .expect(200)
@@ -251,7 +251,7 @@ describe('API tests', function() {
     describe('Create service from WSDL spec', function() {
         it('Responds with the new service id', function(done) {
             request
-                .post(resource + '/publishUploadedSpec' + token)
+                .post(resource + '/fromSpec/publish' + token)
                 .query(wsdlQuery)
                 .send()
                 .expect(200)
@@ -274,7 +274,7 @@ describe('API tests', function() {
     describe('Upload openapi spec', function() {
         it('Responds with the openapi file id which uploaded', function(done) {
             request
-                .post(resource + '/specUpload' + token)
+                .post(resource + '/fromSpec/upload' + token)
                 .attach('specFile', oasService)
                 .send()
                 .expect(200)
@@ -288,7 +288,7 @@ describe('API tests', function() {
     // describe('Create service from OpenAPI spec', function() {
     //     it('Responds with the new service id', function(done) {
     //         request
-    //             .post(resource + '/publishUploadedSpec' + token)
+    //             .post(resource + '/fromSpec/publish' + token)
     //             .query(oasQuery)
     //             .send()
     //             .expect(200)
