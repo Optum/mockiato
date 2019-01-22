@@ -1344,8 +1344,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         else {
           sutService.addGroup($scope.createSut);
           $scope.createGroupMessage = ctrlConstants.GRP_CREATED_SUCCESS_MSG;
-          window.location.reload(true);
+          
         }
+        window.location.reload(true);
       };
    
         $scope.removeGroup = function (deleteSut) {
