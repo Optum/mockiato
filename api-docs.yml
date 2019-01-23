@@ -199,11 +199,20 @@ paths:
               schema:
                 description: successful response
 
-  # TO DO
   /services/{id}/rrpairs:
     get:
       tags:
       - services
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RRPair'
+                description: successful response
 
   /services/fromSpec/upload:
     post:
@@ -211,6 +220,14 @@ paths:
       - services
       security:
         JWT: []
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: string
+                description: the ID of the uploaded file
 
   /services/fromSpec/publish:
     post:
@@ -276,6 +293,14 @@ paths:
       - services
       security:
         JWT: []
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: string
+                description: the ID of the uploaded file
 
   /services/fromPairs/publish:
     post:
@@ -283,6 +308,16 @@ paths:
       - services
       security:
         JWT: []
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+                description: successful response
 
   /services/{id}/toggle:
     post:
@@ -434,11 +469,31 @@ paths:
       - archives
       security:
         JWT: []
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+                description: successful response
 
   /services/archive/{id}:
     get:
       tags:
       - archives
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+                description: successful response
 
   /services/sut/{name}/archive:
     get:
@@ -490,29 +545,88 @@ paths:
                   $ref: '#/components/schemas/Service'
                 description: successful response
 
-  # TO DO
   /recording:
     get:
       tags:
       - recordings
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+                description: successful response
     put:
       tags:
       - recordings
       security:
         JWT: []
+      requestBody:
+        content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+                description: the recording to create
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+                description: successful response
+
   /recording/{id}:
     get:
       tags:
       - recordings
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+                description: successful response
     delete:
       tags:
       - recordings
       security:
         JWT: []
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+                description: successful response
+
   /recording/{id}/{index}:
     get:
       tags:
       - recordings
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+                description: successful response
 
   /systems:
     get:
@@ -554,16 +668,42 @@ paths:
                 description: successful response
                 $ref: '#/components/schemas/System'
      
-  # TO DO
   /systems/{name}:
     get:
       tags:
       - systems
+      description: retrieves a systems under test by name
+      parameters: []
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/System'
+
     put:
       tags:
       - systems
       security:
         JWT: []
+      description: updates a systems under test
+      requestBody:
+        description: the updated SUT
+        content:
+          application/json:
+            schema:
+              description: the updated SUT
+              $ref: '#/components/schemas/System'
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                description: successful response
+                $ref: '#/components/schemas/System'
     delete:
       tags:
       - systems
