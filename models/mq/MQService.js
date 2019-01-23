@@ -20,8 +20,11 @@ const mqSchema = new mongoose.Schema({
   running: {
     type: Boolean,
     default: true
+  },
+  lastUpdateUser:{
+    type: User.schema
   }
-});
+},{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
 mqSchema.set('usePushEach', true);
 module.exports = mongoose.model('MQService', mqSchema);
