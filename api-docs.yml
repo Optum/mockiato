@@ -15,9 +15,7 @@ paths:
     post:
       tags:
       - token
-      summary: getAccessToken
       description: returns an access token for the user
-      operationId: GetAccessToken
       parameters: []
       requestBody:
         description: your MS credentials
@@ -40,15 +38,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthRes'
+                $ref: '#/components/responses/AuthRes'
 
   /services:
     get:
       tags:
       - services
-      summary: getVirtualService
       description: retrieves the virtual services
-      operationId: GetVirtualServices
       parameters:
       - name: sut
         in: path
@@ -74,14 +70,12 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/VirtualService'
+                  $ref: '#/components/schemas/Service'
                 description: successful response
     post:
       tags:
       - services
-      summary: addVirtualService
       description: creates a new virtual service
-      operationId: AddVirtualService
       security:
         JWT: []
       parameters:
@@ -99,7 +93,7 @@ paths:
           application/json:
             schema:
               description: the service to create
-              $ref: '#/components/schemas/VirtualService'
+              $ref: '#/components/schemas/Service'
         required: false
       responses:
         200:
@@ -108,15 +102,13 @@ paths:
             application/json:
               schema:
                 description: successful response
-                $ref: '#/components/schemas/VirtualService'
+                $ref: '#/components/schemas/Service'
 
   /services/{id}:
     get:
       tags:
       - services
-      summary: getVirtualServiceByID
       description: retrieves a virtual service
-      operationId: GetVirtualServiceByID
       parameters:
       - name: id
         in: path
@@ -134,13 +126,13 @@ paths:
             application/json:
               schema:
                 description: successful response
-                $ref: '#/components/schemas/VirtualService'
+                $ref: '#/components/schemas/Service'
     put:
       tags:
       - services
-      summary: updateVirtualService
       description: updates a virtual service
-      operationId: UpdateVirtualService
+      security:
+        JWT: []
       parameters:
       - name: id
         in: path
@@ -165,7 +157,7 @@ paths:
           application/json:
             schema:
               description: the service to update
-              $ref: '#/components/schemas/VirtualService'
+              $ref: '#/components/schemas/Service'
         required: false
       responses:
         200:
@@ -174,13 +166,13 @@ paths:
             application/json:
               schema:
                 description: successful response
-                $ref: '#/components/schemas/VirtualService'
+                $ref: '#/components/schemas/Service'
     delete:
       tags:
       - services
-      summary: removeVirtualService
       description: removes a virtual service
-      operationId: RemoveVirtualService
+      security:
+        JWT: []
       parameters:
       - name: id
         in: path
@@ -217,14 +209,16 @@ paths:
     post:
       tags:
       - services
+      security:
+        JWT: []
 
   /services/fromSpec/publish:
     post:
       tags:
       - services
-      summary: createVirtualServiceFromSpec
       description: creates a virtual service from OpenAPI or WSDL
-      operationId: CreateVirtualServiceFromSpec
+      security:
+        JWT: []
       parameters:
       - name: x-access-token
         in: header
@@ -273,26 +267,30 @@ paths:
             application/json:
               schema:
                 description: successful response
-                $ref: '#/components/schemas/VirtualService'
+                $ref: '#/components/schemas/Service'
   
   # TO DO
   /services/fromPairs/upload:
     post:
       tags:
       - services
+      security:
+        JWT: []
 
   /services/fromPairs/publish:
     post:
       tags:
       - services
+      security:
+        JWT: []
 
   /services/{id}/toggle:
     post:
       tags:
       - services
-      summary: toggleVirtualService
       description: toggles a virtual service on / off
-      operationId: ToggleVirtualService
+      security:
+        JWT: []
       parameters:
       - name: id
         in: path
@@ -324,9 +322,7 @@ paths:
     get:
       tags:
       - services
-      summary: getVirtualServicesBySUT
       description: retrieves virtual services by system under test
-      operationId: GetVirtualServicesBySUT
       parameters:
       - name: name
         in: path
@@ -344,16 +340,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/VirtualService'
+                  $ref: '#/components/schemas/Service'
                 description: successful response
      
   /services/user/{name}:
     get:
       tags:
       - services
-      summary: getVirtualServicesByOwner
       description: retrieves virtual services by owner
-      operationId: GetVirtualServicesByOwner
       parameters:
       - name: name
         in: path
@@ -371,7 +365,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/VirtualService'
+                  $ref: '#/components/schemas/Service'
                 description: successful response
      
 
@@ -379,9 +373,7 @@ paths:
     get:
       tags:
       - archives
-      summary: getVirtualServicesByOwner
       description: retrieves virtual services by owner
-      operationId: GetVirtualServicesByOwner
       parameters:
       - name: user
         in: path
@@ -407,16 +399,16 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/VirtualService'
+                  $ref: '#/components/schemas/Service'
                 description: successful response
      
   /services/archive/{id}:
     delete:
       tags:
       - archives
-      summary: getVirtualServiceByID
       description: retrieves a virtual service
-      operationId: GetVirtualServiceByID
+      security:
+        JWT: []
       parameters:
       - name: id
         in: path
@@ -434,12 +426,14 @@ paths:
             application/json:
               schema:
                 description: successful response
-                $ref: '#/components/schemas/VirtualService'
+                $ref: '#/components/schemas/Service'
      
   /services/archive/{id}/restore:
     post:
       tags:
       - archives
+      security:
+        JWT: []
 
   /services/archive/{id}:
     get:
@@ -450,9 +444,7 @@ paths:
     get:
       tags:
       - archives
-      summary: getArchivedServicesBySUT
       description: retrieves archived services by system under test
-      operationId: GetArchivedServicesBySUT
       parameters:
       - name: name
         in: path
@@ -470,16 +462,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/VirtualService'
+                  $ref: '#/components/schemas/Service'
                 description: successful response
      
   /services/user/{name}/archive:
     get:
       tags:
       - archives
-      summary: getArchivedServicesByOwner
       description: retrieves archived services by owner
-      operationId: GetArchivedServicesByOwner
       parameters:
       - name: name
         in: path
@@ -497,7 +487,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/VirtualService'
+                  $ref: '#/components/schemas/Service'
                 description: successful response
 
   # TO DO
@@ -508,6 +498,8 @@ paths:
     put:
       tags:
       - recordings
+      security:
+        JWT: []
   /recording/{id}:
     get:
       tags:
@@ -515,6 +507,8 @@ paths:
     delete:
       tags:
       - recordings
+      security:
+        JWT: []
   /recording/{id}/{index}:
     get:
       tags:
@@ -524,9 +518,7 @@ paths:
     get:
       tags:
       - systems
-      summary: getSystemsUnderTest
       description: retrieves all systems under test
-      operationId: GetSystemsUnderTest
       parameters: []
       responses:
         200:
@@ -536,14 +528,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SystemUnderTest'
+                  $ref: '#/components/schemas/System'
                 description: successful response
     post:
       tags:
       - systems
-      summary: addSystemUnderTest
       description: creates a new system under test
-      operationId: AddSystemUnderTest
+      security:
+        JWT: []
       parameters: []
       requestBody:
         description: the SUT to create
@@ -551,7 +543,7 @@ paths:
           application/json:
             schema:
               description: the SUT to create
-              $ref: '#/components/schemas/SystemUnderTest'
+              $ref: '#/components/schemas/System'
         required: false
       responses:
         200:
@@ -560,7 +552,7 @@ paths:
             application/json:
               schema:
                 description: successful response
-                $ref: '#/components/schemas/SystemUnderTest'
+                $ref: '#/components/schemas/System'
      
   # TO DO
   /systems/{name}:
@@ -570,12 +562,14 @@ paths:
     put:
       tags:
       - systems
+      security:
+        JWT: []
     delete:
       tags:
       - systems
-      summary: removeSystemUnderTest
       description: removes a system under test
-      operationId: RemoveSystemUnderTest
+      security:
+        JWT: []
       parameters:
       - name: name
         in: path
@@ -605,9 +599,7 @@ paths:
     get:
       tags:
       - users
-      summary: getUsers
       description: retrieves all users
-      operationId: GetUsers
       parameters: []
       responses:
         200:
@@ -617,16 +609,16 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserDetails'
+                  $ref: '#/components/schemas/User'
                 description: successful response
     
   /users/{name}:
     delete:
       tags:
       - users
-      summary: removeUser
       description: removes a system under test
-      operationId: RemoveSystemUnderTest
+      security:
+        JWT: []
       parameters:
       - name: name
         in: path
@@ -693,17 +685,17 @@ components:
         message:
           type: string
         service:
-          $ref: '#/components/schemas/VirtualService'
+          $ref: '#/components/schemas/Service'
 
   schemas:
-    VirtualService:
-      title: HttpService
+    Service:
+      title: Service
       type: object
       properties:
         sut:
-          $ref: '#/components/schemas/SystemUnderTest'
+          $ref: '#/components/schemas/System'
         user:
-          $ref: '#/components/schemas/UserDetails'
+          $ref: '#/components/schemas/User'
         name:
           type: string
         type:
@@ -717,7 +709,7 @@ components:
         rrpairs:
           type: array
           items:
-            $ref: '#/components/schemas/ReqResPair'
+            $ref: '#/components/schemas/RRPair'
           description: ''
         delay:
           type: integer
@@ -725,8 +717,8 @@ components:
         running:
           type: boolean
 
-    SystemUnderTest:
-      title: SystemUnderTest
+    System:
+      title: System
       type: object
       properties:
         name:
@@ -734,10 +726,10 @@ components:
         members:
           type: array
           items:
-            $ref: '#/components/schemas/UserDetails'
+            $ref: '#/components/schemas/User'
 
-    ReqResPair:
-      title: ReqResPair
+    RRPair:
+      title: RRPair
       type: object
       properties:
         verb:
@@ -758,8 +750,8 @@ components:
         resData:
           type: object
 
-    UserDetails:
-      title: UserDetails
+    User:
+      title: User
       type: object
       properties:
         uid:
@@ -772,9 +764,9 @@ components:
       type: object
       properties:
         service:
-          $ref: '#/components/schemas/VirtualService'
+          $ref: '#/components/schemas/Service'
         sut:
-          $ref: '#/components/schemas/SystemUnderTest'
+          $ref: '#/components/schemas/System'
         path:
           type: string
         remoteHost:
@@ -795,8 +787,6 @@ components:
           items:
             type: string
 tags:
-- name: token
-  description: ''
 - name: services
   description: ''
 - name: recordings
@@ -806,4 +796,6 @@ tags:
 - name: systems
   description: ''
 - name: users
+  description: ''
+- name: token
   description: ''
