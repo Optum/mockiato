@@ -20,28 +20,28 @@ function rejectInvalid(req, res, next) {
 }
 
 //Upload zip in upload directory and extract the zip in RRPair directory
-router.post('/zipUploadAndExtract', upload.single('zipFile'), servCtrl.zipUploadAndExtract);
+router.post('/fromPairs/upload', upload.single('zipFile'), servCtrl.zipUploadAndExtract);
 
 //create service from RR Pairs present in RRPair directory
-router.post('/publishExtractedRRPairs', servCtrl.publishExtractedRRPairs);
+router.post('/fromPairs/publish', servCtrl.publishExtractedRRPairs);
 
 //Upload openapi or wsdl spec in upload directory.
-router.post('/specUpload', upload.single('specFile'), servCtrl.specUpload);
+router.post('/fromSpec/upload', upload.single('specFile'), servCtrl.specUpload);
 
 //create openapi or wsdl service from open spec or wsdl present in upload directory
-router.post('/publishUploadedSpec', servCtrl.publishUploadedSpec);
+router.post('/fromSpec/publish', servCtrl.publishUploadedSpec);
 
 // retrieve archive services
 router.get('/archive', servCtrl.getArchiveServices);
 
 //delete a virtual service from Archive
-router.delete('/deleteFrmArchive/:id', servCtrl.permanentDeleteService);
+router.delete('/archive/:id', servCtrl.permanentDeleteService);
 
 // restore a virtual service from Archive
-router.delete('/restoreFrmArchive/:id', servCtrl.restoreService);
+router.post('/archive/:id/restore', servCtrl.restoreService);
 
 // get Service Info for a virtual service from Archive
-router.get('/infoFrmArchive/:id', servCtrl.getArchiveServiceInfo);
+router.get('/archive/:id', servCtrl.getArchiveServiceInfo);
 
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
@@ -56,13 +56,13 @@ router.get('/', servCtrl.getServicesByQuery);
 router.get('/sut/:name', servCtrl.getServicesBySystem);
 
 // retrieve services by SUT Archive
-router.get('/sut/archive/:name', servCtrl.getServicesArchiveBySystem);
+router.get('/sut/:name/archive', servCtrl.getServicesArchiveBySystem);
 
 // retrieve services by user
 router.get('/user/:uid', servCtrl.getServicesByUser);
 
 // retrieve services by user Archive
-router.get('/user/archive/:uid', servCtrl.getArchiveServicesByUser);
+router.get('/user/:uid/archive', servCtrl.getArchiveServicesByUser);
 
 // update a virtual service by ID
 router.put('/:id', servCtrl.updateService);

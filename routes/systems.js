@@ -8,6 +8,6 @@ router.get('/', sysCtrl.getSystems);
 router.post('/', sysCtrl.addSystem);
 router.delete('/:name', tokenMiddleware, sysCtrl.delSystem);
 router.get('/:name', sysCtrl.getOneSystem);
-router.put('/:name', sysCtrl.updateGroup)
+router.put('/:name', sysCtrl.updateGroup);
 
 module.exports = router;

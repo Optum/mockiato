@@ -155,7 +155,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
 
             this.getServiceForArchiveSUT = function(name) {
-              return $http.get('/api/services/sut/archive/' + name);
+              return $http.get('/api/services/sut/' + name + '/archive');
             };
 
             this.getServiceByUser = function(name) {
@@ -163,7 +163,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
             
             this.getServiceByArchiveUser = function(name) {
-              return $http.get('/api/services/user/archive/' + name);
+              return $http.get('/api/services/user/' + name + '/archive');
             };
 
             this.getServicesFiltered = function(sut, user) {
@@ -436,7 +436,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
 
             this.getArchiveServiceById = function(id) {
-              return $http.get('/api/services/infoFrmArchive/' + id);
+              return $http.get('/api/services/archive/' + id);
           };
 
             this.deleteServiceAPI = function(service) {
@@ -446,12 +446,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
             this.deleteServiceArchive = function(service) {
               var token = authService.getUserInfo().token;
-              return $http.delete('/api/services/deleteFrmArchive/' + service._id + '?token=' + token);
+              return $http.delete('/api/services/archive/' + service._id + '?token=' + token);
             };
 
           this.restoreService = function(service) {
             var token = authService.getUserInfo().token;
-            return $http.delete('/api/services/restoreFrmArchive/' + service._id + '?token=' + token);
+            return $http.post('/api/services/archive/' + service._id + '/restore?token=' + token);
           };
 
             this.toggleServiceAPI = function(service) {
@@ -598,7 +598,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           fd.append('zipFile', uploadRRPair);
           var params = {};
           params.token = authService.getUserInfo().token;
-          $http.post('/api/services/zipUploadAndExtract', fd, {
+          $http.post('/api/services/fromPairs/upload', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
@@ -644,7 +644,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             });
 
 
-            $http.post('/api/services/publishExtractedRRPairs', fd, {
+            $http.post('/api/services/fromPairs/publish', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
@@ -674,7 +674,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           fd.append('specFile', uploadSpec);
           var params = {};
           params.token = authService.getUserInfo().token;
-          $http.post('/api/services/specUpload', fd, {
+          $http.post('/api/services/fromSpec/upload', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
@@ -721,7 +721,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               $('#genricMsg-dialog').modal('toggle');
             });
 
-            $http.post('/api/services/publishUploadedSpec', fd, {
+            $http.post('/api/services/fromSpec/publish', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
