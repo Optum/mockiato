@@ -285,28 +285,28 @@ describe('API tests', function() {
         });
     });
 
-    // describe('Create service from OpenAPI spec', function() {
-    //     it('Responds with the new service id', function(done) {
-    //         request
-    //             .post(resource + '/fromSpec/publish' + token)
-    //             .query(oasQuery)
-    //             .send()
-    //             .expect(200)
-    //             .expect(function(res) {
-    //                 id = res.body._id;
-    //             })
-    //             .end(done);
-    //     });
-    // });
+    describe('Create service from OpenAPI spec', function() {
+        it('Responds with the new service id', function(done) {
+            request
+                .post(resource + '/fromSpec/publish' + token)
+                .query(oasQuery)
+                .send()
+                .expect(200)
+                .expect(function(res) {
+                    id = res.body._id;
+                })
+                .end(done);
+        });
+    });
 
-    // describe('Delete OpenAPI service', function() {
-    //     it('Responds with the deleted service', function(done) {
-    //         request
-    //             .delete(resource + '/' + id + token)
-    //             .expect(200)
-    //             .end(done);
-    //     });
-    // });
+    describe('Delete OpenAPI service', function() {
+        it('Responds with the deleted service', function(done) {
+            request
+                .delete(resource + '/' + id + token)
+                .expect(200)
+                .end(done);
+        });
+    });
 
     describe('Create new group', function() {
         it('Responds with the group', function(done) {
