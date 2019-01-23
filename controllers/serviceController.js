@@ -38,22 +38,39 @@ function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
     service.rrpairs = [];
     doc.rrpairs.forEach(function(rrpair){
       var addThisRRPair = true;
+      if(doc.type != "MQ"){
+        //If req/rsp don't contain search string, fail this one
+        if(searchOnReq && rrpair.reqDataString){
+          addThisRRPair = rrpair.reqDataString.toLowerCase().includes(searchOnReq.toLowerCase());
+        }
+        if(searchOnRsp && addThisRRPair && rrpair.resDataString){
+          addThisRRPair = rrpair.resDataString.toLowerCase().includes(searchOnRsp.toLowerCase());;
+        }
+         //If req/rsp search is enabled and it has no req/rsp, fail it
+        if(searchOnReq && !(rrpair.reqDataString)){
+          addThisRRPair = false;
+        }
+        if(searchOnRsp && !(rrpair.resDataString)){
+          addThisRRPair = false;
+        }
+      }else{
+        //MQ doesn't have/need cached strings
+        if(searchOnReq && rrpair.reqData){
+          addThisRRPair = rrpair.reqData.toLowerCase().includes(searchOnReq.toLowerCase());
+        }
+        if(searchOnRsp && addThisRRPair && rrpair.resData){
+          addThisRRPair = rrpair.resData.toLowerCase().includes(searchOnRsp.toLowerCase());;
+        }
+         //If req/rsp search is enabled and it has no req/rsp, fail it
+        if(searchOnReq && !(rrpair.reqData)){
+          addThisRRPair = false;
+        }
+        if(searchOnRsp && !(rrpair.resData)){
+          addThisRRPair = false;
+        }
+      }
 
-      //If req/rsp don't contain search string, fail this one
-      if(searchOnReq && rrpair.reqDataString){
-        addThisRRPair = rrpair.reqDataString.toLowerCase().includes(searchOnReq.toLowerCase());
-      }
-      if(searchOnRsp && addThisRRPair && rrpair.resDataString){
-        addThisRRPair = rrpair.resDataString.toLowerCase().includes(searchOnRsp.toLowerCase());;
-      }
-
-      //If req/rsp search is enabled and it has no req/rsp, fail it
-      if(searchOnReq && !(rrpair.reqDataString)){
-        addThisRRPair = false;
-      }
-      if(searchOnRsp && !(rrpair.resDataString)){
-        addThisRRPair = false;
-      }
+     
 
       //If we're still supposed to add this..
       if(addThisRRPair){
@@ -140,21 +157,43 @@ function searchServices(req,rsp){
     mongooseQuery.limit(parseInt(limit));
    }
    mongooseQuery.exec(function(err,docs){
-      var results = [];
+    var results = [];
 
-      if(err){
-        handleError(err,rsp,500);
-      }
-      else{
+    if(err){
+      handleError(err,rsp,500);
+    }
+    else{
       //Trim down service and add it to list of services to return
       docs.forEach(function(doc){
         var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
         results.push(service);
       });
-      
-      return rsp.json(results);
+
+      //Query MQServices
+      var MQQuery = MQService.find(search);
+      if(sortBy){
+       var sort = {};
+       sort[sortBy] = ascDesc;
+       MQQuery.sort(sort);
+      }
+      if(limit){
+        MQQuery.limit(parseInt(limit));
+      }
+      MQQuery.exec(function(err,docs){
+        if(err){
+          handleError(err,rsp,500);
+        }
+        else{
+          //Trim down service and add it to list of services to return
+          docs.forEach(function(doc){
+            var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
+            results.push(service);
+          });
+          return rsp.json(results);
+        }
+      });
     }
-   });
+  });
 }
 
 
