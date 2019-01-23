@@ -169,29 +169,34 @@ function searchServices(req,rsp){
         results.push(service);
       });
 
-      //Query MQServices
-      var MQQuery = MQService.find(search);
-      if(sortBy){
-       var sort = {};
-       sort[sortBy] = ascDesc;
-       MQQuery.sort(sort);
-      }
-      if(limit){
-        MQQuery.limit(parseInt(limit));
-      }
-      MQQuery.exec(function(err,docs){
-        if(err){
-          handleError(err,rsp,500);
+      if(results.length < limit){
+        //Query MQServices
+        var MQQuery = MQService.find(search);
+        if(sortBy){
+        var sort = {};
+        sort[sortBy] = ascDesc;
+        MQQuery.sort(sort);
         }
-        else{
-          //Trim down service and add it to list of services to return
-          docs.forEach(function(doc){
-            var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
-            results.push(service);
-          });
-          return rsp.json(results);
+        if(limit){
+          MQQuery.limit(parseInt(limit) - results.length);
         }
-      });
+        MQQuery.exec(function(err,docs){
+          if(err){
+            handleError(err,rsp,500);
+          }
+          else{
+            //Trim down service and add it to list of services to return
+            
+            docs.forEach(function(doc){
+              var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
+              results.push(service);
+            });
+            return rsp.json(results);
+          }
+        });
+      }else{
+        return rsp.json(results);
+      }
     }
   });
 }
