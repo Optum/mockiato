@@ -23,6 +23,6 @@ if (process.env.MOCKIATO_SPLUNK_ENABLED) {
     transports.push(new SplunkStreamEvent({ splunk: splunkSettings }));
 }
 
-logger = winston.createLogger({ format: winston.format.logstash(), transports: transports });
+logger = winston.createLogger({ transports: transports });
   
 module.exports = logger;
