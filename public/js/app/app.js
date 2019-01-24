@@ -116,6 +116,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
 
             .when("/selectService", {
                 templateUrl: "partials/selectService.html",
+                controller: "selectServiceController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
                         var userInfo = authService.getUserInfo();
