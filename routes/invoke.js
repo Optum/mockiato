@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const removeRoute = require('../lib/remove-route');
 const requestNode = require('request');
+const Service = require('../models/http/Service');
+const MQService = require('../models/mq/MQService');
+const timeBetweenTransactionUpdates = 5000;
 
 var transactions = {};
 
@@ -18,7 +21,18 @@ function incrementTransactionCount(serviceId){
   console.log(transactions);
 }
 
-
+  /**
+   * Saves transactions{} to the db, and clears transactions{}. 
+   */
+function saveTransactonCounts(){
+    var myTransactions = transactions;
+    transactions = {};
+    for(let id in myTransactions){
+        Service.findByIdAndUpdate(id,{$inc:{txnCount:myTransactions[id]}}).exec();
+        MQService.findByIdAndUpdate(id,{$inc:{txnCount:myTransactions[id]}}).exec();
+    }
+    setTimeout(saveTransactonCounts,timeBetweenTransactionUpdates);
+}
 
 /**
  * Takes a response from a remote host and maps into express's response to give to the client
@@ -28,15 +42,16 @@ function incrementTransactionCount(serviceId){
 function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
     var body = remoteBody || remoteRsp.body;
     rsp.status(remoteRsp.statusCode);
-    
+
     rsp.set(remoteRsp.headers);
     if(body){
         rsp.send(new Buffer(body));
     }else{
         rsp.end();
     }
-  }
-  
+}
+
+
   
   /**
    * Makes a backend request based on the incoming request and the service associated. 
@@ -190,3 +205,5 @@ module.exports = {
     incrementTransactionCount : incrementTransactionCount,
     router : router
 };
+
+setTimeout(saveTransactonCounts,timeBetweenTransactionUpdates);
