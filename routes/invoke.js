@@ -3,6 +3,23 @@ const router = express.Router();
 const removeRoute = require('../lib/remove-route');
 const requestNode = require('request');
 
+var transactions = {};
+
+/**
+ * Log a transaction against given service
+ * @param {*} serviceId ID of the service to increment
+ */
+function incrementTransactionCount(serviceId){
+  if(transactions[serviceId]){
+    transactions[serviceId]++;
+  }else{
+    transactions[serviceId] = 1;
+  }
+  console.log(transactions);
+}
+
+
+
 /**
  * Takes a response from a remote host and maps into express's response to give to the client
  * @param {*} remoteRsp Response from remote host
@@ -126,6 +143,7 @@ function registerServiceInvoke(service){
             if(service.liveInvocation.liveFirst && !req._mockiatoLiveInvokeHasRun){
                 invokeBackendVerify(service,req).then(function(remoteRsp,remoteRspBody){
                     rsp.set('_mockiato-is-live-backend','true');
+                    incrementTransactionCount(service._id);
                     mapRemoteResponseToResponse(rsp,remoteRsp,remoteRspBody);
                 },function(err){
                     //if fails for any reason, mark error and continue
@@ -137,6 +155,7 @@ function registerServiceInvoke(service){
             }else if(!(service.liveInvocation.liveFirst)){
                 invokeBackend(service,req).then(function(remoteRsp,remoteRspBody){
                     rsp.set('_mockiato-is-live-backend','true');
+                    incrementTransactionCount(service._id);
                     mapRemoteResponseToResponse(rsp,remoteRsp,remoteRspBody);
                 },function(err){
                     //if fails for any reason, mark error and continue
@@ -168,5 +187,6 @@ module.exports = {
     invokeBackend : invokeBackend,
     invokeBackendVerify : invokeBackendVerify,
     mapRemoteResponseToResponse : mapRemoteResponseToResponse,
+    incrementTransactionCount : incrementTransactionCount,
     router : router
 };
