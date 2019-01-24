@@ -47,7 +47,7 @@ paths:
       description: retrieves the virtual services
       parameters:
       - name: sut
-        in: path
+        in: query
         description: name of system under test
         required: false
         style: simple
@@ -55,7 +55,7 @@ paths:
         schema:
           type: string
       - name: user
-        in: path
+        in: query
         description: name of user
         required: false
         style: simple
@@ -103,6 +103,64 @@ paths:
               schema:
                 description: successful response
                 $ref: '#/components/schemas/Service'
+
+  /services/search:
+    get:
+      tags:
+      - services
+      description: retrieves the virtual services
+      parameters:
+      - name: requestContains
+        in: query
+        description: Filters only services that have rr pairs that contain this string in their request
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: responseContains
+        in: query
+        description: Filters only services that have rr pairs that contain this string in their response
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: Filters on name of service
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: sortBy
+        in: query
+        description: created sorts on created datetime, updated sorts on updated datetime
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+          example: created
+      - name: asc
+        in: query
+        description: if set (any value or none), sort ascending instead of descending
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+                description: successful response
 
   /services/{id}:
     get:
