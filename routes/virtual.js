@@ -339,7 +339,7 @@ function deregisterService(service) {
 }
 
 function logEvent(path, label, msg) {
-  debug(msg);
+  debug(path, label, msg);
 
   let event = {};
   event.path = path;
