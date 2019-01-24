@@ -154,6 +154,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services/sut/' + name);
             };
 
+            this.getRecentModifiedServices = function(num){
+              return $http.get('/api/services/search?sortBy=updated&limit=' + num);
+            }
+
             this.getServiceForArchiveSUT = function(name) {
               return $http.get('/api/services/sut/' + name + '/archive');
             };
