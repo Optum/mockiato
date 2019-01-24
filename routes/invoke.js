@@ -18,7 +18,6 @@ function incrementTransactionCount(serviceId){
   }else{
     transactions[serviceId] = 1;
   }
-  console.log(transactions);
 }
 
   /**
