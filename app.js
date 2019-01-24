@@ -18,6 +18,7 @@ const helmet = require('helmet');
 const actuator = require('express-actuator');
 var schedule = require('node-schedule');
 const Archive  = require('./models/common/Archive');
+var constants = require('./lib/util/constants');
 
 // connect to database
 const db = require('./models/db');
@@ -120,6 +121,13 @@ function init() {
         success: true,
         token: token
       });
+  });
+
+  //When a Ldap user try to register externally. Show message.
+  app.get('/register', function (req, res) {
+    const htmlView = constants.ORG_USR_REGISTER_VIEW;
+    res.set('Content-Type', 'text/html');
+    res.send(htmlView);
   });
 
   // expose API and virtual SOAP / REST services
