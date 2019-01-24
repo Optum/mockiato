@@ -3,7 +3,6 @@ const router = express.Router();
 const removeRoute = require('../lib/remove-route');
 const requestNode = require('request');
 const Service = require('../models/http/Service');
-const MQService = require('../models/mq/MQService');
 const timeBetweenTransactionUpdates = 5000;
 
 var transactions = {};
