@@ -30,7 +30,8 @@ function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
     user : {uid : doc.user.uid, _id : doc.user._id},
     basePath : doc.basePath,
     createdAt : doc.createdAt,
-    updatedAt : doc.updatedAt
+    updatedAt : doc.updatedAt,
+    lastUpdateUser: doc.lastUpdateUser
   };
 
   //If we have RRpairs to filter...
@@ -168,13 +169,14 @@ function searchServices(req,rsp){
         var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
         results.push(service);
       });
-
+      
+    
       //Query MQServices
       var MQQuery = MQService.find(search);
       if(sortBy){
-       var sort = {};
-       sort[sortBy] = ascDesc;
-       MQQuery.sort(sort);
+      var sort = {};
+      sort[sortBy] = ascDesc;
+      MQQuery.sort(sort);
       }
       if(limit){
         MQQuery.limit(parseInt(limit));
@@ -184,14 +186,36 @@ function searchServices(req,rsp){
           handleError(err,rsp,500);
         }
         else{
+
           //Trim down service and add it to list of services to return
           docs.forEach(function(doc){
             var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
             results.push(service);
           });
+
+          //Sort the combined docs
+          if(sortBy){
+            results.sort(function(a,b){
+              var ascM = ascDesc == "desc" ? -1 : 1;
+              if(sortBy == "createdAt"){
+                a = new Date(a.createdAt);
+                b = new Date(b.createdAt);
+              }else{
+                a = new Date(a.updatedAt);
+                b = new Date(b.updatedAt);
+              }
+              return (a - b) * ascM; 
+            });
+          } 
+
+          //Trim to limit
+          if(limit)
+            results = results.slice(0,limit);
+          
           return rsp.json(results);
         }
       });
+      
     }
   });
 }

@@ -959,6 +959,15 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $('#success-modal').modal('toggle');
           }
     }])
+    .controller("selectServiceController", ['$scope', 'apiHistoryService',
+    function($scope,apiHistoryService){
+      $scope.serviceList = [];
+      apiHistoryService.getRecentModifiedServices(5).then(function(response){
+        var data = response.data;
+        $scope.serviceList = data;
+        console.log(data);
+      });
+    }])
     .controller("recorderListController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
     function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
       $scope.sutlist = sutService.getAllSUT();
