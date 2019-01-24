@@ -62,7 +62,7 @@
     </div>
     <p class="text-muted" style='font-size: 10.5px;'>**Either upload a spec or paste a URL. If you do both then only URL will be considered.</p>
 
-    <div class="form-group row" ng-show="uploadSpec && uploadSuccessMessage">
+    <div class="form-group row" ng-show="(uploadSpec && uploadSuccessMessage) || flag">
         <div class="col-xs-9">
             <h3><i>Preview</i></h3>
             <br>
