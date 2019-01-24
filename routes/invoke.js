@@ -28,7 +28,6 @@ function saveTransactonCounts(){
     transactions = {};
     for(let id in myTransactions){
         Service.findByIdAndUpdate(id,{$inc:{txnCount:myTransactions[id]}}).exec();
-        MQService.findByIdAndUpdate(id,{$inc:{txnCount:myTransactions[id]}}).exec();
     }
     setTimeout(saveTransactonCounts,timeBetweenTransactionUpdates);
 }
