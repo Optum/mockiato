@@ -36,10 +36,13 @@ function delay(ms,msMax) {
 function registerRRPair(service, rrpair) {
   let msg;
   let path;
+  let label;
   let matched;
 
   if (rrpair.path) path = service.basePath + rrpair.path;
   else path = service.basePath;
+
+  if (rrpair.label) label = rrpair.label;
 
   router.all(path, delay(service.delay, service.delayMax), function(req, resp, next) {
     //Function for handling incoming req against this RR pair
@@ -64,13 +67,14 @@ function registerRRPair(service, rrpair) {
         logEvent(msg);
         return next();
       }
-      debug("Request matched? " + matched);
+
+      logEvent(path, label, "Request matched? " + matched);
       
       // run the next callback if request not matched
       if (!matched) {
         msg = "Request bodies don't match";
         req.msgContainer.reason = msg;
-        logEvent(msg);
+        logEvent(path, label, msg);
         return next();
       }
     }
@@ -134,8 +138,8 @@ function registerRRPair(service, rrpair) {
               trimmedReqData[field] = flatReqData[field];
             }
             
-            logEvent('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
-            logEvent('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
+            logEvent(path, label, 'received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
+            logEvent(path, label, 'expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
 
             match = deepEquals(trimmedPayload, trimmedReqData);
             
@@ -160,8 +164,8 @@ function registerRRPair(service, rrpair) {
             
             if (sentQuery != queryVal[1]) {
               matchedQueries = false;
-              logEvent('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
-              logEvent('received query: ' + queryVal[0] + ': ' + sentQuery);
+              logEvent(path, label, 'expected query: ' + queryVal[0] + ': ' + queryVal[1]);
+              logEvent(path, label, 'received query: ' + queryVal[0] + ': ' + sentQuery);
             }
           });
 
@@ -180,8 +184,8 @@ function registerRRPair(service, rrpair) {
               if (sentVal != keyVal[1]) {
                 // try the next rr pair if headers do not match
                 matchedHeaders = false;
-                logEvent('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
-                logEvent('received header: ' + keyVal[0] + ': ' + sentVal);
+                logEvent(path, label, 'expected header: ' + keyVal[0] + ': ' + keyVal[1]);
+                logEvent(path, label, 'received header: ' + keyVal[0] + ': ' + sentVal);
               }
             }
           });
@@ -217,8 +221,8 @@ function registerRRPair(service, rrpair) {
       }
 
       // request was not matched
-      logEvent("expected payload: " + JSON.stringify(reqData, null, 2));
-      logEvent("received payload: " + JSON.stringify(payload, null, 2));
+      logEvent(path, label, "expected payload: " + JSON.stringify(reqData, null, 2));
+      logEvent(path, label, "received payload: " + JSON.stringify(payload, null, 2));
 
       return false;
     }
@@ -229,8 +233,8 @@ function registerRRPair(service, rrpair) {
       if (resHeaders) {   
       
       
-        if(rrpair.label){
-          resHeaders['Mockiato-RRPair-Label'] = rrpair.label;
+        if(label){
+          resHeaders['Mockiato-RRPair-Label'] = label;
         }
        
         if (!resHeaders['Content-Type']) {
@@ -283,7 +287,7 @@ function registerRRPair(service, rrpair) {
 function registerAllRRPairsForAllServices() {
   Service.find({ $or: [{ type:'SOAP' }, { type:'REST' }] }, function(err, services) {
     if (err) {
-      logEvent('Error registering services: ' + err);
+      debug('Error registering services: ' + err);
       return;
     }
 
@@ -301,7 +305,7 @@ function registerAllRRPairsForAllServices() {
     }
     catch(e) {
       console.log(e);
-      logEvent('Error registering services: ' + e);
+      debug('Error registering services: ' + e);
     }
   });
 }
@@ -314,7 +318,7 @@ function deregisterRRPair(service, rrpair) {
 
 function registerService(service) {
   if (!service || !service.rrpairs) {
-    logEvent('cannot register undefined service');
+    debug('cannot register undefined service');
     return;
   }
 
@@ -325,7 +329,7 @@ function registerService(service) {
 
 function deregisterService(service) {
   if (!service || !service.rrpairs) {
-    logEvent('cannot deregister undefined service');
+    debug('cannot deregister undefined service');
     return;
   }
 
@@ -334,9 +338,15 @@ function deregisterService(service) {
   });
 }
 
-function logEvent(msg) {
-  debug(msg);
-  logger.info(msg);
+function logEvent(path, label, msg) {
+  debug(path, label, msg);
+
+  let event = {};
+  event.path = path;
+  event.label = label;
+  event.msg = msg;
+
+  logger.info(event);
 }
 
 module.exports = {
