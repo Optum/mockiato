@@ -151,6 +151,14 @@ paths:
         explode: false
         schema:
           type: string
+      - name: authorizedOnly
+        in: query
+        description: When passed a username, restricts results to only services that user is authorized to edit. 
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
       responses:
         200:
           description: successful response
