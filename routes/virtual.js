@@ -8,7 +8,6 @@ const logger = require('../winston');
 const invoke = require('./invoke');
 
 
-
   
 // function to simulate latency
 function delay(ms,msMax) {
@@ -216,6 +215,7 @@ function registerRRPair(service, rrpair) {
           resp.sendStatus(200);
         }
 
+        invoke.incrementTransactionCount(service._id);
         // request was matched
         return true;
       }
@@ -269,6 +269,7 @@ function registerRRPair(service, rrpair) {
       req._mockiatoLiveInvokeHasRun = true;
       prom.then(function(remoteRsp,remoteRspBody){
         resp.set('_mockiato-is-live-backend','true');
+        invoke.incrementTransactionCount(service._id);
         invoke.mapRemoteResponseToResponse(resp,remoteRsp,remoteRspBody);
         
       },function(err){
