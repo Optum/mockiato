@@ -49,10 +49,10 @@
 
     <div class="row">
         <div class="col-xs-2">
-            <select class="form-control" id="user" title="Select user" ng-model="member" ng-options="user.name for user in userlist | orderBy:'name' | filter: removeMembers"></select>
+            <select class="form-control" id="user" title="Select user" ng-disabled="!selectedSut.name" ng-model="member" ng-options="user.name for user in userlist | orderBy:'name' | filter: removeMembers"></select>
         </div>
         <div class="col-xs-4">
-            <button type="button" class="btn btn-success" ng-disabled="!member" ng-click="addMember()">
+            <button type="button" class="btn btn-success" ng-disabled="!selectedSut.name || !member" ng-click="addMember()">
                 <span class="glyphicon glyphicon-plus"></span>
                 Add member
             </button>

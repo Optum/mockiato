@@ -959,6 +959,15 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $('#success-modal').modal('toggle');
           }
     }])
+    .controller("selectServiceController", ['$scope', 'apiHistoryService',
+    function($scope,apiHistoryService){
+      $scope.serviceList = [];
+      apiHistoryService.getRecentModifiedServices(5).then(function(response){
+        var data = response.data;
+        $scope.serviceList = data;
+        console.log(data);
+      });
+    }])
     .controller("recorderListController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
     function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
       $scope.sutlist = sutService.getAllSUT();
@@ -1509,6 +1518,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           $scope.publishspec = function (spec) {
             $scope.uploadSuccessMessage = "";
             $scope.uploadErrMessage = "";
+            $scope.flag = false;
             //conditions are complex here. Any change will break validations. - Pradeep
             if ((typeof spec.url !== 'undefined' && spec.url !== "" && $scope.spec.type == 'openapi' && (spec.url.endsWith(".yaml") || spec.url.endsWith(".yml") || spec.url.endsWith(".json")))
               || (typeof spec.url !== 'undefined' && spec.url !== "" && $scope.spec.type == 'wsdl' && spec.url.endsWith("?wsdl"))
@@ -1523,7 +1533,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 file_id = "";
                 filename = "";
               }
-              publishSpecService.publishSpec(spec, file_id, filename);
+              publishSpecService.publishSpec(spec, file_id, filename, function(message){
+                if(message == 'twoSeviceDiffNameSameBasePath')
+                { $scope.flag= true;}
+              });
             } else {
               $scope.uploadErrMessage = ctrlConstants.SPEC_FILE_TYPE_URL_PUBLISH_ERROR;
               $scope.uploadSuccessMessage = "";

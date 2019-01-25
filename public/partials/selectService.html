@@ -27,3 +27,23 @@
         <td>You may import a virtual service in JSON format. This can be used in tandem with the export feature on the Browse page.</td>
     </tr>
 </table>
+
+<h2>Recently Modified Services</h2>
+<table class="table table-bordered table-striped well">
+    <tr>
+        <th>Name</th>
+        <th>Owner</th>
+        <th>Group</th>
+        <th>Type</th>
+        <th>Base URL</th>
+        <th>Last Modified By</th>
+    </tr>
+    <tr ng-repeat="service in serviceList" style=" word-break:break-all">
+        <td style="width:120px"><a href="#!update/{{ service.id }}/frmSelectService">{{service.name}}</a></td>
+        <td>{{service.user.uid}}</td>
+        <td style="width:120px">{{service.sut.name}}</td>
+        <td>{{service.type}}</td>
+        <td class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
+        <td>{{service.lastUpdateUser.uid}}</td>
+    </tr>
+</table>

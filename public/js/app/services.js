@@ -154,6 +154,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/services/sut/' + name);
             };
 
+            this.getRecentModifiedServices = function(num){
+              return $http.get('/api/services/search?sortBy=updated&limit=' + num);
+            }
+
             this.getServiceForArchiveSUT = function(name) {
               return $http.get('/api/services/sut/' + name + '/archive');
             };
@@ -693,7 +697,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
     .service('publishSpecService', ['$http', '$location', 'authService', 'servConstants',
     function ($http, $location, authService, servConstants) {
-        this.publishSpec = function(spec, uploaded_file_id, uploaded_file_name) {
+        this.publishSpec = function(spec, uploaded_file_id, uploaded_file_name,message) {
           var fd = new FormData();
           var params = {};
           params.token = authService.getUserInfo().token;
@@ -736,7 +740,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   }
                   else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-               } })
+               } 
+               return message(response.data.error);
+               })
               .catch(function (err) {
                 console.log(err);
                 $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
