@@ -191,6 +191,15 @@ function searchServices(req,rsp){
         
       
         //Query MQServices
+        if(search['rrpairs.resDataString']){
+          search['rrpairs.resData'] = search['rrpairs.resDataString'];
+          delete search['rrpairs.resDataString'];
+        }
+        if(search['rrpairs.reqDataString']){
+          search['rrpairs.reqData'] = search['rrpairs.reqDataString'];
+          delete search['rrpairs.reqDataString'];
+        }
+        console.log(search);
         var MQQuery = MQService.find(search);
         if(sortBy){
         var sort = {};
