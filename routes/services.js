@@ -34,14 +34,23 @@ router.post('/fromSpec/publish', servCtrl.publishUploadedSpec);
 // retrieve archive services
 router.get('/archive', servCtrl.getArchiveServices);
 
+// retrieve draft services
+router.get('/draft', servCtrl.getDraftServices);
+
 //delete a virtual service from Archive
 router.delete('/archive/:id', servCtrl.permanentDeleteService);
+
+//delete a virtual service from Draft Service
+router.delete('/draft/:id', servCtrl.deleteDraftService);
 
 // restore a virtual service from Archive
 router.post('/archive/:id/restore', servCtrl.restoreService);
 
 // get Service Info for a virtual service from Archive
 router.get('/archive/:id', servCtrl.getArchiveServiceInfo);
+
+// get Service Info for a virtual service from DraftService
+router.get('/draft/:id', servCtrl.getDraftServiceById);
 
 // add a new virtual service
 router.post('/', rejectInvalid, servCtrl.addService);
@@ -62,14 +71,23 @@ router.get('/sut/:name', servCtrl.getServicesBySystem);
 // retrieve services by SUT Archive
 router.get('/sut/:name/archive', servCtrl.getServicesArchiveBySystem);
 
+// retrieve services by SUT Draft
+router.get('/sut/:name/draft', servCtrl.getServicesDraftBySystem);
+
 // retrieve services by user
 router.get('/user/:uid', servCtrl.getServicesByUser);
 
 // retrieve services by user Archive
 router.get('/user/:uid/archive', servCtrl.getArchiveServicesByUser);
 
+// retrieve services by user Draft
+router.get('/user/:uid/draft', servCtrl.getDraftServicesByUser);
+
 // update a virtual service by ID
 router.put('/:id', servCtrl.updateService);
+
+// update a virtual service by ID
+router.put('/draftservice/:id', servCtrl.updateServiceAsDraft);
 
 // delete a virtual service by ID
 router.delete('/:id', servCtrl.deleteService);
@@ -77,6 +95,8 @@ router.delete('/:id', servCtrl.deleteService);
 // toggle a service on / off TODO: toggle MQ services
 router.post('/:id/toggle', servCtrl.toggleService);
 
+// add a new draft service
+router.post('/draftservice', servCtrl.addServiceAsDraft);
 
 
 

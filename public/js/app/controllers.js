@@ -163,8 +163,12 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             }
             catch (e) {
               $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-              $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);              
               $('#genricMsg-dialog').modal('toggle');
+              $('#modal-btn-yes').on("click", function () {
+                apiHistoryService.saveServiceAsDraft(servicevo, false);
+              });
             }
           };
     }])
@@ -577,13 +581,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
   
                         $scope.servicevo.rawpairs.push(rr);
                         rrid++;
-                      });
-
-
-
-                      
-
-
+                      }); 
                   })
   
                   .catch(function(err) {
@@ -592,6 +590,508 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               };
               this.getService();
       }])
+
+
+    //   .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
+    //   function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
+        
+    //     $scope.statusCodes = suggestionsService.getStatusCodes();
+    //       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
+    //         this.getService = function() {
+    //             apiHistoryService.getDraftServiceById($routeParams.id)
+    //             .then(function(response) {
+    //                 var service;
+    //                 if(response.data.service) service = response.data.service;
+    //                 if(response.data.mqservice) service = response.data.mqservice;
+    //                 console.log(service);
+    //                 $scope.servicevo = {
+    //                   id: service._id,
+    //                   sut: service.sut,
+    //                   name: service.name,
+    //                   type: service.type,
+    //                   delay: service.delay,
+    //                   delayMax: service.delayMax,
+    //                   txnCount: service.txnCount,
+    //                   basePath: service.basePath                      
+    //                 };
+                  
+    //               $scope.myUser = authService.getUserInfo().username;
+                
+    //              //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+    //                  $http.get('/api/systems')
+    //                    .then(function (response) {
+    //                      var newsutlist = [];
+    //                      response.data.forEach(function (sutData) {
+    //                        var sut = {
+    //                          name: sutData.name,
+    //                          members: sutData.members
+    //                        };
+    //                        sut.members.forEach(function (memberlist) {
+    //                          if (memberlist.includes($scope.myUser)) {
+    //                           newsutlist.push(sut.name);
+    //                          }
+    //                        });
+    //                      });
+    //                      $scope.canEdit = function () {
+    //                       if (newsutlist.includes($scope.servicevo.sut.name )) {
+    //                         return true;
+    //                       }
+    //                       else {
+    //                         return false;
+    //                       }
+    //                     };
+    //                    })
+
+    //                    .catch(function (err) {
+    //                      console.log(err);
+    //                    });
+
+    //                 if(service.lastUpdateUser){
+    //                   $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+    //                 }
+    //                 if(service.createdAt){
+    //                   $scope.servicevo.createdAt = service.createdAt;
+    //                 }
+    //                 if(service.updatedAt){
+    //                   $scope.servicevo.updatedAt = service.updatedAt;
+    //                 }
+
+    //                 $scope.servicevo.matchTemplates = [];
+    //                 $scope.servicevo.rawpairs = [];
+
+    //                 if (service.matchTemplates && service.matchTemplates.length) {
+    //                   service.matchTemplates.forEach(function(template, index) {
+    //                     $scope.servicevo.matchTemplates.push({ id: index, val: template });
+    //                   });
+    //                 }
+    //                 else {
+    //                   $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+    //                 }
+
+    //                 var rrid = 0;
+    //                 service.rrpairs.forEach(function(rr){
+    //                   rr.id = rrid;
+    //                   rr.queriesArr = [];
+    //                   rr.reqHeadersArr = [];
+    //                   rr.resHeadersArr = [];
+    //                   rr.method = rr.verb;
+
+    //                   if (rr.payloadType === 'JSON') {
+    //                     rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+    //                     rr.responsepayload = JSON.stringify(rr.resData, null, 4);
+
+    //                     //Handle empty JSON object- stringify surrounds in "" 
+    //                     if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+    //                       rr.responsepayload = rr.responsepayload.substring(1,3);
+    //                     }
+    //                   }
+    //                   else {
+    //                     rr.requestpayload = rr.reqData;
+    //                     rr.responsepayload = rr.resData;
+    //                   }
+
+    //                   // map object literals to arrays for Angular view
+    //                   if (rr.reqHeaders) {
+    //                     var reqHeads = Object.entries(rr.reqHeaders);
+    //                     var reqHeadId = 0;
+    //                     reqHeads.forEach(function(elem){
+    //                       var head = {};
+
+    //                       head.id = reqHeadId;
+    //                       head.k = elem[0];
+    //                       head.v = elem[1];
+
+    //                       rr.reqHeadersArr.push(head);
+    //                       reqHeadId++;
+    //                     });
+    //                   }
+    //                   else {
+    //                     rr.reqHeadersArr.push({ id: 0 });
+    //                   }
+
+    //                   if (rr.resHeaders) {
+    //                     var resHeads = Object.entries(rr.resHeaders);
+    //                     var resHeadId = 0;
+    //                     resHeads.forEach(function(elem){
+    //                       var head = {};
+
+    //                       head.id = resHeadId;
+    //                       head.k = elem[0];
+    //                       head.v = elem[1];
+
+    //                       rr.resHeadersArr.push(head);
+    //                       resHeadId++;
+    //                     });
+    //                   }
+    //                   else {
+    //                     rr.resHeadersArr.push({ id: 0 });
+    //                   }
+
+    //                   if (rr.queries) {
+    //                     var qs = Object.entries(rr.queries);
+    //                     var qId = 0;
+    //                     qs.forEach(function(elem){
+    //                       var q = {};
+
+    //                       q.id = qId;
+    //                       q.k = elem[0];
+    //                       q.v = elem[1];
+
+    //                       rr.queriesArr.push(q);
+    //                       qId++;
+    //                     });
+    //                   }
+    //                   else {
+    //                     rr.queriesArr.push({ id: 0 });
+    //                   }
+
+    //                   $scope.servicevo.rawpairs.push(rr);
+    //                   rrid++;
+    //                 });
+
+    //             })
+
+    //             .catch(function(err) {
+    //                 console.log(err);
+    //             });
+    //         };
+    //         this.getService();
+    // }]) 
+          .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
+          function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
+            
+            $scope.statusCodes = suggestionsService.getStatusCodes();
+              $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
+              this.getService = function() {
+                  apiHistoryService.getDraftServiceById($routeParams.id)
+
+                  .then(function(response) {
+                      var service;
+                      if(response.data.service) service = response.data.service;
+                      if(response.data.mqservice) service = response.data.mqservice;
+                                        
+                      console.log(service);
+                      $scope.servicevo = {
+                        id: service._id,
+                        sut: service.sut,
+                        name: service.name,
+                        type: service.type,
+                        delay: service.delay,
+                        delayMax: service.delayMax,
+                        txnCount: service.txnCount,
+                        basePath: service.basePath
+                      };
+                      
+                      if(service.liveInvocation){
+                        
+                        $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+                        $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+                        $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+                        $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+                        $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+                        //Extract and build out codes/strings for failures
+                        var failStatusCodes = service.liveInvocation.failStatusCodes;
+                        var failStrings = service.liveInvocation.failStrings;
+                        $scope.servicevo.failStatuses = [];
+                        $scope.servicevo.failStrings = [];
+                        for(var i = 0; i < failStatusCodes.length; i++){
+                          $scope.servicevo.failStatuses[i] = {'id': i, 'val' : failStatusCodes[i]};
+
+                        }
+                        for(var i = 0; i < failStrings.length; i++){
+                          $scope.servicevo.failStrings[i] = {'id': i, 'val' : failStrings[i]};
+                        }
+                        if(!$scope.servicevo.failStatuses.length){
+                          $scope.servicevo.failStatuses[0] = {'id': 0,val:''};  
+                        }
+                        if(!$scope.servicevo.failStrings.length){
+                          $scope.servicevo.failStrings[0] = {'id': 0,val:''};
+                        }
+                        //Select correct radio
+                        if(service.liveInvocation.liveFirst)
+                          $scope.servicevo.liveInvokePrePost = 'PRE';
+                        else  
+                          $scope.servicevo.liveInvokePrePost = 'POST';
+                        
+                      }else{
+                        $scope.servicevo.failStatuses = [];
+                        $scope.servicevo.failStrings = [];
+                        $scope.servicevo.failStatuses[0] = {'id': 0,val:''};      
+                        $scope.servicevo.failStrings[0] = {'id': 0,val:''};
+                      }
+                      console.log($scope.servicevo);
+                    
+                    $scope.myUser = authService.getUserInfo().username;
+                  
+                  //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                      $http.get('/api/systems')
+                        .then(function (response) {
+                          var newsutlist = [];
+                          response.data.forEach(function (sutData) {
+                            var sut = {
+                              name: sutData.name,
+                              members: sutData.members
+                            };
+                            sut.members.forEach(function (memberlist) {
+                              if (memberlist.includes($scope.myUser)) {
+                                newsutlist.push(sut.name);
+                              }
+                            });
+                          });
+
+                          $scope.canEdit = function () {
+                            if (newsutlist.includes($scope.servicevo.sut.name )) {
+                              return true;
+                            }
+                            else {
+                              return false;
+                            }
+                          };
+                        })
+
+                        .catch(function (err) {
+                          console.log(err);
+                        });
+
+                      if(service.lastUpdateUser){
+                        $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+                      }
+                      if(service.createdAt){
+                        $scope.servicevo.createdAt = service.createdAt;
+                      }
+                      if(service.updatedAt){
+                        $scope.servicevo.updatedAt = service.updatedAt;
+                      }
+
+                      $scope.servicevo.matchTemplates = [];
+                      $scope.servicevo.rawpairs = [];
+
+
+                      if (service.matchTemplates && service.matchTemplates.length) {
+                        service.matchTemplates.forEach(function(template, index) {
+                          $scope.servicevo.matchTemplates.push({ id: index, val: template });
+                        });
+                      }
+                      else {
+                        $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+                      }
+
+                      var rrid = 0;
+                      service.rrpairs.forEach(function(rr){
+                        rr.id = rrid;
+                        rr.queriesArr = [];
+                        rr.reqHeadersArr = [];
+                        rr.resHeadersArr = [];
+                        rr.method = rr.verb;
+
+                        if (rr.payloadType === 'JSON') {
+                          rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+                          rr.responsepayload = JSON.stringify(rr.resData, null, 4);
+
+                          //Handle empty JSON object- stringify surrounds in "" 
+                          if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                            rr.responsepayload = rr.responsepayload.substring(1,3);
+                          }
+                        }
+                        else {
+                          rr.requestpayload = rr.reqData;
+                          rr.responsepayload = rr.resData;
+                        }
+
+                        // map object literals to arrays for Angular view
+                        if (rr.reqHeaders) {
+                          var reqHeads = Object.entries(rr.reqHeaders);
+                          var reqHeadId = 0;
+                          reqHeads.forEach(function(elem){
+                            var head = {};
+
+                            head.id = reqHeadId;
+                            head.k = elem[0];
+                            head.v = elem[1];
+
+                            rr.reqHeadersArr.push(head);
+                            reqHeadId++;
+                          });
+                        }
+                        else {
+                          rr.reqHeadersArr.push({ id: 0 });
+                        }
+
+                        if (rr.resHeaders) {
+                          var resHeads = Object.entries(rr.resHeaders);
+                          var resHeadId = 0;
+                          resHeads.forEach(function(elem){
+                            var head = {};
+
+                            head.id = resHeadId;
+                            head.k = elem[0];
+                            head.v = elem[1];
+
+                            rr.resHeadersArr.push(head);
+                            resHeadId++;
+                          });
+                        }
+                        else {
+                          rr.resHeadersArr.push({ id: 0 });
+                        }
+
+                        if (rr.queries) {
+                          var qs = Object.entries(rr.queries);
+                          var qId = 0;
+                          qs.forEach(function(elem){
+                            var q = {};
+
+                            q.id = qId;
+                            q.k = elem[0];
+                            q.v = elem[1];
+
+                            rr.queriesArr.push(q);
+                            qId++;
+                          });
+                        }
+                        else {
+                          rr.queriesArr.push({ id: 0 });
+                        }
+
+                        $scope.servicevo.rawpairs.push(rr);
+                        rrid++;
+                      });
+                  })
+
+                  .catch(function(err) {
+                      console.log(err);
+                  });
+              };
+              this.getService();
+
+              $scope.addFailStatus = function(){
+                $scope.servicevo.failStatuses.push({val:''});
+              }
+              $scope.removeFailStatus= function(index){
+                $scope.servicevo.failStatuses.splice(index,1);
+              }
+              $scope.addFailString = function(){
+                $scope.servicevo.failStrings.push({val:''});
+              }
+              $scope.removeFailString= function(index){
+                $scope.servicevo.failStrings.splice(index,1);
+              }
+              $scope.addTemplate = function() {
+                $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+              };
+
+              $scope.removeTemplate = function(index) {
+                $scope.servicevo.matchTemplates.splice(index, 1);
+              };
+
+              $scope.addNewRRPair = function() {
+                var newItemNo = $scope.servicevo.rawpairs.length;
+                $scope.servicevo.rawpairs.push({
+                    id: newItemNo,
+                    queriesArr: [{
+                      id: 0
+                    }],
+                    reqHeadersArr: [{
+                      id: 0
+                    }],
+                    resHeadersArr: [{
+                      id: 0
+                    }]
+                });
+              };
+
+              $scope.removeRRPair = function(index) {
+                $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+                $('#genricMsg-dialog').modal('toggle');
+                $scope.rrPairNo = index;
+                $('#modal-btn-yes').on("click", function () {
+                    $scope.servicevo.rawpairs.splice($scope.rrPairNo,1);
+                    $scope.$apply();
+                  });
+              };
+
+              $scope.addNewReqHeader = function(rr) {
+                var newItemNo = rr.reqHeadersArr.length;
+                rr.reqHeadersArr.push({'id':newItemNo});
+              };
+
+              $scope.removeReqHeader = function(rr) {
+                var lastItem = rr.reqHeadersArr.length-1;
+                rr.reqHeadersArr.splice(lastItem);
+              };
+
+              $scope.addNewResHeader = function(rr) {
+                var newItemNo = rr.resHeadersArr.length;
+                rr.resHeadersArr.push({'id':newItemNo});
+              };
+
+              $scope.removeResHeader = function(rr) {
+                var lastItem = rr.resHeadersArr.length-1;
+                rr.resHeadersArr.splice(lastItem);
+              };
+
+              $scope.addQuery = function(rr) {
+                var newItemNo = rr.queriesArr.length;
+                rr.queriesArr.push({'id':newItemNo});
+              };
+
+              $scope.removeQuery = function(rr) {
+                var lastItem = rr.queriesArr.length-1;
+                rr.queriesArr.splice(lastItem);
+              };
+
+              $scope.updateService = function(servicevo) {
+                try {
+                  if (helperFactory.isDuplicateReq(servicevo)) {
+                  $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  } else {
+                    apiHistoryService.publishServiceToAPI(servicevo, true);
+                  }
+                }
+                catch(e) {
+                  $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);              
+                  $('#genricMsg-dialog').modal('toggle');
+                  $('#modal-btn-yes').on("click", function() {
+                    apiHistoryService.saveServiceAsDraft(servicevo, true);
+                  });
+                }
+              };
+
+              $scope.setContentType = function(rr, type) {                
+                if (rr.reqHeadersArr.length < 2)
+                  $scope.addNewReqHeader(rr);
+
+                if (rr.resHeadersArr.length < 2)
+                  $scope.addNewResHeader(rr);
+
+                // set values
+                rr.reqHeadersArr[0].v = type;
+                rr.resHeadersArr[0].v = type;
+                
+                rr.reqHeadersArr[0].k = 'Content-Type';
+                rr.resHeadersArr[0].k = 'Content-Type';
+
+                $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
+                $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
+              };
+
+            $scope.totalDisplayed = 10;
+
+            $scope.loadMore = function () {
+              $scope.totalDisplayed += 10;
+            };
+
+      }]) 
+
           
     .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
         function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
@@ -959,6 +1459,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $('#success-modal').modal('toggle');
           }
     }])
+
     .controller("selectServiceController", ['$scope', 'apiHistoryService',
     function($scope,apiHistoryService){
       $scope.serviceList = [];
@@ -1774,6 +2275,176 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 });
             };
     }])
+
+    .controller("draftServiceController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+    function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+        $scope.sutlist = sutService.getAllSUT();
+        $scope.userlist = userService.getAllUsers();
+        $scope.servicelist = [];
+
+        //script to retroactively assign group member. not needed for the future.
+        $scope.script=function(){
+          console.log("starting script");
+          var sutnames = [];
+          $http.get('/api/systems')
+            .then(function (response) {
+              response.data.forEach(function (sutData) {
+                var sut = {
+                  name: sutData.name,
+                  members: sutData.members
+                };
+                sutnames.push(sut.name);
+              });
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
+
+          $http.get('/api/services/draft')
+            .then(function (response) {
+              console.log(response.data);
+              for (var i = 0; i < response.data.length; i++) {
+                var owner = response.data[i].user.uid;
+                var sut = response.data[i].sut.name;
+                
+                if (sutnames.includes(sut)){
+                  console.log("sut "+ sut + " exists");
+                  console.log(owner + " will be added to group: " + sut);
+                  sutService.updateGroup(sut, owner);
+                }
+                else{
+                  console.log("sut " + sut + " does not exist");
+                }
+              }
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
+        }
+        ///////////////////////////end script. to remove
+
+        $scope.filtersSelected = function(sut, user) {
+            if (sut && !user) {
+                apiHistoryService.getServiceForDraftSUT(sut.name)
+
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    var arryListOfService=[];
+                  for (let i = 0; i < data.length; i++) {
+                    if(data[i].service)arryListOfService.push(data[i].service);
+                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                  }
+                    $scope.servicelist = arryListOfService;
+                  })
+
+                .catch(function(err) {
+                    console.log(err);
+                });
+            }
+
+            else if (user && !sut) {
+                apiHistoryService.getServiceByDraftUser(user.name)
+                .then(function(response) {
+                  var data = response.data;
+                  console.log(data);
+                  var arryListOfService=[];
+                  for (let i = 0; i < data.length; i++) {
+                    if(data[i].service)arryListOfService.push(data[i].service);
+                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                  }
+                  $scope.servicelist = arryListOfService;
+                })
+
+                .catch(function(err) {
+                    console.log(err);
+                });
+            }
+
+            else if (user && sut) {
+                apiHistoryService.getServicesDraftFiltered(sut.name, user.name)
+
+                .then(function(response) {
+                  var data = response.data;
+                  console.log(data);
+                  var arryListOfService=[];
+                  for (let i = 0; i < data.length; i++) {
+                    if(data[i].service)arryListOfService.push(data[i].service);
+                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                  }
+                  $scope.servicelist = arryListOfService;
+                })
+
+                .catch(function(err) {
+                    console.log(err);
+                });
+            }
+
+          //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+            $http.get('/api/systems')
+              .then(function (response) {
+                $scope.myUser = authService.getUserInfo().username;
+                 $scope.myGroups = [];
+                response.data.forEach(function (sutData) {
+                  var sut = {
+                    name: sutData.name,
+                    members: sutData.members
+                  };
+                  sut.members.forEach(function (memberlist) {
+                    if (memberlist.includes($scope.myUser)) {
+                      $scope.myGroups.push(sut.name);
+                    }
+                  });
+                });
+              })
+
+              .catch(function (err) {
+                console.log(err);
+              });
+
+
+              $http.get('/api/users/admin')
+                .then(function(response) {
+                    $scope.adminUser = response.data;
+                    })
+
+              .catch(function(err) {
+                  console.log(err);
+              });
+
+        };
+        $scope.filtersSelected(null, { name: authService.getUserInfo().username });
+
+        $scope.clearSelected = function() {
+          $scope.selectedSut = null;
+          $scope.selectedUser = null;
+          $scope.servicelist = [];
+        };
+
+      $scope.deleteDraftService = function (service) {
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_DRAFTSERVICE_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
+        $('#modal-btn-yes').on("click", function () {
+          apiHistoryService.deleteDraftService(service)
+            .then(function (response) {
+              var data = response.data;
+              console.log(data);
+              $scope.servicelist.forEach(function (elem, i, arr) {
+                if (elem._id === data.id)
+                  arr.splice(i, 1);
+              });
+            })
+            .catch(function (err) {
+              console.log(err);
+            });
+        });
+      };
+
+    }])
     ;
 
 //Put all the hard coding or constants here for controller.      
@@ -1809,5 +2480,9 @@ ctrl.constant("ctrlConstants", {
   "DEL_Permanent_CONFIRM_BODY" : "This service will be deleted permanently. Do you want to continue ?",
   "RESTORE_CONFIRM_BODY" : "This service will be restored. You can find this service in browse tab. Continue ?",
   "GRP_CREATED_SUCCESS_MSG": "Group Created Successfully",
-  "GRP_DELETION_SUCCESS_MSG" : "Group Deleted Successfully"
+  "GRP_DELETION_SUCCESS_MSG" : "Group Deleted Successfully",
+  "DEL_DRAFTSERVICE_BODY" : "This service Info will be deleted. Do you want to continue ?",
+  "PUB_FAIL_SERV_SAVE_BODY" : " Please ensure your request / response pairs are well formed.                   " +
+                                "Do you want to save the Service Info as draft",
+  "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Save as Draft</button><button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>'
 });
