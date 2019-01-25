@@ -63,13 +63,16 @@ fact.factory('sutFactory', ['$http', '$q', function($http, $q) {
                         $http.get('/api/services/sut/' + sut.name)
                         .then(function (response) {
                                 if(response.data.length==0){
-                                    deleteSutList.push(sut);
+                                    $http.get('/api/services/sut/' + sut.name+'/archive')
+                                    .then(function (response) {
+                                            if(response.data.length==0){
+                                        deleteSutList.push(sut);
                                 }
                             
                         })
-                    }});
-                });
-            })
+                    }})
+                         } });
+            });})
                 .catch(function (err) {
                     console.log(err);
                 });
