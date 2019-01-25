@@ -27,6 +27,7 @@
                 <th>Group</th>
                 <th>Type</th>
                 <th>Base URL</th>
+                <th>Transactions</th>
                 <th>Action</th>
             </tr>
             <tr ng-repeat="service in servicelist" style=" word-break:break-all">
@@ -35,6 +36,7 @@
                 <td style="width:120px">{{service.sut.name}}</td>
                 <td>{{service.type}}</td>
                 <td class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
+                <td>{{service.txnCount}}</td>
                 <td>
                     <button class="btn btn-danger" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === true" ng-click="toggleService(service)">Stop <i class="glyphicon glyphicon-stop"></i></button>
                     <button class="btn btn-success" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === false" ng-click="toggleService(service)">Start <i class="glyphicon glyphicon-play"></i></button>&nbsp;
