@@ -3,7 +3,7 @@ const router = express.Router();
 const removeRoute = require('../lib/remove-route');
 const requestNode = require('request');
 const Service = require('../models/http/Service');
-const timeBetweenTransactionUpdates = 5000;
+const timeBetweenTransactionUpdates = process.env.MOCKIATO_TRANSACTON_UPDATE_TIME || 5000;
 
 var transactions = {};
 
