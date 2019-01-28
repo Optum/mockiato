@@ -899,8 +899,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     function ($http, $location, authService, servConstants) {
         this.publishExtractedRRPair = function(bulkUpload, uploaded_file_name_id, message) {
           var fd = new FormData();
+          var token = authService.getUserInfo().token;
+          
           var params = {};
-          params.token = authService.getUserInfo().token;
+          params.token = token;
           params.group = bulkUpload.sut.name;
           params.type  = bulkUpload.type;
           params.name  = bulkUpload.name;
@@ -975,8 +977,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     function ($http, $location, authService, servConstants) {
         this.publishSpec = function(spec, uploaded_file_id, uploaded_file_name,message) {
           var fd = new FormData();
+          var token = authService.getUserInfo().token;
+
           var params = {};
-          params.token = authService.getUserInfo().token;
+          params.token = token;
           params.group = spec.sut.name;
           params.type  = spec.type;
           params.name  = spec.name;
@@ -990,6 +994,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           //pushing group creator to memberlist
           spec.sut.members = [];
           spec.sut.members.push(authService.getUserInfo().username);
+          
 
           //add new SUT
           $http.post('/api/systems' + '?token=' + token, spec.sut)
