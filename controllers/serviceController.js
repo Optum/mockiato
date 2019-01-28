@@ -16,6 +16,24 @@ const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
 
+
+/**
+ * Wrapper function for (MQ)Service.create.
+ * @param {object} serv An object containing the info to create a service
+ * @return A promise from creating the service. 
+ */
+function createService(serv,req){
+
+  if(req)
+    serv.lastUpdateUser = req.decoded;
+
+  if(serv.type == "MQ"){
+    return MQService.create(serv);
+  }else{
+    return Service.create(serv);
+  }
+}
+
 /**
  * Helper function for search. Trims down an HTTP service for return, and filters + trims rrpairs. 
  * @param {*} doc Service doc from mongoose
@@ -626,8 +644,7 @@ function addService(req, res) {
     delayMax: req.body.delayMax,
     basePath: '/' + req.body.sut.name + req.body.basePath,
     matchTemplates: req.body.matchTemplates,
-    rrpairs: req.body.rrpairs,
-    lastUpdateUser: req.decoded
+    rrpairs: req.body.rrpairs
   };
 
   //Save req and res data string cache
@@ -647,7 +664,7 @@ function addService(req, res) {
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
     
-    MQService.create(serv,
+    createService(serv,req).then(
       // handler for db call
       function(err, service) {
         if (err) {
@@ -682,7 +699,7 @@ function addService(req, res) {
         });
       }
       else {
-        Service.create(serv,
+        createService(serv,req).then(
         function(err, service) {
           if (err) {
             handleError(err, res, 500);
@@ -1014,7 +1031,7 @@ function restoreService(req, res) {
         rrpairs: archive.service.rrpairs,
         lastUpdateUser: archive.service.lastUpdateUser
       };
-      Service.create(newService, function (err, callback) {
+      createService(newService,req).then(function (err, callback) {
         if (err) {
           handleError(err, res, 500);
         }
@@ -1032,7 +1049,7 @@ function restoreService(req, res) {
           rrpairs: archive.mqservice.rrpairs,
           connInfo: archive.mqservice.connInfo
         };
-        MQService.create(newMQService, function (err, callback) {
+        createService(newMQService,req).then( function (err, callback) {
           if (err) {
             handleError(err, res, 500);
           }
@@ -1122,7 +1139,7 @@ function publishExtractedRRPairs(req, res) {
     serv.user = req.decoded;
 
     if (type === 'MQ') {      
-      MQService.create(serv,
+      createService(serv,req).then(
         // handler for db call
         function(err, service) {
           if (err) {
@@ -1154,7 +1171,7 @@ function publishExtractedRRPairs(req, res) {
           });
         }
         else {
-          Service.create(serv, function (err, service) {
+          createService(serv,req).then( function (err, service) {
             if (err) {
               handleError(err, res, 500);
             }
@@ -1241,7 +1258,7 @@ function publishUploadedSpec(req, res) {
         });
       }
       else {
-        Service.create(serv, function (err, service) {
+        createService(serv,req).then( function (err, service) {
           if (err) handleError(err, res, 500);
     
           res.json(service);
