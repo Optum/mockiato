@@ -591,506 +591,362 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               this.getService();
       }])
 
+        .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
+        function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
+          
+          $scope.statusCodes = suggestionsService.getStatusCodes();
+            $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
-    //   .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
-    //   function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
-        
-    //     $scope.statusCodes = suggestionsService.getStatusCodes();
-    //       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+            this.getService = function() {
+                apiHistoryService.getDraftServiceById($routeParams.id)
 
-    //         this.getService = function() {
-    //             apiHistoryService.getDraftServiceById($routeParams.id)
-    //             .then(function(response) {
-    //                 var service;
-    //                 if(response.data.service) service = response.data.service;
-    //                 if(response.data.mqservice) service = response.data.mqservice;
-    //                 console.log(service);
-    //                 $scope.servicevo = {
-    //                   id: service._id,
-    //                   sut: service.sut,
-    //                   name: service.name,
-    //                   type: service.type,
-    //                   delay: service.delay,
-    //                   delayMax: service.delayMax,
-    //                   txnCount: service.txnCount,
-    //                   basePath: service.basePath                      
-    //                 };
-                  
-    //               $scope.myUser = authService.getUserInfo().username;
-                
-    //              //returning a promise from factory didnt seem to work with .then() function here, alternative solution
-    //                  $http.get('/api/systems')
-    //                    .then(function (response) {
-    //                      var newsutlist = [];
-    //                      response.data.forEach(function (sutData) {
-    //                        var sut = {
-    //                          name: sutData.name,
-    //                          members: sutData.members
-    //                        };
-    //                        sut.members.forEach(function (memberlist) {
-    //                          if (memberlist.includes($scope.myUser)) {
-    //                           newsutlist.push(sut.name);
-    //                          }
-    //                        });
-    //                      });
-    //                      $scope.canEdit = function () {
-    //                       if (newsutlist.includes($scope.servicevo.sut.name )) {
-    //                         return true;
-    //                       }
-    //                       else {
-    //                         return false;
-    //                       }
-    //                     };
-    //                    })
-
-    //                    .catch(function (err) {
-    //                      console.log(err);
-    //                    });
-
-    //                 if(service.lastUpdateUser){
-    //                   $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
-    //                 }
-    //                 if(service.createdAt){
-    //                   $scope.servicevo.createdAt = service.createdAt;
-    //                 }
-    //                 if(service.updatedAt){
-    //                   $scope.servicevo.updatedAt = service.updatedAt;
-    //                 }
-
-    //                 $scope.servicevo.matchTemplates = [];
-    //                 $scope.servicevo.rawpairs = [];
-
-    //                 if (service.matchTemplates && service.matchTemplates.length) {
-    //                   service.matchTemplates.forEach(function(template, index) {
-    //                     $scope.servicevo.matchTemplates.push({ id: index, val: template });
-    //                   });
-    //                 }
-    //                 else {
-    //                   $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
-    //                 }
-
-    //                 var rrid = 0;
-    //                 service.rrpairs.forEach(function(rr){
-    //                   rr.id = rrid;
-    //                   rr.queriesArr = [];
-    //                   rr.reqHeadersArr = [];
-    //                   rr.resHeadersArr = [];
-    //                   rr.method = rr.verb;
-
-    //                   if (rr.payloadType === 'JSON') {
-    //                     rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
-    //                     rr.responsepayload = JSON.stringify(rr.resData, null, 4);
-
-    //                     //Handle empty JSON object- stringify surrounds in "" 
-    //                     if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
-    //                       rr.responsepayload = rr.responsepayload.substring(1,3);
-    //                     }
-    //                   }
-    //                   else {
-    //                     rr.requestpayload = rr.reqData;
-    //                     rr.responsepayload = rr.resData;
-    //                   }
-
-    //                   // map object literals to arrays for Angular view
-    //                   if (rr.reqHeaders) {
-    //                     var reqHeads = Object.entries(rr.reqHeaders);
-    //                     var reqHeadId = 0;
-    //                     reqHeads.forEach(function(elem){
-    //                       var head = {};
-
-    //                       head.id = reqHeadId;
-    //                       head.k = elem[0];
-    //                       head.v = elem[1];
-
-    //                       rr.reqHeadersArr.push(head);
-    //                       reqHeadId++;
-    //                     });
-    //                   }
-    //                   else {
-    //                     rr.reqHeadersArr.push({ id: 0 });
-    //                   }
-
-    //                   if (rr.resHeaders) {
-    //                     var resHeads = Object.entries(rr.resHeaders);
-    //                     var resHeadId = 0;
-    //                     resHeads.forEach(function(elem){
-    //                       var head = {};
-
-    //                       head.id = resHeadId;
-    //                       head.k = elem[0];
-    //                       head.v = elem[1];
-
-    //                       rr.resHeadersArr.push(head);
-    //                       resHeadId++;
-    //                     });
-    //                   }
-    //                   else {
-    //                     rr.resHeadersArr.push({ id: 0 });
-    //                   }
-
-    //                   if (rr.queries) {
-    //                     var qs = Object.entries(rr.queries);
-    //                     var qId = 0;
-    //                     qs.forEach(function(elem){
-    //                       var q = {};
-
-    //                       q.id = qId;
-    //                       q.k = elem[0];
-    //                       q.v = elem[1];
-
-    //                       rr.queriesArr.push(q);
-    //                       qId++;
-    //                     });
-    //                   }
-    //                   else {
-    //                     rr.queriesArr.push({ id: 0 });
-    //                   }
-
-    //                   $scope.servicevo.rawpairs.push(rr);
-    //                   rrid++;
-    //                 });
-
-    //             })
-
-    //             .catch(function(err) {
-    //                 console.log(err);
-    //             });
-    //         };
-    //         this.getService();
-    // }]) 
-          .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
-          function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
-            
-            $scope.statusCodes = suggestionsService.getStatusCodes();
-              $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
-
-              this.getService = function() {
-                  apiHistoryService.getDraftServiceById($routeParams.id)
-
-                  .then(function(response) {
-                      var service;
-                      if(response.data.service) service = response.data.service;
-                      if(response.data.mqservice) service = response.data.mqservice;
-                                        
-                      console.log(service);
-                      $scope.servicevo = {
-                        id: service._id,
-                        sut: service.sut,
-                        name: service.name,
-                        type: service.type,
-                        delay: service.delay,
-                        delayMax: service.delayMax,
-                        txnCount: service.txnCount,
-                        basePath: service.basePath
-                      };
+                .then(function(response) {
+                    var service;
+                    if(response.data.service) service = response.data.service;
+                    if(response.data.mqservice) service = response.data.mqservice;
+                                      
+                    console.log(service);
+                    $scope.servicevo = {
+                      id: service._id,
+                      sut: service.sut,
+                      name: service.name,
+                      type: service.type,
+                      delay: service.delay,
+                      delayMax: service.delayMax,
+                      txnCount: service.txnCount,
+                      basePath: service.basePath
+                    };
+                    
+                    if(service.liveInvocation){
                       
-                      if(service.liveInvocation){
-                        
-                        $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
-                        $scope.servicevo.remotePort = service.liveInvocation.remotePort;
-                        $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
-                        $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
-                        $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
-                        //Extract and build out codes/strings for failures
-                        var failStatusCodes = service.liveInvocation.failStatusCodes;
-                        var failStrings = service.liveInvocation.failStrings;
-                        $scope.servicevo.failStatuses = [];
-                        $scope.servicevo.failStrings = [];
-                        for(var i = 0; i < failStatusCodes.length; i++){
-                          $scope.servicevo.failStatuses[i] = {'id': i, 'val' : failStatusCodes[i]};
+                      $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+                      $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+                      $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+                      $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+                      $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+                      //Extract and build out codes/strings for failures
+                      var failStatusCodes = service.liveInvocation.failStatusCodes;
+                      var failStrings = service.liveInvocation.failStrings;
+                      $scope.servicevo.failStatuses = [];
+                      $scope.servicevo.failStrings = [];
+                      for(var i = 0; i < failStatusCodes.length; i++){
+                        $scope.servicevo.failStatuses[i] = {'id': i, 'val' : failStatusCodes[i]};
 
-                        }
-                        for(var i = 0; i < failStrings.length; i++){
-                          $scope.servicevo.failStrings[i] = {'id': i, 'val' : failStrings[i]};
-                        }
-                        if(!$scope.servicevo.failStatuses.length){
-                          $scope.servicevo.failStatuses[0] = {'id': 0,val:''};  
-                        }
-                        if(!$scope.servicevo.failStrings.length){
-                          $scope.servicevo.failStrings[0] = {'id': 0,val:''};
-                        }
-                        //Select correct radio
-                        if(service.liveInvocation.liveFirst)
-                          $scope.servicevo.liveInvokePrePost = 'PRE';
-                        else  
-                          $scope.servicevo.liveInvokePrePost = 'POST';
-                        
-                      }else{
-                        $scope.servicevo.failStatuses = [];
-                        $scope.servicevo.failStrings = [];
-                        $scope.servicevo.failStatuses[0] = {'id': 0,val:''};      
+                      }
+                      for(var i = 0; i < failStrings.length; i++){
+                        $scope.servicevo.failStrings[i] = {'id': i, 'val' : failStrings[i]};
+                      }
+                      if(!$scope.servicevo.failStatuses.length){
+                        $scope.servicevo.failStatuses[0] = {'id': 0,val:''};  
+                      }
+                      if(!$scope.servicevo.failStrings.length){
                         $scope.servicevo.failStrings[0] = {'id': 0,val:''};
                       }
-                      console.log($scope.servicevo);
-                    
-                    $scope.myUser = authService.getUserInfo().username;
+                      //Select correct radio
+                      if(service.liveInvocation.liveFirst)
+                        $scope.servicevo.liveInvokePrePost = 'PRE';
+                      else  
+                        $scope.servicevo.liveInvokePrePost = 'POST';
+                      
+                    }else{
+                      $scope.servicevo.failStatuses = [];
+                      $scope.servicevo.failStrings = [];
+                      $scope.servicevo.failStatuses[0] = {'id': 0,val:''};      
+                      $scope.servicevo.failStrings[0] = {'id': 0,val:''};
+                    }
+                    console.log($scope.servicevo);
                   
-                  //returning a promise from factory didnt seem to work with .then() function here, alternative solution
-                      $http.get('/api/systems')
-                        .then(function (response) {
-                          var newsutlist = [];
-                          response.data.forEach(function (sutData) {
-                            var sut = {
-                              name: sutData.name,
-                              members: sutData.members
-                            };
-                            sut.members.forEach(function (memberlist) {
-                              if (memberlist.includes($scope.myUser)) {
-                                newsutlist.push(sut.name);
-                              }
-                            });
-                          });
-
-                          $scope.canEdit = function () {
-                            if (newsutlist.includes($scope.servicevo.sut.name )) {
-                              return true;
-                            }
-                            else {
-                              return false;
-                            }
+                  $scope.myUser = authService.getUserInfo().username;
+                
+                //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+                    $http.get('/api/systems')
+                      .then(function (response) {
+                        var newsutlist = [];
+                        response.data.forEach(function (sutData) {
+                          var sut = {
+                            name: sutData.name,
+                            members: sutData.members
                           };
-                        })
-
-                        .catch(function (err) {
-                          console.log(err);
+                          sut.members.forEach(function (memberlist) {
+                            if (memberlist.includes($scope.myUser)) {
+                              newsutlist.push(sut.name);
+                            }
+                          });
                         });
 
-                      if(service.lastUpdateUser){
-                        $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+                        $scope.canEdit = function () {
+                          if (newsutlist.includes($scope.servicevo.sut.name )) {
+                            return true;
+                          }
+                          else {
+                            return false;
+                          }
+                        };
+                      })
+
+                      .catch(function (err) {
+                        console.log(err);
+                      });
+
+                    if(service.lastUpdateUser){
+                      $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+                    }
+                    if(service.createdAt){
+                      $scope.servicevo.createdAt = service.createdAt;
+                    }
+                    if(service.updatedAt){
+                      $scope.servicevo.updatedAt = service.updatedAt;
+                    }
+
+                    $scope.servicevo.matchTemplates = [];
+                    $scope.servicevo.rawpairs = [];
+
+
+                    if (service.matchTemplates && service.matchTemplates.length) {
+                      service.matchTemplates.forEach(function(template, index) {
+                        $scope.servicevo.matchTemplates.push({ id: index, val: template });
+                      });
+                    }
+                    else {
+                      $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+                    }
+
+                    var rrid = 0;
+                    service.rrpairs.forEach(function(rr){
+                      rr.id = rrid;
+                      rr.queriesArr = [];
+                      rr.reqHeadersArr = [];
+                      rr.resHeadersArr = [];
+                      rr.method = rr.verb;
+
+                      if (rr.payloadType === 'JSON') {
+                        rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+                        rr.responsepayload = JSON.stringify(rr.resData, null, 4);
+
+                        //Handle empty JSON object- stringify surrounds in "" 
+                        if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                          rr.responsepayload = rr.responsepayload.substring(1,3);
+                        }
                       }
-                      if(service.createdAt){
-                        $scope.servicevo.createdAt = service.createdAt;
-                      }
-                      if(service.updatedAt){
-                        $scope.servicevo.updatedAt = service.updatedAt;
+                      else {
+                        rr.requestpayload = rr.reqData;
+                        rr.responsepayload = rr.resData;
                       }
 
-                      $scope.servicevo.matchTemplates = [];
-                      $scope.servicevo.rawpairs = [];
+                      // map object literals to arrays for Angular view
+                      if (rr.reqHeaders) {
+                        var reqHeads = Object.entries(rr.reqHeaders);
+                        var reqHeadId = 0;
+                        reqHeads.forEach(function(elem){
+                          var head = {};
 
+                          head.id = reqHeadId;
+                          head.k = elem[0];
+                          head.v = elem[1];
 
-                      if (service.matchTemplates && service.matchTemplates.length) {
-                        service.matchTemplates.forEach(function(template, index) {
-                          $scope.servicevo.matchTemplates.push({ id: index, val: template });
+                          rr.reqHeadersArr.push(head);
+                          reqHeadId++;
                         });
                       }
                       else {
-                        $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+                        rr.reqHeadersArr.push({ id: 0 });
                       }
 
-                      var rrid = 0;
-                      service.rrpairs.forEach(function(rr){
-                        rr.id = rrid;
-                        rr.queriesArr = [];
-                        rr.reqHeadersArr = [];
-                        rr.resHeadersArr = [];
-                        rr.method = rr.verb;
+                      if (rr.resHeaders) {
+                        var resHeads = Object.entries(rr.resHeaders);
+                        var resHeadId = 0;
+                        resHeads.forEach(function(elem){
+                          var head = {};
 
-                        if (rr.payloadType === 'JSON') {
-                          rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
-                          rr.responsepayload = JSON.stringify(rr.resData, null, 4);
+                          head.id = resHeadId;
+                          head.k = elem[0];
+                          head.v = elem[1];
 
-                          //Handle empty JSON object- stringify surrounds in "" 
-                          if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
-                            rr.responsepayload = rr.responsepayload.substring(1,3);
-                          }
-                        }
-                        else {
-                          rr.requestpayload = rr.reqData;
-                          rr.responsepayload = rr.resData;
-                        }
+                          rr.resHeadersArr.push(head);
+                          resHeadId++;
+                        });
+                      }
+                      else {
+                        rr.resHeadersArr.push({ id: 0 });
+                      }
 
-                        // map object literals to arrays for Angular view
-                        if (rr.reqHeaders) {
-                          var reqHeads = Object.entries(rr.reqHeaders);
-                          var reqHeadId = 0;
-                          reqHeads.forEach(function(elem){
-                            var head = {};
+                      if (rr.queries) {
+                        var qs = Object.entries(rr.queries);
+                        var qId = 0;
+                        qs.forEach(function(elem){
+                          var q = {};
 
-                            head.id = reqHeadId;
-                            head.k = elem[0];
-                            head.v = elem[1];
+                          q.id = qId;
+                          q.k = elem[0];
+                          q.v = elem[1];
 
-                            rr.reqHeadersArr.push(head);
-                            reqHeadId++;
-                          });
-                        }
-                        else {
-                          rr.reqHeadersArr.push({ id: 0 });
-                        }
+                          rr.queriesArr.push(q);
+                          qId++;
+                        });
+                      }
+                      else {
+                        rr.queriesArr.push({ id: 0 });
+                      }
 
-                        if (rr.resHeaders) {
-                          var resHeads = Object.entries(rr.resHeaders);
-                          var resHeadId = 0;
-                          resHeads.forEach(function(elem){
-                            var head = {};
+                      $scope.servicevo.rawpairs.push(rr);
+                      rrid++;
+                    });
+                })
 
-                            head.id = resHeadId;
-                            head.k = elem[0];
-                            head.v = elem[1];
-
-                            rr.resHeadersArr.push(head);
-                            resHeadId++;
-                          });
-                        }
-                        else {
-                          rr.resHeadersArr.push({ id: 0 });
-                        }
-
-                        if (rr.queries) {
-                          var qs = Object.entries(rr.queries);
-                          var qId = 0;
-                          qs.forEach(function(elem){
-                            var q = {};
-
-                            q.id = qId;
-                            q.k = elem[0];
-                            q.v = elem[1];
-
-                            rr.queriesArr.push(q);
-                            qId++;
-                          });
-                        }
-                        else {
-                          rr.queriesArr.push({ id: 0 });
-                        }
-
-                        $scope.servicevo.rawpairs.push(rr);
-                        rrid++;
-                      });
-                  })
-
-                  .catch(function(err) {
-                      console.log(err);
-                  });
-              };
-              this.getService();
-
-              $scope.addFailStatus = function(){
-                $scope.servicevo.failStatuses.push({val:''});
-              }
-              $scope.removeFailStatus= function(index){
-                $scope.servicevo.failStatuses.splice(index,1);
-              }
-              $scope.addFailString = function(){
-                $scope.servicevo.failStrings.push({val:''});
-              }
-              $scope.removeFailString= function(index){
-                $scope.servicevo.failStrings.splice(index,1);
-              }
-              $scope.addTemplate = function() {
-                $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
-              };
-
-              $scope.removeTemplate = function(index) {
-                $scope.servicevo.matchTemplates.splice(index, 1);
-              };
-
-              $scope.addNewRRPair = function() {
-                var newItemNo = $scope.servicevo.rawpairs.length;
-                $scope.servicevo.rawpairs.push({
-                    id: newItemNo,
-                    queriesArr: [{
-                      id: 0
-                    }],
-                    reqHeadersArr: [{
-                      id: 0
-                    }],
-                    resHeadersArr: [{
-                      id: 0
-                    }]
+                .catch(function(err) {
+                    console.log(err);
                 });
-              };
+            };
+            this.getService();
 
-              $scope.removeRRPair = function(index) {
-                $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-                $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-                $('#genricMsg-dialog').modal('toggle');
-                $scope.rrPairNo = index;
-                $('#modal-btn-yes').on("click", function () {
-                    $scope.servicevo.rawpairs.splice($scope.rrPairNo,1);
-                    $scope.$apply();
-                  });
-              };
-
-              $scope.addNewReqHeader = function(rr) {
-                var newItemNo = rr.reqHeadersArr.length;
-                rr.reqHeadersArr.push({'id':newItemNo});
-              };
-
-              $scope.removeReqHeader = function(rr) {
-                var lastItem = rr.reqHeadersArr.length-1;
-                rr.reqHeadersArr.splice(lastItem);
-              };
-
-              $scope.addNewResHeader = function(rr) {
-                var newItemNo = rr.resHeadersArr.length;
-                rr.resHeadersArr.push({'id':newItemNo});
-              };
-
-              $scope.removeResHeader = function(rr) {
-                var lastItem = rr.resHeadersArr.length-1;
-                rr.resHeadersArr.splice(lastItem);
-              };
-
-              $scope.addQuery = function(rr) {
-                var newItemNo = rr.queriesArr.length;
-                rr.queriesArr.push({'id':newItemNo});
-              };
-
-              $scope.removeQuery = function(rr) {
-                var lastItem = rr.queriesArr.length-1;
-                rr.queriesArr.splice(lastItem);
-              };
-
-              $scope.updateService = function(servicevo) {
-                try {
-                  if (helperFactory.isDuplicateReq(servicevo)) {
-                  $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
-                  $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
-                  $('#genricMsg-dialog').modal('toggle');
-                  } else {
-                    apiHistoryService.publishServiceToAPI(servicevo, true);
-                  }
-                }
-                catch(e) {
-                  $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
-                  $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);              
-                  $('#genricMsg-dialog').modal('toggle');
-                  $('#modal-btn-yes').on("click", function() {
-                    apiHistoryService.saveServiceAsDraft(servicevo, true);
-                  });
-                }
-              };
-
-              $scope.setContentType = function(rr, type) {                
-                if (rr.reqHeadersArr.length < 2)
-                  $scope.addNewReqHeader(rr);
-
-                if (rr.resHeadersArr.length < 2)
-                  $scope.addNewResHeader(rr);
-
-                // set values
-                rr.reqHeadersArr[0].v = type;
-                rr.resHeadersArr[0].v = type;
-                
-                rr.reqHeadersArr[0].k = 'Content-Type';
-                rr.resHeadersArr[0].k = 'Content-Type';
-
-                $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
-                $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
-              };
-
-            $scope.totalDisplayed = 10;
-
-            $scope.loadMore = function () {
-              $scope.totalDisplayed += 10;
+            $scope.addFailStatus = function(){
+              $scope.servicevo.failStatuses.push({val:''});
+            }
+            $scope.removeFailStatus= function(index){
+              $scope.servicevo.failStatuses.splice(index,1);
+            }
+            $scope.addFailString = function(){
+              $scope.servicevo.failStrings.push({val:''});
+            }
+            $scope.removeFailString= function(index){
+              $scope.servicevo.failStrings.splice(index,1);
+            }
+            $scope.addTemplate = function() {
+              $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
             };
 
-      }]) 
+            $scope.removeTemplate = function(index) {
+              $scope.servicevo.matchTemplates.splice(index, 1);
+            };
+
+            $scope.addNewRRPair = function() {
+              var newItemNo = $scope.servicevo.rawpairs.length;
+              $scope.servicevo.rawpairs.push({
+                  id: newItemNo,
+                  queriesArr: [{
+                    id: 0
+                  }],
+                  reqHeadersArr: [{
+                    id: 0
+                  }],
+                  resHeadersArr: [{
+                    id: 0
+                  }]
+              });
+            };
+
+            $scope.removeRRPair = function(index) {
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+              $scope.rrPairNo = index;
+              $('#modal-btn-yes').on("click", function () {
+                  $scope.servicevo.rawpairs.splice($scope.rrPairNo,1);
+                  $scope.$apply();
+                });
+            };
+
+            $scope.addNewReqHeader = function(rr) {
+              var newItemNo = rr.reqHeadersArr.length;
+              rr.reqHeadersArr.push({'id':newItemNo});
+            };
+
+            $scope.removeReqHeader = function(rr) {
+              var lastItem = rr.reqHeadersArr.length-1;
+              rr.reqHeadersArr.splice(lastItem);
+            };
+
+            $scope.addNewResHeader = function(rr) {
+              var newItemNo = rr.resHeadersArr.length;
+              rr.resHeadersArr.push({'id':newItemNo});
+            };
+
+            $scope.removeResHeader = function(rr) {
+              var lastItem = rr.resHeadersArr.length-1;
+              rr.resHeadersArr.splice(lastItem);
+            };
+
+            $scope.addQuery = function(rr) {
+              var newItemNo = rr.queriesArr.length;
+              rr.queriesArr.push({'id':newItemNo});
+            };
+
+            $scope.removeQuery = function(rr) {
+              var lastItem = rr.queriesArr.length-1;
+              rr.queriesArr.splice(lastItem);
+            };
+
+            $scope.updateService = function(servicevo) {
+              try {
+                if (helperFactory.isDuplicateReq(servicevo)) {
+                $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
+                $('#genricMsg-dialog').modal('toggle');
+                } else {
+                  apiHistoryService.publishServiceToAPI(servicevo, true);
+                }
+              }
+              catch(e) {
+                $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);              
+                $('#genricMsg-dialog').modal('toggle');
+                $('#modal-btn-yes').on("click", function() {
+                  apiHistoryService.saveServiceAsDraft(servicevo, true);
+                });
+              }
+            };
+
+            $scope.serviceInfo = function() {
+              console.log($routeParams.id);
+              $http.get('/api/services/draft/' + $routeParams.id)
+
+              .then(function(response) {
+                  var data;
+                  if(response.data.mqservice)
+                      data = response.data.mqservice;
+                  else
+                      data = response.data.service;
+                  console.log(data);
+                  feedbackService.displayServiceInfo(data);
+                  $('#serviceInfo-modal').modal('toggle');
+              })
+
+              .catch(function(err) {
+                  console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.SERV_SAVE_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.SERV_INFO_NOT_FOUND);
+                    $('#genricMsg-dialog').modal('toggle');
+              });
+            };
+
+            $scope.setContentType = function(rr, type) {                
+              if (rr.reqHeadersArr.length < 2)
+                $scope.addNewReqHeader(rr);
+
+              if (rr.resHeadersArr.length < 2)
+                $scope.addNewResHeader(rr);
+
+              // set values
+              rr.reqHeadersArr[0].v = type;
+              rr.resHeadersArr[0].v = type;
+              
+              rr.reqHeadersArr[0].k = 'Content-Type';
+              rr.resHeadersArr[0].k = 'Content-Type';
+
+              $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
+              $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
+            };
+
+          $scope.totalDisplayed = 10;
+
+          $scope.loadMore = function () {
+            $scope.totalDisplayed += 10;
+          };
+
+    }]) 
 
           
     .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
@@ -1299,8 +1155,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 });
             };
             this.getService();
-          
-           
 
 
             $scope.addFailStatus = function(){
@@ -2484,5 +2338,7 @@ ctrl.constant("ctrlConstants", {
   "DEL_DRAFTSERVICE_BODY" : "This service Info will be deleted. Do you want to continue ?",
   "PUB_FAIL_SERV_SAVE_BODY" : " Please ensure your request / response pairs are well formed.                   " +
                                 "Do you want to save the Service Info as draft",
-  "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Save as Draft</button><button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>'
+  "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Save as Draft</button><button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
+  "SERV_INFO_NOT_FOUND" : "Service Info not found",
+  "SERV_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
 });
