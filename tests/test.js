@@ -311,7 +311,7 @@ describe('API tests', function() {
     describe('Create new group', function() {
         it('Responds with the group', function(done) {
             request
-                .post('/api/systems')
+                .post('/api/systems' + token)
                 .send(mockGroup)
                 .expect(200)
                 .end(done);
