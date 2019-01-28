@@ -1460,10 +1460,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           }
     }])
 
-    .controller("selectServiceController", ['$scope', 'apiHistoryService',
-    function($scope,apiHistoryService){
+    .controller("selectServiceController", ['$scope', 'apiHistoryService','authService',
+    function($scope,apiHistoryService,authService){
       $scope.serviceList = [];
-      apiHistoryService.getRecentModifiedServices(5).then(function(response){
+      apiHistoryService.getRecentModifiedServices(5,authService.getUserInfo().username).then(function(response){
         var data = response.data;
         $scope.serviceList = data;
         console.log(data);

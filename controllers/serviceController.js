@@ -14,6 +14,7 @@ const fs   = require('fs');
 const unzip = require('unzip2');
 const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
+const System = require('../models/common/System');
 
 /**
  * Helper function for search. Trims down an HTTP service for return, and filters + trims rrpairs. 
@@ -104,6 +105,7 @@ function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
  * name: Filters on name of servie
  * sortBy: created sorts on created datetime, updated sorts on updated datetime
  * asc: if set (any value or none), sort ascending instead of descending
+ * authorizedOnly: When passed a username, restricts results to only services that user is authorized to edit. 
  * @param {*} req express req
  * @param {*} rsp express rsp
  */
@@ -128,7 +130,7 @@ function searchServices(req,rsp){
   if(query.name){
     search.name = {$regex:query.name,$options:'i'};
   }
-
+  
   //Get our sorting + limit arguments
   var sortBy;
   if(query.sortBy){
@@ -147,78 +149,104 @@ function searchServices(req,rsp){
     limit = query.limit;
   }
 
-
+  if(typeof query.authorizedOnly !== 'undefined'){
+    System.find({members:query.authorizedOnly ? query.authorizedOnly : req.decoded},function(err,docs){
+      if(err){
+        handleError(err,rsp,500);
+      }else{
+        var suts = [];
+        docs.forEach(function(doc){
+          suts.push(doc.name);
+        });
+        search['sut.name'] = {$in:suts};
+        performQuery();
+      }
+    });
+  }else{
+    performQuery();
+  }
   //Perform search
-   var mongooseQuery = Service.find(search);
-   if(sortBy){
-    var sort = {};
-    sort[sortBy] = ascDesc;
-    mongooseQuery.sort(sort);
-   }
-   if(limit){
-    mongooseQuery.limit(parseInt(limit));
-   }
-   mongooseQuery.exec(function(err,docs){
-    var results = [];
-
-    if(err){
-      handleError(err,rsp,500);
-    }
-    else{
-      //Trim down service and add it to list of services to return
-      docs.forEach(function(doc){
-        var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
-        results.push(service);
-      });
-      
-    
-      //Query MQServices
-      var MQQuery = MQService.find(search);
-      if(sortBy){
+  function performQuery(){
+    var mongooseQuery = Service.find(search);
+    if(sortBy){
       var sort = {};
       sort[sortBy] = ascDesc;
-      MQQuery.sort(sort);
-      }
-      if(limit){
-        MQQuery.limit(parseInt(limit));
-      }
-      MQQuery.exec(function(err,docs){
-        if(err){
-          handleError(err,rsp,500);
-        }
-        else{
-
-          //Trim down service and add it to list of services to return
-          docs.forEach(function(doc){
-            var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
-            results.push(service);
-          });
-
-          //Sort the combined docs
-          if(sortBy){
-            results.sort(function(a,b){
-              var ascM = ascDesc == "desc" ? -1 : 1;
-              if(sortBy == "createdAt"){
-                a = new Date(a.createdAt);
-                b = new Date(b.createdAt);
-              }else{
-                a = new Date(a.updatedAt);
-                b = new Date(b.updatedAt);
-              }
-              return (a - b) * ascM; 
-            });
-          } 
-
-          //Trim to limit
-          if(limit)
-            results = results.slice(0,limit);
-          
-          return rsp.json(results);
-        }
-      });
-      
+      mongooseQuery.sort(sort);
     }
-  });
+    if(limit){
+      mongooseQuery.limit(parseInt(limit));
+    }
+    mongooseQuery.exec(function(err,docs){
+      var results = [];
+
+      if(err){
+        handleError(err,rsp,500);
+      }
+      else{
+        //Trim down service and add it to list of services to return
+        docs.forEach(function(doc){
+          var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
+          results.push(service);
+        });
+        
+      
+        //Query MQServices
+        if(search['rrpairs.resDataString']){
+          search['rrpairs.resData'] = search['rrpairs.resDataString'];
+          delete search['rrpairs.resDataString'];
+        }
+        if(search['rrpairs.reqDataString']){
+          search['rrpairs.reqData'] = search['rrpairs.reqDataString'];
+          delete search['rrpairs.reqDataString'];
+        }
+        console.log(search);
+        var MQQuery = MQService.find(search);
+        if(sortBy){
+        var sort = {};
+        sort[sortBy] = ascDesc;
+        MQQuery.sort(sort);
+        }
+        if(limit){
+          MQQuery.limit(parseInt(limit));
+        }
+        MQQuery.exec(function(err,docs){
+          if(err){
+            handleError(err,rsp,500);
+          }
+          else{
+
+            //Trim down service and add it to list of services to return
+            docs.forEach(function(doc){
+              var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
+              results.push(service);
+            });
+
+            //Sort the combined docs
+            if(sortBy){
+              results.sort(function(a,b){
+                var ascM = ascDesc == "desc" ? -1 : 1;
+                if(sortBy == "createdAt"){
+                  a = new Date(a.createdAt);
+                  b = new Date(b.createdAt);
+                }else{
+                  a = new Date(a.updatedAt);
+                  b = new Date(b.updatedAt);
+                }
+                return (a - b) * ascM; 
+              });
+            } 
+
+            //Trim to limit
+            if(limit)
+              results = results.slice(0,limit);
+            
+            return rsp.json(results);
+          }
+        });
+        
+      }
+    });
+  }
 }
 
 
