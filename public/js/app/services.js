@@ -980,6 +980,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           params.type  = spec.type;
           params.name  = spec.name;
           params.url   = spec.url;
+
+          if (spec.base) params.base = '/' + spec.base;
+
           params.uploaded_file_id = uploaded_file_id;
           params.uploaded_file_name = uploaded_file_name;
 
