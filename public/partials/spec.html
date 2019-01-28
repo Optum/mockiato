@@ -30,16 +30,6 @@
         </div>
     </div>
 
-    <!-- <div class="form-group req row">
-        <label for="service_base_path" class="col-xs-2 col-form-label">Base Path</label>
-        <div class="col-xs-9">
-            <div class="input-group">
-                <div class="input-group-addon">/virtual/{{spec.sut.name}}/</div>
-                <input required type="text" id="service_endpoint" class="form-control" ng-model="spec.base" placeholder="Enter Base Path">
-            </div>
-        </div>
-    </div> -->
-
     <div class="form-group req row">
         <label for="service_name" class="col-xs-2 col-form-label">Spec Source:</label>
         <div class="col-xs-2">
@@ -51,6 +41,26 @@
             <input type="text" id="service_name" class="form-control" ng-model="spec.url" placeholder="Paste URL">
         </div>
     </div>
+
+    <div class="form-group row">
+        <div class="col-xs-2">
+            <label>Overwrite Base Path: </label>
+        </div>
+        <div class="col-xs-1">
+            <input type="checkbox" ng-model="overwriteBasepath">
+        </div>
+    </div>
+    
+    <div class="form-group req row" ng-show="overwriteBasepath">
+        <label for="service_base_path" class="col-xs-2 col-form-label">Base Path</label>
+        <div class="col-xs-9">
+            <div class="input-group">
+                <div class="input-group-addon">/virtual/{{spec.sut.name}}/</div>
+                <input ng-required="overwriteBasepath" type="text" id="service_endpoint" class="form-control" ng-model="spec.base" placeholder="Enter Base Path">
+            </div>
+        </div>
+    </div>
+
     <br>
     <div style='color:#008000;font-weight:normal;font-size: 13px;' ng-show="uploadSuccessMessage">&#x2714;&nbsp;&nbsp;{{uploadSuccessMessage}}</div>
     <div style='color:#b40037;font-weight:bold;font-size: 13px;' ng-show="uploadErrMessage">&#10060;&nbsp;&nbsp;{{uploadErrMessage}}</div>

@@ -1097,7 +1097,8 @@ function specUpload(req, res) {
     return new Promise(function (resolve, reject) {
       resolve(req.file.filename);
     });
-  }
+  };
+
   uploadSpec().then(function (message) {
   res.json(message);
   }).catch(function (err) {
@@ -1174,8 +1175,9 @@ function publishExtractedRRPairs(req, res) {
 function publishUploadedSpec(req, res) {
   const type = req.query.type;
   const name = req.query.name;
-  const url = req.query.url;
-  const sut = { name: req.query.group };
+  const base = req.query.base;
+  const url  = req.query.url;
+  const sut  = { name: req.query.group };
   const filePath = './uploads/'+req.query.uploaded_file_id;
   const specPath = url || filePath;
 
@@ -1212,7 +1214,10 @@ function publishUploadedSpec(req, res) {
     // set group, basePath, and owner
     serv.sut = sut;
     serv.name = name;
+
+    if (base) serv.basePath = base;
     serv.basePath = '/' + serv.sut.name + serv.basePath;
+    
     serv.user = req.decoded;
     serv.lastUpdateUser = req.decoded;
 

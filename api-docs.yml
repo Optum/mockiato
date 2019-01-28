@@ -343,6 +343,14 @@ paths:
         explode: false
         schema:
           type: string
+      - name: base
+        in: query
+        description: use this to overwrite the base path defined in the spec
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
       responses:
         200:
           description: successful response
