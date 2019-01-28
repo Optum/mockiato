@@ -98,6 +98,8 @@ router.post('/:id/toggle', servCtrl.toggleService);
 // add a new draft service
 router.post('/draftservice', servCtrl.addServiceAsDraft);
 
+// get Service Info for a virtual service from Archive
+router.get('/infoFrmArchive/:id', servCtrl.getArchiveServiceInfo);
 
 
 const rrpairs = require('./rrpairs');
