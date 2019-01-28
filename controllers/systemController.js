@@ -71,32 +71,34 @@ function addSystem(req, res) {
     members: req.body.members
   };
 
-  System.findOne({ name: sut.name }, function(err, foundSUT, system) {
+  System.findOne({ name: sut.name }, function(err, foundSUT) {
     if (err) {
       debug(err);
       return;
     }
 
     if (!foundSUT) {
-      System.create(sut, function(err)	{
+      System.create(sut, function(err, newSUT)	{
           debug('New group created');
           if (err) {
             handleError(err, res, 500);
             return;
           }
+
+          res.json(newSUT);
       });
     }
     else {
       // update members
-      system.members = _.union(system.members, sut.members);
-      system.save(function(err) {
+      foundSUT.members = _.union(foundSUT.members, sut.members);
+      foundSUT.save(function(err) {
         if (err) {
           debug(err);
         }
       });
-    }
 
-    res.json(system);
+      res.json(foundSUT);
+    }
   });
 }
 
