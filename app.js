@@ -194,23 +194,7 @@ function init() {
         console.log('No. of Documents deleted from Archive:- '+services.length);
       });
     });
-   }
-   //No need to run this cron Job for single mode (locally). All servers running in cluster mode.
-   /*     else if(process.env.MOCKIATO_MODE === 'single'){
-            let priorDate_30days = new Date(new Date().setDate(new Date().getDate() - 30));
-            let rule = process.env.MOCKIATO_ARCHIVE;
-            schedule.scheduleJob(rule, function(){
-              console.log('******cron job run for cleaning Archive collection on single instance mode');
-              const query =  { 'createdAt': { $lt: priorDate_30days } };
-              Archive.find(query, function(error, services) {
-                if (error) debug(error);
-                Archive.remove(query, function(error, removed) {
-                  if (error) debug(error);
-                });
-                console.log('No. of Documents deleted from Archive:- '+services.length);
-              });
-            });
-          } */
+  }
 
   // expose api methods for users and groups
   const systems = require('./routes/systems');

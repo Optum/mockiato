@@ -1,4 +1,4 @@
-<h2>Browse Mocked Services</h2>
+<h2>Draft Services</h2>
 <div class="clearfix"></div>
 <br>
     <div class="col-xs-12" >
@@ -11,6 +11,7 @@
             <button type="submit" class="btn btn-primary" ng-click="filtersSelected(selectedSut, selectedUser)">Find</button>&nbsp;
             <button type="submit" class="btn btn-default" ng-click="clearSelected()">Clear</button>
         </div>
+        
         <!--to remove-->
         <button type="submit" class="btn white pull-right" ng-click="script()"></button>
     </form>
@@ -27,22 +28,16 @@
                 <th>Group</th>
                 <th>Type</th>
                 <th>Base URL</th>
-                <th>Transactions</th>
                 <th>Action</th>
             </tr>
             <tr ng-repeat="service in servicelist" style=" word-break:break-all">
-                <td style="width:120px"><a href="#!update/{{ service._id }}/frmServHistory">{{service.name}}</a></td>
+                <td style="width:120px"><a href="#!showDraftService/{{ service._id }}/frmDraft">{{service.name}}</a></td>
                 <td>{{service.user.uid}}</td>
                 <td style="width:120px">{{service.sut.name}}</td>
                 <td>{{service.type}}</td>
                 <td class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
-                <td>{{service.txnCount}}</td>
-                <td>
-                    <button class="btn btn-danger" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === true" ng-click="toggleService(service)">Stop <i class="glyphicon glyphicon-stop"></i></button>
-                    <button class="btn btn-success" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === false" ng-click="toggleService(service)">Start <i class="glyphicon glyphicon-play"></i></button>&nbsp;
-                    <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)"><i class="glyphicon glyphicon-info-sign"></i></button>&nbsp;
-                    <button class="btn btn-primary" title="Export your service as a JSON file to save, send, or import anytime" ng-click="exportService(service)">Export <i class="glyphicon glyphicon-export"></i></button>&nbsp;
-                    <button class="btn btn-default" ng-if="myGroups.includes(service.sut.name)" title="Delete Service" ng-click="deleteService(service)"><i class="glyphicon glyphicon-trash"></i></button>
+                <td>                   
+                    <button class="btn btn-default" ng-if="myGroups.includes(service.sut.name)" title="Delete Service" ng-click="deleteDraftService(service)"><i class="glyphicon glyphicon-trash"></i></button>
                 </td>
             </tr>
         </table>
