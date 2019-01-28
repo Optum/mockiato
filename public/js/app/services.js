@@ -388,7 +388,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 servicevo.sut.members = [];
                 servicevo.sut.members.push(authService.getUserInfo().username);
 
-                $http.post('/api/systems/', servicevo.sut)
+                $http.post('/api/systems' + '?token=' + token, servicevo.sut)
                 .then(function(response) {
                     console.log(response.data);
                 })
@@ -644,7 +644,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               servicevo.sut.members = [];
               servicevo.sut.members.push(authService.getUserInfo().username);
 
-              $http.post('/api/systems/', servicevo.sut)
+              $http.post('/api/systems' + '?token=' + token, servicevo.sut)
               .then(function(response) {
                   console.log(response.data);
               })
@@ -753,12 +753,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   
                 }
 
+                var token = authService.getUserInfo().token;
+
               //pushing group creator to memberlist
               servicevo.sut.members = [];
               servicevo.sut.members.push(authService.getUserInfo().username);
 
               //add new SUT
-              $http.post('/api/systems/', servicevo.sut)
+              $http.post('/api/systems' + '?token=' + token, servicevo.sut)
                 .then(function (response) {
                   console.log(response.data);
                 })
@@ -780,7 +782,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
 
                 //publish service
-                var token = authService.getUserInfo().token;
                 $http.put('/api/recording' + '?token=' + token, recorder)
                 
                 .then(function(response) {
@@ -835,7 +836,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 members: memberlist
               };
 
-              $http.put('/api/systems/' + group, groupData)
+              $http.put('/api/systems/' + group + '?token=' + token, groupData)
                 .then(function (response) {
                   console.log(response.data);
                 })
@@ -911,7 +912,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           bulkUpload.sut.members.push(authService.getUserInfo().username);
 
           //add new SUT
-          $http.post('/api/systems/', bulkUpload.sut)
+          $http.post('/api/systems' + '?token=' + token, bulkUpload.sut)
             .then(function (response) {
               console.log(response.data);
             })
@@ -991,7 +992,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           spec.sut.members.push(authService.getUserInfo().username);
 
           //add new SUT
-          $http.post('/api/systems/', spec.sut)
+          $http.post('/api/systems' + '?token=' + token, spec.sut)
             .then(function (response) {
               console.log(response.data);
             })
@@ -1154,7 +1155,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 var token = authService.getUserInfo().token;
 
                 // add SUT
-                $http.post('/api/systems/', template.sut)
+                $http.post('/api/systems' + '?token=' + token, template.sut)
                 .then(function(response) {
                     console.log(response.data);
                 })
