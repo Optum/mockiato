@@ -782,7 +782,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
 
                 //publish service
-                var token = authService.getUserInfo().token;
                 $http.put('/api/recording' + '?token=' + token, recorder)
                 
                 .then(function(response) {
