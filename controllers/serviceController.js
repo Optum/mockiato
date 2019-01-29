@@ -573,38 +573,7 @@ function searchDuplicate(service, next) {
     }
   });
 }
-
-// function to check for duplicate service & twoSeviceDiffNameSameBasePath
-function searchDuplicateInDrafts(service, next) {
-  const query2ServDiffNmSmBP = {
-    name: { $ne: service.name },
-    basePath: service.basePath
-  };
-
-  const query = {
-    name: service.name,
-    basePath: service.basePath
-  };
-
-  DraftService.findOne(query2ServDiffNmSmBP, function (err, sameNmDupBP) {
-    if (err) {
-      handleError(err, res, 500);
-      return;
-    }
-    else if (sameNmDupBP)
-      next({ twoServDiffNmSmBP: true });
-    else {
-      DraftService.findOne(query, function (err, duplicate) {
-        if (err) {
-          handleError(err, res, 500);
-          return;
-        }
-        next(duplicate);
-      });
-    }
-  });
-}
-
+ 
 // returns a stripped-down version on the rrpair for logical comparison
 function stripRRPair(rrpair) {
   return {

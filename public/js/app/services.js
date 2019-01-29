@@ -496,20 +496,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                      // throw 'RR pair is malformed';
                     }
                   }
-                  // verify that XML is well formed
-                  else if (rr.payloadType === 'XML') {
-                    var reqValid = true;
-                    var resValid = true;
-
-                   // if (rr.requestpayload)  reqValid = xmlService.validateXml(rr.requestpayload);
-                   // if (rr.responsepayload) resValid = xmlService.validateXml(rr.responsepayload);
-
-                    if (reqValid && resValid) {
-                      reqPayload = rr.requestpayload;
-                      resPayload = rr.responsepayload;
-                    }
-                 
-                  }
                   else {
                     reqPayload = rr.requestpayload;
                     resPayload = rr.responsepayload;
