@@ -383,22 +383,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 // publish the virtual service
                 var token = authService.getUserInfo().token;
 
-                //add new SUT
-                //pushing group creator to memberlist
-                servicevo.sut.members = [];
-                servicevo.sut.members.push(authService.getUserInfo().username);
-
-                $http.post('/api/systems' + '?token=' + token, servicevo.sut)
-                .then(function(response) {
-                    console.log(response.data);
-                })
-                .catch(function(err) {
-                    console.log(err);
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
-                      $('#genricMsg-dialog').modal('toggle');
-                });
-
                 // update => put (create => post)
                 if (!isUpdate) {
                   $http.post('/api/services?token=' + token, servData)
@@ -639,22 +623,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               // publish the virtual service
               var token = authService.getUserInfo().token;
 
-              //add new SUT
-              //pushing group creator to memberlist
-              servicevo.sut.members = [];
-              servicevo.sut.members.push(authService.getUserInfo().username);
-
-              $http.post('/api/systems' + '?token=' + token, servicevo.sut)
-              .then(function(response) {
-                  console.log(response.data);
-              })
-              .catch(function(err) {
-                  console.log(err);
-                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
-                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
-                    $('#genricMsg-dialog').modal('toggle');
-              });
-
               // update => put (create => post)
               if (!isUpdate) {
                 $http.post('/api/services/draftservice?token=' + token, servData)
@@ -754,23 +722,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 }
 
                 var token = authService.getUserInfo().token;
-
-              //pushing group creator to memberlist
-              servicevo.sut.members = [];
-              servicevo.sut.members.push(authService.getUserInfo().username);
-
-              //add new SUT
-              $http.post('/api/systems' + '?token=' + token, servicevo.sut)
-                .then(function (response) {
-                  console.log(response.data);
-                })
-                .catch(function (err) {
-                  console.log(err);
-                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
-                  $('#genricMsg-dialog').modal('toggle');
-                });
-
                 
                 //Extract headers
                 for(var i = 0; i < servicevo.reqHeadersArr.length; i ++){
@@ -835,6 +786,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 name: group,
                 members: memberlist
               };
+              
+              var token = authService.getUserInfo().token;
 
               $http.put('/api/systems/' + group + '?token=' + token, groupData)
                 .then(function (response) {
@@ -849,8 +802,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
 
             this.addGroup = function(createSut){
-              createSut.members = [];
-            createSut.members.push(authService.getUserInfo().username);
+          //    createSut.members = [];
+          //  createSut.members.push(authService.getUserInfo().username);
             var token = authService.getUserInfo().token;
             $http.post('/api/systems/'+'?token=' + token , createSut )
             .then(function (response) {
@@ -899,30 +852,15 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     function ($http, $location, authService, servConstants) {
         this.publishExtractedRRPair = function(bulkUpload, uploaded_file_name_id, message) {
           var fd = new FormData();
+          var token = authService.getUserInfo().token;
+          
           var params = {};
-          params.token = authService.getUserInfo().token;
+          params.token = token;
           params.group = bulkUpload.sut.name;
           params.type  = bulkUpload.type;
           params.name  = bulkUpload.name;
           params.url = bulkUpload.base;
           params.uploaded_file_name_id = uploaded_file_name_id;
-
-          //pushing group creator to memberlist
-          bulkUpload.sut.members = [];
-          bulkUpload.sut.members.push(authService.getUserInfo().username);
-
-          //add new SUT
-          $http.post('/api/systems' + '?token=' + token, bulkUpload.sut)
-            .then(function (response) {
-              console.log(response.data);
-            })
-            .catch(function (err) {
-              console.log(err);
-              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
-              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
-              $('#genricMsg-dialog').modal('toggle');
-            });
-
 
             $http.post('/api/services/fromPairs/publish', fd, {
               transformRequest: angular.identity,
@@ -975,8 +913,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     function ($http, $location, authService, servConstants) {
         this.publishSpec = function(spec, uploaded_file_id, uploaded_file_name,message) {
           var fd = new FormData();
+          var token = authService.getUserInfo().token;
+
           var params = {};
-          params.token = authService.getUserInfo().token;
+          params.token = token;
           params.group = spec.sut.name;
           params.type  = spec.type;
           params.name  = spec.name;
@@ -986,23 +926,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
           params.uploaded_file_id = uploaded_file_id;
           params.uploaded_file_name = uploaded_file_name;
-
-          //pushing group creator to memberlist
-          spec.sut.members = [];
-          spec.sut.members.push(authService.getUserInfo().username);
-
-          //add new SUT
-          $http.post('/api/systems' + '?token=' + token, spec.sut)
-            .then(function (response) {
-              console.log(response.data);
-            })
-            .catch(function (err) {
-              console.log(err);
-              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
-              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
-              
-              $('#genricMsg-dialog').modal('toggle');
-            });
 
             $http.post('/api/services/fromSpec/publish', fd, {
               transformRequest: angular.identity,
