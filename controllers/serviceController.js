@@ -57,7 +57,10 @@ function createService(serv,req){
     function performCreate(){
       if(serv.type == "MQ"){
         MQService.create(serv,function(err,service){
-          resolve(err,service);
+          if(err)
+            reject(err);
+          else
+            resolve(service);
         });
       }else{
         Service.create(serv,function(err,service){
