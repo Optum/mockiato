@@ -15,35 +15,60 @@ const unzip = require('unzip2');
 const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
+const systemController = require('./systemController');
+
+
+
 
 
 /**
- * Wrapper function for (MQ)Service.create.
+ * Wrapper function for (MQ)Service.create. If req is provided, will also check against current logged in user's permissions first. 
  * @param {object} serv An object containing the info to create a service
- * @return A promise from creating the service. 
+ * @param {*} req Express request. 
+ * @return A promise from creating the service. Resolves to the new service. Rejects with error from mongoose OR error from lack of group permission.
  */
 function createService(serv,req){
 
-  if(req){
-    var user = req.decoded;
-    serv.lastUpdateUser = user;
 
-  }
 
   return new Promise(function(resolve,reject){
-    if(serv.type == "MQ"){
-      MQService.create(serv,function(err,service){
-        resolve(err,service);
-      });
-    }else{
-      Service.create(serv,function(err,service){
-        if(err)
-          reject(err);
-        else 
-          resolve(service);
-      });
-    }
 
+    //
+    if(req){
+      var user = req.decoded;
+      serv.lastUpdateUser = user;
+      var authed = false;
+      
+      //Get our system
+      systemController.getSystemIfMember(user.uid,serv.sut.name).exec(function(err,system){
+        if(err){
+          reject(err);
+        }else if(system){
+          serv.sut = system; //Make sure service has full system info, including proper ID!
+          performCreate();
+        }else{
+          reject(new Error("User not authorized to create on this group."));
+        }
+      });
+
+    }else{
+      performCreate();
+    }
+    function performCreate(){
+      if(serv.type == "MQ"){
+        MQService.create(serv,function(err,service){
+          resolve(err,service);
+        });
+      }else{
+        Service.create(serv,function(err,service){
+          if(err)
+            reject(err);
+          else 
+            resolve(service);
+        });
+      }
+    }
+  
     
 
   });
@@ -1288,8 +1313,6 @@ function publishUploadedSpec(req, res) {
           syncWorkers(service, 'register');
         },function (err) {
           if (err) handleError(err, res, 500);
-    
-         
         });
       }
     });
