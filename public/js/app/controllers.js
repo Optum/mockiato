@@ -1408,51 +1408,57 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             }
             ///////////////////////////end script. to remove
 
+          
+          
+            $scope.$watch('selectedSut', function (newSut) {
+             // $scope.filtersSelected = function(sut, user) {
+              console.log("newSut: " + newSut + "name: " + newSut.name);
+               
+                  if (newSut && !newUser) {
+                    console.log("newSut: " + newSut + "name: " + newSut.name);
+                   apiHistoryService.getServiceForSUT(newSut.name)
 
-            $scope.filtersSelected = function(sut, user) {
-                if (sut && !user) {
-                    apiHistoryService.getServiceForSUT(sut.name)
+                      .then(function(response) {
+                          var data = response.data;
+                          console.log(data);
+                          $scope.servicelist = data;
+                        })
 
-                    .then(function(response) {
+                      .catch(function(err) {
+                          console.log(err);
+                      });
+                      
+                  }
+
+                  else if (newUser && !newSut) {
+                      apiHistoryService.getServiceByUser(newUser.name)
+
+                      .then(function(response) {
                         var data = response.data;
                         console.log(data);
                         $scope.servicelist = data;
                       })
 
-                    .catch(function(err) {
-                        console.log(err);
-                    });
-                }
+                      .catch(function(err) {
+                          console.log(err);
+                      });
+                  }
 
-                else if (user && !sut) {
-                    apiHistoryService.getServiceByUser(user.name)
+                  else if (newUser && newSut) {
+                      apiHistoryService.getServicesFiltered(newSut.name, newUser.name)
 
-                    .then(function(response) {
-                      var data = response.data;
-                      console.log(data);
-                      $scope.servicelist = data;
-                    })
+                      .then(function(response) {
+                        var data = response.data;
+                        console.log(data);
+                        $scope.servicelist = data;
+                      })
 
-                    .catch(function(err) {
-                        console.log(err);
-                    });
-                }
-
-                else if (user && sut) {
-                    apiHistoryService.getServicesFiltered(sut.name, user.name)
-
-                    .then(function(response) {
-                      var data = response.data;
-                      console.log(data);
-                      $scope.servicelist = data;
-                    })
-
-                    .catch(function(err) {
-                        console.log(err);
-                    });
-                }
-            };
-            $scope.filtersSelected(null, { name: authService.getUserInfo().username });
+                      .catch(function(err) {
+                          console.log(err);
+                      });
+                  }
+              });
+           // $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
             $scope.clearSelected = function() {
               $scope.selectedSut = null;
