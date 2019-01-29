@@ -24,14 +24,30 @@ const System = require('../models/common/System');
  */
 function createService(serv,req){
 
-  if(req)
-    serv.lastUpdateUser = req.decoded;
+  if(req){
+    var user = req.decoded;
+    serv.lastUpdateUser = user;
 
-  if(serv.type == "MQ"){
-    return MQService.create(serv);
-  }else{
-    return Service.create(serv);
   }
+
+  return new Promise(function(resolve,reject){
+    if(serv.type == "MQ"){
+      MQService.create(serv,function(err,service){
+        resolve(err,service);
+      });
+    }else{
+      Service.create(serv,function(err,service){
+        if(err)
+          reject(err);
+        else 
+          resolve(service);
+      });
+    }
+
+    
+
+  });
+  
 }
 
 /**
@@ -217,7 +233,6 @@ function searchServices(req,rsp){
           search['rrpairs.reqData'] = search['rrpairs.reqDataString'];
           delete search['rrpairs.reqDataString'];
         }
-        console.log(search);
         var MQQuery = MQService.find(search);
         if(sortBy){
         var sort = {};
@@ -665,14 +680,17 @@ function addService(req, res) {
     serv.connInfo = req.body.connInfo;
     
     createService(serv,req).then(
+      function(service){
+        res.json(service);
+      },
       // handler for db call
-      function(err, service) {
+      function(err) {
         if (err) {
           handleError(err, res, 500);
           return;
         }
         // respond with the newly created resource
-        res.json(service);
+       
     });
   }
   else {
@@ -700,14 +718,13 @@ function addService(req, res) {
       }
       else {
         createService(serv,req).then(
-        function(err, service) {
-          if (err) {
-            handleError(err, res, 500);
-            return;
-          }
+        function( service) {
           res.json(service);
   
           syncWorkers(service, 'register');
+        },function(err){
+            handleError(err, res, 500);
+            return;
         });
       }
     });
@@ -1031,7 +1048,8 @@ function restoreService(req, res) {
         rrpairs: archive.service.rrpairs,
         lastUpdateUser: archive.service.lastUpdateUser
       };
-      createService(newService,req).then(function (err, callback) {
+      createService(newService,req).then(function(service){},
+        function (err) {
         if (err) {
           handleError(err, res, 500);
         }
@@ -1049,7 +1067,7 @@ function restoreService(req, res) {
           rrpairs: archive.mqservice.rrpairs,
           connInfo: archive.mqservice.connInfo
         };
-        createService(newMQService,req).then( function (err, callback) {
+        createService(newMQService,req).then( function(serv) {},function (err) {
           if (err) {
             handleError(err, res, 500);
           }
@@ -1140,14 +1158,17 @@ function publishExtractedRRPairs(req, res) {
 
     if (type === 'MQ') {      
       createService(serv,req).then(
+        function(service){
+          res.json(service);
+        },
         // handler for db call
-        function(err, service) {
+        function(err) {
           if (err) {
             handleError(err, res, 500);
             return;
           }
           // respond with the newly created resource
-          res.json(service);
+         
       });
     }
     else {
@@ -1171,12 +1192,16 @@ function publishExtractedRRPairs(req, res) {
           });
         }
         else {
-          createService(serv,req).then( function (err, service) {
+          createService(serv,req).then( 
+            function(service){
+              res.json(service);
+              syncWorkers(service , 'register');
+            },
+            function (err, service) {
             if (err) {
               handleError(err, res, 500);
             }
-            res.json(service);
-            syncWorkers(service , 'register');
+           
           });
         }
       });
@@ -1258,11 +1283,13 @@ function publishUploadedSpec(req, res) {
         });
       }
       else {
-        createService(serv,req).then( function (err, service) {
-          if (err) handleError(err, res, 500);
-    
+        createService(serv,req).then( function(service){
           res.json(service);
           syncWorkers(service, 'register');
+        },function (err) {
+          if (err) handleError(err, res, 500);
+    
+         
         });
       }
     });
