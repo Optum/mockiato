@@ -62,7 +62,7 @@
 
     <!--ng-repeat start here-->
     <ul class="row">
-        <div data-ng-repeat="member in memberlist track by $index" class="row">
+        <div data-ng-repeat="member in memberlist track by $index" ng-show="$index!=0" class="row">
             <div class="col-xs-2">
                 {{member}}
             </div>
