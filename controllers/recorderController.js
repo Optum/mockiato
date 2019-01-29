@@ -474,3 +474,14 @@ function startRecorder(req,rsp){
     stopRecorder : stopRecorder
   };
   
+
+//On startup, start all recorders that should be active.
+Recording.find({running:true},function(err,docs){
+    if(docs){
+        docs.forEach(function(doc){
+            new Recorder(doc);
+        });
+    }else if(err){
+        debug('error initializing recorders');
+    }
+});

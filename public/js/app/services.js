@@ -140,6 +140,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
             this.startRecorder = function(recorder){
               return $http.patch('/api/recording/' + recorder._id + "/start");
+              
             }
 
             this.stopRecorder = function(recorder){
