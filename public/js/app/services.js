@@ -138,6 +138,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/recording');
             }
 
+            this.startRecorder = function(recorder){
+              return $http.patch('/api/recording/' + recorder._id + "/start");
+            }
+
+            this.stopRecorder = function(recorder){
+              return $http.patch('/api/recording/' + recorder._id + "/stop");
+            }
+
             this.getRecordingById = function(id){
               return $http.get('/api/recording/' + id);
             }
