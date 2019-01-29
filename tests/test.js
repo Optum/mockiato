@@ -42,8 +42,20 @@ function getRandomString() {
     return  Math.random().toString(36).substring(2, 15);
 }
 
+
+//Copy over mock group/user info
+mqService.user = mockUser;
+mqService.sut = mockGroup;
+restService.user = mockUser;
+restService.sut = mockGroup;
+soapService.user = mockUser;
+soapService.sut = mockGroup;
+wsdlQuery.group = mockGroup.name;
+oasQuery.group = mockGroup.name;
+
+
 describe('API tests', function() {
-    this.timeout(5000);
+    this.timeout(15000);
 
     before(function(done) {
         app.on('started', done);
@@ -67,6 +79,8 @@ describe('API tests', function() {
                 .end(done);
         });
     });
+
+    
     
     describe('Get access token', function() {
         it('Responds with the token', function(done) {
@@ -80,6 +94,16 @@ describe('API tests', function() {
         });
     });
     
+    describe('Create new group', function() {
+        it('Responds with the group', function(done) {
+            request
+                .post('/api/systems' + token)
+                .send(mockGroup)
+                .expect(200)
+                .end(done);
+        });
+    });  
+
     describe('Create REST service', function() {
         it('Responds with the new service', function(done) {
             request
@@ -104,7 +128,7 @@ describe('API tests', function() {
     describe('Test REST service', function() {
         it('Responds with the virtual data', function(done) {
             request
-                .post('/virtual/test/v2/test/resource')
+                .post('/virtual/' + mockGroup.name +  '/v2/test/resource')
                 .send({ key: 123 })
                 .expect(200)
                 .end(done);
@@ -165,7 +189,7 @@ describe('API tests', function() {
     describe('Test SOAP service', function() {
         it('Responds with the virtual data', function(done) {
             request
-                .post('/virtual/test/soap')
+                .post('/virtual/' + mockGroup.name +  '/soap')
                 .set('Content-Type', 'text/xml')
                 .send(soapService.rrpairs[0].reqData)
                 .expect(200)
@@ -200,6 +224,10 @@ describe('API tests', function() {
                 .send(mqService)
                 .expect(200)
                 .expect(function(res) {
+                    console.log("Mqreq: ");
+                    console.log(res);
+                    console.log("mqserv: ");
+                    console.log(mqService);
                     id = res.body._id;
                 }).end(done);
         });
@@ -308,15 +336,7 @@ describe('API tests', function() {
         });
     });
 
-    describe('Create new group', function() {
-        it('Responds with the group', function(done) {
-            request
-                .post('/api/systems' + token)
-                .send(mockGroup)
-                .expect(200)
-                .end(done);
-        });
-    });  
+   
     
     describe('Retrieve groups', function() {
         it('Responds with the groups', function(done) {
