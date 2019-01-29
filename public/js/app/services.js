@@ -849,8 +849,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
 
             this.addGroup = function(createSut){
-              createSut.members = [];
-            createSut.members.push(authService.getUserInfo().username);
+          //    createSut.members = [];
+          //  createSut.members.push(authService.getUserInfo().username);
             var token = authService.getUserInfo().token;
             $http.post('/api/systems/'+'?token=' + token , createSut )
             .then(function (response) {
