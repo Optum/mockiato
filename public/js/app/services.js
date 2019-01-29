@@ -786,6 +786,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 name: group,
                 members: memberlist
               };
+              
+              var token = authService.getUserInfo().token;
 
               $http.put('/api/systems/' + group + '?token=' + token, groupData)
                 .then(function (response) {
