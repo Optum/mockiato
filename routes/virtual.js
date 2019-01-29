@@ -141,6 +141,11 @@ function registerRRPair(service, rrpair) {
             logEvent(path, label, 'expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
 
             match = deepEquals(trimmedPayload, trimmedReqData);
+
+            // make sure we're not comparing {} == {}
+            if (match && JSON.stringify(trimmedPayload) === '{}') {
+              match = false;
+            }
             
             if (match) break;
           }
