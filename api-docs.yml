@@ -701,6 +701,55 @@ paths:
                 items:
                   $ref: '#/components/schemas/Recording'
                 description: successful response
+  /recording/{id}/stop:
+    patch:
+      description: Stops a recorder. A stopped recorder will not be deleted, but will not accept any more incoming requests. 
+      parameters:
+      - name: id
+        in: path
+        description: id of Recording
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      tags:
+      - recordings
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+                description: successful response
+  /recording/{id}/start:
+   
+    patch:
+      parameters:
+      - name: id
+        in: path
+        description: id of Recording
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      description: Start a recorder, and make it accept incoming requests again. 
+      tags:
+      - recordings
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+                description: successful response
 
   /systems:
     get:
