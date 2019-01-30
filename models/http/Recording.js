@@ -17,7 +17,16 @@ const recordingSchema = new mongoose.Schema({
     running: {
         type: Boolean,
         default: true
-      }
+      },
+    filters:{
+        enabled : {
+            type: Boolean,
+            default : false
+        },
+        bodyStrings : [String],
+        headers : [{key:String,value:String}],
+        statuses : [Number]
+    }
 });
 
 recordingSchema.set('usePushEach', true);

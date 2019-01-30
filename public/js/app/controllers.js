@@ -181,6 +181,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
         $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
         $scope.servicevo.reqHeadersArr = [{id:0}];
+        $scope.servicevo.filterStatusCodes = [{id:0,v:''}];
+        $scope.servicevo.filterStrings = [{id:0,v:''}];
+        $scope.servicevo.filterHeaders = [{id:0,k:'',v:''}];
 
         $scope.showRecorderHelp = function(){
           $('#recordingHelp-modal').modal('toggle');
@@ -189,6 +192,24 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           var newItemNo = service.reqHeadersArr.length;
           service.reqHeadersArr.push({'id':newItemNo});
         };
+        $scope.addNewStatusCode = function(service){
+          service.filterStatusCodes.push({'id':service.filterStatusCodes.length});
+        }
+        $scope.removeStatusCode = function(service){
+          service.filterStatusCodes.splice(service.filterStatusCodes.length-1);
+        }
+        $scope.addNewString = function(service){
+          service.filterStrings.push({'id':service.filterStrings.length});
+        }
+        $scope.removeString = function(service){
+          service.filterStrings.splice(service.filterStrings.length-1);
+        }
+        $scope.addNewFilterHeader = function(service){
+          service.filterHeaders.push({'id':service.filterHeaders.length});
+        }
+        $scope.removeFilterHeader = function(service){
+          service.filterHeaders.splice(service.filterHeaders.length-1);
+        }
 
         $scope.removeReqHeader = function(service) {
           var lastItem = service.reqHeadersArr.length-1;
@@ -198,6 +219,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.createRecorder = function (servicevo) {
           apiHistoryService.publishRecorderToAPI(servicevo);
         };
+
+
 
     }])
     .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', '$timeout',

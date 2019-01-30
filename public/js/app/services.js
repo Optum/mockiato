@@ -712,7 +712,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   remotePort:servicevo.remotePort,
                   basePath:servicevo.basePath,
                   headerMask:[],
-                  ssl:servicevo.ssl
+                  ssl:servicevo.ssl,
+                  filters:{
+                    enabled:servicevo.filterEnable,
+                    bodyStrings:[],
+                    headers:[],
+                    statuses:[]
+                  }
                   
                 }
 
@@ -724,6 +730,25 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if(head.k)
                     recorder.headerMask.push(head.k.originalObject);
                 }
+
+                //Extract filters
+                servicevo.filterStatusCodes.forEach(function(code){
+                  if(code.v){
+                    recorder.filters.statuses.push(code.v);
+                  }
+                });
+                servicevo.filterStrings.forEach(function(string){
+                  if(string.v){
+                    recorder.filters.bodyStrings.push(string.v);
+                  }
+                });
+                servicevo.filterHeaders.forEach(function(header){
+                  if(header.k){
+                    recorder.filters.headers.push({key:header.k,value:header.v});
+                  }
+                });
+
+
                 console.log(servicevo);
 
 
