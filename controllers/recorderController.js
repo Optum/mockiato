@@ -15,45 +15,71 @@ function escapeRegExp(string) {
   * Recorder object
   *
   * This object is created whenever a new recording session is started. the recording router will route all appropriate transactions to this object 
+  * Can instead pass an ID to a Recording document to 'name', and create an instance based on that recorder. 
   */
 var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl){
-     this.path = path;
-     
-     //Ensure path starts with /
-    if(this.path.substring(0,1) != "/")
-        this.path = "/" + this.path;     
-   
-    this.model = Recording.create({
-        sut : {name:sut},
-        path : path,
-        remoteHost : remoteHost,
-        protocol : protocol || 'REST',
-        remotePort : remotePort || 80,
-        headerMask : headerMask || ['Content-Type'],
-        service : {
-            basePath : path.substring(1),
-            sut:{name:sut},
-            name:name,
-            type:protocol
-        },
-        name: name,
-        ssl:ssl
-    },(function(err,newModel){
-        this.model = newModel;
-        
-        if(!(this.model.headerMask))
-            this.model.headerMask = [];
-        
-        if(!(this.model.headerMask['Content-Type']))
-            this.model.headerMask.push('Content-Type');
 
-        this.model.save(function(err){
-            if(err) console.log(err);
+    var rec = this;
+    //If passed ID for Recording document...
+    if(arguments.length == 1){
+        rec.model = new Promise(function(resolve,reject){
+            Recording.findById(name,function(err,doc){
+                if(err){
+                    reject(err);
+                }else{
+                    doc.running = true;
+                    doc.save(function(err,doc){
+                        rec.model = doc;
+                        syncWorkersToNewRecorder(rec);
+                        resolve(doc);
+                    });
+                }
+
+            });
         });
-        syncWorkersToNewRecorder(this);
-    }).bind(this));
+    }else{
+
+        this.path = path;
+        
+        //Ensure path starts with /
+        if(this.path.substring(0,1) != "/")
+            this.path = "/" + this.path;     
+    
+        this.model = Recording.create({
+            sut : {name:sut},
+            path : path,
+            remoteHost : remoteHost,
+            protocol : protocol || 'REST',
+            remotePort : remotePort || 80,
+            headerMask : headerMask || ['Content-Type'],
+            service : {
+                basePath : path.substring(1),
+                sut:{name:sut},
+                name:name,
+                type:protocol
+            },
+            name: name,
+            ssl:ssl
+        },(function(err,newModel){
+            this.model = newModel;
+            
+            if(!(this.model.headerMask))
+                this.model.headerMask = [];
+            
+            if(!(this.model.headerMask['Content-Type']))
+                this.model.headerMask.push('Content-Type');
+
+            this.model.save(function(err){
+                if(err) console.log(err);
+            });
+            syncWorkersToNewRecorder(this);
+        }).bind(this));
+    }
   
  };
+
+
+
 
 function registerRecorder(recorder){
     activeRecorders[recorder.model._id] = recorder;
@@ -356,6 +382,28 @@ function removeRecorder(req,rsp){
    
 }
 
+/**
+ * API call to stop a recorder based on ID.
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
+function stopRecorder(req,rsp){
+    var recorder = activeRecorders[req.params.id];
+    if(recorder){
+        recorder.model.running = false;
+        recorder.model.save(function(err,doc){
+            rsp.status(200);
+            rsp.json(doc);
+            deregisterRecorder(recorder);
+            
+        });
+        
+    }else{
+        handleError(new Error("No recorder found for that ID or recorder is already stopped."),rsp,404);
+    }
+   
+}
+
 function deregisterRecorder(recorder){
     routing.unbindRecorder(recorder);
     if(activeRecorders[recorder.model._id])
@@ -389,6 +437,29 @@ function addRecorder(req,rsp){
 }
 
 
+ /**
+  * Starts an existing Recording into a Recorder object. 
+  * @param {string} recorderId 
+  * @return {Recorder} recorder object instantiated from Recording doc
+  */
+  function startRecorderFromId(recorderId){
+    return new Recorder(recorderId);
+}
+
+/**
+ * API call to start a recorder. :id is the id to a Recording document.  Starts up a Recorder based on the Recording doc. 
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
+function startRecorder(req,rsp){
+    startRecorderFromId(req.params.id).model.then(function(doc){
+        rsp.json(doc);
+    }).catch(function(err){
+        handleError(err,rsp,500);
+    });
+}
+
+
 
  module.exports = {
     Recorder: Recorder,
@@ -398,6 +469,19 @@ function addRecorder(req,rsp){
     getRecorderRRPairsAfter : getRecorderRRPairsAfter,
     removeRecorder: removeRecorder,
     registerRecorder: registerRecorder,
-    deregisterRecorder: deregisterRecorder
+    deregisterRecorder: deregisterRecorder,
+    startRecorder : startRecorder,
+    stopRecorder : stopRecorder
   };
   
+
+//On startup, start all recorders that should be active.
+Recording.find({running:true},function(err,docs){
+    if(docs){
+        docs.forEach(function(doc){
+            new Recorder(doc);
+        });
+    }else if(err){
+        debug('error initializing recorders');
+    }
+});
