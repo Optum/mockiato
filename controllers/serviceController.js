@@ -15,6 +15,68 @@ const unzip = require('unzip2');
 const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
+const systemController = require('./systemController');
+
+
+
+
+
+/**
+ * Wrapper function for (MQ)Service.create. If req is provided, will also check against current logged in user's permissions first. 
+ * @param {object} serv An object containing the info to create a service
+ * @param {*} req Express request. 
+ * @return A promise from creating the service. Resolves to the new service. Rejects with error from mongoose OR error from lack of group permission.
+ */
+function createService(serv,req){
+
+
+
+  return new Promise(function(resolve,reject){
+
+    //
+    if(req){
+      var user = req.decoded;
+      serv.lastUpdateUser = user;
+      var authed = false;
+      
+      //Get our system
+      systemController.getSystemIfMember(user.uid,serv.sut.name).exec(function(err,system){
+        if(err){
+          reject(err);
+        }else if(system){
+          serv.sut = system; //Make sure service has full system info, including proper ID!
+          performCreate();
+        }else{
+          reject(new Error("User not authorized to create on this group."));
+        }
+      });
+
+    }else{
+      performCreate();
+    }
+    function performCreate(){
+      if(serv.type == "MQ"){
+        MQService.create(serv,function(err,service){
+          if(err)
+            reject(err);
+          else
+            resolve(service);
+        });
+      }else{
+        Service.create(serv,function(err,service){
+          if(err)
+            reject(err);
+          else 
+            resolve(service);
+        });
+      }
+    }
+  
+    
+
+  });
+  
+}
 
 /**
  * Helper function for search. Trims down an HTTP service for return, and filters + trims rrpairs. 
@@ -594,8 +656,7 @@ function addService(req, res) {
     delayMax: req.body.delayMax,
     basePath: '/' + req.body.sut.name + req.body.basePath,
     matchTemplates: req.body.matchTemplates,
-    rrpairs: req.body.rrpairs,
-    lastUpdateUser: req.decoded
+    rrpairs: req.body.rrpairs
   };
 
   //Save req and res data string cache
@@ -615,15 +676,18 @@ function addService(req, res) {
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
     
-    MQService.create(serv,
+    createService(serv,req).then(
+      function(service){
+        res.json(service);
+      },
       // handler for db call
-      function(err, service) {
+      function(err) {
         if (err) {
           handleError(err, res, 500);
           return;
         }
         // respond with the newly created resource
-        res.json(service);
+       
     });
   }
   else {
@@ -650,15 +714,14 @@ function addService(req, res) {
         });
       }
       else {
-        Service.create(serv,
-        function(err, service) {
-          if (err) {
-            handleError(err, res, 500);
-            return;
-          }
+        createService(serv,req).then(
+        function( service) {
           res.json(service);
   
           syncWorkers(service, 'register');
+        },function(err){
+            handleError(err, res, 500);
+            return;
         });
       }
     });
@@ -982,7 +1045,8 @@ function restoreService(req, res) {
         rrpairs: archive.service.rrpairs,
         lastUpdateUser: archive.service.lastUpdateUser
       };
-      Service.create(newService, function (err, callback) {
+      createService(newService,req).then(function(service){},
+        function (err) {
         if (err) {
           handleError(err, res, 500);
         }
@@ -1000,7 +1064,7 @@ function restoreService(req, res) {
           rrpairs: archive.mqservice.rrpairs,
           connInfo: archive.mqservice.connInfo
         };
-        MQService.create(newMQService, function (err, callback) {
+        createService(newMQService,req).then( function(serv) {},function (err) {
           if (err) {
             handleError(err, res, 500);
           }
@@ -1090,15 +1154,18 @@ function publishExtractedRRPairs(req, res) {
     serv.user = req.decoded;
 
     if (type === 'MQ') {      
-      MQService.create(serv,
+      createService(serv,req).then(
+        function(service){
+          res.json(service);
+        },
         // handler for db call
-        function(err, service) {
+        function(err) {
           if (err) {
             handleError(err, res, 500);
             return;
           }
           // respond with the newly created resource
-          res.json(service);
+         
       });
     }
     else {
@@ -1122,12 +1189,16 @@ function publishExtractedRRPairs(req, res) {
           });
         }
         else {
-          Service.create(serv, function (err, service) {
+          createService(serv,req).then( 
+            function(service){
+              res.json(service);
+              syncWorkers(service , 'register');
+            },
+            function (err, service) {
             if (err) {
               handleError(err, res, 500);
             }
-            res.json(service);
-            syncWorkers(service , 'register');
+           
           });
         }
       });
@@ -1209,11 +1280,11 @@ function publishUploadedSpec(req, res) {
         });
       }
       else {
-        Service.create(serv, function (err, service) {
-          if (err) handleError(err, res, 500);
-    
+        createService(serv,req).then( function(service){
           res.json(service);
           syncWorkers(service, 'register');
+        },function (err) {
+          if (err) handleError(err, res, 500);
         });
       }
     });
