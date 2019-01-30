@@ -8,6 +8,7 @@ const rrSchema = new mongoose.Schema({
   queries: mongoose.Schema.Types.Mixed,
   reqHeaders: mongoose.Schema.Types.Mixed,
   reqData: mongoose.Schema.Types.Mixed,
+  reqDataString: String,
   resStatus: {
     // force integer only
     type: Number,
@@ -17,6 +18,7 @@ const rrSchema = new mongoose.Schema({
   },
   resHeaders: mongoose.Schema.Types.Mixed,
   resData: mongoose.Schema.Types.Mixed,
+  resDataString: String,
   label: String
 });
 

@@ -1,4 +1,4 @@
-<h2>Mock a REST or SOAP Service</h2>
+<h2>Mock a REST, SOAP or MQ Service</h2>
 <form name="form" class="well col-xs-12">
   <div class="form-group req row">
     <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
@@ -24,16 +24,11 @@
     <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
 
     <div class="col-xs-3">
-      <select ng-show="!sutChecked" required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist | orderBy:'name'">
+      <select required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist | orderBy:'name'">
           <option selected="selected" disabled="true">Select SUT</option>
       </select>
-      <input ng-show="sutChecked" required type="text" ng-pattern="/^[A-Za-z0-9!\-_.+=?&^%$#@!<>]+(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter group name (no spaces)" ng-change="checkDuplicateGroup()" ng-blur="checkDuplicateGroup()" ng-mouseleave="checkDuplicateGroup()">
     </div>
-    <div class="col-xs-3">
-      <p>Check to create new Group
-        &nbsp;<input type="checkbox" id="sutcheck" ng-model="sutChecked" ng-click="dropdown()"><div style='color:#b40037;font-weight:normal;font-size: 13px;' ng-show="groupMessage && sutChecked">{{groupMessage}}</div>
-      </p>
-    </div>
+   
   </div>
 
   <div class="form-group req row">
@@ -68,33 +63,6 @@
       </div>
   </div>
 
-  <!-- <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
-    <label class="col-xs-2 col-form-label">Queue Manager</label>
-    <div class="col-xs-3">
-      <select required class="form-control" ng-model="servicevo.mq.manager" ng-options="manager.name for manager in mqInfo.managers">
-          <option selected="selected" disabled="true">Select Manager</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
-    <label class="col-xs-2 col-form-label">Request Queue</label>
-    <div class="col-xs-3">
-      <select required class="form-control" ng-model="servicevo.mq.reqQueue" ng-options="obj.reqQueue for obj in mqInfo.queues">
-          <option selected="selected" disabled="true">Select Queue</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
-    <label class="col-xs-2 col-form-label">Response Queue</label>
-    <div class="col-xs-3">
-      <select required class="form-control" ng-model="servicevo.mq.resQueue" ng-options="obj.resQueue for obj in mqInfo.queues">
-          <option selected="selected" disabled="true">Select Queue</option>
-      </select>
-    </div>
-  </div> -->
-
   <div class="form-group row">
       <label class="col-xs-2 col-form-label">Match Templates:</label>
       <div class="col-xs-9">
@@ -118,6 +86,107 @@
           </div>
         </fieldset>
       </div>
+    </div>
+    <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+      <label for="live_invocation_enable" class="col-xs-2 col-form-label">Perform Live Invocation:</label>
+  
+      
+      <div class="col-xs-1">
+        <input type="checkbox" id="livecheck" ng-model="servicevo.liveInvocationCheck" ng-click="">
+      </div>
+    </div>
+    
+    <div id="live_invocation_fields"  ng-show="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'">
+      
+    <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+      <div class="form-group req row">
+        <label for="service_preorpost" class="col-xs-2 col-form-label">Invoke Pre or Post Virtual:</label>
+        <div class="col-xs-8">
+          <div class="radio">
+            <label class="move-radios">
+                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'PRE'" ng-required="servicevo.liveInvocationCheck">
+                  Use Live Service First
+            </label>
+            <label class="move-radios">
+                <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'POST'" ng-required="servicevo.liveInvocationCheck">
+                  Use Virtual Service First
+            </label>
+          </div>
+        </div>
+        
+      </div>
+  
+      <div class="form-group req row">
+        <label for="remote_host" class="col-xs-2 col-form-label">Remote Host:</label>
+        <div class="col-xs-3">
+          <input ng-required="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'" type="text" id="service_name" class="form-control" ng-model="servicevo.remoteHost" placeholder="Enter Remote Hostname">
+        </div>
+    
+      </div>
+      <div class="form-group req row">
+        <label for="remote_port" class="col-xs-2 col-form-label">Remote Port:</label>
+        <div class="col-xs-3">
+          <input ng-required="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'" type="text" id="service_name" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Host Port">
+        </div>
+      </div>
+  
+      <div class="form-group row">
+        <label for="remote_port" class="col-xs-2 col-form-label">Remote Base Path:</label>
+        <div class="col-xs-5">
+          <input type="text" id="service_name" class="form-control" ng-model="servicevo.remotePath" placeholder="Enter Remote Base Path">
+        </div>
+      </div>
+  
+      <div class="form-group row" ng-show="servicevo.liveInvokePrePost == 'PRE'">
+        <label for="fail_status" class="col-xs-2 col-form-label">Failover on Status Codes:</label>
+        <div class="col-xs-9">
+          <fieldset data-ng-repeat="status in servicevo.failStatuses">
+            <div class="row">
+              <div class="col-xs-3"><input type="text" class="form-control" id="status-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. 404"></div>
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeFailStatus($index)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+  
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addFailStatus()">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+  
+      <div class="form-group row" ng-show="servicevo.liveInvokePrePost == 'PRE'">
+          <label for="fail_status" class="col-xs-2 col-form-label">Fail if body contains string:</label>
+          <div class="col-xs-9">
+            <fieldset data-ng-repeat="status in servicevo.failStrings">
+              <div class="row">
+                <div class="col-xs-6"><input type="text" class="form-control" id="string-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. error"></div>
+                <div class="col-xs-1">
+                  <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeFailString($index)">
+                    <span class="glyphicon glyphicon-minus"></span>
+                  </button>
+                </div>
+    
+                <div class="col-xs-1">
+                  <button type="button" class="btn btn-success" ng-show="$last" ng-click="addFailString()">
+                    <span class="glyphicon glyphicon-plus"></span>
+                  </button>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="system_under_test" class="col-xs-2 col-form-label">Use HTTPS:</label>
+          <div class="col-xs-3">
+            <input type="checkbox" id="sutcheck" ng-model="servicevo.invokeSSL">
+          </div>
+        </div>
+        
     </div>
 
   <!-- begin req / res pairs -->
@@ -345,7 +414,7 @@
 
   <div class="form-group row">
     <div class="col-sm-12">
-      <button ng-disabled="form.$invalid ||(groupMessage && sutChecked)" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishservice(servicevo)">Publish</button>
+      <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishservice(servicevo)">Publish</button>
     </div>
   </div>
 </form>

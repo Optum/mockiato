@@ -6,14 +6,15 @@
 <form class="col-xs-12">
     <div class="form-group row">
         <div class="col-xs-2">
-            <file-field class="btn btn-primary" ng-model="importTemp" preview="previewTemp"><i class="glyphicon glyphicon-import"></i> Import Template</file-field>
+            <file-field class="btn btn-primary" ng-change="importDoc()" ng-model="importTemp" preview="previewTemp"><i class="glyphicon glyphicon-import"></i> Import Template</file-field>
         </div>
         <div class="col-xs-2">
-            <button ng-disabled="!previewTemp" class="btn btn-success" ng-click="import()">Publish Service</button>
+            <button ng-disabled="uploadSuccessHint!=='success' || uploadErrMessage!==''" class="btn btn-success" ng-click="publish()">Publish Service</button>
         </div>
+        <div style='color:#b40037;font-weight:bold;font-size: 13px;' ng-show="uploadErrMessage!==''">&#10060;&nbsp;&nbsp;{{uploadErrMessage}}</div>
     </div>
-    <div class="form-group row">
-        <div class="col-xs-9" ng-show="previewTemp">
+    <div class="form-group row" ng-show="uploadSuccessHint=='success' && uploadErrMessage==''">
+        <div class="col-xs-9">
             <h3><i>Preview</i></h3>
             <br>
             {{importTemp.name}}

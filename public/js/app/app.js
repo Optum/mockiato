@@ -50,6 +50,38 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
+            .when("/showArchiveService/:id/:frmWher", {
+                templateUrl: "partials/updateForm.html",
+                controller: "showArchiveController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
+
+            // .when("/showDraftService/:id/:frmWher", {
+            //     templateUrl: "partials/updateForm.html",
+            //     controller: "showDraftController",
+            //     resolve: {
+            //         auth: ['$q', 'authService', function($q, authService) {
+            //             var userInfo = authService.getUserInfo();
+
+            //             if (userInfo) {
+            //                 return $q.when(userInfo);
+            //             } else {
+            //                 return $q.reject({ authenticated: false });
+            //             }
+            //         }]
+            //     }
+            // })
+
             .when("/addTemplate", {
                 templateUrl: "partials/templateForm.html",
                 controller: "templateController",
@@ -82,8 +114,41 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
+            .when("/fetchDeletedServices", {
+                templateUrl: "partials/deletedServices.html",
+                controller: "deletedServiceController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
+
+            // .when("/fetchDraftServices", {
+            //     templateUrl: "partials/draftServices.html",
+            //     controller: "draftServiceController",
+            //     resolve: {
+            //         auth: ['$q', 'authService', function($q, authService) {
+            //             var userInfo = authService.getUserInfo();
+
+            //             if (userInfo) {
+            //                 return $q.when(userInfo);
+            //             } else {
+            //                 return $q.reject({ authenticated: false });
+            //             }
+            //         }]
+            //     }
+            // })
+
             .when("/selectService", {
                 templateUrl: "partials/selectService.html",
+                controller: "selectServiceController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
                         var userInfo = authService.getUserInfo();
@@ -100,6 +165,22 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             .when("/spec/:specType", {
                 templateUrl: "partials/spec.html",
                 controller: "specController",
+                resolve: {
+                    auth: ['$q', 'authService', function ($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
+
+            .when("/admin", {
+                templateUrl: "partials/admin.html",
+                controller: "adminController",
                 resolve: {
                     auth: ['$q', 'authService', function ($q, authService) {
                         var userInfo = authService.getUserInfo();
@@ -145,7 +226,41 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 templateUrl: 'partials/login.html',
                 controller: 'authController'
             })
+            
+            .when('/createRecorder', {
+                templateUrl: 'partials/createRecorderForm.html',
+                controller: 'createRecorderController'
+            })
+            .when("/fetchrecorders", {
+                templateUrl: "partials/recorderList.html",
+                controller: "recorderListController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
 
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            }) 
+            .when("/viewRecorder/:id", {
+                templateUrl: "partials/viewRecorder.html",
+                controller: "viewRecorderController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
             .otherwise({
                 redirectTo: "/selectService"
             });

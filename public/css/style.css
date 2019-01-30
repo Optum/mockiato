@@ -109,3 +109,23 @@ input[type="radio"] {
   text-align: center;
   padding-top: 5px;
 }
+
+.wordwrap{
+  word-wrap: break-word;
+}
+
+.white{
+  background-color: #fff;
+}
+
+.greenText{
+  color: green;
+}
+
+.blueText{
+  color:blue;
+}
+
+.ng-invalid.ng-touched{
+  border-color:#f00;
+}

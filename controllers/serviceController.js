@@ -1,7 +1,8 @@
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const RRPair  = require('../models/http/RRPair');
-
+const Archive  = require('../models/common/Archive');
+const DraftService  = require('../models/common/DraftService');
 const virtual = require('../routes/virtual');
 const manager = require('../lib/pm2/manager');
 const debug = require('debug')('default');
@@ -12,6 +13,242 @@ const request = require('request');
 const fs   = require('fs');
 const unzip = require('unzip2');
 const YAML = require('yamljs');
+const invoke = require('../routes/invoke'); 
+const System = require('../models/common/System');
+
+/**
+ * Helper function for search. Trims down an HTTP service for return, and filters + trims rrpairs. 
+ * @param {*} doc Service doc from mongoose
+ * @param {*} searchOnReq text to filter Request on
+ * @param {*} searchOnRsp text to filter Response on
+ */
+function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
+  //Trim service
+  var service = {
+    id : doc.id,
+    name : doc.name,
+    sut : {name : doc.sut.name, _id : doc.sut._id},
+    type : doc.type,
+    user : {uid : doc.user.uid, _id : doc.user._id},
+    basePath : doc.basePath,
+    createdAt : doc.createdAt,
+    updatedAt : doc.updatedAt,
+    lastUpdateUser: doc.lastUpdateUser
+  };
+
+  //If we have RRpairs to filter...
+  if(doc.rrpairs){
+    service.rrpairs = [];
+    doc.rrpairs.forEach(function(rrpair){
+      var addThisRRPair = true;
+      if(doc.type != "MQ"){
+        //If req/rsp don't contain search string, fail this one
+        if(searchOnReq && rrpair.reqDataString){
+          addThisRRPair = rrpair.reqDataString.toLowerCase().includes(searchOnReq.toLowerCase());
+        }
+        if(searchOnRsp && addThisRRPair && rrpair.resDataString){
+          addThisRRPair = rrpair.resDataString.toLowerCase().includes(searchOnRsp.toLowerCase());;
+        }
+         //If req/rsp search is enabled and it has no req/rsp, fail it
+        if(searchOnReq && !(rrpair.reqDataString)){
+          addThisRRPair = false;
+        }
+        if(searchOnRsp && !(rrpair.resDataString)){
+          addThisRRPair = false;
+        }
+      }else{
+        //MQ doesn't have/need cached strings
+        if(searchOnReq && rrpair.reqData){
+          addThisRRPair = rrpair.reqData.toLowerCase().includes(searchOnReq.toLowerCase());
+        }
+        if(searchOnRsp && addThisRRPair && rrpair.resData){
+          addThisRRPair = rrpair.resData.toLowerCase().includes(searchOnRsp.toLowerCase());;
+        }
+         //If req/rsp search is enabled and it has no req/rsp, fail it
+        if(searchOnReq && !(rrpair.reqData)){
+          addThisRRPair = false;
+        }
+        if(searchOnRsp && !(rrpair.resData)){
+          addThisRRPair = false;
+        }
+      }
+
+     
+
+      //If we're still supposed to add this..
+      if(addThisRRPair){
+        
+        //Pull object names from RRPair's schema. Trim out reqDataString and rspDataString and copy the rest.
+        var trimmedRRPair = {};
+        for(var key in RRPair.schema.obj){
+          if(key != 'resDataString' && key != 'reqDataString'){
+            trimmedRRPair[key] = rrpair[key];
+          }
+        }
+        trimmedRRPair._id = rrpair._id;
+        service.rrpairs.push(trimmedRRPair);
+      }
+
+    });
+
+  }
+  return service;
+}
+
+
+/**
+ * Handles API call for search services
+ * path param: ID of a service to limit this search to this param
+ * queries-
+ * requestContains: Filters only services that have rr pairs that contain this string in their request. Only returns rrpairs that match this as well.
+ * responseContains: Filters only services that have rr pairs that contain this string in their response. Only returns rrpairs that match this as well.
+ * name: Filters on name of servie
+ * sortBy: created sorts on created datetime, updated sorts on updated datetime
+ * asc: if set (any value or none), sort ascending instead of descending
+ * authorizedOnly: When passed a username, restricts results to only services that user is authorized to edit. 
+ * @param {*} req express req
+ * @param {*} rsp express rsp
+ */
+function searchServices(req,rsp){
+
+  //Build search query
+  var search = {};
+  if(req.params.id){
+    search._id = req.params.id;
+  }
+  var query = req.query;
+  var searchOnReq = false;
+  var searchOnRsp = false;
+  if(query.requestContains){
+    searchOnReq = query.requestContains;
+    search['rrpairs.reqDataString'] = {$regex:searchOnReq,$options:'i'};
+  }
+  if(query.responseContains){
+    searchOnRsp = query.responseContains;
+    search['rrpairs.resDataString'] = {$regex:searchOnRsp,$options:'i'};
+  }
+  if(query.name){
+    search.name = {$regex:query.name,$options:'i'};
+  }
+  
+  //Get our sorting + limit arguments
+  var sortBy;
+  if(query.sortBy){
+    if(query.sortBy == "created"){
+      sortBy = 'createdAt';
+    }else if(query.sortBy == "updated"){
+      sortBy = 'updatedAt';
+    }
+  }
+  var ascDesc = "desc";
+  if(typeof query.asc !== 'undefined'){
+    ascDesc = "asc";
+  }
+  var limit;
+  if(query.limit){
+    limit = query.limit;
+  }
+
+  if(typeof query.authorizedOnly !== 'undefined'){
+    System.find({members:query.authorizedOnly ? query.authorizedOnly : req.decoded},function(err,docs){
+      if(err){
+        handleError(err,rsp,500);
+      }else{
+        var suts = [];
+        docs.forEach(function(doc){
+          suts.push(doc.name);
+        });
+        search['sut.name'] = {$in:suts};
+        performQuery();
+      }
+    });
+  }else{
+    performQuery();
+  }
+  //Perform search
+  function performQuery(){
+    var mongooseQuery = Service.find(search);
+    if(sortBy){
+      var sort = {};
+      sort[sortBy] = ascDesc;
+      mongooseQuery.sort(sort);
+    }
+    if(limit){
+      mongooseQuery.limit(parseInt(limit));
+    }
+    mongooseQuery.exec(function(err,docs){
+      var results = [];
+
+      if(err){
+        handleError(err,rsp,500);
+      }
+      else{
+        //Trim down service and add it to list of services to return
+        docs.forEach(function(doc){
+          var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
+          results.push(service);
+        });
+        
+      
+        //Query MQServices
+        if(search['rrpairs.resDataString']){
+          search['rrpairs.resData'] = search['rrpairs.resDataString'];
+          delete search['rrpairs.resDataString'];
+        }
+        if(search['rrpairs.reqDataString']){
+          search['rrpairs.reqData'] = search['rrpairs.reqDataString'];
+          delete search['rrpairs.reqDataString'];
+        }
+        var MQQuery = MQService.find(search);
+        if(sortBy){
+        var sort = {};
+        sort[sortBy] = ascDesc;
+        MQQuery.sort(sort);
+        }
+        if(limit){
+          MQQuery.limit(parseInt(limit));
+        }
+        MQQuery.exec(function(err,docs){
+          if(err){
+            handleError(err,rsp,500);
+          }
+          else{
+
+            //Trim down service and add it to list of services to return
+            docs.forEach(function(doc){
+              var service = trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp);
+              results.push(service);
+            });
+
+            //Sort the combined docs
+            if(sortBy){
+              results.sort(function(a,b){
+                var ascM = ascDesc == "desc" ? -1 : 1;
+                if(sortBy == "createdAt"){
+                  a = new Date(a.createdAt);
+                  b = new Date(b.createdAt);
+                }else{
+                  a = new Date(a.updatedAt);
+                  b = new Date(b.updatedAt);
+                }
+                return (a - b) * ascM; 
+              });
+            } 
+
+            //Trim to limit
+            if(limit)
+              results = results.slice(0,limit);
+            
+            return rsp.json(results);
+          }
+        });
+        
+      }
+    });
+  }
+}
+
+
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -33,6 +270,36 @@ function getServiceById(req, res) {
 
           return res.json(mqService);
         });
+      }
+  });
+}
+
+function getArchiveServiceInfo(req, res) {
+  // call find by id of service or mqservice function for db
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.find(query, function (err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+      if (services) {
+        return res.json(services[0]);
+      }
+  });
+}
+
+function getDraftServiceById(req, res) {
+  // call find by id of service or mqservice function for db
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  DraftService.find(query, function (err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+      if (services) {
+        return res.json(services[0]);
       }
   });
 }
@@ -65,6 +332,32 @@ function getServicesByUser(req, res) {
   });
 }
 
+function getArchiveServicesByUser(req, res) {
+  let allServices = [];
+  const query = { $or: [ { 'service.user.uid': req.params.uid }, { 'mqservice.user.uid': req.params.uid } ] };
+  Archive.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+    allServices = services;
+    return res.json(allServices);
+  });
+}
+
+function getDraftServicesByUser(req, res) {
+  let allServices = [];
+  const query = { $or: [ { 'service.user.uid': req.params.uid }, { 'mqservice.user.uid': req.params.uid } ] };
+  DraftService.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+    allServices = services;
+    return res.json(allServices);
+  });
+}
+
 function getServicesBySystem(req, res) {
   let allServices = [];
 
@@ -90,6 +383,38 @@ function getServicesBySystem(req, res) {
 
       return res.json(allServices);
     });
+  });
+}
+
+function getServicesArchiveBySystem(req, res) {
+  let allServices = [];
+
+  const query = { $or: [ { 'service.sut.name': req.params.name }, { 'mqservice.sut.name': req.params.name } ] };
+
+  Archive.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+    allServices = services;
+    return res.json(allServices);
+  });
+}
+
+function getServicesDraftBySystem(req, res) {
+  let allServices = [];
+
+  const query = { $or: [ { 'service.sut.name': req.params.name }, { 'mqservice.sut.name': req.params.name } ] };
+
+  DraftService.find(query, function(err, services) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+
+    allServices = services;
+    return res.json(allServices);
   });
 }
 
@@ -127,6 +452,38 @@ function getServicesByQuery(req, res) {
   });
 }
 
+function getArchiveServices(req, res) {
+  const sut  = req.query.sut;
+  const user = req.query.user;
+
+  const query = { $or: [ { 'service.sut.name': sut }, { 'mqservice.sut.name': sut },{ 'service.user.uid': user }, 
+            { 'mqservice.user.uid': user } ] };
+
+  Archive.find(query, function(err, services)	{
+      if (err)	{
+        handleError(err, res, 500);
+        return;
+      }
+      return res.json(services);
+  });
+}
+
+function getDraftServices(req, res) {
+  const sut  = req.query.sut;
+  const user = req.query.user;
+
+  const query = { $or: [ { 'service.sut.name': sut }, { 'mqservice.sut.name': sut },{ 'service.user.uid': user }, 
+            { 'mqservice.user.uid': user } ] };
+
+  DraftService.find(query, function(err, services)	{
+      if (err)	{
+        handleError(err, res, 500);
+        return;
+      }
+      return res.json(services);
+  });
+}
+
 // function to check for duplicate service & twoSeviceDiffNameSameBasePath
 function searchDuplicate(service, next) {
   const query2ServDiffNmSmBP = {
@@ -157,7 +514,7 @@ function searchDuplicate(service, next) {
     }
   });
 }
-
+ 
 // returns a stripped-down version on the rrpair for logical comparison
 function stripRRPair(rrpair) {
   return {
@@ -205,14 +562,18 @@ function syncWorkers(service, action) {
   manager.messageAll(msg)
     .then(function(workerIds) {
       virtual.deregisterService(service);
+      invoke.deregisterServiceInvoke(service);
 
       if (action === 'register') {
         virtual.registerService(service);
+        if(service.liveInvocation && service.liveInvocation.enabled){
+          invoke.registerServiceInvoke(service);
+        }
       }
       else {
         Service.findOneAndRemove({_id : service._id }, function(err)	{
           if (err) debug(err);
-          debug(service);
+          //debug(service);
         });
       }
     })
@@ -236,6 +597,20 @@ function addService(req, res) {
     rrpairs: req.body.rrpairs,
     lastUpdateUser: req.decoded
   };
+
+  //Save req and res data string cache
+  if(serv.rrpairs){
+    serv.rrpairs.forEach(function(rrpair){
+      if(rrpair.reqData)
+        rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+      if(rrpair.resData)
+        rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+    });
+  }
+
+  if(req.body.liveInvocation){
+    serv.liveInvocation = req.body.liveInvocation;
+  }
 
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
@@ -290,6 +665,69 @@ function addService(req, res) {
   }
 }
 
+
+function addServiceAsDraft(req, res) {
+  const type = req.body.type;
+
+  let serv  = {
+    sut: req.body.sut,
+    user: req.decoded,
+    name: req.body.name,
+    type: req.body.type,
+    delay: req.body.delay,
+    delayMax: req.body.delayMax,
+    basePath: '/' + req.body.sut.name + req.body.basePath,
+    matchTemplates: req.body.matchTemplates,
+    rrpairs: req.body.rrpairs,
+    lastUpdateUser: req.decoded,
+    txnCount: false,
+    running: false
+  };
+
+  //Save req and res data string cache
+  if(serv.rrpairs){
+    serv.rrpairs.forEach(function(rrpair){
+      if(rrpair.reqData)
+        rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+      if(rrpair.resData)
+        rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+    });
+  }
+
+  if(req.body.liveInvocation){
+    serv.liveInvocation = req.body.liveInvocation;
+  }
+
+  if (type === 'MQ') {
+    serv.connInfo = req.body.connInfo;
+    let draftservice = {mqservice:serv};
+    DraftService.create(draftservice, function(err, service) {
+        if (err) {
+          handleError(err, res, 500);
+          return;
+        }
+        // respond with the newly created resource
+        res.json(service);
+    });
+  }
+  else {
+    serv.delay = req.body.delay;
+    serv.basePath =  '/' + req.body.sut.name + req.body.basePath;
+   
+    let draftservice = {service: serv};
+    DraftService.create(draftservice, function(err, service) {
+      if (err) {
+        handleError(err, res, 500);
+        return;
+      }
+      res.json(service);
+
+      syncWorkers(service, 'register');
+    });
+  }  
+}
+
+
 function updateService(req, res) {
   const type = req.body.type;
   const BaseService = (type === 'MQ') ? MQService : Service;
@@ -302,38 +740,140 @@ function updateService(req, res) {
     }
 
     // don't let consumer alter name, base path, etc.
-    service.rrpairs = req.body.rrpairs;
-    service.lastUpdateUser = req.decoded;
-    if (req.body.matchTemplates) {
-      service.matchTemplates = req.body.matchTemplates;
-    }
-    
-    if (service.type !== 'MQ') {
-      const delay = req.body.delay;
-      if (delay || delay === 0) {
-        service.delay = req.body.delay;
-      }
 
-      const delayMax = req.body.delayMax;
-      if (delayMax || delayMax === 0) {
-        service.delayMax = req.body.delayMax;
-      }
-    }
+    if(service){
+      service.rrpairs = req.body.rrpairs;
+      service.lastUpdateUser = req.decoded;
 
-    // save updated service in DB
-    service.save(function (err, newService) {
-      if (err) {
-        handleError(err, res, 500);
-        return;
+      //Cache string of reqData + rspData
+      if(service.rrpairs){
+        service.rrpairs.forEach(function(rrpair){
+          if(rrpair.reqData)
+            rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+          if(rrpair.resData)
+            rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+        });
       }
-
-      res.json(newService);
+      if(req.body.liveInvocation){
+        service.liveInvocation = req.body.liveInvocation;
+      }
+      if (req.body.matchTemplates) {
+        service.matchTemplates = req.body.matchTemplates;
+      }
+      
       if (service.type !== 'MQ') {
-        syncWorkers(newService, 'register');
+        const delay = req.body.delay;
+        if (delay || delay === 0) {
+          service.delay = req.body.delay;
+        }
+
+        const delayMax = req.body.delayMax;
+        if (delayMax || delayMax === 0) {
+          service.delayMax = req.body.delayMax;
+        }
       }
-    });
+
+      // save updated service in DB
+      service.save(function (err, newService) {
+        if (err) {
+          handleError(err, res, 500);
+          return;
+        }
+
+        res.json(newService);
+        if (service.type !== 'MQ') {
+          syncWorkers(newService, 'register');
+        }
+      });
+    }else{
+      const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+      DraftService.findOneAndRemove(query, function(err, draftservice){
+        if (err)	{
+          handleError(err, res, 500);
+          return;
+        }
+        if(draftservice.service){
+          addService(req, res);
+        }
+      });
+    }
   });
 }
+
+
+    function updateServiceAsDraft(req, res) {
+      const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+      DraftService.findOne(query, function(err, draftservice)	{
+        if (err)	{
+          handleError(err, res, 500);
+          return;
+        }
+      //  if (draftservice.service) {
+        console.log('Inside updateServiceAsDraft: ' + draftservice); 
+
+        if(draftservice.service){
+          // don't let consumer alter name, base path, etc.
+          draftservice.service.rrpairs = req.body.rrpairs;
+          draftservice.service.lastUpdateUser = req.decoded;
+
+          //Cache string of reqData + rspData
+          if(draftservice.service.rrpairs){
+            draftservice.service.rrpairs.forEach(function(rrpair){
+              if(rrpair.reqData)
+                rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+              if(rrpair.resData)
+                rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+            });
+          }
+          if(req.body.liveInvocation){
+            draftservice.service.liveInvocation = req.body.liveInvocation;
+          }
+          if (req.body.matchTemplates) {
+            draftservice.service.matchTemplates = req.body.matchTemplates;
+          }
+          
+          const delay = req.body.delay;
+          if (delay || delay === 0) {
+            draftservice.service.delay = req.body.delay;
+          }
+
+          const delayMax = req.body.delayMax;
+          if (delayMax || delayMax === 0) {
+            draftservice.service.delayMax = req.body.delayMax;
+          }
+          
+        }else {
+          draftservice.mqservice.rrpairs = req.body.rrpairs;
+          draftservice.mqservice.lastUpdateUser = req.decoded;
+
+          //Cache string of reqData + rspData
+          if(draftservice.mqservice.rrpairs){
+            draftservice.mqservice.rrpairs.forEach(function(rrpair){
+              if(rrpair.reqData)
+                rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+              if(rrpair.resData)
+                rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+            });
+          }
+          if(req.body.liveInvocation){
+            draftservice.mqservice.liveInvocation = req.body.liveInvocation;
+          }
+          if (req.body.matchTemplates) {
+            draftservice.mqservice.matchTemplates = req.body.matchTemplates;
+          }       
+        
+        }
+
+        // save updated service in DB
+        draftservice.save(function (err, newService) {
+          if (err) {
+            handleError(err, res, 500);
+            return;
+          }
+          res.json(newService);         
+        });
+      });
+    }
 
 function toggleService(req, res) {
   Service.findById(req.params.id, function (err, service) {
@@ -383,8 +923,17 @@ function deleteService(req, res) {
       handleError(err, res, 500);
       return;
     }
-
+    
     if (service) {
+      service.txnCount=0;
+      service.running=false;
+      let archive  = {service:service};
+      Archive.create(archive, function (err, callback) {
+        if (err) {
+          handleError(err, res, 500);
+        }
+      });
+
       service.remove(function(e, oldService) {
         if (e)	{
           handleError(e, res, 500);
@@ -398,11 +947,69 @@ function deleteService(req, res) {
     else {
       MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
         if (error) debug(error);
+        mqService.running=false;
+        let archive  = {mqservice:mqService};
+        Archive.create(archive, function (err, callback) {
+          if (err) {
+            handleError(err, res, 500);
+          }
+        });
         res.json({ 'message' : 'deleted', 'id' : mqService._id });
       });
     }
   });
 }
+
+function restoreService(req, res) {
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.findOneAndRemove(query, function(err, archive)	{
+    if (err)	{
+      handleError(err, res, 500);
+      return;
+    }
+    if (archive.service) {
+      let newService  = {
+        sut: archive.service.sut,
+        user: archive.service.user,
+        name: archive.service.name,
+        type: archive.service.type,
+        delay: archive.service.delay,
+        delayMax: archive.service.delayMax,
+        basePath: archive.service.basePath,
+        txnCount: 0,
+        running: false,
+        matchTemplates: archive.service.matchTemplates,
+        rrpairs: archive.service.rrpairs,
+        lastUpdateUser: archive.service.lastUpdateUser
+      };
+      Service.create(newService, function (err, callback) {
+        if (err) {
+          handleError(err, res, 500);
+        }
+      });
+      res.json({ 'message' : 'restored', 'id' : archive.service._id });
+    }
+    else {
+        let newMQService  = {
+          sut: archive.mqservice.sut,
+          user: archive.mqservice.user,
+          name: archive.mqservice.name,
+          type: archive.mqservice.type,
+          running: false,
+          matchTemplates: archive.mqservice.matchTemplates,
+          rrpairs: archive.mqservice.rrpairs,
+          connInfo: archive.mqservice.connInfo
+        };
+        MQService.create(newMQService, function (err, callback) {
+          if (err) {
+            handleError(err, res, 500);
+          }
+        });
+        res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
+    }
+  });
+}
+
 
 // get spec from url or local filesystem path
 function getSpecString(path) {
@@ -458,7 +1065,8 @@ function specUpload(req, res) {
     return new Promise(function (resolve, reject) {
       resolve(req.file.filename);
     });
-  }
+  };
+
   uploadSpec().then(function (message) {
   res.json(message);
   }).catch(function (err) {
@@ -473,19 +1081,57 @@ function publishExtractedRRPairs(req, res) {
   const name = req.query.name;
   const sut = { name: req.query.group };
   rrpair.parse('./uploads/RRPair/' + req.decoded.uid + req.query.uploaded_file_name_id, type).then(onSuccess).catch(onError);
+
   function onSuccess(serv) {
     serv.sut = sut;
     serv.name = name;
     serv.type = type;
     serv.basePath = '/' + serv.sut.name +'/'+ base;
     serv.user = req.decoded;
-    Service.create(serv, function (err, service) {
-      if (err) {
-        handleError(err, res, 500);
-      }
-      res.json(service);
-      syncWorkers(service, 'register');
-    });
+
+    if (type === 'MQ') {      
+      MQService.create(serv,
+        // handler for db call
+        function(err, service) {
+          if (err) {
+            handleError(err, res, 500);
+            return;
+          }
+          // respond with the newly created resource
+          res.json(service);
+      });
+    }
+    else {
+      searchDuplicate(serv, function(duplicate) {
+        if (duplicate && duplicate.twoServDiffNmSmBP){
+          res.json({"error":"twoSeviceDiffNameSameBasePath"});
+          return;
+        }
+        else if (duplicate) { 
+          // merge services
+          mergeRRPairs(duplicate, serv);
+          // save merged service
+          duplicate.save(function(err, newService) {
+            if (err) {
+              handleError(err, res, 500);
+              return;
+            }
+            res.json(newService);
+            
+            syncWorkers(newService, 'register');
+          });
+        }
+        else {
+          Service.create(serv, function (err, service) {
+            if (err) {
+              handleError(err, res, 500);
+            }
+            res.json(service);
+            syncWorkers(service , 'register');
+          });
+        }
+      });
+    }
   }
   function onError(err) {
     debug(err);
@@ -497,8 +1143,9 @@ function publishExtractedRRPairs(req, res) {
 function publishUploadedSpec(req, res) {
   const type = req.query.type;
   const name = req.query.name;
-  const url = req.query.url;
-  const sut = { name: req.query.group };
+  const base = req.query.base;
+  const url  = req.query.url;
+  const sut  = { name: req.query.group };
   const filePath = './uploads/'+req.query.uploaded_file_id;
   const specPath = url || filePath;
 
@@ -535,17 +1182,44 @@ function publishUploadedSpec(req, res) {
     // set group, basePath, and owner
     serv.sut = sut;
     serv.name = name;
+
+    if (base) serv.basePath = base;
     serv.basePath = '/' + serv.sut.name + serv.basePath;
+    
     serv.user = req.decoded;
     serv.lastUpdateUser = req.decoded;
 
-    // save the service
-    Service.create(serv, function (err, service) {
-      if (err) handleError(err, res, 500);
-
-      res.json(service);
-      syncWorkers(service, 'register');
+    searchDuplicate(serv, function(duplicate) {
+      if (duplicate && duplicate.twoServDiffNmSmBP){
+        res.json({"error":"twoSeviceDiffNameSameBasePath"});
+        return;
+      }
+      else if (duplicate) { 
+        // merge services
+        mergeRRPairs(duplicate, serv);
+        // save merged service
+        duplicate.save(function(err, newService) {
+          if (err) {
+            handleError(err, res, 500);
+            return;
+          }
+          res.json(newService);
+          
+          syncWorkers(newService, 'register');
+        });
+      }
+      else {
+        Service.create(serv, function (err, service) {
+          if (err) handleError(err, res, 500);
+    
+          res.json(service);
+          syncWorkers(service, 'register');
+        });
+      }
     });
+
+    // save the service
+   
   }
 
   function onError(err) {
@@ -562,11 +1236,43 @@ function createFromOpenAPI(spec) {
   return oas.parse(spec);
 }
 
+//Permanenet delete from Archieve. Not required right now.
+function permanentDeleteService(req, res) {
+  // call find by id of service or mqservice function for db
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.findOneAndRemove(query, function (err, archive) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+    if(archive.service) res.json({ 'message' : 'deleted', 'id' : archive.service._id });
+    else if(archive.mqservice) res.json({ 'message' : 'deleted', 'id' : archive.mqservice._id });
+  });
+}
+
+//Delete from DraftService
+function deleteDraftService(req, res) {
+  // call find by id of service or mqservice function for db
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  DraftService.findOneAndRemove(query, function (err, draft) {
+    if (err) {
+      handleError(err, res, 500);
+      return;
+    }
+    if(draft.service) res.json({ 'message' : 'deleted', 'id' : draft.service._id });
+    else if(draft.mqservice) res.json({ 'message' : 'deleted', 'id' : draft.mqservice._id });
+  });
+}
+
 module.exports = {
   getServiceById: getServiceById,
+  getArchiveServiceInfo: getArchiveServiceInfo,
   getServicesByUser: getServicesByUser,
   getServicesBySystem: getServicesBySystem,
   getServicesByQuery: getServicesByQuery,
+  getArchiveServices: getArchiveServices,
+  getServicesArchiveBySystem: getServicesArchiveBySystem,
+  getArchiveServicesByUser: getArchiveServicesByUser,
   addService: addService,
   updateService: updateService,
   toggleService: toggleService,
@@ -574,5 +1280,37 @@ module.exports = {
   zipUploadAndExtract: zipUploadAndExtract,
   publishExtractedRRPairs: publishExtractedRRPairs,
   specUpload: specUpload,
-  publishUploadedSpec: publishUploadedSpec
+  publishUploadedSpec: publishUploadedSpec,
+  permanentDeleteService: permanentDeleteService,
+  restoreService: restoreService,
+  searchServices:searchServices,
+  getDraftServiceById: getDraftServiceById,
+  getDraftServices: getDraftServices,
+  getServicesDraftBySystem: getServicesDraftBySystem,
+  deleteDraftService: deleteDraftService,
+  getDraftServicesByUser: getDraftServicesByUser,
+  addServiceAsDraft: addServiceAsDraft,
+  updateServiceAsDraft: updateServiceAsDraft
 };
+
+
+//Add resDataString and rspDataString to every existing service on boot, if they do not already have it
+Service.find({'rrpairs.resDataString':{$exists:false},'rrpairs.reqDataString':{$exists:false}},function(err,docs){
+  if(err){
+    console.log(err);
+  }else{
+    if(docs){
+      docs.forEach(function(doc){
+        if(doc.rrpairs){
+          doc.rrpairs.forEach(function(rrpair){
+            if(rrpair.reqData)
+              rrpair.reqDataString = typeof rrpair.reqData == 'string' ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+            if(rrpair.resData)
+              rrpair.resDataString = typeof rrpair.resData == 'string' ? rrpair.resData : JSON.stringify(rrpair.resData);
+          });
+        }
+        doc.save();
+      });
+    }
+  }
+});

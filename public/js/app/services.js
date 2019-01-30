@@ -119,23 +119,78 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 $rootScope.virt.operations.push(op);
               });
           };
+
+          this.displayRecorderInfo = function(data){
+            $rootScope.virt.operations = [];
+            $rootScope.virt.baseUrl = '/recording/live/' + data.sut.name.toLowerCase() + data.path;
+            $rootScope.virt.delay= data.delay;
+            $rootScope.virt.delayMax= data.delayMax;
+            $rootScope.virt.type = data.protocol;
+            $rootScope.virt.name = data.name;
+          }
     }])
 
-    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants', 
-        function($http, $location, authService, feedbackService, xmlService, servConstants) {
+    .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants','$routeParams',
+        function($http, $location, authService, feedbackService, xmlService, servConstants,$routeParams) {
+
+            //gets all recordings, unfiltered
+            this.getRecordings = function(){
+                return $http.get('/api/recording');
+            }
+
+            this.getRecordingById = function(id){
+              return $http.get('/api/recording/' + id);
+            }
+
+            this.getRecordingRRPairsWithIndex = function(id,index){
+              return $http.get('/api/recording/' + id + "/" + index);
+            }
+
+            this.deleteRecording = function(id){
+              return $http.delete('/api/recording/' + id)
+            }
+
             this.getServiceForSUT = function(name) {
                 return $http.get('/api/services/sut/' + name);
             };
 
+            this.getRecentModifiedServices = function(num,user){
+              return $http.get('/api/services/search?sortBy=updated&authorizedOnly=' + user + '&limit=' + num);
+            }
+
+            this.getServiceForArchiveSUT = function(name) {
+              return $http.get('/api/services/sut/' + name + '/archive');
+            };
+
+            this.getServiceForDraftSUT = function(name) {
+              return $http.get('/api/services/sut/' + name + '/draft');
+            };
+
             this.getServiceByUser = function(name) {
                 return $http.get('/api/services/user/' + name);
+            };
+            
+            this.getServiceByArchiveUser = function(name) {
+              return $http.get('/api/services/user/' + name + '/archive');
+            };
+
+            this.getServiceByDraftUser = function(name) {
+              return $http.get('/api/services/user/' + name + '/draft');
             };
 
             this.getServicesFiltered = function(sut, user) {
                 return $http.get('/api/services?sut=' + sut + '&user=' + user);
             };
 
-            this.publishServiceToAPI = function(servicevo, isUpdate) {
+            this.getServicesArchiveFiltered = function(sut, user) {
+              return $http.get('/api/services/archive?sut=' + sut + '&user=' + user);
+            };
+
+            this.getServicesDraftFiltered = function(sut, user) {
+              return $http.get('/api/services/draft?sut=' + sut + '&user=' + user);
+            };
+
+            this.publishServiceToAPI = function(servicevo, isUpdate, isRecording) {
                 // clean up autosuggest selections
                 servicevo.rawpairs.forEach(function(rr) {
                   var selectedStatus = rr.resStatus;
@@ -297,21 +352,36 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     matchTemplates: templates,
                     rrpairs: rrpairs
                 };
+                failStringsArray = [];
+                  if(servicevo.failStrings){
+                    
+                    servicevo.failStrings.forEach(function(item){
+                      failStringsArray.push(item.val);
+                   });
+                  }
+                  
+                  failCodesArray = [];
+                  if(servicevo.failStatuses){
+                    servicevo.failStatuses.forEach(function(item){
+                      failCodesArray.push(item.val);
+                    });
+                  }
+                  servData.liveInvocation = 
+                  {
+                    enabled : servicevo.liveInvocationCheck,
+                    remoteHost : servicevo.remoteHost,
+                    remotePort : servicevo.remotePort,
+                    remoteBasePath : servicevo.remotePath,
+                    failStatusCodes : failCodesArray,
+                    failStrings : failStringsArray,
+                    ssl : servicevo.invokeSSL,
+                    liveFirst : servicevo.liveInvokePrePost == 'PRE'
+                  };
+                  
+                
 
                 // publish the virtual service
                 var token = authService.getUserInfo().token;
-
-                //add new SUT
-                $http.post('/api/systems/', servicevo.sut)
-                .then(function(response) {
-                    console.log(response.data);
-                })
-                .catch(function(err) {
-                    console.log(err);
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
-                      $('#genricMsg-dialog').modal('toggle');
-                });
 
                 // update => put (create => post)
                 if (!isUpdate) {
@@ -325,7 +395,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       $('#genricMsg-dialog').modal('toggle');
                       }
                       else{
-                      $location.path('/update/' + data._id + '/frmServCreate');
+                      if(isRecording){
+                        $http.delete('/api/recording/' + $routeParams.id).then(function(){
+                          $location.path('/update/' + data._id + '/frmServCreate');
+                        });
+                      }else{
+                        $location.path('/update/' + data._id + '/frmServCreate');
+                      }
                     }
                   })
 
@@ -355,27 +431,383 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 }
             };
 
-            this.getServiceById = function(id) {
-                return $http.get('/api/services/' + id);
-            };
+            this.saveServiceAsDraft = function(servicevo, isUpdate) {
+              // clean up autosuggest selections
+              servicevo.rawpairs.forEach(function(rr) {
+                var selectedStatus = rr.resStatus;
+                if (selectedStatus && selectedStatus.description) rr.resStatus = selectedStatus.description.value;
 
-            this.deleteServiceAPI = function(service) {
-                var token = authService.getUserInfo().token;
-                return $http.delete('/api/services/' + service._id + '?token=' + token);
-            };
+                if (rr.reqHeadersArr && rr.reqHeadersArr.length > 0) {
+                  console.log(rr.reqHeadersArr);
+                  rr.reqHeadersArr.forEach(function(head) {
+                    var selectedHeader = head.k;
+                    if (selectedHeader) {
+                      if (selectedHeader.description) head.k = selectedHeader.description.name;
+                      else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
+                    }
+                  });
+                }
+
+                if (rr.resHeadersArr && rr.resHeadersArr.length > 0) {
+                  rr.resHeadersArr.forEach(function(head) {
+                    var selectedHeader = head.k;
+                    if (selectedHeader) {
+                      if (selectedHeader.description) head.k = selectedHeader.description.name;
+                      else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
+                    }
+                  });
+                }
+              });
+
+              // build service model for API call
+              var rrpairs = [];
+              servicevo.rawpairs.forEach(function(rr){
+                  var reqPayload;
+                  var resPayload;
+                  var rrpair = {};
+
+                  // if service type is SOAP, set HTTP method to POST
+                  if (servicevo.type === 'SOAP') {
+                    rr.method = 'POST';
+                  }
+
+                  // if service type is SOAP or MQ, set payload type to XML
+                  if (servicevo.type === 'SOAP' || servicevo.type === 'MQ') {
+                    rr.payloadType = 'XML';
+                  }
+
+                  // parse and display error if JSON is malformed
+                  if (rr.payloadType === 'JSON') {
+                    try {
+                      //Handle empty json object payload
+                      if (rr.responsepayload)  {
+                        var trimmed = rr.responsepayload.trim();
+                        if(trimmed == "{}" || trimmed == "[]"){
+                          resPayload = trimmed;
+                        }else{
+                         // resPayload = JSON.parse(rr.responsepayload);
+                         resPayload = rr.responsepayload;
+                        }
+                      }
+                      if (rr.requestpayload) reqPayload = rr.requestpayload;
+                    }
+                    catch(e) {
+                      console.log(e);
+                     // throw 'RR pair is malformed';
+                    }
+                  }
+                  else {
+                    reqPayload = rr.requestpayload;
+                    resPayload = rr.responsepayload;
+                  }
+
+                  // convert array of queries to object literal
+                  var queries = {};
+                  rr.queriesArr.forEach(function(q){
+                    queries[q.k] = q.v;
+                  });
+
+                  // only save queries if there are any
+                  if (Object.keys(queries).length > 0) {
+                    rr.queries = queries;
+                  }
+
+                  // convert array of response headers to object literal
+                  var resHeaders = {};
+                  rr.resHeadersArr.forEach(function(headerObj){
+                    resHeaders[headerObj.k] = headerObj.v;
+                  });
+
+                  // only save headers if there are any
+                  if (Object.keys(resHeaders).length > 0) {
+                    rr.resHeaders = resHeaders;
+                  }
+
+                  // convert array of response headers to object literal
+                  var reqHeaders = {};
+                  rr.reqHeadersArr.forEach(function(headerObj){
+                    reqHeaders[headerObj.k] = headerObj.v;
+                  });
+
+                  // only save headers if there are any
+                  if (Object.keys(reqHeaders).length > 0) {
+                    rr.reqHeaders = reqHeaders;
+                  }
+
+                  // only save request data for non-GETs
+                  if (rr.method !== 'GET') {
+                    rr.reqData = reqPayload;
+                  }
+                  rr.resData = resPayload;
+
+                  // remove unneccessary properties
+                  if(rr.path){
+                    if (!isUpdate) {
+                      rrpair.path = '/' + rr.path;
+                    }
+                    else {
+                      rrpair.path = rr.path;
+                    }
+                  }
+
+                  rrpair.verb = rr.method;
+                  rrpair.queries = rr.queries;
+                  rrpair.payloadType = rr.payloadType;
+                  rrpair.reqHeaders = rr.reqHeaders;
+                  rrpair.reqData = rr.reqData;
+                  rrpair.resStatus = rr.resStatus;
+                  rrpair.resHeaders = rr.resHeaders;
+                  rrpair.resData = rr.resData;
+                  rrpair.label = rr.label;
+
+                  rrpairs.push(rrpair);
+              });
+
+              var templates = [];
+              servicevo.matchTemplates.forEach(function(template) {
+                templates.push(template.val);
+              });
+
+              var servData = {
+                  sut: { name: servicevo.sut.name },
+                  name: servicevo.name,
+                  basePath: '/' + servicevo.basePath,
+                  type: servicevo.type,
+                  delay: servicevo.delay,
+                  delayMax: servicevo.delayMax,
+                  matchTemplates: templates,
+                  rrpairs: rrpairs
+              };
+              failStringsArray = [];
+                if(servicevo.failStrings){
+                  
+                  servicevo.failStrings.forEach(function(item){
+                    failStringsArray.push(item.val);
+                 });
+                }
+                
+                failCodesArray = [];
+                if(servicevo.failStatuses){
+                  servicevo.failStatuses.forEach(function(item){
+                    failCodesArray.push(item.val);
+                  });
+                }
+                servData.liveInvocation = 
+                {
+                  enabled : servicevo.liveInvocationCheck,
+                  remoteHost : servicevo.remoteHost,
+                  remotePort : servicevo.remotePort,
+                  remoteBasePath : servicevo.remotePath,
+                  failStatusCodes : failCodesArray,
+                  failStrings : failStringsArray,
+                  ssl : servicevo.invokeSSL,
+                  liveFirst : servicevo.liveInvokePrePost == 'PRE'
+                };
+                
+              
+
+              // publish the virtual service
+              var token = authService.getUserInfo().token;
+
+              // update => put (create => post)
+              if (!isUpdate) {
+                $http.post('/api/services/draftservice?token=' + token, servData)
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');
+                    }
+                    $('#service-save-success-modal').modal('toggle');
+                })
+
+                .catch(function(err) {
+                  console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.SERVICE_SAVE_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.SERVICE_SAVE_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+              }
+              else {
+                $http.put('/api/services/draftservice/' + servicevo.id + '?token=' + token, servData)
+
+                .then(function(response) {
+                    var data;
+                    if(response.data.mqservice)
+                        data = response.data.mqservice;
+                    else
+                        data = response.data.service;
+                    
+                    console.log(data);
+                    feedbackService.displayServiceInfo(data);
+                    $('#service-save-success-modal').modal('toggle');
+                })
+
+                .catch(function(err) {
+                    console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.SERVICE_SAVE_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.SERVICE_SAVE_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+              }
+          };
+
+          this.getServiceById = function(id) {
+              return $http.get('/api/services/' + id);
+          };
+
+          this.getArchiveServiceById = function(id) {
+            return $http.get('/api/services/archive/' + id);
+          };
+
+          this.getDraftServiceById = function(id) {
+            return $http.get('/api/services/draft/' + id);
+          };
+
+          this.deleteServiceAPI = function(service) {
+              var token = authService.getUserInfo().token;
+              return $http.delete('/api/services/' + service._id + '?token=' + token);
+          };
+
+          this.deleteServiceArchive = function(service) {
+            var token = authService.getUserInfo().token;
+            return $http.delete('/api/services/archive/' + service._id + '?token=' + token);
+          };
+
+          this.deleteDraftService = function(service) {
+            var token = authService.getUserInfo().token;
+            return $http.delete('/api/services/draft/' + service._id + '?token=' + token);
+          };
+
+
+          this.restoreService = function(service) {
+            var token = authService.getUserInfo().token;
+            return $http.post('/api/services/archive/' + service._id + '/restore?token=' + token);
+          };
 
             this.toggleServiceAPI = function(service) {
                 var token = authService.getUserInfo().token;
                 return $http.post('/api/services/' + service._id + '/toggle?token=' + token);
             };
+
+            this.publishRecorderToAPI = function(servicevo){
+
+                //create recorder
+                var recorder = {
+                  type:servicevo.type,
+                  sut:servicevo.sut.name,
+                  name:servicevo.name,
+                  remoteHost:servicevo.remoteHost,
+                  remotePort:servicevo.remotePort,
+                  basePath:servicevo.basePath,
+                  headerMask:[],
+                  ssl:servicevo.ssl
+                  
+                }
+
+                var token = authService.getUserInfo().token;
+                
+                //Extract headers
+                for(var i = 0; i < servicevo.reqHeadersArr.length; i ++){
+                  var head = servicevo.reqHeadersArr[i];
+                  if(head.k)
+                    recorder.headerMask.push(head.k.originalObject);
+                }
+                console.log(servicevo);
+
+
+                //publish service
+                $http.put('/api/recording' + '?token=' + token, recorder)
+                
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    feedbackService.displayRecorderInfo(data);
+                    $('#record-success-modal').modal('toggle');
+                    $location.path('/viewRecorder/' + data._id);
+                })
+
+                .catch(function(err) {
+                    console.log(err);
+                    if(err.data.error == "OverlappingRecorderPathError"){
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.DUP_RECORDER_PATH_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.DUP_RECORDER_PATH_BODY);
+                    }else{
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                    }
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+
+            };
     }])
 
-    .service('sutService', ['sutFactory',
-        function(sutFactory) {
+    .service('sutService', ['sutFactory', 'groupFactory', 'authService' , 'servConstants' , '$http', '$q',
+        function(sutFactory, groupFactory, authService, servConstants, $http, $q) {
+           
             this.getAllSUT = function() {
                 var sutlist = sutFactory.getAllSUT();
                 return sutlist;
             };
+
+          this.getGroupsToBeDeleted = function(user){
+              var deleteSutList = sutFactory.getGroupsToBeDeleted(user);
+              return deleteSutList;
+          };
+            this.getMembers = function(selectedSut){
+              var memberlist = groupFactory.getMembers(selectedSut)
+              return memberlist;
+            };
+
+            this.getGroupsByUser = function(user){
+              var someGroups = sutFactory.getGroupsByUser(user);
+              return someGroups;
+            };
+
+            this.updateGroup = function(group, memberlist){
+
+              var groupData = {
+                name: group,
+                members: memberlist
+              };
+              
+              var token = authService.getUserInfo().token;
+
+              $http.put('/api/systems/' + group + '?token=' + token, groupData)
+                .then(function (response) {
+                  console.log(response.data);
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
+
+
+
+            this.addGroup = function(createSut){
+          //    createSut.members = [];
+          //  createSut.members.push(authService.getUserInfo().username);
+            var token = authService.getUserInfo().token;
+            $http.post('/api/systems/'+'?token=' + token , createSut )
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').modal('toggle');
+            });}
+
+          
+            this.deleteGroup = function(deleteSut){
+             var token = authService.getUserInfo().token;
+             return  $http.delete('/api/systems/'+deleteSut.name +'?token=' + token, deleteSut);
+            };
+            
     }])
 
     .service('zipUploadAndExtractService', ['$http', '$location', 'authService', 'servConstants',
@@ -385,7 +817,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           fd.append('zipFile', uploadRRPair);
           var params = {};
           params.token = authService.getUserInfo().token;
-          $http.post('/api/services/zipUploadAndExtract', fd, {
+          $http.post('/api/services/fromPairs/upload', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
@@ -406,36 +838,32 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     function ($http, $location, authService, servConstants) {
         this.publishExtractedRRPair = function(bulkUpload, uploaded_file_name_id, message) {
           var fd = new FormData();
+          var token = authService.getUserInfo().token;
+          
           var params = {};
-          params.token = authService.getUserInfo().token;
+          params.token = token;
           params.group = bulkUpload.sut.name;
           params.type  = bulkUpload.type;
           params.name  = bulkUpload.name;
           params.url = bulkUpload.base;
           params.uploaded_file_name_id = uploaded_file_name_id;
 
-          //add new SUT
-          $http.post('/api/systems/', bulkUpload.sut)
-            .then(function (response) {
-              console.log(response.data);
-            })
-            .catch(function (err) {
-              console.log(err);
-              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
-              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
-              $('#genricMsg-dialog').modal('toggle');
-            });
-
-
-            $http.post('/api/services/publishExtractedRRPairs', fd, {
+            $http.post('/api/services/fromPairs/publish', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
             })
               .then(function (response) {
                 var data = response.data;
+                if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  }
+                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-              })
+              }})
               .catch(function (err) {
                 console.log(err.data.error);
                 return message(err.data.error);
@@ -450,7 +878,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           fd.append('specFile', uploadSpec);
           var params = {};
           params.token = authService.getUserInfo().token;
-          $http.post('/api/services/specUpload', fd, {
+          $http.post('/api/services/fromSpec/upload', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
@@ -469,37 +897,40 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
     .service('publishSpecService', ['$http', '$location', 'authService', 'servConstants',
     function ($http, $location, authService, servConstants) {
-        this.publishSpec = function(spec, uploaded_file_id, uploaded_file_name) {
+        this.publishSpec = function(spec, uploaded_file_id, uploaded_file_name,message) {
           var fd = new FormData();
+          var token = authService.getUserInfo().token;
+
           var params = {};
-          params.token = authService.getUserInfo().token;
+          params.token = token;
           params.group = spec.sut.name;
           params.type  = spec.type;
           params.name  = spec.name;
           params.url   = spec.url;
+
+          if (spec.base) params.base = '/' + spec.base;
+
           params.uploaded_file_id = uploaded_file_id;
           params.uploaded_file_name = uploaded_file_name;
-          //add new SUT
-          $http.post('/api/systems/', spec.sut)
-            .then(function (response) {
-              console.log(response.data);
-            })
-            .catch(function (err) {
-              console.log(err);
-              $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
-              $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
-              $('#genricMsg-dialog').modal('toggle');
-            });
 
-            $http.post('/api/services/publishUploadedSpec', fd, {
+            $http.post('/api/services/fromSpec/publish', fd, {
               transformRequest: angular.identity,
               headers: {'Content-Type': undefined},
               params: params
             })
               .then(function (response) {
                 var data = response.data;
+                if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  }
+                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-              })
+               } 
+               return message(response.data.error);
+               })
               .catch(function (err) {
                 console.log(err);
                 $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
@@ -614,33 +1045,42 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           }
         }])
 
-    .service('templateService', ['$http', 'authService', 'feedbackService', 'servConstants', 
-        function($http, authService, feedbackService, servConstants) {
+    .service('templateService', ['$http', '$location', 'authService', 'feedbackService', 'servConstants', 
+        function($http, $location, authService, feedbackService, servConstants) {
             this.importTemplate = function(templateStr) {
                 var template;
 
                 try {
-                  console.log(templateStr);
                   template = JSON.parse(templateStr);
                 }
                 catch(e) {
                   console.log(e);
                   $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY_IMPORT_TEMPLATE);
                   $('#genricMsg-dialog').modal('toggle');
                   return;
                 }
 
                 var token = authService.getUserInfo().token;
-                $http.post('/api/services?token=' + token, template)
 
+                // add SUT
+                $http.post('/api/systems' + '?token=' + token, template.sut)
+                .then(function(response) {
+                    console.log(response.data);
+                })
+                .catch(function(err) {
+                    console.log(err);
+                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
+                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').modal('toggle');
+                });
+
+                // add service
+                $http.post('/api/services?token=' + token, template)
                 .then(function(response) {
                     var data = response.data;
-                    console.log(data);
-                    feedbackService.displayServiceInfo(data);
-                    $('#success-modal').modal('toggle');
+                    $location.path('/update/' + data._id + '/frmServCreate');
                 })
-
                 .catch(function(err) {
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
@@ -706,11 +1146,17 @@ serv.constant("servConstants", {
         "LOGIN_ERR_BODY" : "Invalid credentials. Please try again.",
         "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
         "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
+        "PUB_FAIL_ERR_BODY_IMPORT_TEMPLATE" : "Please ensure you have uploaded a file in JSON format.",
         "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.",
         "UPLOAD_FAIL_ERR_TITLE" : "Upload Failure Error",
         "UPLOAD_FAIL_ERR_BODY" : "Error occured in bulk upload.",
         "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
         "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
         "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
-        "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file."
+        "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file." ,
+        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>',
+        "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
+        "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.",
+        "SERVICE_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
+        "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed"
       });

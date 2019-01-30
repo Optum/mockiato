@@ -4,10 +4,14 @@ const xml2js = require('xml2js');
 const debug = require('debug')('matching');
 const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
+const logger = require('../winston');
+const invoke = require('./invoke');
 
+
+  
 // function to simulate latency
 function delay(ms,msMax) {
-  if ((!ms || ms === 1) && !msMax && msMax <= 1) {
+  if ((!ms || ms === 1) && (!msMax || msMax <= 1)) {
     return function(req, res, next) {
       return next();
     };
@@ -31,42 +35,47 @@ function delay(ms,msMax) {
 function registerRRPair(service, rrpair) {
   let msg;
   let path;
+  let label;
   let matched;
 
   if (rrpair.path) path = service.basePath + rrpair.path;
   else path = service.basePath;
 
-  router.all(path, delay(service.delay, service.delayMax), function(req, resp, next) {
-    req.msgContainer = req.msgContainer || {};
-    req.msgContainer.reqMatched = false;
+  if (rrpair.label) label = rrpair.label;
 
-    if (req.method === rrpair.verb) {
-      // convert xml to js object
-      if (rrpair.payloadType === 'XML') {
-        xml2js.parseString(req.body, function(err, xmlReq) {
-          matched = matchRequest(xmlReq);
-        });
+  router.all(path, delay(service.delay, service.delayMax), function(req, resp, next) {
+    //Function for handling incoming req against this RR pair
+    var processRRPair = function(){
+      req.msgContainer = req.msgContainer || {};
+      req.msgContainer.reqMatched = false;
+
+      if (req.method === rrpair.verb) {
+        // convert xml to js object
+        if (rrpair.payloadType === 'XML') {
+          xml2js.parseString(req.body, function(err, xmlReq) {
+            matched = matchRequest(xmlReq);
+          });
+        }
+        else {
+          matched = matchRequest(req.body);
+        }
       }
       else {
-        matched = matchRequest(req.body);
+        msg = "HTTP methods don't match";
+        req.msgContainer.reason = msg;
+        logEvent(msg);
+        return next();
       }
-    }
-    else {
-      msg = "HTTP methods don't match";
-      req.msgContainer.reason = msg;
-      debug(msg);
-      logger.info(msg);
-      return next();
-    }
-    debug("Request matched? " + matched);
-    
-    // run the next callback if request not matched
-    if (!matched) {
-      msg = "Request bodies don't match";
-      req.msgContainer.reason = msg;
-      debug(msg);
-      logger.info(msg);
-      return next();
+
+      logEvent(path, label, "Request matched? " + matched);
+      
+      // run the next callback if request not matched
+      if (!matched) {
+        msg = "Request bodies don't match";
+        req.msgContainer.reason = msg;
+        logEvent(path, label, msg);
+        return next();
+      }
     }
 
     // function for matching requests to responses
@@ -101,8 +110,7 @@ function registerRRPair(service, rrpair) {
             if (rrpair.payloadType === 'XML') {
               xml2js.parseString(template, function(err, xmlTemplate) {
                 if (err) {
-                  debug(err);
-                  logger.info(err);
+                  logEvent(err);
                   return;
                 }
                 template = xmlTemplate;
@@ -129,10 +137,8 @@ function registerRRPair(service, rrpair) {
               trimmedReqData[field] = flatReqData[field];
             }
             
-            debug('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
-            debug('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
-            logger.info('received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
-            logger.info('expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
+            logEvent(path, label, 'received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
+            logEvent(path, label, 'expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
 
             match = deepEquals(trimmedPayload, trimmedReqData);
 
@@ -146,7 +152,7 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      if (!rrpair.reqData || match) {
+      if ((!rrpair.reqData && JSON.stringify(payload, null, 2)=='{}')|| match) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
@@ -162,10 +168,8 @@ function registerRRPair(service, rrpair) {
             
             if (sentQuery != queryVal[1]) {
               matchedQueries = false;
-              debug('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
-              debug('received query: ' + queryVal[0] + ': ' + sentQuery);
-              logger.info('expected query: ' + queryVal[0] + ': ' + queryVal[1]);
-              logger.info('received query: ' + queryVal[0] + ': ' + sentQuery);
+              logEvent(path, label, 'expected query: ' + queryVal[0] + ': ' + queryVal[1]);
+              logEvent(path, label, 'received query: ' + queryVal[0] + ': ' + sentQuery);
             }
           });
 
@@ -184,10 +188,8 @@ function registerRRPair(service, rrpair) {
               if (sentVal != keyVal[1]) {
                 // try the next rr pair if headers do not match
                 matchedHeaders = false;
-                debug('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
-                debug('received header: ' + keyVal[0] + ': ' + sentVal);
-                logger.info('expected header: ' + keyVal[0] + ': ' + keyVal[1]);
-                logger.info('received header: ' + keyVal[0] + ': ' + sentVal);
+                logEvent(path, label, 'expected header: ' + keyVal[0] + ': ' + keyVal[1]);
+                logEvent(path, label, 'received header: ' + keyVal[0] + ': ' + sentVal);
               }
             }
           });
@@ -198,10 +200,18 @@ function registerRRPair(service, rrpair) {
         // send matched data back to client
         setRespHeaders();
         if (rrpair.resStatus && rrpair.resData) {
-          resp.status(rrpair.resStatus).send(rrpair.resData);
+          //Give .send a buffer instead of a string so it won't yell at us about content-types
+          if(typeof rrpair.resData === "object")
+            resp.status(rrpair.resStatus).send(new Buffer(JSON.stringify(rrpair.resData)));
+          else
+            resp.status(rrpair.resStatus).send(new Buffer(rrpair.resData));
         }
         else if (!rrpair.resStatus && rrpair.resData) {
-          resp.send(rrpair.resData);
+          //Give .send a buffer instead of a string so it won't yell at us about content-types
+          if(typeof rrpair.resData === "object")
+            resp.send(new Buffer(JSON.stringify(rrpair.resData)));
+          else
+            resp.send(new Buffer(rrpair.resData));
         }
         else if (rrpair.resStatus && !rrpair.resData) {
           resp.sendStatus(rrpair.resStatus);
@@ -210,15 +220,15 @@ function registerRRPair(service, rrpair) {
           resp.sendStatus(200);
         }
 
+        invoke.incrementTransactionCount(service._id);
         // request was matched
         return true;
       }
 
       // request was not matched
-      debug("expected payload: " + JSON.stringify(reqData, null, 2));
-      debug("received payload: " + JSON.stringify(payload, null, 2));
-      logger.info("expected payload: " + JSON.stringify(reqData, null, 2));
-      logger.info("received payload: " + JSON.stringify(payload, null, 2));
+      logEvent(path, label, "expected payload: " + JSON.stringify(reqData, null, 2));
+      logEvent(path, label, "received payload: " + JSON.stringify(payload, null, 2));
+
       return false;
     }
 
@@ -228,8 +238,8 @@ function registerRRPair(service, rrpair) {
       if (resHeaders) {   
       
       
-        if(rrpair.label){
-          resHeaders['Mockiato-RRPair-Label'] = rrpair.label;
+        if(label){
+          resHeaders['Mockiato-RRPair-Label'] = label;
         }
        
         if (!resHeaders['Content-Type']) {
@@ -257,6 +267,25 @@ function registerRRPair(service, rrpair) {
         resp.set("Content-Type", "text/plain");
       }
     }
+
+    //If live invocation is enabled, and invoke first is selected, and we haven't run this yet...
+    if(service.liveInvocation && service.liveInvocation.enabled && service.liveInvocation.liveFirst &&  !req._mockiatoLiveInvokeHasRun){
+      var prom = invoke.invokeBackendVerify(service,req);
+      req._mockiatoLiveInvokeHasRun = true;
+      prom.then(function(remoteRsp,remoteRspBody){
+        resp.set('_mockiato-is-live-backend','true');
+        invoke.incrementTransactionCount(service._id);
+        invoke.mapRemoteResponseToResponse(resp,remoteRsp,remoteRspBody);
+        
+      },function(err){
+        resp.set('_mockiato-is-live-backend','false');
+        resp.set('_mockiato-live-fail-reason',err.message);
+        processRRPair();
+      });
+    }else{
+      resp.set('_mockiato-is-live-backend','false');
+      processRRPair();
+    }
   });
 }
 
@@ -265,7 +294,6 @@ function registerAllRRPairsForAllServices() {
   Service.find({ $or: [{ type:'SOAP' }, { type:'REST' }] }, function(err, services) {
     if (err) {
       debug('Error registering services: ' + err);
-      logger.info('Error registering services: ' + err);
       return;
     }
 
@@ -275,12 +303,15 @@ function registerAllRRPairsForAllServices() {
           service.rrpairs.forEach(function(rrpair){
             registerRRPair(service, rrpair);
           });
+          if(service.liveInvocation && service.liveInvocation.enabled){
+            invoke.registerServiceInvoke(service);
+          }
         }
       });
     }
     catch(e) {
+      console.log(e);
       debug('Error registering services: ' + e);
-      logger.debug('Error registering services: ' + e);
     }
   });
 }
@@ -294,7 +325,6 @@ function deregisterRRPair(service, rrpair) {
 function registerService(service) {
   if (!service || !service.rrpairs) {
     debug('cannot register undefined service');
-    logger.info('cannot register undefined service');
     return;
   }
 
@@ -306,13 +336,23 @@ function registerService(service) {
 function deregisterService(service) {
   if (!service || !service.rrpairs) {
     debug('cannot deregister undefined service');
-    logger.info('cannot deregister undefined service');
     return;
   }
 
   service.rrpairs.forEach(function(rrpair){
     deregisterRRPair(service, rrpair);
   });
+}
+
+function logEvent(path, label, msg) {
+  debug(path, label, msg);
+
+  let event = {};
+  event.path = path;
+  event.label = label;
+  event.msg = msg;
+
+  logger.info(event);
 }
 
 module.exports = {

@@ -10,24 +10,22 @@ const app = express();
 const compression = require('compression');
 const debug = require('debug')('default');
 const path = require('path');
-//const logger = require('morgan');
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const actuator = require('express-actuator');
-
-
-var logger = require('./winston');
-
+var schedule = require('node-schedule');
+const Archive  = require('./models/common/Archive');
+var constants = require('./lib/util/constants');
 
 // connect to database
 const db = require('./models/db');
 db.on('error', function(err)  {throw err; });
 db.once('open', function() {
   debug(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
-  logger.info(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
+
   // ready to start
   app.emit('ready');
 });
@@ -37,7 +35,6 @@ function init() {
   // register middleware
   app.use(helmet());
   app.use(compression());
-  //app.use(logger('dev'));
   app.use(morgan('dev'));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
@@ -72,14 +69,14 @@ function init() {
   // setup local authentication
   if (authType === 'local') {
     debug('Using local auth strategy');
-    logger.info('Using local auth strategy');
+
     const local = require('./lib/auth/local');
     app.use('/register', local);
   }
   // setup ldap authentication
   else if (authType === 'ldapauth') {
     debug('Using LDAP auth strategy');
-    logger.info('Using LDAP auth strategy');
+
     require('./lib/auth/ldap');
   }
 
@@ -109,8 +106,6 @@ function init() {
                   debug(err);
                   return;
                 }
-                debug('New user created: ' + newUser.uid);
-                logger.info('New user created: ' + newUser.uid);
               });
           }
         });
@@ -128,41 +123,76 @@ function init() {
       });
   });
 
-  // expose MQ info
-  const MQInfo = require('./models/mq/MQInfo');
-  app.get('/api/admin/mq/info', function(req, res) {
-    MQInfo.find({}, function(err, infoArr) {
-      if (err) {
-        handleError(err, res, 500);
-        return;
-      }
-
-      res.json(infoArr);
-    });
+  //When a Ldap user try to register externally. Show message.
+  app.get('/register', function (req, res) {
+    const htmlView = constants.ORG_USR_REGISTER_VIEW;
+    res.set('Content-Type', 'text/html');
+    res.send(htmlView);
   });
 
   // expose API and virtual SOAP / REST services
   const virtual = require('./routes/virtual');
   const api = require('./routes/services');
+  const invoke = require('./routes/invoke');
 
   // register SOAP / REST virts from DB
   virtual.registerAllRRPairsForAllServices();
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
+  app.use('/virtual',invoke.router);
+
+  // initialize recording routers
+  const recorder = require('./routes/recording');
+  const recorderController = require('./controllers/recorderController');
+  app.use('/recording',recorder.recordingRouter);
+  app.use('/api/recording',recorder.apiRouter);
 
   // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
+
       const msg = message.data;
-      const service = msg.service;
-      const action  = msg.action;
-      debug(action);
+      if(msg.service){
+        const service = msg.service;
+        const action  = msg.action;
+        debug(action);
 
-      virtual.deregisterService(service);
-
-      if (action === 'register') {
-        virtual.registerService(service);
+        virtual.deregisterService(service);
+        invoke.deregisterServiceInvoke(service);
+        if (action === 'register') {
+          virtual.registerService(service);
+          
+          if(service.liveInvocation && service.liveInvocation.enabled){
+            invoke.registerServiceInvoke(service);
+          }
+        }
+      }else if(msg.recorder){
+        const rec = msg.recorder;
+        const action  = msg.action;
+        console.log("msg: " + JSON.stringify(msg));
+        if(action === 'register'){
+          recorderController.registerRecorder(rec);
+        }else if(action === 'deregister'){
+          recorderController.deregisterRecorder(rec);
+        }
       }
+    });
+  }
+
+  // running a cronjob only in master cluster (single instance)
+  if (process.env.MOCKIATO_MODE !== 'single' && process.env.NODE_APP_INSTANCE === '0') {
+    let priorDate_30days = new Date(new Date().setDate(new Date().getDate() - 30));
+    let rule = process.env.MOCKIATO_ARCHIVE;
+    schedule.scheduleJob(rule, function(){
+      console.log('******cron job run for cleaning Archive collection by only master cluster (single process)****** Node Instance Id :- --'+ process.env.NODE_APP_INSTANCE);
+      const query =  { 'createdAt': { $lt: priorDate_30days } };
+      Archive.find(query, function(error, services) {
+        if (error) debug(error);
+        Archive.remove(query, function(error, removed) {
+          if (error) debug(error);
+        });
+        console.log('No. of Documents deleted from Archive:- '+services.length);
+      });
     });
   }
 
@@ -174,7 +204,7 @@ function init() {
   app.use('/api/users', users);
 
   // handle no match responses
-  app.use(function(req, res, next) {
+  app.use(/\/((?!recording).)*/,function(req, res, next) {
     if (!req.msgContainer) {
       req.msgContainer = {};
       req.msgContainer.reqMatched = false;
@@ -185,7 +215,7 @@ function init() {
   });
 
   // handle internal errors
-  app.use(function(err, req, res) {
+  app.use(/\/((?!recording).)*/,function(err, req, res) {
     debug(err.message);
     return res.status(500).send(err.message);
   });

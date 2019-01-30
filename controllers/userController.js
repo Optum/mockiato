@@ -21,7 +21,13 @@ function delUser(req, res) {
   });
 }
 
+function getAdminUser(req, res) {
+  console.log('here');
+  res.json(process.env.MOCKIATO_ADMIN);
+}
+
 module.exports = {
   getUsers: getUsers,
-  delUser: delUser
+  delUser: delUser,
+  getAdminUser: getAdminUser
 }
