@@ -13,11 +13,7 @@ const recordingSchema = new mongoose.Schema({
     headerMask : Array,
     name : String,
     active : Boolean,
-    ssl : Boolean,
-    running: {
-        type: Boolean,
-        default: true
-      }
+    ssl : Boolean
 });
 
 recordingSchema.set('usePushEach', true);
