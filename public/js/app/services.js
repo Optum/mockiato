@@ -761,6 +761,22 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return sutlist;
             };
 
+            this.getAllSUTPromise = function(){
+              return new Promise(function(resolve,reject){
+                $http.get('/api/systems').then(function(response){
+                  var sutlist = [];
+                  response.data.forEach(function(sutData) {
+                    var sut = {
+                      name: sutData.name
+                    };
+                   
+                    sutlist.push(sut);
+                  });
+                  resolve(sutlist);
+              });
+            });
+          };
+
           this.getGroupsToBeDeleted = function(user){
               var deleteSutList = sutFactory.getGroupsToBeDeleted(user);
               return deleteSutList;
@@ -1100,11 +1116,22 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
     }])
 
-    .service('userService', ['userFactory',
-        function(userFactory) {
+    .service('userService', ['userFactory','$http',
+        function(userFactory,$http) {
             this.getAllUsers = function() {
                 return userFactory.getAllUsers();
             };
+            this.getAllUsersPromise = function() {
+              return new Promise(function(resolve,reject){
+                $http.get('/api/users').then(function(response){
+                  var userlist = [];
+                  response.data.forEach(function(userData){
+                    userlist.push({name:userData.uid});
+                  });
+                  resolve(userlist);
+                });
+              });
+          };
     }])
 
     .service('suggestionsService', ['statusCodesFactory', 'headersFactory',

@@ -1388,12 +1388,22 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
     }])
 
-    .controller("serviceHistoryController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
-        function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
-            $scope.sutlist = sutService.getAllSUT();
-            $scope.userlist = userService.getAllUsers();
+    .controller("serviceHistoryController", ['$scope','$location','$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+        function($scope,$location,$routeParams,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+           Promise.all([sutService.getAllSUTPromise(),userService.getAllUsersPromise()]).then(function(values){
+             
+              
+              $scope.sutlist = values[0];
+              $scope.userlist = values[1];
+              if($routeParams.user || $routeParams.sut)
+                performUpdateOnPathParams();
+              else
+                $scope.filtersSelected(null, { name: authService.getUserInfo().username });              
+            });
+  
             $scope.servicelist = [];
-
+            console.log($routeParams);
+            
             //script to retroactively assign group member. not needed for the future.
             $scope.script=function(){
               console.log("starting script");
@@ -1407,6 +1417,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     };
                     sutnames.push(sut.name);
                   });
+                  
+    
+                  
                 })
 
                 .catch(function (err) {
@@ -1439,7 +1452,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             }
             ///////////////////////////end script. to remove
 
+            $scope.buttonHit = false;
             $scope.filtersSelected = function(sut, user) {
+                
+                $location.path("/fetchservices/" + (sut ? sut.name : '') + "/" + (user ? user.name : ''));
+
                 if (sut && !user) {
                     apiHistoryService.getServiceForSUT(sut.name)
 
@@ -1503,9 +1520,41 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   .catch(function (err) {
                     console.log(err);
                   });
+                  
             };
-            $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
+            function performUpdateOnPathParams(){
+              $scope.filtersSelected($routeParams.sut ? {name:$routeParams.sut} : null,$routeParams.user ? {name:$routeParams.user}:null);
+              if($routeParams.sut){
+                for(let sut of $scope.sutlist){
+                  if(sut.name == $routeParams.sut){
+                    $scope.selectedSut = sut;
+                    break;
+                  }
+                }
+              }else{
+                $scope.selectedSut = null;
+              }
+              if($routeParams.user){
+                for(let user of $scope.userlist){
+                  if(user.name == $routeParams.user){
+                    $scope.selectedUser = user;
+                    break;
+                  }
+                }
+              }else{
+                $scope.selectedUser = null;
+              }
+            }
+           
+            
+
+            $scope.$on('$routeUpdate', function () {
+              if(!$scope.buttonHit)
+                performUpdateOnPathParams();
+              else
+                $scope.buttonHit = false;
+            });
             $scope.clearSelected = function() {
               $scope.selectedSut = null;
               $scope.selectedUser = null;
