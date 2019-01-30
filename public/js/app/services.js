@@ -734,7 +734,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 //Extract filters
                 servicevo.filterStatusCodes.forEach(function(code){
                   if(code.v){
-                    recorder.filters.statuses.push(code.v);
+                    recorder.filters.statuses.push(parseInt(code.v));
                   }
                 });
                 servicevo.filterStrings.forEach(function(string){

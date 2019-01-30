@@ -224,8 +224,46 @@ function stripRRPairForReq(rrpair) {
                 break;
             }
         }
+
+        
+        //Check our filters
+        var filters = this.model.filters;
+        var addThisRRPair = true;
+        var filteredReason = null;
+        if(filters && filters.enabled && body){
+            if(filters.bodyStrings.length){
+                for(let i = 0; i < filters.bodyStrings.length; i++){
+                    if(body.includes(filters.bodyStrings[i])){
+                        addThisRRPair = false;
+                        filteredReason = 'Found string "' + filters.bodyStrings[i] + '" in response body.'
+                        break;
+                    }
+                }
+            }
+            if(addThisRRPair && filters.statuses.length){
+                for(let i = 0; i < filters.statuses.length; i++){
+                    if(remoteRsp.statusCode == filters.statuses[i]){
+                        addThisRRPair = false;
+                        filteredReason = 'Found status code "' + filters.statuses[i] + '" in response.'
+                        break;
+                    }
+                }
+            }
+            if(addThisRRPair && filters.headers.length){
+                for(let i = 0; i < filters.headers.length; i++){
+                    let header = filters.headers[i];
+                    if(remoteRsp.headers[header.key] && remoteRsp.headers[header.key] == header.value){
+                        addThisRRPair = false;
+                        filteredReason = 'Found header "' + header.key + '" with value "' + header.value + '" in response headers.'
+                        break;
+                    }
+                }
+            }
+        }
+
+
         //Push RRPair to model, then update our local model  
-        if(!duplicate){
+        if(!duplicate && addThisRRPair){
             Recording.update({_id : this.model._id} ,
                 {$push: 
                     {"service.rrpairs":myRRPair}
@@ -238,6 +276,11 @@ function stripRRPairForReq(rrpair) {
         //Send back response to user
         rsp.status(remoteRsp.statusCode);
         var headers = remoteRsp.headers;
+
+        //Add reason for filtered, if filtered
+        if(!addThisRRPair && filteredReason){
+            headers['_mockiato-filtered-reason'] = filteredReason;
+        }
         if(headers['content-type']){
             rsp.type(headers['content-type'])
             delete headers['content-type'];
