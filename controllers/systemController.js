@@ -1,6 +1,7 @@
 const System = require('../models/common/System');
 const debug  = require('debug')('default');
 const _ = require('lodash/array');
+const constants = require('../lib/util/constants');
 
 function getSystems(req, res) {
   System.find({}, function(err, systems)	{
@@ -53,6 +54,17 @@ function updateGroup(req, res){
 }
 
 function addSystem(req, res) {
+
+  /**
+   * In case user import template with no sut key(by mistake) in .json file. In this case req.body may be empty.
+   * It is handled in service creation using validation of mandatory fields and showing proper error message on UI.
+   * So it needs to handle here. Otherwise application will not show what is problem with template.
+   */
+  if(!req.body) {
+    res.json(constants.SUT_NOT_PRESENT_ERR_MSG); 
+    return;
+  }
+
   if (!req.body.members) req.body.members = [];
 
   //adds super user to all groups created

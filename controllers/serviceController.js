@@ -16,9 +16,8 @@ const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
 const systemController = require('./systemController');
-
-
-
+const constants = require('../lib/util/constants');
+const libxmljs = require("libxmljs");
 
 
 /**
@@ -28,12 +27,7 @@ const systemController = require('./systemController');
  * @return A promise from creating the service. Resolves to the new service. Rejects with error from mongoose OR error from lack of group permission.
  */
 function createService(serv,req){
-
-
-
   return new Promise(function(resolve,reject){
-
-    //
     if(req){
       var user = req.decoded;
       serv.lastUpdateUser = user;
@@ -644,9 +638,82 @@ function syncWorkers(service, action) {
     });
 }
 
-function addService(req, res) {
-  const type = req.body.type;
+/**
+ * This function checks for mandatory fields in request which is required to create a service depending upon it's type.
+ * @param {*} req express request.
+ * @returns an error message to UI back if there is a mandatory field missing.
+ */
+function validateRequiredFields(req) {
+  if (req.body.type === 'REST' && (!req.body.sut || !req.body.name || !req.body.basePath || !req.body.rrpairs)) {
+    return constants.REST_SOAP_REQUIREDFIELD_ERRMSG;
+  } else if (req.body.type === 'SOAP' && (!req.body.sut || !req.body.name || !req.body.basePath || !req.body.rrpairs)) {
+    return constants.REST_SOAP_REQUIREDFIELD_ERRMSG;
+  } else if (req.body.type === 'MQ' && (!req.body.sut || !req.body.name || !req.body.rrpairs)) {
+    return constants.MQ_REQUIREDFIELD_ERRMSG;
+  } else if (req.body.type === 'REST'){
+      for (var i = 0; i < req.body.rrpairs.length; i++) {
+        if (!req.body.rrpairs[i].verb || !constants.ALL_REST_METHODS.includes(req.body.rrpairs[i].verb) ||
+          !req.body.rrpairs[i].payloadType || !constants.ALL_REST_PAYLOAD_TYPE.includes(req.body.rrpairs[i].payloadType)) {
+          return constants.REST_RRPAIR_REQFIELD_ERRMSG;
+        }
+      }
+    }
+    else if (req.body.type === 'SOAP') {
+      for (var i = 0; i < req.body.rrpairs.length; i++) {
+        if (!req.body.rrpairs[i].reqData || !req.body.rrpairs[i].resData) {
+          return constants.SOAP_MQ_RRPAIR_REQFIELD_ERRMSG;
+        }
+      }
+    }
+    else if (req.body.type === 'MQ') {  
+      for (var i = 0; i < req.body.rrpairs.length; i++) {
+        if (!req.body.rrpairs[i].reqData || !req.body.rrpairs[i].resData) {
+          return constants.SOAP_MQ_RRPAIR_REQFIELD_ERRMSG;
+        }
+      }
+    }
+}
 
+/**
+ * This function checks for valid request/response data for a particular service & payloadType.
+ * @param {*} req express request.
+ * @returns an error message to UI back if there is a problem in request data.
+ */
+function validateReqResPayload(req) {
+  for (var i = 0; i < req.body.rrpairs.length; i++) {
+    if (req.body.type === 'REST' && req.body.rrpairs[i].payloadType === 'JSON') {
+      try {
+        JSON.parse(JSON.stringify(req.body.rrpairs[i].reqData));
+        JSON.parse(JSON.stringify(req.body.rrpairs[i].resData));
+      } catch (e) { 
+        return constants.REST_RRPAIR_REQRESDATA_FORMAT;
+      }
+    } else {
+      try {
+        libxmljs.parseXml(req.body.rrpairs[i].reqData);
+        libxmljs.parseXml(req.body.rrpairs[i].resData);
+      } catch (e) {
+        return constants.SOAP_MQ_RRPAIR_REQRESDATA_FORMAT;
+      }
+    }
+  }
+}
+
+function addService(req, res) {
+  //for code clarity validating request in 2 steps (missing required fields and incorrect request/response payload check)
+  var requiredFieldMissing = validateRequiredFields(req);
+  if (requiredFieldMissing) {
+    handleError(requiredFieldMissing, res, 400);
+    return;
+  }
+
+  var incorrectReqResPayLoad = validateReqResPayload(req);
+  if (incorrectReqResPayLoad) {
+    handleError(incorrectReqResPayLoad, res, 400);
+    return;
+  }
+
+  const type = req.body.type;
   let serv  = {
     sut: req.body.sut,
     user: req.decoded,

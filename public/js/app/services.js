@@ -1129,13 +1129,27 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 $http.post('/api/services?token=' + token, template)
                 .then(function(response) {
                     var data = response.data;
+                    if(data.validateError){
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(data.validateError);
+                      $('#genricMsg-dialog').modal('toggle');
+                      }else if(data.error == 'twoSeviceDiffNameSameBasePath'){
+                        $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                        $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
+                        $('#genricMsg-dialog').modal('toggle');
+                        }
+                      
+                      else
                     $location.path('/update/' + data._id + '/frmServCreate');
                 })
                 .catch(function(err) {
                     console.log(err);
-                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
-                    $('#genricMsg-dialog').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      if(typeof text!=="string")
+                        $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                      else
+                        $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');   
                 });
             };
 
