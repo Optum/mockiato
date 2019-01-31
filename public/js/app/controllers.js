@@ -1409,14 +1409,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             ///////////////////////////end script. to remove
 
           
-          
-            $scope.$watch('selectedSut', function (newSut) {
-             // $scope.filtersSelected = function(sut, user) {
-              console.log("newSut: " + newSut + "name: " + newSut.name);
-               
-                  if (newSut && !newUser) {
-                    console.log("newSut: " + newSut + "name: " + newSut.name);
-                   apiHistoryService.getServiceForSUT(newSut.name)
+             $scope.filtersSelected = function(sut, user) {
+                  if (sut && !user) {
+                    console.log("newSut: " + sut + "name: " + sut.name);
+                   apiHistoryService.getServiceForSUT(sut.name)
 
                       .then(function(response) {
                           var data = response.data;
@@ -1430,8 +1426,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       
                   }
 
-                  else if (newUser && !newSut) {
-                      apiHistoryService.getServiceByUser(newUser.name)
+                  else if (user && !sut) {
+                      apiHistoryService.getServiceByUser(user.name)
 
                       .then(function(response) {
                         var data = response.data;
@@ -1445,7 +1441,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   }
 
                   else if (newUser && newSut) {
-                      apiHistoryService.getServicesFiltered(newSut.name, newUser.name)
+                      apiHistoryService.getServicesFiltered(sut.name, user.name)
 
                       .then(function(response) {
                         var data = response.data;
@@ -1458,7 +1454,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       });
                   }
               });
-           // $scope.filtersSelected(null, { name: authService.getUserInfo().username });
+            $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
             $scope.clearSelected = function() {
               $scope.selectedSut = null;
