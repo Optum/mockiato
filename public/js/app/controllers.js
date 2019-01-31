@@ -166,9 +166,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
               $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);              
               $('#genricMsg-dialog').modal('toggle');
-              // $('#modal-btn-yes').on("click", function () {
-              //   apiHistoryService.saveServiceAsDraft(servicevo, false);
-              // });
+              $('#modal-btn-yes').on("click", function () {
+                 apiHistoryService.saveServiceAsDraft(servicevo, false);
+              });
             }
           };
     }])
@@ -2128,177 +2128,179 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       $('#genricMsg-dialog').modal('toggle');
                 });
             };
-    }]);
+    }])
 
-    // .controller("draftServiceController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
-    // function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
-    //     $scope.sutlist = sutService.getAllSUT();
-    //     $scope.userlist = userService.getAllUsers();
-    //     $scope.servicelist = [];
+.controller("draftServiceController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+    function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+        $scope.sutlist = sutService.getAllSUT();
+        $scope.userlist = userService.getAllUsers();
+        $scope.servicelist = [];
 
-    //     //script to retroactively assign group member. not needed for the future.
-    //     $scope.script=function(){
-    //       console.log("starting script");
-    //       var sutnames = [];
-    //       $http.get('/api/systems')
-    //         .then(function (response) {
-    //           response.data.forEach(function (sutData) {
-    //             var sut = {
-    //               name: sutData.name,
-    //               members: sutData.members
-    //             };
-    //             sutnames.push(sut.name);
-    //           });
-    //         })
+        //script to retroactively assign group member. not needed for the future.
+        $scope.script=function(){
+          console.log("starting script");
+          var sutnames = [];
+          $http.get('/api/systems')
+            .then(function (response) {
+              response.data.forEach(function (sutData) {
+                var sut = {
+                  name: sutData.name,
+                  members: sutData.members
+                };
+                sutnames.push(sut.name);
+              });
+            })
 
-    //         .catch(function (err) {
-    //           console.log(err);
-    //         });
+            .catch(function (err) {
+              console.log(err);
+            });
 
-    //       $http.get('/api/services/draft')
-    //         .then(function (response) {
-    //           console.log(response.data);
-    //           for (var i = 0; i < response.data.length; i++) {
-    //             var owner = response.data[i].user.uid;
-    //             var sut = response.data[i].sut.name;
+          $http.get('/api/services/draft')
+            .then(function (response) {
+              console.log(response.data);
+              for (var i = 0; i < response.data.length; i++) {
+                var owner = response.data[i].user.uid;
+                var sut = response.data[i].sut.name;
                 
-    //             if (sutnames.includes(sut)){
-    //               console.log("sut "+ sut + " exists");
-    //               console.log(owner + " will be added to group: " + sut);
-    //               sutService.updateGroup(sut, owner);
-    //             }
-    //             else{
-    //               console.log("sut " + sut + " does not exist");
-    //             }
-    //           }
-    //         })
+                if (sutnames.includes(sut)){
+                  console.log("sut "+ sut + " exists");
+                  console.log(owner + " will be added to group: " + sut);
+                  sutService.updateGroup(sut, owner);
+                }
+                else{
+                  console.log("sut " + sut + " does not exist");
+                }
+              }
+            })
 
-    //         .catch(function (err) {
-    //           console.log(err);
-    //         });
-    //     }
-    //     ///////////////////////////end script. to remove
+            .catch(function (err) {
+              console.log(err);
+            });
+        }
+        ///////////////////////////end script. to remove
 
-    //     $scope.filtersSelected = function(sut, user) {
-    //         if (sut && !user) {
-    //             apiHistoryService.getServiceForDraftSUT(sut.name)
+        $scope.filtersSelected = function(sut, user) {
+            if (sut && !user) {
+                apiHistoryService.getServiceForDraftSUT(sut.name)
 
-    //             .then(function(response) {
-    //                 var data = response.data;
-    //                 console.log(data);
-    //                 var arryListOfService=[];
-    //               for (let i = 0; i < data.length; i++) {
-    //                 if(data[i].service)arryListOfService.push(data[i].service);
-    //                 if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
-    //               }
-    //                 $scope.servicelist = arryListOfService;
-    //               })
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    var arryListOfService=[];
+                  for (let i = 0; i < data.length; i++) {
+                    if(data[i].service)arryListOfService.push(data[i].service);
+                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                  }
+                    $scope.servicelist = arryListOfService;
+                  })
 
-    //             .catch(function(err) {
-    //                 console.log(err);
-    //             });
-    //         }
+                .catch(function(err) {
+                    console.log(err);
+                });
+            }
 
-    //         else if (user && !sut) {
-    //             apiHistoryService.getServiceByDraftUser(user.name)
-    //             .then(function(response) {
-    //               var data = response.data;
-    //               console.log(data);
-    //               var arryListOfService=[];
-    //               for (let i = 0; i < data.length; i++) {
-    //                 if(data[i].service)arryListOfService.push(data[i].service);
-    //                 if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
-    //               }
-    //               $scope.servicelist = arryListOfService;
-    //             })
+            else if (user && !sut) {
+                apiHistoryService.getServiceByDraftUser(user.name)
+                .then(function(response) {
+                  var data = response.data;
+                  console.log(data);
+                  var arryListOfService=[];
+                  for (let i = 0; i < data.length; i++) {
+                    if(data[i].service)arryListOfService.push(data[i].service);
+                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                  }
+                  $scope.servicelist = arryListOfService;
+                })
 
-    //             .catch(function(err) {
-    //                 console.log(err);
-    //             });
-    //         }
+                .catch(function(err) {
+                    console.log(err);
+                });
+            }
 
-    //         else if (user && sut) {
-    //             apiHistoryService.getServicesDraftFiltered(sut.name, user.name)
+            else if (user && sut) {
+                apiHistoryService.getServicesDraftFiltered(sut.name, user.name)
 
-    //             .then(function(response) {
-    //               var data = response.data;
-    //               console.log(data);
-    //               var arryListOfService=[];
-    //               for (let i = 0; i < data.length; i++) {
-    //                 if(data[i].service)arryListOfService.push(data[i].service);
-    //                 if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
-    //               }
-    //               $scope.servicelist = arryListOfService;
-    //             })
+                .then(function(response) {
+                  var data = response.data;
+                  console.log(data);
+                  var arryListOfService=[];
+                  for (let i = 0; i < data.length; i++) {
+                    if(data[i].service)arryListOfService.push(data[i].service);
+                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                  }
+                  $scope.servicelist = arryListOfService;
+                })
 
-    //             .catch(function(err) {
-    //                 console.log(err);
-    //             });
-    //         }
+                .catch(function(err) {
+                    console.log(err);
+                });
+            }
 
-    //       //returning a promise from factory didnt seem to work with .then() function here, alternative solution
-    //         $http.get('/api/systems')
-    //           .then(function (response) {
-    //             $scope.myUser = authService.getUserInfo().username;
-    //              $scope.myGroups = [];
-    //             response.data.forEach(function (sutData) {
-    //               var sut = {
-    //                 name: sutData.name,
-    //                 members: sutData.members
-    //               };
-    //               sut.members.forEach(function (memberlist) {
-    //                 if (memberlist.includes($scope.myUser)) {
-    //                   $scope.myGroups.push(sut.name);
-    //                 }
-    //               });
-    //             });
-    //           })
+          //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+            $http.get('/api/systems')
+              .then(function (response) {
+                $scope.myUser = authService.getUserInfo().username;
+                 $scope.myGroups = [];
+                response.data.forEach(function (sutData) {
+                  var sut = {
+                    name: sutData.name,
+                    members: sutData.members
+                  };
+                  sut.members.forEach(function (memberlist) {
+                    if (memberlist.includes($scope.myUser)) {
+                      $scope.myGroups.push(sut.name);
+                    }
+                  });
+                });
+              })
 
-    //           .catch(function (err) {
-    //             console.log(err);
-    //           });
+              .catch(function (err) {
+                console.log(err);
+              });
 
 
-    //           $http.get('/api/users/admin')
-    //             .then(function(response) {
-    //                 $scope.adminUser = response.data;
-    //                 })
+              $http.get('/api/users/admin')
+                .then(function(response) {
+                    $scope.adminUser = response.data;
+                    })
 
-    //           .catch(function(err) {
-    //               console.log(err);
-    //           });
+              .catch(function(err) {
+                  console.log(err);
+              });
 
-    //     };
-    //     $scope.filtersSelected(null, { name: authService.getUserInfo().username });
+        };
+        $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
-    //     $scope.clearSelected = function() {
-    //       $scope.selectedSut = null;
-    //       $scope.selectedUser = null;
-    //       $scope.servicelist = [];
-    //     };
+        $scope.clearSelected = function() {
+          $scope.selectedSut = null;
+          $scope.selectedUser = null;
+          $scope.servicelist = [];
+        };
 
-    //   $scope.deleteDraftService = function (service) {
-    //     $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-    //     $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_DRAFTSERVICE_BODY);
-    //     $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-    //     $('#genricMsg-dialog').modal('toggle');
-    //     $('#modal-btn-yes').on("click", function () {
-    //       apiHistoryService.deleteDraftService(service)
-    //         .then(function (response) {
-    //           var data = response.data;
-    //           console.log(data);
-    //           $scope.servicelist.forEach(function (elem, i, arr) {
-    //             if (elem._id === data.id)
-    //               arr.splice(i, 1);
-    //           });
-    //         })
-    //         .catch(function (err) {
-    //           console.log(err);
-    //         });
-    //     });
-    //   };
+      $scope.deleteDraftService = function (service) {
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_DRAFTSERVICE_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
+        $('#modal-btn-yes').on("click", function () {
+          apiHistoryService.deleteDraftService(service)
+            .then(function (response) {
+              var data = response.data;
+              console.log(data);
+              $scope.servicelist.forEach(function (elem, i, arr) {
+                if (elem._id === data.id)
+                  arr.splice(i, 1);
+              });
+            })
+            .catch(function (err) {
+              console.log(err);
+            });
+        });
+      };
 
-    // }]);
+    }])
+    ;
+
 
 //Put all the hard coding or constants here for controller.      
 ctrl.constant("ctrlConstants", {
@@ -2335,10 +2337,10 @@ ctrl.constant("ctrlConstants", {
   "GRP_CREATED_SUCCESS_MSG": "Group Created Successfully",
   "GRP_DELETION_SUCCESS_MSG" : "Group Deleted Successfully",
   "DEL_DRAFTSERVICE_BODY" : "This service Info will be deleted. Do you want to continue ?",
-  "PUB_FAIL_SERV_SAVE_BODY" : " Please ensure your request / response pairs are well formed.                   ", /*+
-                                "Do you want to save the Service Info as draft",*/
-  //"PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Save as Draft</button><button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
-  "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
+  "PUB_FAIL_SERV_SAVE_BODY" : " Please ensure your request / response pairs are well formed.                   " +
+                                "Do you want to save the Service Info as draft",
+  "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Save as Draft</button><button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
+ // "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
   "SERV_INFO_NOT_FOUND" : "Service Info not found",
   "SERV_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
 });
