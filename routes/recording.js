@@ -60,3 +60,8 @@ apiRouter.put("/",recordController.addRecorder);
 
 //Remove a recorder
 apiRouter.delete("/:id",recordController.removeRecorder);
+
+
+//Start and stop recorder
+apiRouter.patch("/:id/start",recordController.startRecorder);
+apiRouter.patch("/:id/stop",recordController.stopRecorder);

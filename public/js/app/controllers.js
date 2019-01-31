@@ -1333,6 +1333,37 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.recordingList = data;
       });
 
+      $scope.startRecorder = function(recorder) {
+        apiHistoryService.startRecorder(recorder)
+        .then(function(response) {
+
+            recorder.running = true;
+            recorder.active = true;
+        })
+
+        .catch(function(err) {
+            console.log(err);
+        });
+      };
+
+      $scope.stopRecorder = function(recorder) {
+        apiHistoryService.stopRecorder(recorder)
+
+        .then(function(response) {
+            recorder.running = false;
+            recorder.active = false;
+        })
+
+        .catch(function(err) {
+            //If 404, try starting, just in case.
+            console.log(err.status);
+            if(err.status == 404)
+              $scope.startRecorder(recorder);
+
+            console.log(err);
+        });
+      };
+    
 
       $scope.deleteRecording = function (recording) {
         $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
