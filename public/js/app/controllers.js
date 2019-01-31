@@ -1362,53 +1362,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.sutlist = sutService.getAllSUT();
             $scope.userlist = userService.getAllUsers();
             $scope.servicelist = [];
-
-            //script to retroactively assign group member. not needed for the future.
-            $scope.script=function(){
-              console.log("starting script");
-              var sutnames = [];
-              $http.get('/api/systems')
-                .then(function (response) {
-                  response.data.forEach(function (sutData) {
-                    var sut = {
-                      name: sutData.name,
-                      members: sutData.members
-                    };
-                    sutnames.push(sut.name);
-                  });
-                })
-
-                .catch(function (err) {
-                  console.log(err);
-                });
-
-              $http.get('/api/services')
-                .then(function (response) {
-                  console.log(response.data);
-                  for (var i = 0; i < response.data.length; i++) {
-                    var owner = ["mockiato", response.data[i].user.uid];//change superuser name if neccesary
-                    var sut = response.data[i].sut.name;
-                    
-                    if (sutnames.includes(sut)){
-                      console.log("------------------------------------");
-                      console.log("sut "+ sut + " exists");
-                      console.log(owner + " will be added to group: " + sut);
-                      sutService.updateGroup(sut, owner);
-                    }
-                    else{
-                      console.log("------------------------------------");
-                      console.log("sut " + sut + " does not exist");
-                    }
-                  }
-                })
-
-                .catch(function (err) {
-                  console.log(err);
-                });
-            }
-            ///////////////////////////end script. to remove
-
-          
+        
              $scope.filtersSelected = function(sut, user) {
                   if (sut && !user) {
                     console.log("newSut: " + sut + "name: " + sut.name);
@@ -1440,7 +1394,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       });
                   }
 
-                  else if (newUser && newSut) {
+                  else if (user && sut) {
                       apiHistoryService.getServicesFiltered(sut.name, user.name)
 
                       .then(function(response) {
@@ -1453,7 +1407,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                           console.log(err);
                       });
                   }
-              });
+              };
             $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
             $scope.clearSelected = function() {
