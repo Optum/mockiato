@@ -112,10 +112,32 @@ function delSystem(req, res) {
   });
 }
 
+/**
+ * Helper function to get all SUTs this user is a member of
+ * @param {string} user uid for user of interest
+ * @return mongoose query
+ */
+function findSystemsForUser(user){
+  return System.find({members:user});
+}
+
+
+/**
+ * Get a system if and ONLY if the given user is a member of that system. Otherwise return null. 
+ * @param {string} user User uid
+ * @param {string} system System name
+ * @return mongoose query
+ */
+function getSystemIfMember(user,system){
+  return System.findOne({members:user,name:system});
+}
+
 module.exports = {
   getSystems: getSystems,
   addSystem: addSystem,
   delSystem: delSystem,
   getOneSystem: getOneSystem,
-  updateGroup: updateGroup
+  updateGroup: updateGroup,
+  findSystemsForUser: findSystemsForUser,
+  getSystemIfMember : getSystemIfMember
 };

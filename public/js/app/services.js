@@ -138,6 +138,15 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return $http.get('/api/recording');
             }
 
+            this.startRecorder = function(recorder){
+              return $http.patch('/api/recording/' + recorder._id + "/start");
+              
+            }
+
+            this.stopRecorder = function(recorder){
+              return $http.patch('/api/recording/' + recorder._id + "/stop");
+            }
+
             this.getRecordingById = function(id){
               return $http.get('/api/recording/' + id);
             }
@@ -496,20 +505,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                      // throw 'RR pair is malformed';
                     }
                   }
-                  // verify that XML is well formed
-                  else if (rr.payloadType === 'XML') {
-                    var reqValid = true;
-                    var resValid = true;
-
-                   // if (rr.requestpayload)  reqValid = xmlService.validateXml(rr.requestpayload);
-                   // if (rr.responsepayload) resValid = xmlService.validateXml(rr.responsepayload);
-
-                    if (reqValid && resValid) {
-                      reqPayload = rr.requestpayload;
-                      resPayload = rr.responsepayload;
-                    }
-                 
-                  }
                   else {
                     reqPayload = rr.requestpayload;
                     resPayload = rr.responsepayload;
@@ -717,7 +712,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   remotePort:servicevo.remotePort,
                   basePath:servicevo.basePath,
                   headerMask:[],
-                  ssl:servicevo.ssl
+                  ssl:servicevo.ssl,
+                  filters:{
+                    enabled:servicevo.filterEnable,
+                    bodyStrings:[],
+                    headers:[],
+                    statuses:[]
+                  }
                   
                 }
 
@@ -729,6 +730,25 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if(head.k)
                     recorder.headerMask.push(head.k.originalObject);
                 }
+
+                //Extract filters
+                servicevo.filterStatusCodes.forEach(function(code){
+                  if(code.v){
+                    recorder.filters.statuses.push(parseInt(code.v));
+                  }
+                });
+                servicevo.filterStrings.forEach(function(string){
+                  if(string.v){
+                    recorder.filters.bodyStrings.push(string.v);
+                  }
+                });
+                servicevo.filterHeaders.forEach(function(header){
+                  if(header.k){
+                    recorder.filters.headers.push({key:header.k,value:header.v});
+                  }
+                });
+
+
                 console.log(servicevo);
 
 
@@ -766,6 +786,22 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return sutlist;
             };
 
+            this.getAllSUTPromise = function(){
+              return new Promise(function(resolve,reject){
+                $http.get('/api/systems').then(function(response){
+                  var sutlist = [];
+                  response.data.forEach(function(sutData) {
+                    var sut = {
+                      name: sutData.name
+                    };
+                   
+                    sutlist.push(sut);
+                  });
+                  resolve(sutlist);
+              });
+            });
+          };
+
           this.getGroupsToBeDeleted = function(user){
               var deleteSutList = sutFactory.getGroupsToBeDeleted(user);
               return deleteSutList;
@@ -802,8 +838,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
 
             this.addGroup = function(createSut){
-              createSut.members = [];
-            createSut.members.push(authService.getUserInfo().username);
+          //    createSut.members = [];
+          //  createSut.members.push(authService.getUserInfo().username);
             var token = authService.getUserInfo().token;
             $http.post('/api/systems/'+'?token=' + token , createSut )
             .then(function (response) {
@@ -1105,11 +1141,22 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
     }])
 
-    .service('userService', ['userFactory',
-        function(userFactory) {
+    .service('userService', ['userFactory','$http',
+        function(userFactory,$http) {
             this.getAllUsers = function() {
                 return userFactory.getAllUsers();
             };
+            this.getAllUsersPromise = function() {
+              return new Promise(function(resolve,reject){
+                $http.get('/api/users').then(function(response){
+                  var userlist = [];
+                  response.data.forEach(function(userData){
+                    userlist.push({name:userData.uid});
+                  });
+                  resolve(userlist);
+                });
+              });
+          };
     }])
 
     .service('suggestionsService', ['statusCodesFactory', 'headersFactory',

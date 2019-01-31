@@ -181,6 +181,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
         $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
         $scope.servicevo.reqHeadersArr = [{id:0}];
+        $scope.servicevo.filterStatusCodes = [{id:0,v:''}];
+        $scope.servicevo.filterStrings = [{id:0,v:''}];
+        $scope.servicevo.filterHeaders = [{id:0,k:'',v:''}];
 
         $scope.showRecorderHelp = function(){
           $('#recordingHelp-modal').modal('toggle');
@@ -189,6 +192,24 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           var newItemNo = service.reqHeadersArr.length;
           service.reqHeadersArr.push({'id':newItemNo});
         };
+        $scope.addNewStatusCode = function(service){
+          service.filterStatusCodes.push({'id':service.filterStatusCodes.length});
+        }
+        $scope.removeStatusCode = function(service){
+          service.filterStatusCodes.splice(service.filterStatusCodes.length-1);
+        }
+        $scope.addNewString = function(service){
+          service.filterStrings.push({'id':service.filterStrings.length});
+        }
+        $scope.removeString = function(service){
+          service.filterStrings.splice(service.filterStrings.length-1);
+        }
+        $scope.addNewFilterHeader = function(service){
+          service.filterHeaders.push({'id':service.filterHeaders.length});
+        }
+        $scope.removeFilterHeader = function(service){
+          service.filterHeaders.splice(service.filterHeaders.length-1);
+        }
 
         $scope.removeReqHeader = function(service) {
           var lastItem = service.reqHeadersArr.length-1;
@@ -198,6 +219,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.createRecorder = function (servicevo) {
           apiHistoryService.publishRecorderToAPI(servicevo);
         };
+
+
 
     }])
     .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', '$timeout',
@@ -1333,6 +1356,37 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.recordingList = data;
       });
 
+      $scope.startRecorder = function(recorder) {
+        apiHistoryService.startRecorder(recorder)
+        .then(function(response) {
+
+            recorder.running = true;
+            recorder.active = true;
+        })
+
+        .catch(function(err) {
+            console.log(err);
+        });
+      };
+
+      $scope.stopRecorder = function(recorder) {
+        apiHistoryService.stopRecorder(recorder)
+
+        .then(function(response) {
+            recorder.running = false;
+            recorder.active = false;
+        })
+
+        .catch(function(err) {
+            //If 404, try starting, just in case.
+            console.log(err.status);
+            if(err.status == 404)
+              $scope.startRecorder(recorder);
+
+            console.log(err);
+        });
+      };
+    
 
       $scope.deleteRecording = function (recording) {
         $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
@@ -1357,59 +1411,123 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
     }])
 
-    .controller("serviceHistoryController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
-        function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
-            $scope.sutlist = sutService.getAllSUT();
-            $scope.userlist = userService.getAllUsers();
-            $scope.servicelist = [];
+    .controller("serviceHistoryController", ['$scope','$location','$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+        function($scope,$location,$routeParams,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+           Promise.all([sutService.getAllSUTPromise(),userService.getAllUsersPromise()]).then(function(values){
+            
+              $scope.sutlist = values[0];
+              $scope.userlist = values[1];
+              if($routeParams.user || $routeParams.sut)
+                performUpdateOnPathParams();
+              else
+                $scope.filtersSelected(null, { name: authService.getUserInfo().username });              
+            });
+
+          $scope.servicelist = [];
+          console.log($routeParams);
+
+          $scope.buttonHit = false;
+          $scope.filtersSelected = function (sut, user) {
+
+            $location.path("/fetchservices/" + (sut ? sut.name : '') + "/" + (user ? user.name : ''));
+
+            if (sut && !user) {
+              apiHistoryService.getServiceForSUT(sut.name)
+
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist = data;
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
+
+            else if (user && !sut) {
+              apiHistoryService.getServiceByUser(user.name)
+
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist = data;
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
+
+            else if (user && sut) {
+              apiHistoryService.getServicesFiltered(sut.name, user.name)
+
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist = data;
+                })
+
+                .catch(function (err) {
+                  console.log(err);
+                });
+            }
+          };
+
+          //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+          $http.get('/api/systems')
+            .then(function (response) {
+              $scope.myUser = authService.getUserInfo().username;
+              $scope.myGroups = [];
+              response.data.forEach(function (sutData) {
+                var sut = {
+                  name: sutData.name,
+                  members: sutData.members
+                };
+                sut.members.forEach(function (memberlist) {
+                  if (memberlist.includes($scope.myUser)) {
+                    $scope.myGroups.push(sut.name);
+                  }
+                });
+              });
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
         
-             $scope.filtersSelected = function(sut, user) {
-                  if (sut && !user) {
-                    console.log("newSut: " + sut + "name: " + sut.name);
-                   apiHistoryService.getServiceForSUT(sut.name)
-
-                      .then(function(response) {
-                          var data = response.data;
-                          console.log(data);
-                          $scope.servicelist = data;
-                        })
-
-                      .catch(function(err) {
-                          console.log(err);
-                      });
-                      
+            function performUpdateOnPathParams(){
+              $scope.filtersSelected($routeParams.sut ? {name:$routeParams.sut} : null,$routeParams.user ? {name:$routeParams.user}:null);
+              if($routeParams.sut){
+                for(let sut of $scope.sutlist){
+                  if(sut.name == $routeParams.sut){
+                    $scope.selectedSut = sut;
+                    break;
                   }
-
-                  else if (user && !sut) {
-                      apiHistoryService.getServiceByUser(user.name)
-
-                      .then(function(response) {
-                        var data = response.data;
-                        console.log(data);
-                        $scope.servicelist = data;
-                      })
-
-                      .catch(function(err) {
-                          console.log(err);
-                      });
+                }
+              }else{
+                $scope.selectedSut = null;
+              }
+              if($routeParams.user){
+                for(let user of $scope.userlist){
+                  if(user.name == $routeParams.user){
+                    $scope.selectedUser = user;
+                    break;
                   }
+                }
+              }else{
+                $scope.selectedUser = null;
+              }
+            }
+           
+            
 
-                  else if (user && sut) {
-                      apiHistoryService.getServicesFiltered(sut.name, user.name)
-
-                      .then(function(response) {
-                        var data = response.data;
-                        console.log(data);
-                        $scope.servicelist = data;
-                      })
-
-                      .catch(function(err) {
-                          console.log(err);
-                      });
-                  }
-              };
-            $scope.filtersSelected(null, { name: authService.getUserInfo().username });
-
+            $scope.$on('$routeUpdate', function () {
+              if(!$scope.buttonHit)
+                performUpdateOnPathParams();
+              else
+                $scope.buttonHit = false;
+            });
             $scope.clearSelected = function() {
               $scope.selectedSut = null;
               $scope.selectedUser = null;
