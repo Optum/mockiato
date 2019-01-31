@@ -52,7 +52,8 @@ const serviceSchema = new mongoose.Schema({
     remoteBasePath : String,
     failStatusCodes : [Number],
     failStrings : [String],
-    ssl: Boolean    
+    ssl: Boolean ,
+    recordedRRPairs:[RRPair.schema]  
   }
 },{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
