@@ -4,42 +4,38 @@
 <form name="adminForm" class="well col-xs-12">
 
     <div class="form-group row">
-        <label for="system_under_test" class="col-xs-3 col-form-label">Create a New Group :</label>
+        <label for="system_under_test" class="col-xs-6 col-form-label">Create a new group</label>
+        <label for="system_under_test" class="col-xs-6 col-form-label">Delete an unused group</label>
     </div>
     <div class="row">
+        
         <div class="col-xs-3">
             <input required type="text" ng-pattern="/^\S*$/" id="system_under_test" class="form-control" ng-model="createSut.name" placeholder="Enter group name(no spaces)">
+            <div style='color:#46a85a;font-weight:normal;font-size: 13px;'>{{createGroupMessage}}</div>
         </div>
-        <div class="col-xs-4">
-            <button type="button" class="btn btn-success" ng-disabled="!createSut.name" ng-click="checkAndAddGroup(createSut)"> Create Group</button>
+        <div class="col-xs-3">
+            <button type="button" class="btn btn-success" ng-disabled="!createSut.name" ng-click="checkAndAddGroup(createSut)"><span class="glyphicon glyphicon-plus"></span> Create Group</button>
         </div>
-            <br>
-            <div style='color:#b40037;font-weight:normal;font-size: 13px;'>{{createGroupMessage}}</div>
+        
+        <div class="col-xs-3">
+            <select required class="form-control" ng-model="deleteSut" id="system_under_test" ng-options="sut.name for sut in deleteSutList">
+                <option selected="selected" disabled="true">Select Group</option>
+            </select>
+                    <div style='color:#b40037;font-weight:normal;font-size: 13px;'>{{deleteGroupMessage}}</div>
+        </div>
+
+
+        <div class="col-xs-3">
+            <button type="button" class="btn btn-danger" ng-disabled="!deleteSut" ng-click="removeGroup(deleteSut)">
+                <span class="glyphicon glyphicon-trash"></span> Delete Group</button>
+        </div>
+        <br>
     </div>
 
     <br>
+        <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
     </br>
- 
 
-    <div class="form-group row">
-            <label for="system_under_test" class="col-xs-3 col-form-label">Select group to be Deleted :</label>
-    </div>
-    <div class="row">
-            <div class="col-xs-3">
-                    <select required class="form-control" ng-model="deleteSut"  id="system_under_test" ng-options="sut.name for sut in deleteSutList">
-                        <option selected="selected" disabled="true">Select Group</option> 
-                    </select>
-                </div>
-            <div class="col-xs-4">
-                <button type="button" class="btn btn-danger" ng-disabled="!deleteSut" ng-click="removeGroup(deleteSut)"> Delete Group</button>
-            </div>
-                <br>
-                <div style='color:#b40037;font-weight:normal;font-size: 13px;'>{{deleteGroupMessage}}</div>
-        </div>
-    
-        <br>
-        </br>
-    <br></br>
     <div class="form-group row">
         <label for="system_under_test" class="col-xs-3 col-form-label">Select a group to view/edit users</label>
         <div class="col-xs-3">
@@ -47,9 +43,9 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row" ng-show="selectedSut.name">
         <div class="col-xs-2">
-            <select class="form-control" id="user" title="Select user" ng-disabled="!selectedSut.name" ng-model="member" ng-options="user.name for user in userlist | orderBy:'name' | filter: removeMembers"></select>
+            <select class="form-control" id="user" title="Select user" ng-model="member" ng-options="user.name for user in userlist | orderBy:'name' | filter: removeMembers"></select>
         </div>
         <div class="col-xs-4">
             <button type="button" class="btn btn-success" ng-disabled="!selectedSut.name || !member" ng-click="addMember()">
