@@ -98,9 +98,10 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
-            .when("/fetchservices", {
+            .when("/fetchservices/:sut?/:user?", {
                 templateUrl: "partials/servicehistory.html",
                 controller: "serviceHistoryController",
+                reloadOnUrl: false,
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
                         var userInfo = authService.getUserInfo();
