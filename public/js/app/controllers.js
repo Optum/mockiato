@@ -922,6 +922,25 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               }
             };
 
+            //To Show Service Success Modal when a new service is created as draft
+            if($routeParams.frmWher=='frmCreateDraft'){
+              $http.get('/api/services/draft/' + $routeParams.id)
+                .then(function(response) {
+                  var data;
+                  if(response.data.mqservice)
+                      data = response.data.mqservice;
+                  else
+                      data = response.data.service;
+                  console.log(data);
+                  feedbackService.displayServiceInfo(data);
+                })
+                .catch(function(err) {
+                    console.log(err);
+                      $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');
+                });              
+            }
             $scope.serviceInfo = function() {
               console.log($routeParams.id);
               $http.get('/api/services/draft/' + $routeParams.id)

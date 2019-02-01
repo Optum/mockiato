@@ -622,12 +622,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               if (!isUpdate) {
                 $http.post('/api/services/draftservice?token=' + token, servData)
                 .then(function(response) {
-                    var data = response.data;
+                    var data;
+                    if(response.data.mqservice)
+                        data = response.data.mqservice;
+                    else
+                        data = response.data.service;
                     console.log(data);
                     if(data.error == 'twoSeviceDiffNameSameBasePath'){
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
                       $('#genricMsg-dialog').modal('toggle');
+                    }else{
+                      $location.path('/showDraftService/' + data._id + '/frmCreateDraft');
                     }
                     $('#service-save-success-modal').modal('toggle');
                 })
