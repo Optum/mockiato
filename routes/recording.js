@@ -52,6 +52,10 @@ apiRouter.get("/",recordController.getRecordings);
 //Get recorder by ID
 apiRouter.get("/:id",recordController.getRecordingById);
 
+//Get recorder by ID
+apiRouter.get("/sut/:name",recordController.getRecordingBySystem);
+
+
 //Get RR pairs by ID + index to start at
 apiRouter.get("/:id/:index",recordController.getRecorderRRPairsAfter);
 

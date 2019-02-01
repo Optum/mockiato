@@ -339,6 +339,28 @@ function getRecordingById(req,rsp){
 }
 
 /**
+ * API call to get a specific recording based on SUT
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
+function getRecordingBySystem(req,rsp){
+    let allRecorders = [];
+    
+      const query = { 'sut.name': req.params.name };
+    
+    Recording.find(query,function(err,docs){
+        if(err){
+            handleError(err,rsp,500);
+            return;
+        }
+        console.log("Found Recorder with SUT",docs);
+        allRecorders = docs;
+       return rsp.json(allRecorders);
+        
+    });
+}
+
+/**
  * API call to get RR pairs for a recorder after a certain index, for use in active update/polling
  * @param {*} req  express req
  * @param {*} rsp  express rsp
@@ -515,7 +537,8 @@ function startRecorder(req,rsp){
     registerRecorder: registerRecorder,
     deregisterRecorder: deregisterRecorder,
     startRecorder : startRecorder,
-    stopRecorder : stopRecorder
+    stopRecorder : stopRecorder,
+    getRecordingBySystem : getRecordingBySystem
   };
   
 
