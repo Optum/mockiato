@@ -7,9 +7,7 @@ var activeRecorders = {};
 
 
 
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-  }
+
 
  /**
   * Recorder object
