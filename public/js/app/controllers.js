@@ -1414,8 +1414,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
     .controller("serviceHistoryController", ['$scope','$location','$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
         function($scope,$location,$routeParams,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
            Promise.all([sutService.getAllSUTPromise(),userService.getAllUsersPromise()]).then(function(values){
-             
-              
+            
               $scope.sutlist = values[0];
               $scope.userlist = values[1];
               if($routeParams.user || $routeParams.sut)
@@ -1423,129 +1422,64 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               else
                 $scope.filtersSelected(null, { name: authService.getUserInfo().username });              
             });
-  
-            $scope.servicelist = [];
-            console.log($routeParams);
-            
-            //script to retroactively assign group member. not needed for the future.
-            $scope.script=function(){
-              console.log("starting script");
-              var sutnames = [];
-              $http.get('/api/systems')
-                .then(function (response) {
-                  response.data.forEach(function (sutData) {
-                    var sut = {
-                      name: sutData.name,
-                      members: sutData.members
-                    };
-                    sutnames.push(sut.name);
-                  });
-                  
-    
-                  
-                })
 
-                .catch(function (err) {
-                  console.log(err);
-                });
+          $scope.servicelist = [];
+          console.log($routeParams);
 
-              $http.get('/api/services')
-                .then(function (response) {
-                  console.log(response.data);
-                  for (var i = 0; i < response.data.length; i++) {
-                    var owner = ["mockiato", response.data[i].user.uid];//change superuser name if neccesary
-                    var sut = response.data[i].sut.name;
-                    
-                    if (sutnames.includes(sut)){
-                      console.log("------------------------------------");
-                      console.log("sut "+ sut + " exists");
-                      console.log(owner + " will be added to group: " + sut);
-                      sutService.updateGroup(sut, owner);
-                    }
-                    else{
-                      console.log("------------------------------------");
-                      console.log("sut " + sut + " does not exist");
-                    }
-                  }
-                })
+          $scope.buttonHit = false;
 
-                .catch(function (err) {
-                  console.log(err);
-                });
-            }
-            ///////////////////////////end script. to remove
+          $scope.$watchGroup(['selectedSut', 'selectedUser'], function (newVals) {
+            $scope.filtersSelected(newVals[0], newVals[1]);
+            $scope.buttonHit = true; //bool check so function isnt called twice
+          });
 
-            $scope.buttonHit = false;
-            $scope.filtersSelected = function(sut, user) {
-                
-                $location.path("/fetchservices/" + (sut ? sut.name : '') + "/" + (user ? user.name : ''));
 
-                if (sut && !user) {
-                    apiHistoryService.getServiceForSUT(sut.name)
+          $scope.filtersSelected = function (sut, user) {
+              $location.path("/fetchservices/" + (sut ? sut.name : '') + "/" + (user ? user.name : ''));
 
-                    .then(function(response) {
-                        var data = response.data;
-                        console.log(data);
-                        $scope.servicelist = data;
-                      })
+              if (sut && !user) {
+                apiHistoryService.getServiceForSUT(sut.name)
 
-                    .catch(function(err) {
-                        console.log(err);
-                    });
-                }
-
-                else if (user && !sut) {
-                    apiHistoryService.getServiceByUser(user.name)
-
-                    .then(function(response) {
-                      var data = response.data;
-                      console.log(data);
-                      $scope.servicelist = data;
-                    })
-
-                    .catch(function(err) {
-                        console.log(err);
-                    });
-                }
-
-                else if (user && sut) {
-                    apiHistoryService.getServicesFiltered(sut.name, user.name)
-
-                    .then(function(response) {
-                      var data = response.data;
-                      console.log(data);
-                      $scope.servicelist = data;
-                    })
-
-                    .catch(function(err) {
-                        console.log(err);
-                    });
-                }
-
-              //returning a promise from factory didnt seem to work with .then() function here, alternative solution
-                $http.get('/api/systems')
                   .then(function (response) {
-                    $scope.myUser = authService.getUserInfo().username;
-                     $scope.myGroups = [];
-                    response.data.forEach(function (sutData) {
-                      var sut = {
-                        name: sutData.name,
-                        members: sutData.members
-                      };
-                      sut.members.forEach(function (memberlist) {
-                        if (memberlist.includes($scope.myUser)) {
-                          $scope.myGroups.push(sut.name);
-                        }
-                      });
-                    });
+                    var data = response.data;
+                    console.log(data);
+                    $scope.servicelist = data;
                   })
 
                   .catch(function (err) {
                     console.log(err);
                   });
-                  
-            };
+              }
 
+              else if (user && !sut) {
+                apiHistoryService.getServiceByUser(user.name)
+
+                  .then(function (response) {
+                    var data = response.data;
+                    console.log(data);
+                    $scope.servicelist = data;
+                  })
+
+                  .catch(function (err) {
+                    console.log(err);
+                  });
+              }
+
+              else if (user && sut) {
+                apiHistoryService.getServicesFiltered(sut.name, user.name)
+
+                  .then(function (response) {
+                    var data = response.data;
+                    console.log(data);
+                    $scope.servicelist = data;
+                  })
+
+                  .catch(function (err) {
+                    console.log(err);
+                  });
+              }
+            };
+        
             function performUpdateOnPathParams(){
               $scope.filtersSelected($routeParams.sut ? {name:$routeParams.sut} : null,$routeParams.user ? {name:$routeParams.user}:null);
               if($routeParams.sut){
@@ -1570,8 +1504,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               }
             }
            
-            
-
             $scope.$on('$routeUpdate', function () {
               if(!$scope.buttonHit)
                 performUpdateOnPathParams();
@@ -1583,6 +1515,28 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $scope.selectedUser = null;
               $scope.servicelist = [];
             };
+
+          //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+          $http.get('/api/systems')
+            .then(function (response) {
+              $scope.myUser = authService.getUserInfo().username;
+              $scope.myGroups = [];
+              response.data.forEach(function (sutData) {
+                var sut = {
+                  name: sutData.name,
+                  members: sutData.members
+                };
+                sut.members.forEach(function (memberlist) {
+                  if (memberlist.includes($scope.myUser)) {
+                    $scope.myGroups.push(sut.name);
+                  }
+                });
+              });
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
 
           $scope.deleteService = function (service) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
@@ -1794,8 +1748,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
         $scope.userlist = userService.getAllUsers();
         $scope.selectedSut = [];
-      $scope.allSUT = sutService.getAllSUT();
-      $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+        $scope.allSUT = sutService.getAllSUT();
+        $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
 
       $scope.checkAndAddGroup = function (createSut) {
         var count = 0;
@@ -1821,8 +1775,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG; 
             window.location.reload(true);
           }; 
-
-
 
   
         $scope.$watch('selectedSut', function (newSut) {
@@ -2108,38 +2060,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     });
                 }
 
-              //returning a promise from factory didnt seem to work with .then() function here, alternative solution
-                $http.get('/api/systems')
-                  .then(function (response) {
-                    $scope.myUser = authService.getUserInfo().username;
-                     $scope.myGroups = [];
-                    response.data.forEach(function (sutData) {
-                      var sut = {
-                        name: sutData.name,
-                        members: sutData.members
-                      };
-                      sut.members.forEach(function (memberlist) {
-                        if (memberlist.includes($scope.myUser)) {
-                          $scope.myGroups.push(sut.name);
-                        }
-                      });
-                    });
-                  })
-
-                  .catch(function (err) {
-                    console.log(err);
-                  });
-
-
-                  $http.get('/api/users/admin')
-                    .then(function(response) {
-                        $scope.adminUser = response.data;
-                        })
-    
-                  .catch(function(err) {
-                      console.log(err);
-                  });
-
             };
             $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
@@ -2148,6 +2068,38 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $scope.selectedUser = null;
               $scope.servicelist = [];
             };
+
+          //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+          $http.get('/api/systems')
+            .then(function (response) {
+              $scope.myUser = authService.getUserInfo().username;
+              $scope.myGroups = [];
+              response.data.forEach(function (sutData) {
+                var sut = {
+                  name: sutData.name,
+                  members: sutData.members
+                };
+                sut.members.forEach(function (memberlist) {
+                  if (memberlist.includes($scope.myUser)) {
+                    $scope.myGroups.push(sut.name);
+                  }
+                });
+              });
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
+
+
+          $http.get('/api/users/admin')
+            .then(function (response) {
+              $scope.adminUser = response.data;
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
 
           $scope.deleteArchiveService = function (service) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
