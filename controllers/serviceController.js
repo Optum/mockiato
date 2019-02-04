@@ -702,7 +702,7 @@ function addService(req, res) {
 
     searchDuplicate(serv, function(duplicate) {
       if (duplicate && duplicate.twoServDiffNmSmBP){
-        res.json({"error":"twoSeviceDiffNameSameBasePath"});
+        handleError(constants.SERVICES_DIFFNAME_SAMEBASEPATH_ERR, res, 400);
         return;
       }
       else if (duplicate) {
@@ -831,8 +831,6 @@ function addServiceAsDraft(req, res) {
         return;
       }
       res.json(service);
-
-      syncWorkers(service, 'register');
     });
   }  
 }
@@ -1218,7 +1216,7 @@ function publishExtractedRRPairs(req, res) {
     else {
       searchDuplicate(serv, function(duplicate) {
         if (duplicate && duplicate.twoServDiffNmSmBP){
-          res.json({"error":"twoSeviceDiffNameSameBasePath"});
+          handleError(constants.SERVICES_DIFFNAME_SAMEBASEPATH_ERR, res, 400);
           return;
         }
         else if (duplicate) {
@@ -1319,7 +1317,7 @@ function publishUploadedSpec(req, res) {
 
     searchDuplicate(serv, function(duplicate) {
       if (duplicate && duplicate.twoServDiffNmSmBP){
-        res.json({"error":"twoSeviceDiffNameSameBasePath"});
+        handleError(constants.SERVICES_DIFFNAME_SAMEBASEPATH_ERR, res, 400);
         return;
       }
       else if (duplicate) {

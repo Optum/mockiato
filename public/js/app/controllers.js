@@ -444,6 +444,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             console.log(e);
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
             $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           }
         };
@@ -941,6 +942,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.SERV_SAVE_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.SERV_INFO_NOT_FOUND);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
               });
             };
@@ -1272,6 +1274,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               catch(e) {
                 $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                 $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                 $('#genricMsg-dialog').modal('toggle');
               }
             };
@@ -1309,6 +1312,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
               });
             };
@@ -1331,6 +1335,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
               });
             $('#success-modal').modal('toggle');
@@ -1611,6 +1616,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                 });
             };
@@ -2180,6 +2186,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                 });
             };
@@ -2390,10 +2397,11 @@ ctrl.constant("ctrlConstants", {
   "GRP_CREATED_SUCCESS_MSG": "Group Created Successfully",
   "GRP_DELETION_SUCCESS_MSG" : "Group Deleted Successfully",
   "DEL_DRAFTSERVICE_BODY" : "This service Info will be deleted. Do you want to continue ?",
-  "PUB_FAIL_SERV_SAVE_BODY" : " Please ensure your request / response pairs are well formed.                   ", /*+
-                                "Do you want to save the Service Info as draft",*/
+  "PUB_FAIL_SERV_SAVE_BODY" : " Please ensure your request / response pairs are well formed.                   ", 
+  /*"Do you want to save the Service Info as draft",*/
   //"PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Save as Draft</button><button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
   "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
   "SERV_INFO_NOT_FOUND" : "Service Info not found",
   "SERV_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
+  "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
 });

@@ -52,6 +52,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.LOGIN_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(servConstants.LOGIN_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
                 });
             };
@@ -398,12 +399,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .then(function(response) {
                       var data = response.data;
                       console.log(data);
-                      if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                      $('#genricMsg-dialog').modal('toggle');
-                      }
-                      else{
                       if(isRecording){
                         $http.delete('/api/recording/' + $routeParams.id).then(function(){
                           $location.path('/update/' + data._id + '/frmServCreate');
@@ -411,13 +406,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       }else{
                         $location.path('/update/' + data._id + '/frmServCreate');
                       }
-                    }
+                    
                   })
 
                   .catch(function(err) {
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                   });
                 }
@@ -435,6 +431,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                   });
                 }
@@ -624,11 +621,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 .then(function(response) {
                     var data = response.data;
                     console.log(data);
-                    if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                      $('#genricMsg-dialog').modal('toggle');
-                    }
                     $('#service-save-success-modal').modal('toggle');
                 })
 
@@ -636,6 +628,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.SERVICE_SAVE_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(servConstants.SERVICE_SAVE_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
                 });
               }
@@ -658,6 +651,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.SERVICE_SAVE_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(servConstants.SERVICE_SAVE_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
                 });
               }
@@ -768,9 +762,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     if(err.data.error == "OverlappingRecorderPathError"){
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.DUP_RECORDER_PATH_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(servConstants.DUP_RECORDER_PATH_BODY);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     }else{
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     }
                     $('#genricMsg-dialog').modal('toggle');
                 });
@@ -849,6 +845,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               console.log(err);
               $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
               $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
               $('#genricMsg-dialog').modal('toggle');
             });}
 
@@ -905,15 +902,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
               .then(function (response) {
                 var data = response.data;
-                if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
-                  $('#genricMsg-dialog').modal('toggle');
-                  }
-                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-              }})
+              })
               .catch(function (err) {
                 console.log(err.data.error);
                 return message(err.data.error);
@@ -970,21 +960,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
               .then(function (response) {
                 var data = response.data;
-                if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
-                  $('#genricMsg-dialog').modal('toggle');
-                  }
-                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-               } 
                return message(response.data.error);
                })
               .catch(function (err) {
                 console.log(err);
                 $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_SPEC_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                 $('#genricMsg-dialog').modal('toggle');
               });
         };
@@ -1107,6 +1090,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   console.log(e);
                   $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
                   $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY_IMPORT_TEMPLATE);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                   $('#genricMsg-dialog').modal('toggle');
                   return;
                 }
@@ -1122,6 +1106,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
                 });
 
@@ -1129,26 +1114,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 $http.post('/api/services?token=' + token, template)
                 .then(function(response) {
                     var data = response.data;
-                    if(data.validateError){
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(data.validateError);
-                      $('#genricMsg-dialog').modal('toggle');
-                      }else if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                        $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                        $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                        $('#genricMsg-dialog').modal('toggle');
-                        }
-                      
-                      else
                     $location.path('/update/' + data._id + '/frmServCreate');
                 })
                 .catch(function(err) {
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      if(typeof text!=="string")
-                        $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
-                      else
-                        $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);  
                       $('#genricMsg-dialog').modal('toggle');   
                 });
             };
@@ -1220,18 +1192,16 @@ serv.constant("servConstants", {
         "LOGIN_ERR_TITLE" : "Login Error",
         "LOGIN_ERR_BODY" : "Invalid credentials. Please try again.",
         "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
-        "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
         "PUB_FAIL_ERR_BODY_IMPORT_TEMPLATE" : "Please ensure you have uploaded a file in JSON format.",
-        "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.",
         "UPLOAD_FAIL_ERR_TITLE" : "Upload Failure Error",
         "UPLOAD_FAIL_ERR_BODY" : "Error occured in bulk upload.",
         "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
         "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
-        "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
         "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file." ,
         "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>',
         "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
         "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.",
         "SERVICE_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
-        "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed"
+        "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed",
+        "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
       });
