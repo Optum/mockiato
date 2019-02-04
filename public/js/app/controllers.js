@@ -444,6 +444,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             console.log(e);
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
             $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').text(ctrlConstants.PUB_FAIL_ERR_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           }
         };
@@ -2372,8 +2373,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         });
       };
 
-    }])
-    ;
+    }]);
 
 
 //Put all the hard coding or constants here for controller.      
@@ -2417,4 +2417,5 @@ ctrl.constant("ctrlConstants", {
  // "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
   "SERV_INFO_NOT_FOUND" : "Service Info not found",
   "SERV_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
+  "PUB_FAIL_ERR_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'  
 });

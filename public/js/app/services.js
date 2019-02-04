@@ -427,14 +427,19 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .then(function(response) {
                       var data = response.data;
                       console.log(data);
-                      feedbackService.displayServiceInfo(data);
+                                            
+                      if($routeParams.frmWher == 'frmDraft'){
+                          $location.path('/');
+                      }else{
+                        feedbackService.displayServiceInfo(data);
+                      }                
                       $('#success-modal').modal('toggle');
                   })
 
                   .catch(function(err) {
                       console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
                       $('#genricMsg-dialog').modal('toggle');
                   });
                 }
