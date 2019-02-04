@@ -46,9 +46,73 @@ function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
     }else{
         rsp.end();
     }
+    
 }
 
 
+/**
+ * Creates an RR pair from 1) an incoming request to Mockiato and 2) a response gotten from a remote server by forwarding that request and 3) An associated service
+ * 
+ * @param {*} req Express req 
+ * @param {*} res Response from remote server
+ * @return An object that should conform to the RRPair spec, NOT an RRPair model. 
+ */
+function createRRPairFromReqRes(req,res,service){
+
+    //Build from req first
+    var myRRPair = {}
+    myRRPair.verb = req.method;
+    myRRPair.queries = req.query;
+    var contentType = req.get("content-type");
+    if(contentType == "text/json" || contentType == "application/json"){
+        myRRPair.payloadType = "JSON";
+    }else if(contentType == "text/xml" || contentType == "application/xml"){
+        myRRPair.payloadType = "XML";
+    }else{
+        myRRPair.payloadType = "PLAIN";
+    }
+    if(myRRPair.payloadType == "JSON"){
+        //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+        try{
+            myRRPair.reqData = JSON.parse(req.body);
+        }catch(err){
+            myRRPair.reqData = req.body;
+        }
+    }
+    else
+        myRRPair.reqData = req.body;
+
+    //Get relative path to base path for this RRPair
+    var fullBasePath = req.baseUrl + service.basePath;
+    var fullIncomingPath = req.baseUrl + req.path;
+    var diff = fullIncomingPath.replace(new RegExp(escapeRegExp(fullBasePath),"i"),"");
+    if(diff && diff[diff.length-1] == "/"){
+        diff = diff.substring(0,diff.length-1); 
+    }
+    if(diff.substring(0,1) == "/")
+        diff = diff.substring(1);
+    
+    if(diff)
+        myRRPair.path = diff;
+
+    //Record response info to rr pair
+    myRRPair.resStatus = res.statusCode;
+    if(myRRPair.payloadType == "JSON"){
+        //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+        try{
+            myRRPair.resData = JSON.parse(res.body);
+        }catch(err){
+            myRRPair.resData = res.body;
+        }
+    }else{
+        myRRPair.resData = res.body;
+    }
+    myRRPair.resHeaders = res.headers;
+
+
+    
+    return myRRPair;
+}
   
   /**
    * Makes a backend request based on the incoming request and the service associated. 
@@ -97,6 +161,22 @@ function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
                     if(err) { 
                         return reject(err);
                     }
+
+                    if(service.liveInvocation.record){
+                        var rrpair = createRRPairFromReqRes(req,remoteRsp,service);
+                        Service.update({_id:service.id},
+                            {$push:
+                                {'liveInvocation.recordedRRPairs':rrpair}
+                            },
+                            function(err,raw){
+                                if(err){
+                                    console.log(err);
+                                    console.log(raw);
+                                }
+                            });
+                    }
+                        
+                        
                     return resolve(remoteRsp,remoteBody);
                 }).bind(this));
         
