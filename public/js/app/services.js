@@ -384,6 +384,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     failStatusCodes : failCodesArray,
                     failStrings : failStringsArray,
                     ssl : servicevo.invokeSSL,
+                    record : servicevo.liveRecordCheck,
                     liveFirst : servicevo.liveInvokePrePost == 'PRE'
                   };
                   

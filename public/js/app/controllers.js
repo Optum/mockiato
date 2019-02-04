@@ -1004,6 +1004,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
                       $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
                       $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+                      $scope.servicevo.liveRecordCheck = service.liveInvocation.record;
                       //Extract and build out codes/strings for failures
                       var failStatusCodes = service.liveInvocation.failStatusCodes;
                       var failStrings = service.liveInvocation.failStrings;
