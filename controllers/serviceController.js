@@ -17,7 +17,6 @@ const invoke = require('../routes/invoke');
 const System = require('../models/common/System');
 const systemController = require('./systemController');
 const constants = require('../lib/util/constants');
-const libxmljs = require("libxmljs");
 
 
 /**
@@ -41,7 +40,7 @@ function createService(serv,req){
           serv.sut = system; //Make sure service has full system info, including proper ID!
           performCreate();
         }else{
-          reject(new Error("User not authorized to create on this group."));
+          reject(new Error(constants.USER_NOT_AUTHORIZED_ERR));
         }
       });
 
@@ -547,20 +546,20 @@ function searchDuplicate(service, next) {
     basePath: service.basePath
   };
 
-  const query = {
+  const dupCheckQuery = {
     name: service.name,
     basePath: service.basePath
   };
 
-  Service.findOne(query2ServDiffNmSmBP, function (err, sameNmDupBP) {
+  Service.findOne(query2ServDiffNmSmBP, function (err, diffNmSameBP) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
-    else if (sameNmDupBP)
+    else if (diffNmSameBP)
       next({ twoServDiffNmSmBP: true });
     else {
-      Service.findOne(query, function (err, duplicate) {
+      Service.findOne(dupCheckQuery, function (err, duplicate) {
         if (err) {
           handleError(err, res, 500);
           return;
@@ -588,7 +587,7 @@ function stripRRPair(rrpair) {
 
 // function to merge req / res pairs of duplicate services
 function mergeRRPairs(original, second) {
-  for (let rrpair2 of second.rrpairs) {
+    for (let rrpair2 of second.rrpairs) {
     let hasAlready = false;
     let rr2 = stripRRPair(new RRPair(rrpair2));
 
@@ -638,78 +637,18 @@ function syncWorkers(service, action) {
     });
 }
 
-/**
- * This function checks for mandatory fields in request which is required to create a service depending upon it's type.
- * @param {*} req express request.
- * @returns an error message to UI back if there is a mandatory field missing.
- */
-function validateRequiredFields(req) {
-  if (req.body.type === 'REST' && (!req.body.sut || !req.body.name || !req.body.basePath || !req.body.rrpairs)) {
-    return constants.REST_SOAP_REQUIREDFIELD_ERRMSG;
-  } else if (req.body.type === 'SOAP' && (!req.body.sut || !req.body.name || !req.body.basePath || !req.body.rrpairs)) {
-    return constants.REST_SOAP_REQUIREDFIELD_ERRMSG;
-  } else if (req.body.type === 'MQ' && (!req.body.sut || !req.body.name || !req.body.rrpairs)) {
-    return constants.MQ_REQUIREDFIELD_ERRMSG;
-  } else if (req.body.type === 'REST'){
-      for (var i = 0; i < req.body.rrpairs.length; i++) {
-        if (!req.body.rrpairs[i].verb || !constants.ALL_REST_METHODS.includes(req.body.rrpairs[i].verb) ||
-          !req.body.rrpairs[i].payloadType || !constants.ALL_REST_PAYLOAD_TYPE.includes(req.body.rrpairs[i].payloadType)) {
-          return constants.REST_RRPAIR_REQFIELD_ERRMSG;
-        }
-      }
-    }
-    else if (req.body.type === 'SOAP') {
-      for (var i = 0; i < req.body.rrpairs.length; i++) {
-        if (!req.body.rrpairs[i].reqData || !req.body.rrpairs[i].resData) {
-          return constants.SOAP_MQ_RRPAIR_REQFIELD_ERRMSG;
-        }
-      }
-    }
-    else if (req.body.type === 'MQ') {  
-      for (var i = 0; i < req.body.rrpairs.length; i++) {
-        if (!req.body.rrpairs[i].reqData || !req.body.rrpairs[i].resData) {
-          return constants.SOAP_MQ_RRPAIR_REQFIELD_ERRMSG;
-        }
-      }
-    }
-}
-
-/**
- * This function checks for valid request/response data for a particular service & payloadType.
- * @param {*} req express request.
- * @returns an error message to UI back if there is a problem in request data.
- */
-function validateReqResPayload(req) {
-  for (var i = 0; i < req.body.rrpairs.length; i++) {
-    if (req.body.type === 'REST' && req.body.rrpairs[i].payloadType === 'JSON') {
-      try {
-        JSON.parse(JSON.stringify(req.body.rrpairs[i].reqData));
-        JSON.parse(JSON.stringify(req.body.rrpairs[i].resData));
-      } catch (e) { 
-        return constants.REST_RRPAIR_REQRESDATA_FORMAT;
-      }
-    } else {
-      try {
-        libxmljs.parseXml(req.body.rrpairs[i].reqData);
-        libxmljs.parseXml(req.body.rrpairs[i].resData);
-      } catch (e) {
-        return constants.SOAP_MQ_RRPAIR_REQRESDATA_FORMAT;
-      }
-    }
-  }
-}
-
 function addService(req, res) {
-  //for code clarity validating request in 2 steps (missing required fields and incorrect request/response payload check)
-  var requiredFieldMissing = validateRequiredFields(req);
-  if (requiredFieldMissing) {
-    handleError(requiredFieldMissing, res, 400);
+  /* validating sut here because code doesn't reach to mongoose validation check. we are using sut.name to calculate base path before mongoose 
+   validations. even if sut present but name or members not present in req data. unautorize error message is thrown which is not correct.*/
+   if (!req.body.sut || !req.body.sut.name){
+    handleError(constants.REQUIRED_SUT_PARAMS_ERR, res, 400);
     return;
   }
 
-  var incorrectReqResPayLoad = validateReqResPayload(req);
-  if (incorrectReqResPayLoad) {
-    handleError(incorrectReqResPayLoad, res, 400);
+  /* This check is mandatory for basePath validation because basePath is created using groupName. so mongoose validation will
+   not throw an error. This is the case when user may forget to put mandatory field 'basePath' in request for REST/SOAP type service.*/
+  if (!req.body.basePath && (req.body.type === 'REST' || req.body.type === 'SOAP')){
+    handleError(constants.REQUIRED_BASEPATH_ERR, res, 400);
     return;
   }
 
@@ -750,9 +689,9 @@ function addService(req, res) {
       // handler for db call
       function(err) {
         if (err) {
-          handleError(err, res, 500);
-          return;
-        }
+        handleBackEndValidationsAndErrors(err, res);
+        return;
+      }
         // respond with the newly created resource
        
     });
@@ -766,35 +705,76 @@ function addService(req, res) {
         res.json({"error":"twoSeviceDiffNameSameBasePath"});
         return;
       }
-      else if (duplicate) { 
-        // merge services
-        mergeRRPairs(duplicate, serv);
-        // save merged service
-        duplicate.save(function(err, newService) {
-          if (err) {
-            handleError(err, res, 500);
+      else if (duplicate) {
+        //only merge if both service type is same othwise throw error 409.
+        if(duplicate.type == serv.type){
+          if(!serv.rrpairs){
+            handleError(constants.REQUST_NO_RRPAIR, res, 400);
             return;
           }
-          res.json(newService);
-          
-          syncWorkers(newService, 'register');
-        });
+          // merge services
+          mergeRRPairs(duplicate, serv);
+          // save merged service
+          duplicate.save(function(err, newService) {
+            if (err) {
+            handleBackEndValidationsAndErrors(err, res);
+            return;
+          }
+            res.json(newService);
+            syncWorkers(newService, 'register');
+          });
+        }else{
+          handleError(constants.DIFF_TYPE_SERV_ERR, res, 409);
+          return;
+        }
       }
       else {
-        createService(serv,req).then(
-        function( service) {
-          res.json(service);
-  
-          syncWorkers(service, 'register');
-        },function(err){
-            handleError(err, res, 500);
+        createService(serv, req).then(
+          function (service) {
+            res.json(service);
+
+            syncWorkers(service, 'register');
+          }, function (err) {
+            handleBackEndValidationsAndErrors(err, res);
             return;
-        });
+          }
+        );
       }
     });
   }
 }
 
+/**
+ * This function handle mongoose validation Errors or any other error at backend.
+ * @param {*} err err Object contains error from backEnd.
+ * @param {*} res response Object required to send response error code.
+ * @returns blank to stop further processing and sends 400(bad request from mongoose validations) or 500(internal error) to clients.
+ */
+function handleBackEndValidationsAndErrors(err, res) {
+  {
+    switch (err.name) {
+      case 'ValidationError':
+      LOOP1:
+        for (field in err.errors) {
+          switch (err.errors[field].kind) {
+            case 'required':
+              handleError(err.errors[field].message, res, 400);
+              break LOOP1;
+            case 'user defined':
+            handleError(err.errors[field].message, res, 400);
+            break LOOP1;
+            case 'enum':
+            handleError(err.errors[field].message, res, 400);
+            break LOOP1;
+          }
+        }
+        break;
+      default:
+        handleError(err, res, 500);
+    }
+    return;
+  }
+}
 
 function addServiceAsDraft(req, res) {
   const type = req.body.type;
@@ -906,7 +886,7 @@ function updateService(req, res) {
       // save updated service in DB
       service.save(function (err, newService) {
         if (err) {
-          handleError(err, res, 500);
+          handleBackEndValidationsAndErrors(err, res);
           return;
         }
 
@@ -1241,7 +1221,13 @@ function publishExtractedRRPairs(req, res) {
           res.json({"error":"twoSeviceDiffNameSameBasePath"});
           return;
         }
-        else if (duplicate) { 
+        else if (duplicate) {
+          //only merge if both service type is same othwise do nothing.
+        if(duplicate.type == serv.type){ 
+          if(!serv.rrpairs){
+            handleError(constants.REQUST_NO_RRPAIR, res, 400);
+            return;
+          }
           // merge services
           mergeRRPairs(duplicate, serv);
           // save merged service
@@ -1254,7 +1240,11 @@ function publishExtractedRRPairs(req, res) {
             
             syncWorkers(newService, 'register');
           });
+        }else{
+          handleError(constants.DIFF_TYPE_SERV_ERR, res, 400);
+          return;
         }
+      }
         else {
           createService(serv,req).then( 
             function(service){
@@ -1332,7 +1322,13 @@ function publishUploadedSpec(req, res) {
         res.json({"error":"twoSeviceDiffNameSameBasePath"});
         return;
       }
-      else if (duplicate) { 
+      else if (duplicate) {
+        //only merge if both service type is same othwise do nothing.
+        if(duplicate.type == serv.type){ 
+          if(!serv.rrpairs){
+            handleError(constants.REQUST_NO_RRPAIR, res, 400);
+            return;
+          }
         // merge services
         mergeRRPairs(duplicate, serv);
         // save merged service
@@ -1343,9 +1339,13 @@ function publishUploadedSpec(req, res) {
           }
           res.json(newService);
           
-          syncWorkers(newService, 'register');
+          syncWorkers(newService, 'register');  
         });
+      }else{
+        handleError(constants.DIFF_TYPE_SERV_ERR, res, 400);
+        return;
       }
+    }
       else {
         createService(serv,req).then( function(service){
           res.json(service);

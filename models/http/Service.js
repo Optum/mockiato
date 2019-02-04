@@ -3,21 +3,33 @@ const mongoose = require('mongoose');
 const User = require('../common/User');
 const System = require('../common/System');
 const RRPair = require('./RRPair');
+const constants = require('../../lib/util/constants');
 
 const serviceSchema = new mongoose.Schema({
-  sut: System.schema,
+  sut: {
+    type: System.schema,
+    required: [true, constants.REQUIRED_SUT_ERR]
+  },
   user: User.schema,
   name: { 
-    type: String, 
+    type: String,
+    required: [true, constants.REQUIRED_SERVICE_NAME_ERR],
     index: true
   },
-  type: String,
+  type: {
+    type: String,
+    required: [true, constants.REQUIRED_SERVICE_TYPE_ERR]
+  },
   basePath: { 
-    type: String, 
+    type: String,
+    required: [true, constants.REQUIRED_BASEPATH_ERR],
     index: true
   },
   matchTemplates: [mongoose.Schema.Types.Mixed],
-  rrpairs: [RRPair.schema],
+  rrpairs: {
+    type: [RRPair.schema],
+    required: [true, constants.REQUIRED_RRPAIRS_ERR]
+  },
   delay: {
     // force integer only
     type: Number,
