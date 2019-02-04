@@ -139,7 +139,7 @@ serviceSchema.post('findOne',function(result){
 });
 
 serviceSchema.post('find',function(results){
-  results.foreEach(function(result){
+  results.forEach(function(result){
     filterDuplicateRecordedPairs(result);
   })
 });
