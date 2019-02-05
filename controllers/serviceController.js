@@ -1209,7 +1209,7 @@ function publishExtractedRRPairs(req, res) {
         // handler for db call
         function(err) {
           if (err) {
-            handleError(err, res, 500);
+            handleBackEndValidationsAndErrors(err, res);
             return;
           }
           // respond with the newly created resource
@@ -1234,11 +1234,10 @@ function publishExtractedRRPairs(req, res) {
           // save merged service
           duplicate.save(function(err, newService) {
             if (err) {
-              handleError(err, res, 500);
+              handleBackEndValidationsAndErrors(err, res);
               return;
             }
             res.json(newService);
-            
             syncWorkers(newService, 'register');
           });
         }else{
@@ -1254,9 +1253,9 @@ function publishExtractedRRPairs(req, res) {
             },
             function (err, service) {
             if (err) {
-              handleError(err, res, 500);
+              handleBackEndValidationsAndErrors(err, res);
+              return;
             }
-           
           });
         }
       });
@@ -1335,11 +1334,10 @@ function publishUploadedSpec(req, res) {
         // save merged service
         duplicate.save(function(err, newService) {
           if (err) {
-            handleError(err, res, 500);
+            handleBackEndValidationsAndErrors(err, res);
             return;
           }
           res.json(newService);
-          
           syncWorkers(newService, 'register');  
         });
       }else{
@@ -1352,7 +1350,10 @@ function publishUploadedSpec(req, res) {
           res.json(service);
           syncWorkers(service, 'register');
         },function (err) {
-          if (err) handleError(err, res, 500);
+          if (err) {
+            handleBackEndValidationsAndErrors(err, res);
+            return;
+          }
         });
       }
     });
