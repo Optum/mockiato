@@ -18,7 +18,6 @@ const System = require('../models/common/System');
 const systemController = require('./systemController');
 const constants = require('../lib/util/constants');
 
-
 /**
  * Wrapper function for (MQ)Service.create. If req is provided, will also check against current logged in user's permissions first. 
  * @param {object} serv An object containing the info to create a service
@@ -901,8 +900,12 @@ function updateService(req, res) {
           return;
         }
         if(draftservice.service){
-          addService(req, res);
+          var reg = new RegExp("/" + draftservice.service.sut.name,"i");
+          var basePath = draftservice.service.basePath.replace(reg,"");
+          req.body.basePath = basePath;
         }
+        addService(req, res);         
+                 
       });
     }
   });

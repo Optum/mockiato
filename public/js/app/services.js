@@ -406,7 +406,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       }else{
                         $location.path('/update/' + data._id + '/frmServCreate');
                       }
-                    
                   })
 
                   .catch(function(err) {
@@ -423,14 +422,19 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .then(function(response) {
                       var data = response.data;
                       console.log(data);
+                                            
+                      if($routeParams.frmWher == 'frmDraft'){
+                          $location.path('/');
+                      }else{
                       feedbackService.displayServiceInfo(data);
+                      }                
                       $('#success-modal').modal('toggle');
                   })
 
                   .catch(function(err) {
                       console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
                       $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                   });
@@ -619,9 +623,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               if (!isUpdate) {
                 $http.post('/api/services/draftservice?token=' + token, servData)
                 .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-                    $('#service-save-success-modal').modal('toggle');
+                    var data;
+                    if(response.data.mqservice)
+                        data = response.data.mqservice;
+                    else
+                        data = response.data.service;
+                    console.log(data);                    $('#service-save-success-modal').modal('toggle');
                 })
 
                 .catch(function(err) {
