@@ -102,6 +102,13 @@ router.post('/draftservice', servCtrl.addServiceAsDraft);
 router.get('/infoFrmArchive/:id', servCtrl.getArchiveServiceInfo);
 
 
+// delete a recorded RR pair
+router.delete('/:id/recorded/:rrpairId',servCtrl.deleteRecordedRRPair);
+
+// get recorded RR pairs from service
+router.get('/:id/recorded',servCtrl.getServiceRecordedRRPairs);
+
+
 const rrpairs = require('./rrpairs');
 router.use(rrpairs);
 

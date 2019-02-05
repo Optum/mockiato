@@ -18,6 +18,26 @@ const System = require('../models/common/System');
 const systemController = require('./systemController');
 
 
+/**
+ * Given a User object and a service's id, return a promise that resolves if this user can edit the service, and rejects otherwise
+ * @param {User} user 
+ * @param {string} serviceId 
+ */
+function canUserEditServiceById(user,serviceId){
+  return new Promise(function(resolve,reject){
+    Service.findById(serviceId,function(err,doc){
+      if(err)
+        reject(err)
+      else
+        if(doc){
+          systemController.isUserMemberOfGroup(user,doc.sut).then((bool)=>{resolve(bool)},(err)=>{reject(err)});
+        }else{
+          reject("No Service Found");
+        }
+    });
+  });
+}
+
 
 
 
@@ -1335,6 +1355,42 @@ function deleteDraftService(req, res) {
   });
 }
 
+
+
+/**
+ * API Call to delete a specific recorded RR pair from liveInvocation
+ * @param {*} req Express req 
+ * @param {*} res Express rsp
+ */
+function deleteRecordedRRPair(req,res){
+  var serviceId = req.params.id;
+  var rrPairId = req.params.rrpairId;
+  canUserEditServiceById(req.decoded,serviceId).then((bool)=>{
+    Service.findOneAndUpdate({_id:serviceId},{$pull:{"liveInvocation.recordedRRPairs":{_id:rrPairId}}},function(err,doc){
+      if(err)
+        handleError(err,res,500);
+      else
+        res.json(doc);
+
+    });
+  },(err)=>{
+    handleError(err,res,500);
+  });
+
+}
+
+
+function getServiceRecordedRRPairs(req,res){
+  var serviceId = req.params.id;
+  Service.findById(serviceId).select("liveInvocation.recordedRRPairs").exec(function(err,doc){
+    if(err)
+      handleError(err,res,500);
+    else
+      res.json(doc);
+  });
+}
+
+
 module.exports = {
   getServiceById: getServiceById,
   getArchiveServiceInfo: getArchiveServiceInfo,
@@ -1361,7 +1417,10 @@ module.exports = {
   deleteDraftService: deleteDraftService,
   getDraftServicesByUser: getDraftServicesByUser,
   addServiceAsDraft: addServiceAsDraft,
-  updateServiceAsDraft: updateServiceAsDraft
+  updateServiceAsDraft: updateServiceAsDraft,
+  deleteRecordedRRPair: deleteRecordedRRPair,
+  canUserEditServiceById: canUserEditServiceById,
+  getServiceRecordedRRPairs: getServiceRecordedRRPairs
 };
 
 
