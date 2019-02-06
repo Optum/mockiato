@@ -1205,7 +1205,6 @@ serv.constant("servConstants", {
         "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
         "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
         "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file." ,
-        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>',
         "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
         "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.",
         "SERVICE_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
