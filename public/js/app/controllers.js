@@ -2423,5 +2423,5 @@ ctrl.constant("ctrlConstants", {
   //"PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
   "SERV_INFO_NOT_FOUND" : "Service Info not found",
   "SERV_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
-"BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
+"BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
 });
