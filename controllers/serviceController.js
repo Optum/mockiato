@@ -838,6 +838,9 @@ function updateService(req, res) {
         });
       }
       if(req.body.liveInvocation){
+        if(service.liveInvocation && service.liveInvocation.recordedRRPairs){
+          req.body.liveInvocation.recordedRRPairs = service.liveInvocation.recordedRRPairs;
+        }
         service.liveInvocation = req.body.liveInvocation;
       }
       if (req.body.matchTemplates) {
@@ -1379,7 +1382,11 @@ function deleteRecordedRRPair(req,res){
 
 }
 
-
+/**
+ * API call to get just the recorded RR pairs from a service
+ * @param {*} req express req
+ * @param {*} res express rsp
+ */
 function getServiceRecordedRRPairs(req,res){
   var serviceId = req.params.id;
   Service.findById(serviceId).select("liveInvocation.recordedRRPairs").exec(function(err,doc){
@@ -1387,6 +1394,38 @@ function getServiceRecordedRRPairs(req,res){
       handleError(err,res,500);
     else
       res.json(doc);
+  });
+}
+
+
+function mergeRecordedRRPair(req,res){
+  var serviceId = req.params.id;
+  var rrPairId = req.params.rrpairId;
+  canUserEditServiceById(req.decoded,serviceId).then((bool)=>{
+    Service.findOne({_id:serviceId,'liveInvocation.recordedRRPairs':{$elemMatch:{_id:rrPairId}}}).exec(function(err,doc){
+      if(err){
+        handleError(err,res,500);
+      }else if(doc){
+        for(let i = 0; i < doc.liveInvocation.recordedRRPairs.length; i++){
+          var rrpair = doc.liveInvocation.recordedRRPairs[i];
+          if(rrpair._id == rrPairId){
+            var rrPairWrapper = {rrpairs:[rrpair]};
+            mergeRRPairs(doc,rrPairWrapper);
+            doc.liveInvocation.recordedRRPairs.splice(i,1);
+            doc.save(function(err,newDoc){
+              res.json(newDoc);
+              syncWorkers(newDoc, 'register');
+            });
+            break;
+          }
+        }
+      }else{
+        res.status(404);
+        res.json({});
+      }
+    });
+  },(err)=>{
+    handleError(err,res,500);
   });
 }
 
@@ -1420,7 +1459,8 @@ module.exports = {
   updateServiceAsDraft: updateServiceAsDraft,
   deleteRecordedRRPair: deleteRecordedRRPair,
   canUserEditServiceById: canUserEditServiceById,
-  getServiceRecordedRRPairs: getServiceRecordedRRPairs
+  getServiceRecordedRRPairs: getServiceRecordedRRPairs,
+  mergeRecordedRRPair: mergeRecordedRRPair
 };
 
 

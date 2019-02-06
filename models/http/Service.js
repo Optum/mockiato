@@ -83,7 +83,10 @@ function stripRRPair(rrpair) {
  * @param {Service} service 
  */
 function filterDuplicateRecordedPairs(service){
-  if(service.liveInvocation && service.liveInvocation.recordedRRPairs && service.liveInvocation.recordedRRPairs.length){
+
+  //This check probably looks excessive- it is necessary because service can be null, the live invo group can be null, the recorded section can be null, and recorded can be 0 length! 
+  //Not checking makes the entire app grind to a half if any of those are null. 
+  if(service && service.liveInvocation && service.liveInvocation.recordedRRPairs && service.liveInvocation.recordedRRPairs.length){
     var pairs = service.liveInvocation.recordedRRPairs;
     var keepThisRRPair = [];
     var strippedPairs = [];

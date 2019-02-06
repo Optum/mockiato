@@ -93,7 +93,7 @@ function createRRPairFromReqRes(req,res,service){
         diff = diff.substring(1);
     
     if(diff)
-        myRRPair.path = diff;
+        myRRPair.path = "/" + diff;
 
     //Record response info to rr pair
     myRRPair.resStatus = res.statusCode;

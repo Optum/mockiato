@@ -108,6 +108,8 @@ router.delete('/:id/recorded/:rrpairId',servCtrl.deleteRecordedRRPair);
 // get recorded RR pairs from service
 router.get('/:id/recorded',servCtrl.getServiceRecordedRRPairs);
 
+//Merge in recorded RR pair 
+router.patch('/:id/recorded/:rrpairId',servCtrl.mergeRecordedRRPair);
 
 const rrpairs = require('./rrpairs');
 router.use(rrpairs);
