@@ -184,6 +184,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.servicevo.filterStatusCodes = [{id:0,v:''}];
         $scope.servicevo.filterStrings = [{id:0,v:''}];
         $scope.servicevo.filterHeaders = [{id:0,k:'',v:''}];
+        $scope.servicevo.currentUser = authService.getUserInfo().username;
 
         $scope.showRecorderHelp = function(){
           $('#recordingHelp-modal').modal('toggle');

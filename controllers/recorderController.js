@@ -17,9 +17,24 @@ function escapeRegExp(string) {
   * This object is created whenever a new recording session is started. the recording router will route all appropriate transactions to this object 
   * Can instead pass an ID to a Recording document to 'name', and create an instance based on that recorder. 
   */
-var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters){
+var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator){
 
     var rec = this;
+    var memberArry = [creator];
+    /**sut and rrpairs mandatory in service table.
+     * putting dummy rrpairs. All values in this dummy rrpairs
+     * satisfy all validation for rest/soap services.
+     * Also deleting this rrpairs array when Recorder is ready.
+     */
+    if (process.env.MOCKIATO_ADMIN){
+        memberArry.unshift(process.env.MOCKIATO_ADMIN);
+      }
+    var rrpairs = [{
+        "verb": "POST",
+        "payloadType": "XML",
+        "reqData": "<dummyxml></dummyxml>",
+        "resData": "<dummyxml></dummyxml>",
+    }];  
     //If passed ID for Recording document...
     if(arguments.length == 1){
         rec.model = new Promise(function(resolve,reject){
@@ -46,17 +61,18 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             this.path = "/" + this.path;     
     
         this.model = Recording.create({
-            sut : {name:sut},
+            sut : {name:sut, members:memberArry},
             path : path,
             remoteHost : remoteHost,
             protocolf : protocol || 'REST',
             remotePort : remotePort || 80,
-            headerMask : headerMask || ['Content-Type'],
+            headerMask : headerMask || ['Content-Type'],  
             service : {
                 basePath : path.substring(1),
-                sut:{name:sut},
+                sut:{name:sut, members:memberArry},
                 name:name,
-                type:protocol
+                type:protocol,
+                rrpairs:rrpairs
             },
             name: name,
             ssl:ssl,
@@ -70,9 +86,16 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             if(!(this.model.headerMask['Content-Type']))
                 this.model.headerMask.push('Content-Type');
 
-            this.model.save(function(err){
+            this.model.save(function(err, recording){
                 if(err) console.log(err);
+                //Deleting rrpairs from servie object from recording object.
+                Recording.update({_id:recording.id}, { $unset: { 'service.rrpairs': "" } })
+                .then(function(User){//do nothing
+                  }).catch(function(err){
+                    throw err;
+                  });
             });
+            
             syncWorkersToNewRecorder(this);
         }).bind(this));
     }
@@ -412,8 +435,8 @@ function findDuplicateRecorder(sut,path){
  * @param {string} dataType  XML/JSON/etc
  * @param {array{string}} headerMask array of headers to save
  */
-function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters){
-    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters); 
+function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator){
+    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator); 
    
     return newRecorder;
 }
@@ -492,7 +515,7 @@ function addRecorder(req,rsp){
         handleError("OverlappingRecorderPathError",rsp,500);
     }
     else{
-        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask,body.ssl,body.filters);
+        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask,body.ssl,body.filters,body.creator);
         newRecorder.model.then(function(doc){
             rsp.json(doc);
         }).catch(function(err){

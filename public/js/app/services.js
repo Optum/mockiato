@@ -714,6 +714,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   basePath:servicevo.basePath,
                   headerMask:[],
                   ssl:servicevo.ssl,
+                  creator:servicevo.currentUser,
                   filters:{
                     enabled:servicevo.filterEnable,
                     bodyStrings:[],

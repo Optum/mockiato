@@ -56,15 +56,36 @@ const serviceSchema = new mongoose.Schema({
   },
   lastUpdateUser:{
     type: User.schema
-  },liveInvocation:{
+  }, liveInvocation: {
     enabled: Boolean,
-    liveFirst: Boolean,
-    remoteHost : String,
-    remotePort : Number,
-    remoteBasePath : String,
-    failStatusCodes : [Number],
-    failStrings : [String],
-    ssl: Boolean    
+    liveFirst: {
+      type: Boolean,
+      required: [function () {
+                  return this.liveInvocation.enabled;
+                },
+                constants.LIVE_OR_VIRTUAL_NOT_ERR
+                ]
+    },
+    remoteHost: {
+      type: String,
+      required: [function () {
+                  return this.liveInvocation.enabled;
+                },
+                constants.REMOTE_HOST_NOT_ERR
+                ]
+    },
+    remotePort: {
+      type: Number,
+      required: [function () {
+                  return this.liveInvocation.enabled;
+                },
+                constants.REMOTE_PORT_NOT_ERR
+                ]
+    },
+    remoteBasePath: String,
+    failStatusCodes: [Number],
+    failStrings: [String],
+    ssl: Boolean
   }
 },{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
