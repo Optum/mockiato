@@ -125,7 +125,7 @@ function handleBackEndValidationsAndErrors(err, res) {
       switch (err.name) {
         case 'ValidationError':
         LOOP1:
-          for (field in err.errors) {
+          for (let field in err.errors) {
             switch (err.errors[field].kind) {
               case 'required':
                 handleError(err.errors[field].message, res, 400);
