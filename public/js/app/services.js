@@ -133,6 +133,16 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants','$routeParams',
         function($http, $location, authService, feedbackService, xmlService, servConstants,$routeParams) {
 
+            this.deleteRecordedLiveRRPair = function(serviceId,rrPairId){
+              var token = authService.getUserInfo().token;
+              return $http.delete('/api/services/' + serviceId + '/recorded/' + rrPairId + "?token=" + token);
+            }
+
+            this.addRRPairToService = function(serviceId,rr){
+              var token = authService.getUserInfo().token;
+              return $http.patch('/api/services/' + serviceId + '/rrpair?token=' + token, rr);
+            }
+
             //gets all recordings, unfiltered
             this.getRecordings = function(){
                 return $http.get('/api/recording');

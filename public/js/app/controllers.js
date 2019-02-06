@@ -971,9 +971,207 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
     }]) 
 
+     .controller("mergeRecordedController",['$scope','$routeParams','apiHistoryService','authService','$http',
+     function($scope,$routeParams,apiHistoryService,authService,$http){
+      //Get service + update info
+      apiHistoryService.getServiceById($routeParams.id).then(function(response){
+        var service = response.data;
+        $scope.servicevo = {
+          id: service._id,
+          sut: service.sut,
+          name: service.name,
+          type: service.type,
+          delay: service.delay,
+          delayMax: service.delayMax,
+          txnCount: service.txnCount,
+          basePath: service.basePath,
           
-    .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
-        function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {    
+          
+        };
+        
+        if(service.liveInvocation){
+          
+          $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+          $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+          $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+          $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+          $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+          $scope.servicevo.liveRecordCheck = service.liveInvocation.record;
+          //Extract and build out codes/strings for failures
+          var failStatusCodes = service.liveInvocation.failStatusCodes;
+          var failStrings = service.liveInvocation.failStrings;
+          $scope.servicevo.failStatuses = [];
+          $scope.servicevo.failStrings = [];
+          for(var i = 0; i < failStatusCodes.length; i++){
+            $scope.servicevo.failStatuses[i] = {'id': i, 'val' : failStatusCodes[i]};
+
+          }
+          for(var i = 0; i < failStrings.length; i++){
+            $scope.servicevo.failStrings[i] = {'id': i, 'val' : failStrings[i]};
+          }
+          if(!$scope.servicevo.failStatuses.length){
+            $scope.servicevo.failStatuses[0] = {'id': 0,val:''};  
+          }
+          if(!$scope.servicevo.failStrings.length){
+            $scope.servicevo.failStrings[0] = {'id': 0,val:''};
+          }
+          //Select correct radio
+          if(service.liveInvocation.liveFirst)
+            $scope.servicevo.liveInvokePrePost = 'PRE';
+          else  
+            $scope.servicevo.liveInvokePrePost = 'POST';
+          
+        }else{
+          $scope.servicevo.failStatuses = [];
+          $scope.servicevo.failStrings = [];
+          $scope.servicevo.failStatuses[0] = {'id': 0,val:''};      
+          $scope.servicevo.failStrings[0] = {'id': 0,val:''};
+        }
+        $scope.myUser = authService.getUserInfo().username;
+        
+        
+        $http.get('/api/systems')
+          .then(function (response) {
+            var newsutlist = [];
+            response.data.forEach(function (sutData) {
+              var sut = {
+                name: sutData.name,
+                members: sutData.members
+              };
+              sut.members.forEach(function (memberlist) {
+                if (memberlist.includes($scope.myUser)) {
+                newsutlist.push(sut.name);
+                }
+              });
+            });
+            $scope.canEdit = function () {
+            if (newsutlist.includes($scope.servicevo.sut.name )) {
+              return true;
+            }
+            else {
+              return false;
+            }
+          };
+          })
+
+          .catch(function (err) {
+            console.log(err);
+          });
+          if(service.lastUpdateUser){
+            $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
+          }
+          if(service.createdAt){
+            $scope.servicevo.createdAt = service.createdAt;
+          }
+          if(service.updatedAt){
+            $scope.servicevo.updatedAt = service.updatedAt;
+          }
+
+          $scope.servicevo.matchTemplates = [];
+          $scope.servicevo.rawpairs = [];
+
+
+          if (service.matchTemplates && service.matchTemplates.length) {
+            service.matchTemplates.forEach(function(template, index) {
+              $scope.servicevo.matchTemplates.push({ id: index, val: template });
+            });
+          }
+          else {
+            $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
+          }
+          service.liveInvocation.recordedRRPairs.forEach(function(rr){
+            rr.queriesArr = [];
+            rr.reqHeadersArr = [];
+            rr.resHeadersArr = [];
+            rr.method = rr.verb;
+            if (rr.payloadType === 'JSON') {
+              rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
+              rr.responsepayload = JSON.stringify(rr.resData, null, 4);
+
+              //Handle empty JSON object- stringify surrounds in "" 
+              if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+                rr.responsepayload = rr.responsepayload.substring(1,3);
+              }
+            }
+            else {
+              rr.requestpayload = rr.reqData;
+              rr.responsepayload = rr.resData;
+            }
+
+            // map object literals to arrays for Angular view
+            if (rr.reqHeaders) {
+              var reqHeads = Object.entries(rr.reqHeaders);
+              var reqHeadId = 0;
+              reqHeads.forEach(function(elem){
+                var head = {};
+
+                head.id = reqHeadId;
+                head.k = elem[0];
+                head.v = elem[1];
+
+                rr.reqHeadersArr.push(head);
+                reqHeadId++;
+              });
+            }
+            else {
+              rr.reqHeadersArr.push({ id: 0 });
+            }
+
+            if (rr.resHeaders) {
+              var resHeads = Object.entries(rr.resHeaders);
+              var resHeadId = 0;
+              resHeads.forEach(function(elem){
+                var head = {};
+
+                head.id = resHeadId;
+                head.k = elem[0];
+                head.v = elem[1];
+
+                rr.resHeadersArr.push(head);
+                resHeadId++;
+              });
+            }
+            else {
+              rr.resHeadersArr.push({ id: 0 });
+            }
+
+            if (rr.queries) {
+              var qs = Object.entries(rr.queries);
+              var qId = 0;
+              qs.forEach(function(elem){
+                var q = {};
+
+                q.id = qId;
+                q.k = elem[0];
+                q.v = elem[1];
+
+                rr.queriesArr.push(q);
+                qId++;
+              });
+            }
+            else {
+              rr.queriesArr.push({ id: 0 });
+            }
+
+            $scope.servicevo.rawpairs.push(rr);
+          });
+      });
+
+      $scope.deleteRRPair = function(rr){
+        apiHistoryService.deleteRecordedLiveRRPair($scope.servicevo.id,rr._id).then(function(rsp){
+          $scope.servicevo.rawpairs.splice($scope.servicevo.rawpairs.indexOf(rr),1);
+        });
+      }
+
+      $scope.mergeRRPair = function(rr){
+        apiHistoryService.addRRPairToService($scope.servicevo.id,rr).then(function(result){
+          $scope.deleteRRPair(rr);
+        });
+      }
+
+     }])   
+    .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',"$location",
+        function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService,$location) {    
           
           $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -983,7 +1181,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
                 .then(function(response) {
                     var service = response.data;
-                    console.log(service);
                     $scope.servicevo = {
                       id: service._id,
                       sut: service.sut,
@@ -1035,7 +1232,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                       $scope.servicevo.failStatuses[0] = {'id': 0,val:''};      
                       $scope.servicevo.failStrings[0] = {'id': 0,val:''};
                     }
-                    console.log($scope.servicevo);
 
                   
                   $scope.myUser = authService.getUserInfo().username;
@@ -1217,6 +1413,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               });
             };
 
+            $scope.viewRecorded = function(){
+              $location.path("/update/" + $scope.servicevo.id+ "/recorded")
+            }
             $scope.removeRRPair = function(index) {
               $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
               $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);

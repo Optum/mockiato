@@ -1397,7 +1397,11 @@ function getServiceRecordedRRPairs(req,res){
   });
 }
 
-
+/**
+ * API call to take one recorded pair and merge it into RRPairs with no edit
+ * @param {*} req express req
+ * @param {*} res express rsp
+ */
 function mergeRecordedRRPair(req,res){
   var serviceId = req.params.id;
   var rrPairId = req.params.rrpairId;
@@ -1424,6 +1428,38 @@ function mergeRecordedRRPair(req,res){
         res.json({});
       }
     });
+  },(err)=>{
+    handleError(err,res,500);
+  });
+}
+
+/**
+ * API call to add an RRPair to a service
+ * @param {*} req express req
+ * @param {*} res express rsp
+ */
+function addRRPair(req,res){
+  var serviceId = req.params.id;
+  canUserEditServiceById(req.decoded,serviceId).then((bool)=>{
+    var rrPair = req.body;
+    Service.findById(serviceId,function(err,doc){
+      if(err)
+        handleError(err,res,500);
+      else if(doc){
+        mergeRRPairs(doc,{rrpairs:[rrPair]});
+        doc.save(function(err,newDoc){
+          if(err){
+            handleError(err,res,500);
+          }else{
+            res.json(newDoc);
+          }
+        })
+      }else{
+        res.status(404);
+        res.end();
+      }
+    });
+
   },(err)=>{
     handleError(err,res,500);
   });
@@ -1460,7 +1496,8 @@ module.exports = {
   deleteRecordedRRPair: deleteRecordedRRPair,
   canUserEditServiceById: canUserEditServiceById,
   getServiceRecordedRRPairs: getServiceRecordedRRPairs,
-  mergeRecordedRRPair: mergeRecordedRRPair
+  mergeRecordedRRPair: mergeRecordedRRPair,
+  addRRPair: addRRPair
 };
 
 

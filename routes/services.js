@@ -111,6 +111,9 @@ router.get('/:id/recorded',servCtrl.getServiceRecordedRRPairs);
 //Merge in recorded RR pair 
 router.patch('/:id/recorded/:rrpairId',servCtrl.mergeRecordedRRPair);
 
+//Add RRPair to service
+router.patch('/:id/rrpair',servCtrl.addRRPair);
+
 const rrpairs = require('./rrpairs');
 router.use(rrpairs);
 
