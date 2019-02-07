@@ -45,9 +45,15 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
                 }else{
                     doc.running = true;
                     doc.save(function(err,doc){
-                        rec.model = doc;
-                        syncWorkersToNewRecorder(rec);
-                        resolve(doc);
+                        if(err){
+                            reject(err);
+                        }else if(doc){                        
+                            rec.model = doc;
+                            syncWorkersToNewRecorder(rec);
+                            resolve(doc);
+                        }else{
+                            reject(new Error("doc save failed"));
+                        }
                     });
                 }
 
