@@ -994,9 +994,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
     }]) 
 
-     .controller("mergeRecordedController",['$scope','$routeParams','apiHistoryService','authService','$http',
-     function($scope,$routeParams,apiHistoryService,authService,$http){
+     .controller("mergeRecordedController",['$scope','$routeParams','apiHistoryService','authService','$http','$timeout',
+     function($scope,$routeParams,apiHistoryService,authService,$http,$timeout){
       //Get service + update info
+
+      
       apiHistoryService.getServiceById($routeParams.id).then(function(response){
         var service = response.data;
         $scope.servicevo = {
@@ -1102,83 +1104,93 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           else {
             $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
           }
-          service.liveInvocation.recordedRRPairs.forEach(function(rr){
-            rr.queriesArr = [];
-            rr.reqHeadersArr = [];
-            rr.resHeadersArr = [];
-            rr.method = rr.verb;
-            if (rr.payloadType === 'JSON') {
-              rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
-              rr.responsepayload = JSON.stringify(rr.resData, null, 4);
-
-              //Handle empty JSON object- stringify surrounds in "" 
-              if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
-                rr.responsepayload = rr.responsepayload.substring(1,3);
-              }
-            }
-            else {
-              rr.requestpayload = rr.reqData;
-              rr.responsepayload = rr.resData;
-            }
-
-            // map object literals to arrays for Angular view
-            if (rr.reqHeaders) {
-              var reqHeads = Object.entries(rr.reqHeaders);
-              var reqHeadId = 0;
-              reqHeads.forEach(function(elem){
-                var head = {};
-
-                head.id = reqHeadId;
-                head.k = elem[0];
-                head.v = elem[1];
-
-                rr.reqHeadersArr.push(head);
-                reqHeadId++;
-              });
-            }
-            else {
-              rr.reqHeadersArr.push({ id: 0 });
-            }
-
-            if (rr.resHeaders) {
-              var resHeads = Object.entries(rr.resHeaders);
-              var resHeadId = 0;
-              resHeads.forEach(function(elem){
-                var head = {};
-
-                head.id = resHeadId;
-                head.k = elem[0];
-                head.v = elem[1];
-
-                rr.resHeadersArr.push(head);
-                resHeadId++;
-              });
-            }
-            else {
-              rr.resHeadersArr.push({ id: 0 });
-            }
-
-            if (rr.queries) {
-              var qs = Object.entries(rr.queries);
-              var qId = 0;
-              qs.forEach(function(elem){
-                var q = {};
-
-                q.id = qId;
-                q.k = elem[0];
-                q.v = elem[1];
-
-                rr.queriesArr.push(q);
-                qId++;
-              });
-            }
-            else {
-              rr.queriesArr.push({ id: 0 });
-            }
-
-            $scope.servicevo.rawpairs.push(rr);
-          });
+          $scope.servicevo.rawpairs = processRRPairs(service.liveInvocation.recordedRRPairs);
       });
+
+      function processRRPairs(rrpairs){
+        var rrpairsRaw = [];
+        var rrid = 0;
+        rrpairs.forEach(function(rr){
+          rr.id = rrid++;
+          console.log(rr);
+          rr.queriesArr = [];
+          rr.reqHeadersArr = [];
+          rr.resHeadersArr = [];
+          rr.method = rr.verb;
+
+          if (rr.payloadType === 'JSON') {
+            rr.requestpayload = JSON.stringify(rr.reqData);
+            rr.responsepayload = JSON.stringify(rr.resData);
+
+            //Handle empty JSON object- stringify surrounds in "" 
+            if(rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\""){
+              rr.responsepayload = rr.responsepayload.substring(1,3);
+            }
+          }
+          else {
+            rr.requestpayload = rr.reqData;
+            rr.responsepayload = rr.resData;
+          }
+
+          // map object literals to arrays for Angular view
+          if (rr.reqHeaders) {
+            var reqHeads = Object.entries(rr.reqHeaders);
+            var reqHeadId = 0;
+            reqHeads.forEach(function(elem){
+              var head = {};
+
+              head.id = reqHeadId;
+              head.k = elem[0];
+              head.v = elem[1];
+
+              rr.reqHeadersArr.push(head);
+              reqHeadId++;
+            });
+          }
+          else {
+            rr.reqHeadersArr.push({ id: 0 });
+          }
+
+          if (rr.resHeaders) {
+            var resHeads = Object.entries(rr.resHeaders);
+            var resHeadId = 0;
+            resHeads.forEach(function(elem){
+              var head = {};
+
+              head.id = resHeadId;
+              head.k = elem[0];
+              head.v = elem[1];
+
+              rr.resHeadersArr.push(head);
+              resHeadId++;
+            });
+          }
+          else {
+            rr.resHeadersArr.push({ id: 0 });
+          }
+
+          if (rr.queries) {
+            var qs = Object.entries(rr.queries);
+            var qId = 0;
+            qs.forEach(function(elem){
+              var q = {};
+
+              q.id = qId;
+              q.k = elem[0];
+              q.v = elem[1];
+
+              rr.queriesArr.push(q);
+              qId++;
+            });
+          }
+          else {
+            rr.queriesArr.push({ id: 0 });
+          }
+
+          rrpairsRaw.push(rr);
+        });
+        return rrpairsRaw;
+      }
 
       $scope.deleteRRPair = function(rr){
         apiHistoryService.deleteRecordedLiveRRPair($scope.servicevo.id,rr._id).then(function(rsp){
@@ -1192,6 +1204,67 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         });
       }
 
+      $scope.addNewReqHeader = function(rr) {
+        var newItemNo = rr.reqHeadersArr.length;
+        rr.reqHeadersArr.push({'id':newItemNo});
+      };
+
+      $scope.removeReqHeader = function(rr) {
+        var lastItem = rr.reqHeadersArr.length-1;
+        rr.reqHeadersArr.splice(lastItem);
+      };
+
+      $scope.addNewResHeader = function(rr) {
+        var newItemNo = rr.resHeadersArr.length;
+        rr.resHeadersArr.push({'id':newItemNo});
+      };
+
+      $scope.removeResHeader = function(rr) {
+        var lastItem = rr.resHeadersArr.length-1;
+        rr.resHeadersArr.splice(lastItem);
+      };
+
+      $scope.addQuery = function(rr) {
+        var newItemNo = rr.queriesArr.length;
+        rr.queriesArr.push({'id':newItemNo});
+      };
+
+      $scope.removeQuery = function(rr) {
+        var lastItem = rr.queriesArr.length-1;
+        rr.queriesArr.splice(lastItem);
+      };
+      var timeoutPromise;
+      $scope.pollForRRPairs = function(){
+        timeoutPromise = $timeout(function(){
+
+          apiHistoryService.getRecordedLiveRRPairs($routeParams.id).then(function(result){
+            if(result.data.liveInvocation.recordedRRPairs){
+              var newRRPairs = processRRPairs(result.data.liveInvocation.recordedRRPairs);
+              console.log(newRRPairs);
+              var rrPairs = $scope.servicevo.rawpairs;
+              newRRPairs.forEach(function(rr){
+                var found = false;
+                rrPairs.forEach(function(rr2){
+                  if(rr._id == rr2._id){
+                    found = true;
+                  }
+                });
+                if(!found)
+                  rrPairs.push(rr);
+              });
+            }
+          });
+
+        $scope.pollForRRPairs();
+
+        
+        },3000);
+      };
+
+      $scope.$on("$destroy", function(){
+        $timeout.cancel(timeoutPromise);
+      });
+      $scope.pollForRRPairs();
      }])   
     .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',"$location",
         function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService,$location) {    

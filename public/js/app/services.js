@@ -144,6 +144,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               return $http.patch('/api/services/' + serviceId + '/rrpair?token=' + token, rr);
             }
 
+            this.getRecordedLiveRRPairs = function(serviceId){
+              return $http.get('/api/services/' + serviceId + '/recorded');
+            }
+
             //gets all recordings, unfiltered
             this.getRecordings = function(){
                 return $http.get('/api/recording');
