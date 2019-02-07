@@ -199,6 +199,7 @@ function stripRRPairForReq(rrpair) {
             myRRPair.reqData = JSON.parse(req.body);
         }catch(err){
             myRRPair.reqData = req.body;
+            myRRPair.payloadType = "PLAIN";
         }
     }
     else
@@ -266,6 +267,7 @@ function stripRRPairForReq(rrpair) {
                 myRRPair.resData = JSON.parse(body);
             }catch(err){
                 myRRPair.resData = body;
+                myRRPair.payloadType = "PLAIN";
             }
         }else{
             myRRPair.resData = body;
