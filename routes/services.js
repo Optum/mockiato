@@ -112,7 +112,7 @@ router.get('/:id/recorded',servCtrl.getServiceRecordedRRPairs);
 router.patch('/:id/recorded/:rrpairId',servCtrl.mergeRecordedRRPair);
 
 //Add RRPair to service
-router.patch('/:id/rrpair',servCtrl.addRRPair);
+router.patch('/:id/rrpairs',servCtrl.addRRPair);
 
 const rrpairs = require('./rrpairs');
 router.use(rrpairs);

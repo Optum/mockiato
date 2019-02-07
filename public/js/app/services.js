@@ -141,7 +141,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
             this.addRRPairToService = function(serviceId,rr){
               var token = authService.getUserInfo().token;
-              return $http.patch('/api/services/' + serviceId + '/rrpair?token=' + token, rr);
+              return $http.patch('/api/services/' + serviceId + '/rrpairs?token=' + token, rr);
             }
 
             this.getRecordedLiveRRPairs = function(serviceId){
