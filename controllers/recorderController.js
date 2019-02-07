@@ -201,11 +201,12 @@ function stripRRPairForReq(rrpair) {
     }
    
     if(myRRPair.payloadType == "JSON"){
-        //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+        //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user. However, save payload type as PLAIN
         try{
             myRRPair.reqData = JSON.parse(req.body);
         }catch(err){
             myRRPair.reqData = req.body;
+            myRRPair.payloadType = "PLAIN";
         }
     }
     else
@@ -268,7 +269,7 @@ function stripRRPairForReq(rrpair) {
         myRRPair.resStatus = remoteRsp.statusCode;
         if(myRRPair.payloadType == "JSON"){
 
-            //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+            //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user.However, save payload type as PLAIN
             try{
                 myRRPair.resData = JSON.parse(body);
             }catch(err){
@@ -276,6 +277,7 @@ function stripRRPairForReq(rrpair) {
             }
         }else{
             myRRPair.resData = body;
+            myRRPair.payloadType = "PLAIN";
         }
         myRRPair.resHeaders = remoteRsp.headers;
 
