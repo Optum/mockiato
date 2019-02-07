@@ -166,9 +166,9 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
               $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);              
               $('#genricMsg-dialog').modal('toggle');
-              $('#modal-btn-yes').on("click", function () {
+               $('#modal-btn-yes').on("click", function () {
                  apiHistoryService.saveServiceAsDraft(servicevo, false);
-              });
+               }); 
             }
           };
     }])
@@ -184,6 +184,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         $scope.servicevo.filterStatusCodes = [{id:0,v:''}];
         $scope.servicevo.filterStrings = [{id:0,v:''}];
         $scope.servicevo.filterHeaders = [{id:0,k:'',v:''}];
+        $scope.servicevo.currentUser = authService.getUserInfo().username;
 
         $scope.showRecorderHelp = function(){
           $('#recordingHelp-modal').modal('toggle');
@@ -444,7 +445,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             console.log(e);
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
             $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
-            $('#genricMsg-dialog').find('.modal-footer').text(ctrlConstants.PUB_FAIL_ERR_FOOTER);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           }
         };
@@ -939,6 +940,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                 });              
             }
@@ -961,6 +963,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.SERV_SAVE_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.SERV_INFO_NOT_FOUND);
+                    $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
               });
             };
@@ -1292,6 +1295,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               catch(e) {
                 $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                 $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
                 $('#genricMsg-dialog').modal('toggle');
               }
             };
@@ -1329,6 +1333,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
               });
             };
@@ -1351,6 +1356,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                   console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
               });
             $('#success-modal').modal('toggle');
@@ -1631,6 +1637,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                 });
             };
@@ -2200,6 +2207,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
                       $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                 });
             };
@@ -2372,7 +2380,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             });
         });
       };
-
     }]);
 
 
@@ -2414,8 +2421,8 @@ ctrl.constant("ctrlConstants", {
   "PUB_FAIL_SERV_SAVE_BODY" : " Please ensure your request / response pairs are well formed.                   " +
                                 "Do you want to save the Service Info as draft",
   "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Save as Draft</button><button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
- // "PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
+  //"PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
   "SERV_INFO_NOT_FOUND" : "Service Info not found",
   "SERV_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
-  "PUB_FAIL_ERR_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'  
+"BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
 });

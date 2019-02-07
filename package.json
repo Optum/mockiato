@@ -25,6 +25,7 @@
     "helmet": "^3.12.1",
     "http-string-parser": "0.0.6",
     "jsonwebtoken": "^8.4.0",
+    "libxmljs": "^0.19.5",
     "lodash": "^4.17.11",
     "mongoose": "^4.5.8",
     "morgan": "^1.9.1",
