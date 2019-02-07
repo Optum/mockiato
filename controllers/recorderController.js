@@ -19,21 +19,7 @@ var activeRecorders = {};
 var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator, rsp){
 
     var rec = this;
-    var memberArry = [creator];
-    /**sut and rrpairs mandatory in service table.
-     * putting dummy rrpairs. All values in this dummy rrpairs
-     * satisfy all validation for rest/soap services.
-     * Also deleting this rrpairs array when Recorder is ready.
-     */
-    if (process.env.MOCKIATO_ADMIN){
-        memberArry.unshift(process.env.MOCKIATO_ADMIN);
-      }
-    var rrpairs = [{
-        "verb": "POST",
-        "payloadType": "XML",
-        "reqData": "<dummyxml></dummyxml>",
-        "resData": "<dummyxml></dummyxml>",
-    }];  
+    
     //If passed ID for Recording document...
     if(arguments.length == 1){
         rec.model = new Promise(function(resolve,reject){
@@ -43,9 +29,15 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
                 }else{
                     doc.running = true;
                     doc.save(function(err,doc){
-                        rec.model = doc;
-                        syncWorkersToNewRecorder(rec);
-                        resolve(doc);
+                        if(err){
+                            reject(err);
+                        }else if(doc){                        
+                            rec.model = doc;
+                            syncWorkersToNewRecorder(rec);
+                            resolve(doc);
+                        }else{
+                            reject(new Error("doc save failed"));
+                        }
                     });
                 }
 
@@ -60,7 +52,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             this.path = "/" + this.path;     
     
         this.model = Recording.create({
-            sut : {name:sut, members:memberArry},
+            sut : {name:sut},
             path : path,
             remoteHost : remoteHost,
             protocolf : protocol || 'REST',
@@ -70,8 +62,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
                 basePath : path.substring(1),
                 sut:{name:sut, members:memberArry},
                 name:name,
-                type:protocol,
-                rrpairs:rrpairs
+                type:protocol
             },
             name: name,
             ssl:ssl,
