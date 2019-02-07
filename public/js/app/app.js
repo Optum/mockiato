@@ -66,21 +66,21 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
-            // .when("/showDraftService/:id/:frmWher", {
-            //     templateUrl: "partials/updateForm.html",
-            //     controller: "showDraftController",
-            //     resolve: {
-            //         auth: ['$q', 'authService', function($q, authService) {
-            //             var userInfo = authService.getUserInfo();
+            .when("/showDraftService/:id/:frmWher", {
+                templateUrl: "partials/updateForm.html",
+                controller: "showDraftController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
 
-            //             if (userInfo) {
-            //                 return $q.when(userInfo);
-            //             } else {
-            //                 return $q.reject({ authenticated: false });
-            //             }
-            //         }]
-            //     }
-            // })
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
 
             .when("/addTemplate", {
                 templateUrl: "partials/templateForm.html",
@@ -132,21 +132,21 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
-            // .when("/fetchDraftServices", {
-            //     templateUrl: "partials/draftServices.html",
-            //     controller: "draftServiceController",
-            //     resolve: {
-            //         auth: ['$q', 'authService', function($q, authService) {
-            //             var userInfo = authService.getUserInfo();
+            .when("/fetchDraftServices", {
+                templateUrl: "partials/draftServices.html",
+                controller: "draftServiceController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
 
-            //             if (userInfo) {
-            //                 return $q.when(userInfo);
-            //             } else {
-            //                 return $q.reject({ authenticated: false });
-            //             }
-            //         }]
-            //     }
-            // })
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
 
             .when("/selectService", {
                 templateUrl: "partials/selectService.html",

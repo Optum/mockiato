@@ -2,6 +2,7 @@ const requestNode = require('request');
 const Recording = require('../models/http/Recording');
 const routing = require('../routes/recording');
 const manager = require('../lib/pm2/manager');
+const constants = require('../lib/util/constants');
 
 var activeRecorders = {};
 
@@ -17,9 +18,10 @@ function escapeRegExp(string) {
   * This object is created whenever a new recording session is started. the recording router will route all appropriate transactions to this object 
   * Can instead pass an ID to a Recording document to 'name', and create an instance based on that recorder. 
   */
-var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters){
+var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator, rsp){
 
     var rec = this;
+    
     //If passed ID for Recording document...
     if(arguments.length == 1){
         rec.model = new Promise(function(resolve,reject){
@@ -29,9 +31,15 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
                 }else{
                     doc.running = true;
                     doc.save(function(err,doc){
-                        rec.model = doc;
-                        syncWorkersToNewRecorder(rec);
-                        resolve(doc);
+                        if(err){
+                            reject(err);
+                        }else if(doc){                        
+                            rec.model = doc;
+                            syncWorkersToNewRecorder(rec);
+                            resolve(doc);
+                        }else{
+                            reject(new Error("doc save failed"));
+                        }
                     });
                 }
 
@@ -51,10 +59,10 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             remoteHost : remoteHost,
             protocolf : protocol || 'REST',
             remotePort : remotePort || 80,
-            headerMask : headerMask || ['Content-Type'],
+            headerMask : headerMask || ['Content-Type'],  
             service : {
                 basePath : path.substring(1),
-                sut:{name:sut},
+                sut:{name:sut, members:memberArry},
                 name:name,
                 type:protocol
             },
@@ -62,6 +70,10 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             ssl:ssl,
             filters:filters
         },(function(err,newModel){
+            if(err) {
+                handleBackEndValidationsAndErrors(err, rsp);
+                return;
+            }
             this.model = newModel;
             
             if(!(this.model.headerMask))
@@ -70,8 +82,11 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             if(!(this.model.headerMask['Content-Type']))
                 this.model.headerMask.push('Content-Type');
 
-            this.model.save(function(err){
-                if(err) console.log(err);
+            this.model.save(function(err, recording){
+                if(err) {
+                    handleBackEndValidationsAndErrors(err, rsp);
+                    return;
+                }
             });
             syncWorkersToNewRecorder(this);
         }).bind(this));
@@ -79,8 +94,45 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
   
  };
 
-
-
+/**
+ * This function handle mongoose validation Errors or any other error at backend.
+ * @param {*} err err Object contains error from backEnd.
+ * @param {*} res response Object required to send response error code.
+ * @returns blank to stop further processing and sends 400(bad request from mongoose validations) or 500(internal error) to clients.
+ */
+/* To Do:- This below function is used in both serviceController and recorderController. We 
+           should keep this functiona at common place and should be call from ther at both places. */
+           function handleBackEndValidationsAndErrors(err, res) {
+            {
+              switch (err.name) {
+                case 'ValidationError':
+                LOOP1:
+                  for (let field in err.errors) {
+                    switch (err.errors[field].kind) {
+                      case 'required':
+                        handleError(err.errors[field].message, res, 400);
+                        break LOOP1;
+                      case 'user defined':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      case 'enum':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      case 'Number':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      default:
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                    }
+                  }
+                  break;
+                default:
+                  handleError(err, res, 500);
+              }
+              return;
+            }
+          }
 
 function registerRecorder(recorder){
     activeRecorders[recorder.model._id] = recorder;
@@ -412,8 +464,8 @@ function findDuplicateRecorder(sut,path){
  * @param {string} dataType  XML/JSON/etc
  * @param {array{string}} headerMask array of headers to save
  */
-function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters){
-    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters); 
+function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator, rsp){
+    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator, rsp); 
    
     return newRecorder;
 }
@@ -486,13 +538,23 @@ function deregisterRecorder(recorder){
  */
 function addRecorder(req,rsp){
     var body = req.body;
+    if (body.sut === undefined){
+        handleError(constants.REQUIRED_SUT_PARAMS_ERR, rsp, 400);
+        return;
+      }
+    if(body.basePath === undefined){
+        handleError(constants.REQUIRED_BASEPATH_ERR, rsp, 400);
+        return;
+    }
     if(body.type == "SOAP")
         body.payloadType = "XML";
     if(findDuplicateRecorder(body.sut,body.basePath)){
-        handleError("OverlappingRecorderPathError",rsp,500);
+        handleError(constants.DUP_RECORDER_PATH_BODY,rsp,400);
+        return;
     }
     else{
-        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask,body.ssl,body.filters);
+        //need to refactor this..just pasa body and not so much parameters to beginRecordingSession function.
+        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask,body.ssl,body.filters,body.creator, rsp);
         newRecorder.model.then(function(doc){
             rsp.json(doc);
         }).catch(function(err){
