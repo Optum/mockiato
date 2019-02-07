@@ -129,9 +129,10 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
-            .when("/fetchDeletedServices", {
+            .when("/fetchDeletedServices/:sut?/:user?", {
                 templateUrl: "partials/deletedServices.html",
                 controller: "deletedServiceController",
+                reloadOnUrl: false,
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
                         var userInfo = authService.getUserInfo();
