@@ -87,14 +87,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
                     handleBackEndValidationsAndErrors(err, rsp);
                     return;
                 }
-                //Deleting rrpairs from servie object from recording object.
-                Recording.update({_id:recording.id}, { $unset: { 'service.rrpairs': "" } })
-                .then(function(User){//do nothing
-                  }).catch(function(err){
-                    throw err;
-                  });
             });
-            
             syncWorkersToNewRecorder(this);
         }).bind(this));
     }
