@@ -8,8 +8,7 @@ const sutSchema = new mongoose.Schema({
   },
   members: {
     type : Array, 
-    "default" : [],
-    required: [true, constants.REQUIRED_SUT_MEMBERS_ERR]
+    default : []
   }
 });
 
