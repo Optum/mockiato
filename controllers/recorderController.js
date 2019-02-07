@@ -93,7 +93,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
 
             this.model.save(function(err, recording){
                 if(err) {
-                    handleBackEndValidationsAndErrors(err, res);
+                    handleBackEndValidationsAndErrors(err, rsp);
                     return;
                 }
                 //Deleting rrpairs from servie object from recording object.
