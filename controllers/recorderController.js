@@ -110,42 +110,45 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
   
  };
 
-
- /**
+/**
  * This function handle mongoose validation Errors or any other error at backend.
  * @param {*} err err Object contains error from backEnd.
  * @param {*} res response Object required to send response error code.
  * @returns blank to stop further processing and sends 400(bad request from mongoose validations) or 500(internal error) to clients.
- * 
  */
-/* To Do:- This below function is also in serviceController.js We should keep this functiona at common 
-place and should be call from every where. */
-function handleBackEndValidationsAndErrors(err, res) {
-    {
-      switch (err.name) {
-        case 'ValidationError':
-        LOOP1:
-          for (let field in err.errors) {
-            switch (err.errors[field].kind) {
-              case 'required':
-                handleError(err.errors[field].message, res, 400);
-                break LOOP1;
-              case 'user defined':
-              handleError(err.errors[field].message, res, 400);
-              break LOOP1;
-              case 'enum':
-              handleError(err.errors[field].message, res, 400);
-              break LOOP1;
+/* To Do:- This below function is used in both serviceController and recorderController. We 
+           should keep this functiona at common place and should be call from ther at both places. */
+           function handleBackEndValidationsAndErrors(err, res) {
+            {
+              switch (err.name) {
+                case 'ValidationError':
+                LOOP1:
+                  for (let field in err.errors) {
+                    switch (err.errors[field].kind) {
+                      case 'required':
+                        handleError(err.errors[field].message, res, 400);
+                        break LOOP1;
+                      case 'user defined':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      case 'enum':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      case 'Number':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      default:
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                    }
+                  }
+                  break;
+                default:
+                  handleError(err, res, 500);
+              }
+              return;
             }
           }
-          break;
-        default:
-          handleError(err, res, 500);
-      }
-      return;
-    }
-  }
-
 
 function registerRecorder(recorder){
     activeRecorders[recorder.model._id] = recorder;
