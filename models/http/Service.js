@@ -27,8 +27,8 @@ const serviceSchema = new mongoose.Schema({
   },
   matchTemplates: [mongoose.Schema.Types.Mixed],
   rrpairs: {
-    type: [RRPair.schema],
-    required: [true, constants.REQUIRED_RRPAIRS_ERR]
+    type: [RRPair.schema]
+    //required: [true, constants.REQUIRED_RRPAIRS_ERR]
   },
   delay: {
     // force integer only
