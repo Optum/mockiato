@@ -15,6 +15,60 @@ const unzip = require('unzip2');
 const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
+const systemController = require('./systemController');
+const constants = require('../lib/util/constants');
+
+/**
+ * Wrapper function for (MQ)Service.create. If req is provided, will also check against current logged in user's permissions first. 
+ * @param {object} serv An object containing the info to create a service
+ * @param {*} req Express request. 
+ * @return A promise from creating the service. Resolves to the new service. Rejects with error from mongoose OR error from lack of group permission.
+ */
+function createService(serv,req){
+  return new Promise(function(resolve,reject){
+    if(req){
+      var user = req.decoded;
+      serv.lastUpdateUser = user;
+      var authed = false;
+      
+      //Get our system
+      systemController.getSystemIfMember(user.uid,serv.sut.name).exec(function(err,system){
+        if(err){
+          reject(err);
+        }else if(system){
+          serv.sut = system; //Make sure service has full system info, including proper ID!
+          performCreate();
+        }else{
+          reject(new Error(constants.USER_NOT_AUTHORIZED_ERR));
+        }
+      });
+
+    }else{
+      performCreate();
+    }
+    function performCreate(){
+      if(serv.type == "MQ"){
+        MQService.create(serv,function(err,service){
+          if(err)
+            reject(err);
+          else
+            resolve(service);
+        });
+      }else{
+        Service.create(serv,function(err,service){
+          if(err)
+            reject(err);
+          else 
+            resolve(service);
+        });
+      }
+    }
+  
+    
+
+  });
+  
+}
 
 /**
  * Helper function for search. Trims down an HTTP service for return, and filters + trims rrpairs. 
@@ -491,20 +545,20 @@ function searchDuplicate(service, next) {
     basePath: service.basePath
   };
 
-  const query = {
+  const dupCheckQuery = {
     name: service.name,
     basePath: service.basePath
   };
 
-  Service.findOne(query2ServDiffNmSmBP, function (err, sameNmDupBP) {
+  Service.findOne(query2ServDiffNmSmBP, function (err, diffNmSameBP) {
     if (err) {
       handleError(err, res, 500);
       return;
     }
-    else if (sameNmDupBP)
+    else if (diffNmSameBP)
       next({ twoServDiffNmSmBP: true });
     else {
-      Service.findOne(query, function (err, duplicate) {
+      Service.findOne(dupCheckQuery, function (err, duplicate) {
         if (err) {
           handleError(err, res, 500);
           return;
@@ -532,7 +586,7 @@ function stripRRPair(rrpair) {
 
 // function to merge req / res pairs of duplicate services
 function mergeRRPairs(original, second) {
-  for (let rrpair2 of second.rrpairs) {
+    for (let rrpair2 of second.rrpairs) {
     let hasAlready = false;
     let rr2 = stripRRPair(new RRPair(rrpair2));
 
@@ -583,8 +637,21 @@ function syncWorkers(service, action) {
 }
 
 function addService(req, res) {
-  const type = req.body.type;
+  /* validating sut here because code doesn't reach to mongoose validation check. we are using sut.name to calculate base path before mongoose 
+   validations. even if sut present but name or members not present in req data. unautorize error message is thrown which is not correct.*/
+   if (!req.body.sut || !req.body.sut.name){
+    handleError(constants.REQUIRED_SUT_PARAMS_ERR, res, 400);
+    return;
+  }
 
+  /* This check is mandatory for basePath validation because basePath is created using groupName. so mongoose validation will
+   not throw an error. This is the case when user may forget to put mandatory field 'basePath' in request for REST/SOAP type service.*/
+  if (!req.body.basePath && (req.body.type === 'REST' || req.body.type === 'SOAP')){
+    handleError(constants.REQUIRED_BASEPATH_ERR, res, 400);
+    return;
+  }
+
+  const type = req.body.type;
   let serv  = {
     sut: req.body.sut,
     user: req.decoded,
@@ -594,8 +661,7 @@ function addService(req, res) {
     delayMax: req.body.delayMax,
     basePath: '/' + req.body.sut.name + req.body.basePath,
     matchTemplates: req.body.matchTemplates,
-    rrpairs: req.body.rrpairs,
-    lastUpdateUser: req.decoded
+    rrpairs: req.body.rrpairs
   };
 
   //Save req and res data string cache
@@ -615,15 +681,18 @@ function addService(req, res) {
   if (type === 'MQ') {
     serv.connInfo = req.body.connInfo;
     
-    MQService.create(serv,
-      // handler for db call
-      function(err, service) {
-        if (err) {
-          handleError(err, res, 500);
-          return;
-        }
-        // respond with the newly created resource
+    createService(serv,req).then(
+      function(service){
         res.json(service);
+      },
+      // handler for db call
+      function(err) {
+        if (err) {
+        handleBackEndValidationsAndErrors(err, res);
+        return;
+      }
+        // respond with the newly created resource
+       
     });
   }
   else {
@@ -632,39 +701,87 @@ function addService(req, res) {
 
     searchDuplicate(serv, function(duplicate) {
       if (duplicate && duplicate.twoServDiffNmSmBP){
-        res.json({"error":"twoSeviceDiffNameSameBasePath"});
+        handleError(constants.SERVICES_DIFFNAME_SAMEBASEPATH_ERR, res, 400);
         return;
       }
-      else if (duplicate) { 
-        // merge services
-        mergeRRPairs(duplicate, serv);
-        // save merged service
-        duplicate.save(function(err, newService) {
-          if (err) {
-            handleError(err, res, 500);
+      else if (duplicate) {
+        //only merge if both service type is same othwise throw error 409.
+        if(duplicate.type == serv.type){
+          if(!serv.rrpairs){
+            handleError(constants.REQUST_NO_RRPAIR, res, 400);
             return;
           }
-          res.json(newService);
-          
-          syncWorkers(newService, 'register');
-        });
+          // merge services
+          mergeRRPairs(duplicate, serv);
+          // save merged service
+          duplicate.save(function(err, newService) {
+            if (err) {
+            handleBackEndValidationsAndErrors(err, res);
+            return;
+          }
+            res.json(newService);
+            syncWorkers(newService, 'register');
+          });
+        }else{
+          handleError(constants.DIFF_TYPE_SERV_ERR, res, 409);
+          return;
+        }
       }
       else {
-        Service.create(serv,
-        function(err, service) {
-          if (err) {
-            handleError(err, res, 500);
+        createService(serv, req).then(
+          function (service) {
+            res.json(service);
+
+            syncWorkers(service, 'register');
+          }, function (err) {
+            handleBackEndValidationsAndErrors(err, res);
             return;
           }
-          res.json(service);
-  
-          syncWorkers(service, 'register');
-        });
+        );
       }
     });
   }
 }
 
+/**
+ * This function handle mongoose validation Errors or any other error at backend.
+ * @param {*} err err Object contains error from backEnd.
+ * @param {*} res response Object required to send response error code.
+ * @returns blank to stop further processing and sends 400(bad request from mongoose validations) or 500(internal error) to clients.
+ */
+/* To Do:- This below function is used in both serviceController and recorderController. We 
+           should keep this functiona at common place and should be call from ther at both places. */
+function handleBackEndValidationsAndErrors(err, res) {
+  {
+    switch (err.name) {
+      case 'ValidationError':
+      LOOP1:
+        for (let field in err.errors) {
+          switch (err.errors[field].kind) {
+            case 'required':
+              handleError(err.errors[field].message, res, 400);
+              break LOOP1;
+            case 'user defined':
+            handleError(err.errors[field].message, res, 400);
+            break LOOP1;
+            case 'enum':
+            handleError(err.errors[field].message, res, 400);
+            break LOOP1;
+            case 'Number':
+            handleError(err.errors[field].message, res, 400);
+            break LOOP1;
+            default:
+            handleError(err.errors[field].message, res, 400);
+            break LOOP1;
+          }
+        }
+        break;
+      default:
+        handleError(err, res, 500);
+    }
+    return;
+  }
+}
 
 function addServiceAsDraft(req, res) {
   const type = req.body.type;
@@ -721,8 +838,6 @@ function addServiceAsDraft(req, res) {
         return;
       }
       res.json(service);
-
-      syncWorkers(service, 'register');
     });
   }  
 }
@@ -776,7 +891,7 @@ function updateService(req, res) {
       // save updated service in DB
       service.save(function (err, newService) {
         if (err) {
-          handleError(err, res, 500);
+          handleBackEndValidationsAndErrors(err, res);
           return;
         }
 
@@ -793,8 +908,12 @@ function updateService(req, res) {
           return;
         }
         if(draftservice.service){
-          addService(req, res);
+          var reg = new RegExp("/" + draftservice.service.sut.name,"i");
+          var basePath = draftservice.service.basePath.replace(reg,"");
+          req.body.basePath = basePath;
         }
+        addService(req, res);         
+                 
       });
     }
   });
@@ -982,7 +1101,8 @@ function restoreService(req, res) {
         rrpairs: archive.service.rrpairs,
         lastUpdateUser: archive.service.lastUpdateUser
       };
-      Service.create(newService, function (err, callback) {
+      createService(newService,req).then(function(service){},
+        function (err) {
         if (err) {
           handleError(err, res, 500);
         }
@@ -1000,7 +1120,7 @@ function restoreService(req, res) {
           rrpairs: archive.mqservice.rrpairs,
           connInfo: archive.mqservice.connInfo
         };
-        MQService.create(newMQService, function (err, callback) {
+        createService(newMQService,req).then( function(serv) {},function (err) {
           if (err) {
             handleError(err, res, 500);
           }
@@ -1090,44 +1210,60 @@ function publishExtractedRRPairs(req, res) {
     serv.user = req.decoded;
 
     if (type === 'MQ') {      
-      MQService.create(serv,
+      createService(serv,req).then(
+        function(service){
+          res.json(service);
+        },
         // handler for db call
-        function(err, service) {
+        function(err) {
           if (err) {
-            handleError(err, res, 500);
+            handleBackEndValidationsAndErrors(err, res);
             return;
           }
           // respond with the newly created resource
-          res.json(service);
+         
       });
     }
     else {
       searchDuplicate(serv, function(duplicate) {
         if (duplicate && duplicate.twoServDiffNmSmBP){
-          res.json({"error":"twoSeviceDiffNameSameBasePath"});
+          handleError(constants.SERVICES_DIFFNAME_SAMEBASEPATH_ERR, res, 400);
           return;
         }
-        else if (duplicate) { 
+        else if (duplicate) {
+          //only merge if both service type is same othwise do nothing.
+        if(duplicate.type == serv.type){ 
+          if(!serv.rrpairs){
+            handleError(constants.REQUST_NO_RRPAIR, res, 400);
+            return;
+          }
           // merge services
           mergeRRPairs(duplicate, serv);
           // save merged service
           duplicate.save(function(err, newService) {
             if (err) {
-              handleError(err, res, 500);
+              handleBackEndValidationsAndErrors(err, res);
               return;
             }
             res.json(newService);
-            
             syncWorkers(newService, 'register');
           });
+        }else{
+          handleError(constants.DIFF_TYPE_SERV_ERR, res, 400);
+          return;
         }
+      }
         else {
-          Service.create(serv, function (err, service) {
+          createService(serv,req).then( 
+            function(service){
+              res.json(service);
+              syncWorkers(service , 'register');
+            },
+            function (err, service) {
             if (err) {
-              handleError(err, res, 500);
+              handleBackEndValidationsAndErrors(err, res);
+              return;
             }
-            res.json(service);
-            syncWorkers(service , 'register');
           });
         }
       });
@@ -1191,29 +1327,41 @@ function publishUploadedSpec(req, res) {
 
     searchDuplicate(serv, function(duplicate) {
       if (duplicate && duplicate.twoServDiffNmSmBP){
-        res.json({"error":"twoSeviceDiffNameSameBasePath"});
+        handleError(constants.SERVICES_DIFFNAME_SAMEBASEPATH_ERR, res, 400);
         return;
       }
-      else if (duplicate) { 
+      else if (duplicate) {
+        //only merge if both service type is same othwise do nothing.
+        if(duplicate.type == serv.type){ 
+          if(!serv.rrpairs){
+            handleError(constants.REQUST_NO_RRPAIR, res, 400);
+            return;
+          }
         // merge services
         mergeRRPairs(duplicate, serv);
         // save merged service
         duplicate.save(function(err, newService) {
           if (err) {
-            handleError(err, res, 500);
+            handleBackEndValidationsAndErrors(err, res);
             return;
           }
           res.json(newService);
-          
-          syncWorkers(newService, 'register');
+          syncWorkers(newService, 'register');  
         });
+      }else{
+        handleError(constants.DIFF_TYPE_SERV_ERR, res, 400);
+        return;
       }
+    }
       else {
-        Service.create(serv, function (err, service) {
-          if (err) handleError(err, res, 500);
-    
+        createService(serv,req).then( function(service){
           res.json(service);
           syncWorkers(service, 'register');
+        },function (err) {
+          if (err) {
+            handleBackEndValidationsAndErrors(err, res);
+            return;
+          }
         });
       }
     });

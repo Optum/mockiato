@@ -2,6 +2,7 @@ const requestNode = require('request');
 const Recording = require('../models/http/Recording');
 const routing = require('../routes/recording');
 const manager = require('../lib/pm2/manager');
+const constants = require('../lib/util/constants');
 
 var activeRecorders = {};
 
@@ -15,45 +16,123 @@ function escapeRegExp(string) {
   * Recorder object
   *
   * This object is created whenever a new recording session is started. the recording router will route all appropriate transactions to this object 
+  * Can instead pass an ID to a Recording document to 'name', and create an instance based on that recorder. 
   */
-var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl){
-     this.path = path;
-     
-     //Ensure path starts with /
-    if(this.path.substring(0,1) != "/")
-        this.path = "/" + this.path;     
-   
-    this.model = Recording.create({
-        sut : {name:sut},
-        path : path,
-        remoteHost : remoteHost,
-        protocol : protocol || 'REST',
-        remotePort : remotePort || 80,
-        headerMask : headerMask || ['Content-Type'],
-        service : {
-            basePath : path.substring(1),
-            sut:{name:sut},
-            name:name,
-            type:protocol
-        },
-        name: name,
-        ssl:ssl
-    },(function(err,newModel){
-        this.model = newModel;
-        
-        if(!(this.model.headerMask))
-            this.model.headerMask = [];
-        
-        if(!(this.model.headerMask['Content-Type']))
-            this.model.headerMask.push('Content-Type');
+var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator, rsp){
 
-        this.model.save(function(err){
-            if(err) console.log(err);
+    var rec = this;
+    
+    //If passed ID for Recording document...
+    if(arguments.length == 1){
+        rec.model = new Promise(function(resolve,reject){
+            Recording.findById(name,function(err,doc){
+                if(err){
+                    reject(err);
+                }else{
+                    doc.running = true;
+                    doc.save(function(err,doc){
+                        if(err){
+                            reject(err);
+                        }else if(doc){                        
+                            rec.model = doc;
+                            syncWorkersToNewRecorder(rec);
+                            resolve(doc);
+                        }else{
+                            reject(new Error("doc save failed"));
+                        }
+                    });
+                }
+
+            });
         });
-        syncWorkersToNewRecorder(this);
-    }).bind(this));
+    }else{
+
+        this.path = path;
+        
+        //Ensure path starts with /
+        if(this.path.substring(0,1) != "/")
+            this.path = "/" + this.path;     
+    
+        this.model = Recording.create({
+            sut : {name:sut},
+            path : path,
+            remoteHost : remoteHost,
+            protocolf : protocol || 'REST',
+            remotePort : remotePort || 80,
+            headerMask : headerMask || ['Content-Type'],  
+            service : {
+                basePath : path.substring(1),
+                sut:{name:sut, members:memberArry},
+                name:name,
+                type:protocol
+            },
+            name: name,
+            ssl:ssl,
+            filters:filters
+        },(function(err,newModel){
+            if(err) {
+                handleBackEndValidationsAndErrors(err, rsp);
+                return;
+            }
+            this.model = newModel;
+            
+            if(!(this.model.headerMask))
+                this.model.headerMask = [];
+            
+            if(!(this.model.headerMask['Content-Type']))
+                this.model.headerMask.push('Content-Type');
+
+            this.model.save(function(err, recording){
+                if(err) {
+                    handleBackEndValidationsAndErrors(err, rsp);
+                    return;
+                }
+            });
+            syncWorkersToNewRecorder(this);
+        }).bind(this));
+    }
   
  };
+
+/**
+ * This function handle mongoose validation Errors or any other error at backend.
+ * @param {*} err err Object contains error from backEnd.
+ * @param {*} res response Object required to send response error code.
+ * @returns blank to stop further processing and sends 400(bad request from mongoose validations) or 500(internal error) to clients.
+ */
+/* To Do:- This below function is used in both serviceController and recorderController. We 
+           should keep this functiona at common place and should be call from ther at both places. */
+           function handleBackEndValidationsAndErrors(err, res) {
+            {
+              switch (err.name) {
+                case 'ValidationError':
+                LOOP1:
+                  for (let field in err.errors) {
+                    switch (err.errors[field].kind) {
+                      case 'required':
+                        handleError(err.errors[field].message, res, 400);
+                        break LOOP1;
+                      case 'user defined':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      case 'enum':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      case 'Number':
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                      default:
+                      handleError(err.errors[field].message, res, 400);
+                      break LOOP1;
+                    }
+                  }
+                  break;
+                default:
+                  handleError(err, res, 500);
+              }
+              return;
+            }
+          }
 
 function registerRecorder(recorder){
     activeRecorders[recorder.model._id] = recorder;
@@ -113,6 +192,7 @@ function stripRRPairForReq(rrpair) {
             myRRPair.reqData = JSON.parse(req.body);
         }catch(err){
             myRRPair.reqData = req.body;
+            myRRPair.payloadType = "PLAIN";
         }
     }
     else
@@ -180,6 +260,7 @@ function stripRRPairForReq(rrpair) {
                 myRRPair.resData = JSON.parse(body);
             }catch(err){
                 myRRPair.resData = body;
+                myRRPair.payloadType = "PLAIN";
             }
         }else{
             myRRPair.resData = body;
@@ -197,8 +278,46 @@ function stripRRPairForReq(rrpair) {
                 break;
             }
         }
+
+        
+        //Check our filters
+        var filters = this.model.filters;
+        var addThisRRPair = true;
+        var filteredReason = null;
+        if(filters && filters.enabled && body){
+            if(filters.bodyStrings.length){
+                for(let i = 0; i < filters.bodyStrings.length; i++){
+                    if(body.includes(filters.bodyStrings[i])){
+                        addThisRRPair = false;
+                        filteredReason = 'Found string "' + filters.bodyStrings[i] + '" in response body.'
+                        break;
+                    }
+                }
+            }
+            if(addThisRRPair && filters.statuses.length){
+                for(let i = 0; i < filters.statuses.length; i++){
+                    if(remoteRsp.statusCode == filters.statuses[i]){
+                        addThisRRPair = false;
+                        filteredReason = 'Found status code "' + filters.statuses[i] + '" in response.'
+                        break;
+                    }
+                }
+            }
+            if(addThisRRPair && filters.headers.length){
+                for(let i = 0; i < filters.headers.length; i++){
+                    let header = filters.headers[i];
+                    if(remoteRsp.headers[header.key] && remoteRsp.headers[header.key] == header.value){
+                        addThisRRPair = false;
+                        filteredReason = 'Found header "' + header.key + '" with value "' + header.value + '" in response headers.'
+                        break;
+                    }
+                }
+            }
+        }
+
+
         //Push RRPair to model, then update our local model  
-        if(!duplicate){
+        if(!duplicate && addThisRRPair){
             Recording.update({_id : this.model._id} ,
                 {$push: 
                     {"service.rrpairs":myRRPair}
@@ -211,6 +330,11 @@ function stripRRPairForReq(rrpair) {
         //Send back response to user
         rsp.status(remoteRsp.statusCode);
         var headers = remoteRsp.headers;
+
+        //Add reason for filtered, if filtered
+        if(!addThisRRPair && filteredReason){
+            headers['_mockiato-filtered-reason'] = filteredReason;
+        }
         if(headers['content-type']){
             rsp.type(headers['content-type'])
             delete headers['content-type'];
@@ -269,6 +393,28 @@ function getRecordingById(req,rsp){
 }
 
 /**
+ * API call to get a specific recording based on SUT
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
+function getRecordingBySystem(req,rsp){
+    let allRecorders = [];
+    
+      const query = { 'sut.name': req.params.name };
+    
+    Recording.find(query,function(err,docs){
+        if(err){
+            handleError(err,rsp,500);
+            return;
+        }
+        console.log("Found Recorder with SUT",docs);
+        allRecorders = docs;
+       return rsp.json(allRecorders);
+        
+    });
+}
+
+/**
  * API call to get RR pairs for a recorder after a certain index, for use in active update/polling
  * @param {*} req  express req
  * @param {*} rsp  express rsp
@@ -320,8 +466,8 @@ function findDuplicateRecorder(sut,path){
  * @param {string} dataType  XML/JSON/etc
  * @param {array{string}} headerMask array of headers to save
  */
-function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl){
-    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl); 
+function beginRecordingSession(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator, rsp){
+    var newRecorder = new Recorder(label,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator, rsp); 
    
     return newRecorder;
 }
@@ -356,6 +502,28 @@ function removeRecorder(req,rsp){
    
 }
 
+/**
+ * API call to stop a recorder based on ID.
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
+function stopRecorder(req,rsp){
+    var recorder = activeRecorders[req.params.id];
+    if(recorder){
+        recorder.model.running = false;
+        recorder.model.save(function(err,doc){
+            rsp.status(200);
+            rsp.json(doc);
+            deregisterRecorder(recorder);
+            
+        });
+        
+    }else{
+        handleError(new Error("No recorder found for that ID or recorder is already stopped."),rsp,404);
+    }
+   
+}
+
 function deregisterRecorder(recorder){
     routing.unbindRecorder(recorder);
     if(activeRecorders[recorder.model._id])
@@ -372,13 +540,23 @@ function deregisterRecorder(recorder){
  */
 function addRecorder(req,rsp){
     var body = req.body;
+    if (body.sut === undefined){
+        handleError(constants.REQUIRED_SUT_PARAMS_ERR, rsp, 400);
+        return;
+      }
+    if(body.basePath === undefined){
+        handleError(constants.REQUIRED_BASEPATH_ERR, rsp, 400);
+        return;
+    }
     if(body.type == "SOAP")
         body.payloadType = "XML";
     if(findDuplicateRecorder(body.sut,body.basePath)){
-        handleError("OverlappingRecorderPathError",rsp,500);
+        handleError(constants.DUP_RECORDER_PATH_BODY,rsp,400);
+        return;
     }
     else{
-        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask,body.ssl);
+        //need to refactor this..just pasa body and not so much parameters to beginRecordingSession function.
+        var newRecorder = beginRecordingSession(body.name,body.basePath,body.sut,body.remoteHost,body.remotePort,body.type,body.headerMask,body.ssl,body.filters,body.creator, rsp);
         newRecorder.model.then(function(doc){
             rsp.json(doc);
         }).catch(function(err){
@@ -386,6 +564,29 @@ function addRecorder(req,rsp){
         });
     }
     
+}
+
+
+ /**
+  * Starts an existing Recording into a Recorder object. 
+  * @param {string} recorderId 
+  * @return {Recorder} recorder object instantiated from Recording doc
+  */
+  function startRecorderFromId(recorderId){
+    return new Recorder(recorderId);
+}
+
+/**
+ * API call to start a recorder. :id is the id to a Recording document.  Starts up a Recorder based on the Recording doc. 
+ * @param {*} req  express req
+ * @param {*} rsp  express rsp
+ */
+function startRecorder(req,rsp){
+    startRecorderFromId(req.params.id).model.then(function(doc){
+        rsp.json(doc);
+    }).catch(function(err){
+        handleError(err,rsp,500);
+    });
 }
 
 
@@ -398,6 +599,20 @@ function addRecorder(req,rsp){
     getRecorderRRPairsAfter : getRecorderRRPairsAfter,
     removeRecorder: removeRecorder,
     registerRecorder: registerRecorder,
-    deregisterRecorder: deregisterRecorder
+    deregisterRecorder: deregisterRecorder,
+    startRecorder : startRecorder,
+    stopRecorder : stopRecorder,
+    getRecordingBySystem : getRecordingBySystem
   };
   
+
+//On startup, start all recorders that should be active.
+Recording.find({running:true},function(err,docs){
+    if(docs){
+        docs.forEach(function(doc){
+            new Recorder(doc);
+        });
+    }else if(err){
+        debug('error initializing recorders');
+    }
+});

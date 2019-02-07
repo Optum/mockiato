@@ -1,6 +1,7 @@
 const System = require('../models/common/System');
 const debug  = require('debug')('default');
 const _ = require('lodash/array');
+const constants = require('../lib/util/constants');
 
 function getSystems(req, res) {
   System.find({}, function(err, systems)	{
@@ -53,6 +54,17 @@ function updateGroup(req, res){
 }
 
 function addSystem(req, res) {
+
+  /**
+   * In case user import template with no sut key(by mistake) in .json file. In this case req.body may be empty.
+   * It is handled in service creation using validation of mandatory fields and showing proper error message on UI.
+   * So it needs to handle here. Otherwise application will not show what is problem with template.
+   */
+  if(!req.body) {
+    res.json(constants.SUT_NOT_PRESENT_ERR_MSG); 
+    return;
+  }
+
   if (!req.body.members) req.body.members = [];
 
   //adds super user to all groups created
@@ -112,10 +124,32 @@ function delSystem(req, res) {
   });
 }
 
+/**
+ * Helper function to get all SUTs this user is a member of
+ * @param {string} user uid for user of interest
+ * @return mongoose query
+ */
+function findSystemsForUser(user){
+  return System.find({members:user});
+}
+
+
+/**
+ * Get a system if and ONLY if the given user is a member of that system. Otherwise return null. 
+ * @param {string} user User uid
+ * @param {string} system System name
+ * @return mongoose query
+ */
+function getSystemIfMember(user,system){
+  return System.findOne({members:user,name:system});
+}
+
 module.exports = {
   getSystems: getSystems,
   addSystem: addSystem,
   delSystem: delSystem,
   getOneSystem: getOneSystem,
-  updateGroup: updateGroup
+  updateGroup: updateGroup,
+  findSystemsForUser: findSystemsForUser,
+  getSystemIfMember : getSystemIfMember
 };
