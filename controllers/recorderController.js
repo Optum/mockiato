@@ -118,7 +118,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
  * @returns blank to stop further processing and sends 400(bad request from mongoose validations) or 500(internal error) to clients.
  * 
  */
-/* To Do This below function is also in serviceController.js We should keep this functiona at common 
+/* To Do:- This below function is also in serviceController.js We should keep this functiona at common 
 place and should be call from every where. */
 function handleBackEndValidationsAndErrors(err, res) {
     {

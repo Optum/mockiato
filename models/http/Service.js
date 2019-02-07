@@ -34,15 +34,27 @@ const serviceSchema = new mongoose.Schema({
     // force integer only
     type: Number,
     default: 0,
-    get: function(v) { return Math.round(v); },
-    set: function(v) { return Math.round(v); }
+    validate: {
+      validator: function (v) {
+        if (Number.isInteger(v) && v >= 0)
+          return true;
+          else return false;
+      },
+      message: '{VALUE}'+constants.NOT_VALID_INTEGER+'({PATH}).'
+    }
   },
   delayMax: {
     // force integer only
     type: Number,
     default: 0,
-    get: function(v) { return Math.round(v); },
-    set: function(v) { return Math.round(v); }
+    validate: {
+      validator: function (v) {
+        if (Number.isInteger(v) && v >= 0)
+          return true;
+          else return false;
+      },
+      message: '{VALUE}'+constants.NOT_VALID_INTEGER+'({PATH}).'
+    }
   },
   txnCount: {
     type: Number,

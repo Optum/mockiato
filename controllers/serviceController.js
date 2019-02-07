@@ -764,6 +764,10 @@ function handleBackEndValidationsAndErrors(err, res) {
             break LOOP1;
             case 'enum':
             handleError(err.errors[field].message, res, 400);
+            case 'Number':
+            handleError(err.errors[field].message, res, 400);
+            default:
+            handleError(err.errors[field].message, res, 400);
             break LOOP1;
           }
         }
