@@ -77,6 +77,7 @@ function createRRPairFromReqRes(req,res,service){
             myRRPair.reqData = JSON.parse(req.body);
         }catch(err){
             myRRPair.reqData = req.body;
+            myRRPair.payloadType = "PLAIN";
         }
     }
     else
@@ -103,6 +104,7 @@ function createRRPairFromReqRes(req,res,service){
             myRRPair.resData = JSON.parse(res.body);
         }catch(err){
             myRRPair.resData = res.body;
+            myRRPair.payloadType = "PLAIN";
         }
     }else{
         myRRPair.resData = res.body;
