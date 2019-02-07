@@ -994,8 +994,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
 
     }]) 
 
-     .controller("mergeRecordedController",['$scope','$routeParams','apiHistoryService','authService','$http','$timeout',
-     function($scope,$routeParams,apiHistoryService,authService,$http,$timeout){
+     .controller("mergeRecordedController",['$scope','$routeParams','apiHistoryService','authService','$http','$timeout','ctrlConstants',
+     function($scope,$routeParams,apiHistoryService,authService,$http,$timeout,ctrlConstants){
       //Get service + update info
 
       
@@ -1193,14 +1193,30 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       }
 
       $scope.deleteRRPair = function(rr){
+
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
+        $('#modal-btn-yes').on("click", function () {
+          $scope.performDelete(rr);
+        });
+      }
+      $scope.performDelete = function(rr){
         apiHistoryService.deleteRecordedLiveRRPair($scope.servicevo.id,rr._id).then(function(rsp){
           $scope.servicevo.rawpairs.splice($scope.servicevo.rawpairs.indexOf(rr),1);
         });
       }
 
       $scope.mergeRRPair = function(rr){
-        apiHistoryService.addRRPairToService($scope.servicevo.id,rr).then(function(result){
-          $scope.deleteRRPair(rr);
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.MRG_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.MRG_CONFIRM_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.MRG_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
+        $('#modal-btn-yes').on("click", function () {
+          apiHistoryService.addRRPairToService($scope.servicevo.id,rr).then(function(result){
+            $scope.performDelete(rr);
+          });
         });
       }
 
@@ -2697,5 +2713,8 @@ ctrl.constant("ctrlConstants", {
   //"PUB_FAIL_SERV_SAVE_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger" id="modal-btn-no">Back</button>',
   "SERV_INFO_NOT_FOUND" : "Service Info not found",
   "SERV_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
-"BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
+"BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
+  "MRG_CONFIRM_TITLE" : "Merge Confirmation",
+  "MRG_CONFIRM_BODY" : "Do you want to merge this RRPair into the service?",
+  "MRG_CONFIRM_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>'
 });
