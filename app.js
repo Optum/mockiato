@@ -16,9 +16,9 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const actuator = require('express-actuator');
-var schedule = require('node-schedule');
+const schedule = require('node-schedule');
 const Archive  = require('./models/common/Archive');
-var constants = require('./lib/util/constants');
+const constants = require('./lib/util/constants');
 
 // connect to database
 const db = require('./models/db');
@@ -48,9 +48,9 @@ function init() {
   });
 
   // parse request body based on content-type
-  app.use(bodyParser.text({ limit: '5mb', type: [ 'application/soap+xml', 'application/xml', 'text/xml', 'text/plain' ]}));
+  app.use(bodyParser.text({ limit: '5mb', type: [ 'application/x-www-form-urlencoded', 'application/soap+xml', 'application/xml', 'text/xml', 'text/plain' ]}));
   app.use(bodyParser.json({ limit: '5mb', type: [ 'application/json' ]}));
-  app.use(bodyParser.urlencoded({ extended: false }));
+  //app.use(bodyParser.urlencoded({ extended: false }));
 
   // expose health info
   app.use(actuator('/api/admin'));
