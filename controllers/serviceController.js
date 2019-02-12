@@ -16,6 +16,7 @@ const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
 const systemController = require('./systemController');
+const rrpairController = require('./rrpairController');
 const constants = require('../lib/util/constants');
 
 /**
@@ -37,9 +38,6 @@ function canUserEditServiceById(user,serviceId){
     });
   });
 }
-
-
-
 
 
 /**
@@ -70,28 +68,41 @@ function createService(serv,req){
     }else{
       performCreate();
     }
+
     function performCreate(){
-      if(serv.type == "MQ"){
-        MQService.create(serv,function(err,service){
+      if (serv.type === 'MQ'){
+        let templates = serv.matchTemplates;
+
+        if (templates && templates.length && templates[0]) {
+          for (let rrpair of serv.rrpairs) {
+            rrpair.templatedRequests = [];
+            for (let template of templates) {
+              if (!template) {
+                break;
+              }
+
+              rrpair.templatedRequests.push(rrpairController.trimRequestData(template, rrpair));
+            }
+          }
+        }
+
+        MQService.create(serv, function(err, service){
           if(err)
             reject(err);
           else
             resolve(service);
         });
-      }else{
-        Service.create(serv,function(err,service){
-          if(err)
+      }
+      else {
+        Service.create(serv, function(err, service){
+          if (err)
             reject(err);
           else 
             resolve(service);
         });
       }
     }
-  
-    
-
   });
-  
 }
 
 /**
@@ -882,6 +893,7 @@ function updateService(req, res) {
 
     if(service){
       service.rrpairs = req.body.rrpairs;
+      service.matchTemplates = req.body.matchTemplates;
       service.lastUpdateUser = req.decoded;
 
       //Cache string of reqData + rspData
@@ -912,6 +924,23 @@ function updateService(req, res) {
         const delayMax = req.body.delayMax;
         if (delayMax || delayMax === 0) {
           service.delayMax = req.body.delayMax;
+        }
+      }
+      else {
+        let templatedRequests = [];
+        let templates = service.matchTemplates;
+
+        if (templates && templates.length && templates[0]) {
+          for (let rrpair of serv.rrpairs) {
+            for (let template of templates) {
+              if (!template) {
+                break;
+              }
+
+              templatedRequests.push(rrpairController.trimRequestData(template, rrpair));
+            }
+            rrpair.templatedRequests = templatedRequests;
+          }
         }
       }
 
