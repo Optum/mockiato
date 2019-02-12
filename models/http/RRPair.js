@@ -46,6 +46,12 @@ const rrSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     validate: {
       validator: function (v) {
+        /* Making validation true in case of DraftService.
+          In other cases, apply normal validations. */
+        try{
+          this.parent().parent();
+          return true;
+        }catch (e){/* Not a draft service so continue below */}
         if (this.payloadType === 'JSON') {
           try {
             JSON.parse(JSON.stringify(v));
@@ -85,6 +91,12 @@ const rrSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     validate: {
       validator: function (v) {
+        /* Making validation true in case of DraftService.
+          In other cases, apply normal validations. */
+          try{
+            this.parent().parent();
+            return true;
+          }catch (e){/* Not a draft service so continue below */}
         if (this.payloadType === 'JSON') {
           try {
             JSON.parse(JSON.stringify(v));
