@@ -279,6 +279,70 @@ paths:
                 items:
                   $ref: '#/components/schemas/RRPair'
                 description: successful response
+    patch:
+      tags:
+      - services
+      requestBody:
+        description: An RR pair to add to this service
+        content:
+          application/json:
+            schema:
+              description: the service to update
+              $ref: '#/components/schemas/RRPair'
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RRPair'
+                description: successful response
+  /services/{id}/recorded:
+    get:
+      description: Gets all recorded pairs from Live Invocation recording for this service
+      tags:
+      - services
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RRPair'
+                description: successful response
+  /services/{id}/recorded/{rrPaidId}:
+    patch:
+      description: Merges a recorded RR pair into the service
+      tags:
+      - services
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RRPair'
+                description: successful response
+    delete:
+      description: Deletes a recorded RR pair
+      tags:
+      - services
+      responses:
+        200:
+          description: successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RRPair'
+                description: successful response
 
   /services/fromSpec/upload:
     post:
