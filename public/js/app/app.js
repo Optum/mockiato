@@ -33,7 +33,21 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                     }]
                 }
             })
-            
+            .when("/update/:id/recorded", {
+                templateUrl: "partials/recordedInvokePairs.html",
+                controller: "mergeRecordedController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
             .when("/update/:id/:frmWher", {
                 templateUrl: "partials/updateForm.html",
                 controller: "updateController",
@@ -49,7 +63,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                     }]
                 }
             })
-
+            
             .when("/showArchiveService/:id/:frmWher", {
                 templateUrl: "partials/updateForm.html",
                 controller: "showArchiveController",
@@ -132,9 +146,10 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
-            .when("/fetchDraftServices", {
+            .when("/fetchDraftServices/:sut?/:user?", {
                 templateUrl: "partials/draftServices.html",
                 controller: "draftServiceController",
+                reloadOnUrl: false,
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
                         var userInfo = authService.getUserInfo();

@@ -144,6 +144,25 @@ function getSystemIfMember(user,system){
   return System.findOne({members:user,name:system});
 }
 
+/**
+ * Tests if user is a member of this group. returns a promise. Resolves to true if they are, rejects with error otherwise.
+ * @param {User} user 
+ * @param {System} system 
+ */
+function isUserMemberOfGroup(user,system){
+  return new Promise(function(resolve,reject){
+    System.findOne({name:system.name,members:user.uid},function(err,doc){
+      if(err){
+        reject(err);
+      }else if(doc){
+        resolve(true);
+      }else{
+        reject(new Error("User " + user.uid + " not member of group " + system.name));
+      }
+    })
+  });
+}
+
 module.exports = {
   getSystems: getSystems,
   addSystem: addSystem,
@@ -151,5 +170,6 @@ module.exports = {
   getOneSystem: getOneSystem,
   updateGroup: updateGroup,
   findSystemsForUser: findSystemsForUser,
-  getSystemIfMember : getSystemIfMember
+  getSystemIfMember : getSystemIfMember,
+  isUserMemberOfGroup: isUserMemberOfGroup
 };
