@@ -1,6 +1,23 @@
 const xml2js = require('xml2js');
 const debug = require('debug')('matching');
 
+function applyTemplateOptionsToResponse(response,templateOptions){
+
+    if(templateOptions.map){
+        for(let key in templateOptions.map){
+            response = response.replace("{{" + key + "}}",templateOptions.map[key]);
+        }
+    }
+    return response;
+}
+
+
+
+/**
+ * Merges a newly returned options object from processCondition() into the existing options
+ * @param {*} oldOptions 
+ * @param {*} newOptions 
+ */
 function mergeInOptions(oldOptions,newOptions){
     for(let key1 in newOptions){
         if(oldOptions[key1]){
@@ -20,6 +37,13 @@ function mergeInOptions(oldOptions,newOptions){
 }
 
 
+/**
+ * Given a condition string, process this condition.
+ * @param {string} field Flattened field name (e.g. "params.person.firstName")
+ * @param {string} conditionString The condition string (e.g. map:firstName)
+ * @param {object} flatPayload  Flattened payload
+ * @return Returns either an object that contains new options for the template, OR false if the condition is considered failed. ONLY false is considered a failure- {} or null is a pass!
+ */
 function processCondition(field,conditionString,flatPayload){
     var split = conditionString.split(":",2);
     switch(split[0]){
@@ -27,8 +51,10 @@ function processCondition(field,conditionString,flatPayload){
             var map = {};
             map[split[1]] = flatPayload[field];
             return {map};
-        default:
+        case "failMe": //Temporary to make DeepScan happy. 
             return false;
+        default:
+            return {};
     }
 }
 
@@ -94,5 +120,6 @@ function matchOnTemplate(template,rrpair,payload,reqData,path){
 
 
 module.exports = {
-    matchOnTemplate : matchOnTemplate
+    matchOnTemplate : matchOnTemplate,
+    applyTemplateOptionsToResponse:applyTemplateOptionsToResponse
 }

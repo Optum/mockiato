@@ -96,7 +96,7 @@ function registerRRPair(service, rrpair) {
 
       // try exact math
       match = deepEquals(payload, reqData);
-
+      var templateOptions;
       if (!match) {
         // match based on template
         let templates = service.matchTemplates;
@@ -107,8 +107,9 @@ function registerRRPair(service, rrpair) {
               break;
             }
             
-            match = matchTemplateController.matchOnTemplate(template,rrpair,payload,reqData,path);
-            
+            templateOptions = matchTemplateController.matchOnTemplate(template,rrpair,payload,reqData,path);
+            if(templateOptions !== false)
+              match = true;
             if (match) break;
           }
         }
@@ -163,17 +164,29 @@ function registerRRPair(service, rrpair) {
         setRespHeaders();
         if (rrpair.resStatus && rrpair.resData) {
           //Give .send a buffer instead of a string so it won't yell at us about content-types
-          if(typeof rrpair.resData === "object")
-            resp.status(rrpair.resStatus).send(new Buffer(JSON.stringify(rrpair.resData)));
-          else
-            resp.status(rrpair.resStatus).send(new Buffer(rrpair.resData));
+
+
+          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resdata;
+
+          //Handle template mapping
+          if(templateOptions){
+            resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
+          }
+
+
+          resp.send(new Buffer(resString));
         }
         else if (!rrpair.resStatus && rrpair.resData) {
           //Give .send a buffer instead of a string so it won't yell at us about content-types
-          if(typeof rrpair.resData === "object")
-            resp.send(new Buffer(JSON.stringify(rrpair.resData)));
-          else
-            resp.send(new Buffer(rrpair.resData));
+          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resdata;
+
+          //Handle template mapping
+          if(templateOptions){
+            resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
+          }
+
+
+          resp.send(new Buffer(resString));
         }
         else if (rrpair.resStatus && !rrpair.resData) {
           resp.sendStatus(rrpair.resStatus);
