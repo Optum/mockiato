@@ -6,7 +6,7 @@ const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
 const logger = require('../winston');
 const invoke = require('./invoke');
-
+const matchTemplateController = require('../controllers/matchTemplateController');
 
   
 // function to simulate latency
@@ -107,45 +107,7 @@ function registerRRPair(service, rrpair) {
               break;
             }
             
-            if (rrpair.payloadType === 'XML') {
-              xml2js.parseString(template, function(err, xmlTemplate) {
-                if (err) {
-                  logEvent(err);
-                  return;
-                }
-                template = xmlTemplate;
-              });
-            }
-            else if (rrpair.payloadType === 'JSON') {
-              try {
-                template = JSON.parse(template);
-              }
-              catch(e) {
-                debug(e);
-                continue;
-              }
-            }
-    
-            const flatTemplate = flattenObject(template);
-            const flatPayload  = flattenObject(payload);
-            const flatReqData  = flattenObject(reqData);
-    
-            const trimmedPayload = {}; const trimmedReqData = {};
-              
-            for (let field in flatTemplate) {
-              trimmedPayload[field] = flatPayload[field];
-              trimmedReqData[field] = flatReqData[field];
-            }
-            
-            logEvent(path, label, 'received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
-            logEvent(path, label, 'expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
-
-            match = deepEquals(trimmedPayload, trimmedReqData);
-
-            // make sure we're not comparing {} == {}
-            if (match && JSON.stringify(trimmedPayload) === '{}') {
-              match = false;
-            }
+            match = matchTemplateController.matchOnTemplate(template,rrpair,payload,reqData,path);
             
             if (match) break;
           }
@@ -344,16 +306,7 @@ function deregisterService(service) {
   });
 }
 
-function logEvent(path, label, msg) {
-  debug(path, label, msg);
 
-  let event = {};
-  event.path = path;
-  event.label = label;
-  event.msg = msg;
-
-  logger.info(event);
-}
 
 module.exports = {
   router: router,
