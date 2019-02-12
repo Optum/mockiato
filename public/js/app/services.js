@@ -134,6 +134,20 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants','$routeParams',
         function($http, $location, authService, feedbackService, xmlService, servConstants,$routeParams) {
 
+            this.deleteRecordedLiveRRPair = function(serviceId,rrPairId){
+              var token = authService.getUserInfo().token;
+              return $http.delete('/api/services/' + serviceId + '/recorded/' + rrPairId + "?token=" + token);
+            }
+
+            this.addRRPairToService = function(serviceId,rr){
+              var token = authService.getUserInfo().token;
+              return $http.patch('/api/services/' + serviceId + '/rrpairs?token=' + token, rr);
+            }
+
+            this.getRecordedLiveRRPairs = function(serviceId){
+              return $http.get('/api/services/' + serviceId + '/recorded');
+            }
+
             //gets all recordings, unfiltered
             this.getRecordings = function(){
                 return $http.get('/api/recording');
@@ -385,6 +399,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     failStatusCodes : failCodesArray,
                     failStrings : failStringsArray,
                     ssl : servicevo.invokeSSL,
+                    record : servicevo.liveRecordCheck,
                     liveFirst : servicevo.liveInvokePrePost == 'PRE'
                   };
                   

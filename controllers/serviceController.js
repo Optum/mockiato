@@ -19,6 +19,30 @@ const systemController = require('./systemController');
 const constants = require('../lib/util/constants');
 
 /**
+ * Given a User object and a service's id, return a promise that resolves if this user can edit the service, and rejects otherwise
+ * @param {User} user 
+ * @param {string} serviceId 
+ */
+function canUserEditServiceById(user,serviceId){
+  return new Promise(function(resolve,reject){
+    Service.findById(serviceId,function(err,doc){
+      if(err)
+        reject(err)
+      else
+        if(doc){
+          systemController.isUserMemberOfGroup(user,doc.sut).then((bool)=>{resolve(bool)},(err)=>{reject(err)});
+        }else{
+          reject("No Service Found");
+        }
+    });
+  });
+}
+
+
+
+
+
+/**
  * Wrapper function for (MQ)Service.create. If req is provided, will also check against current logged in user's permissions first. 
  * @param {object} serv An object containing the info to create a service
  * @param {*} req Express request. 
@@ -870,6 +894,9 @@ function updateService(req, res) {
         });
       }
       if(req.body.liveInvocation){
+        if(service.liveInvocation && service.liveInvocation.recordedRRPairs){
+          req.body.liveInvocation.recordedRRPairs = service.liveInvocation.recordedRRPairs;
+        }
         service.liveInvocation = req.body.liveInvocation;
       }
       if (req.body.matchTemplates) {
@@ -1412,6 +1439,114 @@ function deleteDraftService(req, res) {
   });
 }
 
+
+
+/**
+ * API Call to delete a specific recorded RR pair from liveInvocation
+ * @param {*} req Express req 
+ * @param {*} res Express rsp
+ */
+function deleteRecordedRRPair(req,res){
+  var serviceId = req.params.id;
+  var rrPairId = req.params.rrpairId;
+  canUserEditServiceById(req.decoded,serviceId).then((bool)=>{
+    Service.findOneAndUpdate({_id:serviceId},{$pull:{"liveInvocation.recordedRRPairs":{_id:rrPairId}}},function(err,doc){
+      if(err)
+        handleError(err,res,500);
+      else
+        res.json(doc);
+
+    });
+  },(err)=>{
+    handleError(err,res,500);
+  });
+
+}
+
+/**
+ * API call to get just the recorded RR pairs from a service
+ * @param {*} req express req
+ * @param {*} res express rsp
+ */
+function getServiceRecordedRRPairs(req,res){
+  var serviceId = req.params.id;
+  Service.findById(serviceId).select("liveInvocation.recordedRRPairs").exec(function(err,doc){
+    if(err)
+      handleError(err,res,500);
+    else
+      res.json(doc);
+  });
+}
+
+/**
+ * API call to take one recorded pair and merge it into RRPairs with no edit
+ * @param {*} req express req
+ * @param {*} res express rsp
+ */
+function mergeRecordedRRPair(req,res){
+  var serviceId = req.params.id;
+  var rrPairId = req.params.rrpairId;
+  canUserEditServiceById(req.decoded,serviceId).then((bool)=>{
+    Service.findOne({_id:serviceId,'liveInvocation.recordedRRPairs':{$elemMatch:{_id:rrPairId}}}).exec(function(err,doc){
+      if(err){
+        handleError(err,res,500);
+      }else if(doc){
+        for(let i = 0; i < doc.liveInvocation.recordedRRPairs.length; i++){
+          var rrpair = doc.liveInvocation.recordedRRPairs[i];
+          if(rrpair._id == rrPairId){
+            var rrPairWrapper = {rrpairs:[rrpair]};
+            mergeRRPairs(doc,rrPairWrapper);
+            doc.liveInvocation.recordedRRPairs.splice(i,1);
+            doc.save(function(err,newDoc){
+              res.json(newDoc);
+              syncWorkers(newDoc, 'register');
+            });
+            break;
+          }
+        }
+      }else{
+        res.status(404);
+        res.json({});
+      }
+    });
+  },(err)=>{
+    handleError(err,res,500);
+  });
+}
+
+/**
+ * API call to add an RRPair to a service
+ * @param {*} req express req
+ * @param {*} res express rsp
+ */
+function addRRPair(req,res){
+  var serviceId = req.params.id;
+  canUserEditServiceById(req.decoded,serviceId).then((bool)=>{
+    var rrPair = req.body;
+    Service.findById(serviceId,function(err,doc){
+      if(err)
+        handleError(err,res,500);
+      else if(doc){
+        mergeRRPairs(doc,{rrpairs:[rrPair]});
+        doc.save(function(err,newDoc){
+          if(err){
+            handleError(err,res,500);
+          }else{
+            res.json(newDoc);
+          }
+        })
+      }else{
+        res.status(404);
+        res.end();
+      }
+    });
+
+  },(err)=>{
+    handleError(err,res,500);
+  });
+}
+
+
 module.exports = {
   getServiceById: getServiceById,
   getArchiveServiceInfo: getArchiveServiceInfo,
@@ -1438,7 +1573,12 @@ module.exports = {
   deleteDraftService: deleteDraftService,
   getDraftServicesByUser: getDraftServicesByUser,
   addServiceAsDraft: addServiceAsDraft,
-  updateServiceAsDraft: updateServiceAsDraft
+  updateServiceAsDraft: updateServiceAsDraft,
+  deleteRecordedRRPair: deleteRecordedRRPair,
+  canUserEditServiceById: canUserEditServiceById,
+  getServiceRecordedRRPairs: getServiceRecordedRRPairs,
+  mergeRecordedRRPair: mergeRecordedRRPair,
+  addRRPair: addRRPair
 };
 
 
