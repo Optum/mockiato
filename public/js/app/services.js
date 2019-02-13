@@ -1,5 +1,19 @@
 var serv = angular.module('mockapp.services',['mockapp.factories'])
 
+    .service('modalService',['$http','$rootScope','servConstants',
+    function($http,$rootScope,servConstants){
+      function setRemoteModal(title,remoteBodyLocation,footer){
+        $http.get(remoteBodyLocation).then(function(rsp){
+          $('#genricMsg-dialog').find('.modal-title').text(title);
+          $('#genricMsg-dialog').find('.modal-body').html(rsp.data);
+          $('#genricMsg-dialog').find('.modal-footer').html("");
+          $('#genricMsg-dialog').modal('toggle');
+        });
+      }
+      this.showTemplateHelp = function(){
+        setRemoteModal(servConstants.MCH_HELP_TITLE,"/partials/modals/templateHelpModal.html","");
+      }
+    }])
     .service('authService', ['$http', '$window', '$location', '$rootScope', 'servConstants', 
         function($http, $window, $location, $rootScope, servConstants) {
             var userInfo;
@@ -1218,5 +1232,6 @@ serv.constant("servConstants", {
         "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
         "SERVICE_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
         "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed",
-        "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>'
+        "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
+        "MCH_HELP_TITLE" : "Match Templates Help"
       });
