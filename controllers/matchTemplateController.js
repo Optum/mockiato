@@ -162,13 +162,15 @@ function matchOnTemplate(flatTemplate,rrpair,flatPayload,flatReqData,path){
  */
 function parseAndFlattenTemplate(template,payloadType){
     if (payloadType === 'XML') {
+        let ret = false;
         xml2js.parseString(template, function(err, xmlTemplate) {
             if (err) {
                 logEvent(err);
-                return false;
+                ret = false;
             }
-            return flattenObject(xmlTemplate);
+            ret =  flattenObject(xmlTemplate); 
         });
+        return ret; 
     }
     else if (payloadType === 'JSON') {
         try {
