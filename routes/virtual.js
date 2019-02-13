@@ -48,7 +48,7 @@ function registerRRPair(service, rrpair) {
     var processRRPair = function(){
       req.msgContainer = req.msgContainer || {};
       req.msgContainer.reqMatched = false;
-
+      delete req._Mockiato_Flat_ReqData;
       if (req.method === rrpair.verb) {
         // convert xml to js object
         if (rrpair.payloadType === 'XML') {
