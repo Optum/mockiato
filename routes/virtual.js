@@ -166,7 +166,7 @@ function registerRRPair(service, rrpair) {
           //Give .send a buffer instead of a string so it won't yell at us about content-types
 
 
-          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resdata;
+          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resData;
 
           //Handle template mapping
           if(templateOptions){
