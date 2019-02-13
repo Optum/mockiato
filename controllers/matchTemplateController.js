@@ -1,6 +1,11 @@
 const xml2js = require('xml2js');
 const debug = require('debug')('matching');
 
+/**
+ * Applies all template options to a response string. E.g. puts out map values
+ * @param {*} response 
+ * @param {*} templateOptions 
+ */
 function applyTemplateOptionsToResponse(response,templateOptions){
 
     if(templateOptions.map){
@@ -15,8 +20,8 @@ function applyTemplateOptionsToResponse(response,templateOptions){
 
 /**
  * Merges a newly returned options object from processCondition() into the existing options
- * @param {*} oldOptions 
- * @param {*} newOptions 
+ * @param {*} oldOptions Old options- this gets mut'd!
+ * @param {*} newOptions new options
  */
 function mergeInOptions(oldOptions,newOptions){
     if(typeof newOptions == 'object'){
@@ -103,6 +108,15 @@ function preProcessCondition(field,conditionString,flatPayload){
     return opts;
 }
 
+
+/**
+ * Tests a payload against a request using a template. Returns any template options that were parsed (e.g. mapping vars)
+ * @param {*} flatTemplate The flattened template
+ * @param {*} rrpair RR Pair in question
+ * @param {*} flatPayload Flattened payload
+ * @param {*} flatReqData Flattened reqData from RR pair
+ * @param {*} path Path of this req (for debug logging)
+ */
 function matchOnTemplate(flatTemplate,rrpair,flatPayload,flatReqData,path){
     var returnOptions = {};
     const trimmedPayload = {}; const trimmedReqData = {};
@@ -140,6 +154,12 @@ function matchOnTemplate(flatTemplate,rrpair,flatPayload,flatReqData,path){
 }
 
 
+/**
+ * Given a template and the payload type, parse this template and flatten it.
+ * @param {*} template 
+ * @param {*} payloadType 
+ * @return Flattened template, or false if parsing fails. 
+ */
 function parseAndFlattenTemplate(template,payloadType){
     if (payloadType === 'XML') {
         xml2js.parseString(template, function(err, xmlTemplate) {
