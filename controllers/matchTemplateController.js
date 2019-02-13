@@ -103,32 +103,9 @@ function preProcessCondition(field,conditionString,flatPayload){
     return opts;
 }
 
-function matchOnTemplate(template,rrpair,payload,reqData,path){
+function matchOnTemplate(flatTemplate,rrpair,flatPayload,flatReqData,path){
     var returnOptions = {};
-    if (rrpair.payloadType === 'XML') {
-        xml2js.parseString(template, function(err, xmlTemplate) {
-          if (err) {
-            logEvent(err);
-            return false;
-          }
-          template = xmlTemplate;
-        });
-      }
-      else if (rrpair.payloadType === 'JSON') {
-        try {
-          template = JSON.parse(template);
-        }
-        catch(e) {
-          debug(e);
-          return false;
-        }
-      }
-
-      const flatTemplate = flattenObject(template);
-      const flatPayload  = flattenObject(payload);
-      const flatReqData  = flattenObject(reqData);
-
-      const trimmedPayload = {}; const trimmedReqData = {};
+    const trimmedPayload = {}; const trimmedReqData = {};
       var hasBlank = false;
       for (let field in flatTemplate) {
 
@@ -163,9 +140,34 @@ function matchOnTemplate(template,rrpair,payload,reqData,path){
 }
 
 
+function parseAndFlattenTemplate(template,payloadType){
+    if (payloadType === 'XML') {
+        xml2js.parseString(template, function(err, xmlTemplate) {
+            if (err) {
+                logEvent(err);
+                return false;
+            }
+            return flattenObject(xmlTemplate);
+        });
+    }
+    else if (payloadType === 'JSON') {
+        try {
+            return flattenObject(JSON.parse(template));
+        }
+        catch(e) {
+            debug(e);
+            return false;
+        }
+    }else{
+        return false;
+    }
+
+}
+
 
 module.exports = {
     matchOnTemplate : matchOnTemplate,
     applyTemplateOptionsToResponse:applyTemplateOptionsToResponse,
-    preProcessCondition:preProcessCondition
+    preProcessCondition:preProcessCondition,
+    parseAndFlattenTemplate: parseAndFlattenTemplate
 }

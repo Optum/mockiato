@@ -102,12 +102,47 @@ function registerRRPair(service, rrpair) {
         let templates = service.matchTemplates;
 
         if (templates && templates.length) {
-          for (let template of templates) {
+          let flatPayload, flatReqData;
+
+          //Check for cached flats. Cache flats if not done yet
+          if(req._Mockiato_Flat_Payload)
+            flatPayload = req._Mockiato_Flat_Payload;
+          else{
+            flatPayload = flattenObject(payload);
+            req._Mockiato_Flat_Payload = flatPayload;
+          }
+          if(req._Mockiato_Flat_ReqData)
+            flatReqData = req._Mockiato_Flat_Payload;
+          else{
+            flatReqData = flattenObject(reqData);
+            req._Mockiato_Flat_ReqData = flatReqData;
+          }
+          if(!(req._Mockiato_Flat_Templates)){
+            req._Mockiato_Flat_Templates = [];
+          }
+
+          for (let i = 0; i < templates.length; i++) {
+            let template = templates[i];
+            
+
             if (!template) {
               break;
             }
-            
-            templateOptions = matchTemplateController.matchOnTemplate(template,rrpair,payload,reqData,path);
+            let flatTemplate;
+            if(req._Mockiato_Flat_Templates.length > i){
+              flatTemplate = req._Mockiato_Flat_Templates[i];
+              if(flatTemplate === false)
+                continue;
+            }else{
+              flatTemplate = matchTemplateController.parseAndFlattenTemplate(template,rrpair.payloadType);
+              
+              req._Mockiato_Flat_Templates.push(flatTemplate);
+              if(flatTemplate === false)
+                continue;
+              
+            }
+
+            templateOptions = matchTemplateController.matchOnTemplate(flatTemplate,rrpair,flatPayload,flatReqData,path);
             if(templateOptions !== false)
               match = true;
             if (match) break;
