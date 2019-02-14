@@ -2505,33 +2505,56 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         };
     }])
 
-    .controller("draftServiceController", ['$scope', '$http','$location','$routeParams','$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
-    function($scope,$http,$location,$routeParams,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
-    Promise.all([sutService.getAllSUTPromise(),userService.getAllUsersPromise()]).then(function(values){       
-	
-		
-		$scope.sutlist = values[0];
-          $scope.userlist = values[1];
-          if($routeParams.user || $routeParams.sut)
-            performUpdateOnPathParams();
-          else
-            $scope.filtersSelected(null, { name: authService.getUserInfo().username });              
-        });
-  
-   $scope.servicelist = [];
-      console.log($routeParams);
+.controller("draftServiceController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+    function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+        $scope.sutlist = sutService.getAllSUT();
+        $scope.userlist = userService.getAllUsers();
+        $scope.servicelist = [];
 
-      $scope.buttonHit = false;
+        //script to retroactively assign group member. not needed for the future.
+        $scope.script=function(){
+          console.log("starting script");
+          var sutnames = [];
+          $http.get('/api/systems')
+            .then(function (response) {
+              response.data.forEach(function (sutData) {
+                var sut = {
+                  name: sutData.name,
+                  members: sutData.members
+                };
+                sutnames.push(sut.name);
+              });
+            })
 
-      $scope.$watchGroup(['selectedSut', 'selectedUser'], function (newVals) {
-        $scope.filtersSelected(newVals[0], newVals[1]);
-        $scope.buttonHit = true; //bool check so function isnt called twice
-      });
+            .catch(function (err) {
+              console.log(err);
+            });
 
+          $http.get('/api/services/draft')
+            .then(function (response) {
+              console.log(response.data);
+              for (var i = 0; i < response.data.length; i++) {
+                var owner = response.data[i].user.uid;
+                var sut = response.data[i].sut.name;
+                
+                if (sutnames.includes(sut)){
+                  console.log("sut "+ sut + " exists");
+                  console.log(owner + " will be added to group: " + sut);
+                  sutService.updateGroup(sut, owner);
+                }
+                else{
+                  console.log("sut " + sut + " does not exist");
+                }
+              }
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
+        }
+        ///////////////////////////end script. to remove
 
         $scope.filtersSelected = function(sut, user) {
-		 $location.path("/fetchDraftServices/" + (sut ? sut.name : '') + "/" + (user ? user.name : ''));
-   
             if (sut && !user) {
                 apiHistoryService.getServiceForDraftSUT(sut.name)
 
@@ -2587,43 +2610,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     console.log(err);
                 });
             }
-			
-			   function performUpdateOnPathParams(){
-          $scope.filtersSelected($routeParams.sut ? {name:$routeParams.sut} : null,$routeParams.user ? {name:$routeParams.user}:null);
-          if($routeParams.sut){
-            for(let sut of $scope.sutlist){
-              if(sut.name == $routeParams.sut){
-                $scope.selectedSut = sut;
-                break;
-              }
-            }
-          }else{
-            $scope.selectedSut = null;
-          }
-          if($routeParams.user){
-            for(let user of $scope.userlist){
-              if(user.name == $routeParams.user){
-                $scope.selectedUser = user;
-                break;
-              }
-            }
-          }else{
-            $scope.selectedUser = null;
-          }
-        }
-       
-        $scope.$on('$routeUpdate', function () {
-          if(!$scope.buttonHit)
-            performUpdateOnPathParams();
-          else
-            $scope.buttonHit = false;
-        });
-        $scope.clearSelected = function() {
-          $scope.selectedSut = null;
-          $scope.selectedUser = null;
-          $scope.servicelist = [];
-        };
-
 
           //returning a promise from factory didnt seem to work with .then() function here, alternative solution
             $http.get('/api/systems')
@@ -2658,6 +2644,13 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               });
 
         };
+        $scope.filtersSelected(null, { name: authService.getUserInfo().username });
+
+        $scope.clearSelected = function() {
+          $scope.selectedSut = null;
+          $scope.selectedUser = null;
+          $scope.servicelist = [];
+        };
 
       $scope.deleteDraftService = function (service) {
         $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
@@ -2679,7 +2672,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             });
         });
       };
-    }])
+    }]);
 
 
 //Put all the hard coding or constants here for controller.      
