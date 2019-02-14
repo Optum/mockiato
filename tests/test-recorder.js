@@ -148,7 +148,6 @@ describe('Recorder Tests', function() {
                 .expect(function(res){
                     recordedService = res.body.service;
                     console.log(recordedService);
-                    recordedService.basePath = "/" + recordedService.basePath;
                 })
                 .end(done);
         });
