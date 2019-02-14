@@ -2270,221 +2270,200 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
-    .controller("deletedServiceController", ['$scope','$http','$location','$routeParams','$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
-    function($scope,$http,$location,$routeParams,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
-        Promise.all([sutService.getAllSUTPromise(),userService.getAllUsersPromise()]).then(function(values){
-        
-          $scope.sutlist = values[0];
-          $scope.userlist = values[1];
-          if($routeParams.user || $routeParams.sut)
-            performUpdateOnPathParams();
-          else
-            $scope.filtersSelected(null, { name: authService.getUserInfo().username });              
-        });
-  
-   $scope.servicelist = [];
-      console.log($routeParams);
+    .controller("deletedServiceController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
+        function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
+            $scope.sutlist = sutService.getAllSUT();
+            $scope.userlist = userService.getAllUsers();
+            $scope.servicelist = [];
 
-      $scope.buttonHit = false;
-
-      $scope.$watchGroup(['selectedSut', 'selectedUser'], function (newVals) {
-        $scope.filtersSelected(newVals[0], newVals[1]);
-        $scope.buttonHit = true; //bool check so function isnt called twice
-      });
-
-        $scope.filtersSelected = function(sut, user) {
-   $location.path("/fetchDeletedServices/" + (sut ? sut.name : '') + "/" + (user ? user.name : ''));
-   
-            if (sut && !user) {
-                apiHistoryService.getServiceForArchiveSUT(sut.name)
-
-                .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-                    var arryListOfService=[];
-                  for (let i = 0; i < data.length; i++) {
-                    if(data[i].service)arryListOfService.push(data[i].service);
-                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
-                  }
-                    $scope.servicelist = arryListOfService;
-                  })
-
-                .catch(function(err) {
-                    console.log(err);
-                });
-            }
-
-            else if (user && !sut) {
-                apiHistoryService.getServiceByArchiveUser(user.name)
-                .then(function(response) {
-                  var data = response.data;
-                  console.log(data);
-                  var arryListOfService=[];
-                  for (let i = 0; i < data.length; i++) {
-                    if(data[i].service)arryListOfService.push(data[i].service);
-                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
-                  }
-                  $scope.servicelist = arryListOfService;
+            //script to retroactively assign group member. not needed for the future.
+            $scope.script=function(){
+              console.log("starting script");
+              var sutnames = [];
+              $http.get('/api/systems')
+                .then(function (response) {
+                  response.data.forEach(function (sutData) {
+                    var sut = {
+                      name: sutData.name,
+                      members: sutData.members
+                    };
+                    sutnames.push(sut.name);
+                  });
                 })
 
-                .catch(function(err) {
-                    console.log(err);
+                .catch(function (err) {
+                  console.log(err);
                 });
-            }
 
-            else if (user && sut) {
-                apiHistoryService.getServicesArchiveFiltered(sut.name, user.name)
-
-                .then(function(response) {
-                  var data = response.data;
-                  console.log(data);
-                  var arryListOfService=[];
-                  for (let i = 0; i < data.length; i++) {
-                    if(data[i].service)arryListOfService.push(data[i].service);
-                    if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+              $http.get('/api/services/archive')
+                .then(function (response) {
+                  console.log(response.data);
+                  for (var i = 0; i < response.data.length; i++) {
+                    var owner = response.data[i].user.uid;
+                    var sut = response.data[i].sut.name;
+                    
+                    if (sutnames.includes(sut)){
+                      console.log("sut "+ sut + " exists");
+                      console.log(owner + " will be added to group: " + sut);
+                      sutService.updateGroup(sut, owner);
+                    }
+                    else{
+                      console.log("sut " + sut + " does not exist");
+                    }
                   }
-                  $scope.servicelist = arryListOfService;
                 })
 
-                .catch(function(err) {
-                    console.log(err);
+                .catch(function (err) {
+                  console.log(err);
                 });
             }
+            ///////////////////////////end script. to remove
 
-        };
-         function performUpdateOnPathParams(){
-          $scope.filtersSelected($routeParams.sut ? {name:$routeParams.sut} : null,$routeParams.user ? {name:$routeParams.user}:null);
-          if($routeParams.sut){
-            for(let sut of $scope.sutlist){
-              if(sut.name == $routeParams.sut){
-                $scope.selectedSut = sut;
-                break;
-              }
-            }
-          }else{
-            $scope.selectedSut = null;
-          }
-          if($routeParams.user){
-            for(let user of $scope.userlist){
-              if(user.name == $routeParams.user){
-                $scope.selectedUser = user;
-                break;
-              }
-            }
-          }else{
-            $scope.selectedUser = null;
-          }
-        }
-       
-        $scope.$on('$routeUpdate', function () {
-          if(!$scope.buttonHit)
-            performUpdateOnPathParams();
-          else
-            $scope.buttonHit = false;
-        });
-        $scope.clearSelected = function() {
-          $scope.selectedSut = null;
-          $scope.selectedUser = null;
-          $scope.servicelist = [];
-        };
+            $scope.filtersSelected = function(sut, user) {
+                if (sut && !user) {
+                    apiHistoryService.getServiceForArchiveSUT(sut.name)
 
-      //returning a promise from factory didnt seem to work with .then() function here, alternative solution
-      $http.get('/api/systems')
-        .then(function (response) {
-          $scope.myUser = authService.getUserInfo().username;
-          $scope.myGroups = [];
-          response.data.forEach(function (sutData) {
-            var sut = {
-              name: sutData.name,
-              members: sutData.members
+                    .then(function(response) {
+                        var data = response.data;
+                        console.log(data);
+                        var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                        $scope.servicelist = arryListOfService;
+                      })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
+                else if (user && !sut) {
+                    apiHistoryService.getServiceByArchiveUser(user.name)
+                    .then(function(response) {
+                      var data = response.data;
+                      console.log(data);
+                      var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                      $scope.servicelist = arryListOfService;
+                    })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
+                else if (user && sut) {
+                    apiHistoryService.getServicesArchiveFiltered(sut.name, user.name)
+
+                    .then(function(response) {
+                      var data = response.data;
+                      console.log(data);
+                      var arryListOfService=[];
+                      for (let i = 0; i < data.length; i++) {
+                        if(data[i].service)arryListOfService.push(data[i].service);
+                        if(data[i].mqservice)arryListOfService.push(data[i].mqservice);
+                      }
+                      $scope.servicelist = arryListOfService;
+                    })
+
+                    .catch(function(err) {
+                        console.log(err);
+                    });
+                }
+
             };
-            sut.members.forEach(function (memberlist) {
-              if (memberlist.includes($scope.myUser)) {
-                $scope.myGroups.push(sut.name);
-              }
-            });
-          });
-        })
+            $scope.filtersSelected(null, { name: authService.getUserInfo().username });
 
-        .catch(function (err) {
-          console.log(err);
-        });
+            $scope.clearSelected = function() {
+              $scope.selectedSut = null;
+              $scope.selectedUser = null;
+              $scope.servicelist = [];
+            };
 
-
-      $http.get('/api/users/admin')
-        .then(function (response) {
-          $scope.adminUser = response.data;
-        })
-
-        .catch(function (err) {
-          console.log(err);
-        });
-
-      $scope.deleteArchiveService = function (service) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_Permanent_CONFIRM_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $('#modal-btn-yes').on("click", function () {
-          apiHistoryService.deleteServiceArchive(service)
+          //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+          $http.get('/api/systems')
             .then(function (response) {
-              var data = response.data;
-              console.log(data);
-              $scope.servicelist.forEach(function (elem, i, arr) {
-                if (elem._id === data.id)
-                  arr.splice(i, 1);
+              $scope.myUser = authService.getUserInfo().username;
+              $scope.myGroups = [];
+              response.data.forEach(function (sutData) {
+                var sut = {
+                  name: sutData.name,
+                  members: sutData.members
+                };
+                sut.members.forEach(function (memberlist) {
+                  if (memberlist.includes($scope.myUser)) {
+                    $scope.myGroups.push(sut.name);
+                  }
+                });
               });
             })
+
             .catch(function (err) {
               console.log(err);
             });
-        });
-      };
 
-      $scope.restoreService = function (service) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.RESTORE_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.RESTORE_CONFIRM_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $('#modal-btn-yes').on("click", function () {
-          apiHistoryService.restoreService(service)
+
+          $http.get('/api/users/admin')
             .then(function (response) {
-              var data = response.data;
-              console.log(data);
-              $scope.servicelist.forEach(function (elem, i, arr) {
-                if (elem._id === data.id)
-                  arr.splice(i, 1);
-              });
+              $scope.adminUser = response.data;
             })
+
             .catch(function (err) {
               console.log(err);
             });
-        });
-      };
 
-        $scope.exportService = function(serv) {
-            // clone the service
-            var service = JSON.parse(JSON.stringify(serv));
-
-            // clean up data before export
-            delete service._id;
-            delete service.sut._id;
-            delete service.user;
-            delete service.__v;
-            delete service.$$hashKey;
-
-            if (service.basePath) {
-              service.basePath = service.basePath.replace('/' + service.sut.name, '');
-            }
-            
-            service.rrpairs.forEach(function(rr) {
-              delete rr._id;
+          $scope.deleteArchiveService = function (service) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_Permanent_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            $('#modal-btn-yes').on("click", function () {
+              apiHistoryService.deleteServiceArchive(service)
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist.forEach(function (elem, i, arr) {
+                    if (elem._id === data.id)
+                      arr.splice(i, 1);
+                  });
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
             });
+          };
 
-            var data = new Blob([JSON.stringify(service, null, "  ")], { type: 'application/json;charset=utf-8' });
-            FileSaver.saveAs(data, service.name + '.json');
-        };
+          $scope.restoreService = function (service) {
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.RESTORE_CONFIRM_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.RESTORE_CONFIRM_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+            $('#modal-btn-yes').on("click", function () {
+              apiHistoryService.restoreService(service)
+                .then(function (response) {
+                  var data = response.data;
+                  console.log(data);
+                  $scope.servicelist.forEach(function (elem, i, arr) {
+                    if (elem._id === data.id)
+                      arr.splice(i, 1);
+                  });
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            });
+          };
 
+            $scope.exportService = function(serv) {
+                // clone the service
+                var service = JSON.parse(JSON.stringify(serv));
+
+<<<<<<< HEAD
         $scope.serviceInfo = function(serviceID) {
           console.log('printing service id: ' + serviceID);
             $http.get('/api/services/infoFrmArchive/' + serviceID)
@@ -2504,6 +2483,45 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             });
         };
     }])
+=======
+                // clean up data before export
+                delete service._id;
+                delete service.sut._id;
+                delete service.user;
+                delete service.__v;
+                delete service.$$hashKey;
+
+                if (service.basePath) {
+                  service.basePath = service.basePath.replace('/' + service.sut.name, '');
+                }
+                
+                service.rrpairs.forEach(function(rr) {
+                  delete rr._id;
+                });
+
+                var data = new Blob([JSON.stringify(service, null, "  ")], { type: 'application/json;charset=utf-8' });
+                FileSaver.saveAs(data, service.name + '.json');
+            };
+
+            $scope.serviceInfo = function(serviceID) {
+              console.log('printing service id: ' + serviceID);
+                $http.get('/api/services/infoFrmArchive/' + serviceID)
+                .then(function(response) {
+                    var data = response.data;
+                    console.log(data);
+                    if(data.service)feedbackService.displayServiceInfo(data.service);
+                    if(data.mqservice)feedbackService.displayServiceInfo(data.mqservice);
+                    $('#serviceInfo-modal').modal('toggle');
+                })
+                .catch(function(err) {
+                    console.log(err);
+                      $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').modal('toggle');
+                });
+            };
+    }]);
+>>>>>>> parent of 80d9566... Adding browse watch for the Archived services tab
 
 .controller("draftServiceController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
     function($scope,$http,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
