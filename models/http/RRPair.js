@@ -48,10 +48,10 @@ const rrSchema = new mongoose.Schema({
       validator: function (v) {
         /* Making validation true in case of DraftService.
           In other cases, apply normal validations. */
-        try{
-          this.parent().parent();
-          return true;
-        }catch (e){/* Not a draft service so continue below */}
+        try {
+          if (this.parent().parent().constructor.modelName === 'DraftService') return true;
+          else return false;
+        } catch (e) {/* Not a draft service so continue below */ }
         if (this.payloadType === 'JSON') {
           try {
             JSON.parse(JSON.stringify(v));
@@ -72,11 +72,11 @@ const rrSchema = new mongoose.Schema({
       },
       message: constants.PAYLOADTYPE_REQDATA_NOMATCH_ERR
     },
-    required: [function () { 
-            return this.parent().type === 'SOAP'; 
-          }, 
-          constants.REQUIRED_REQUEST_PAYLOAD_ERR
-        ]
+    required: [function () {
+      return this.parent().type === 'SOAP';
+    },
+    constants.REQUIRED_REQUEST_PAYLOAD_ERR
+    ]
   },
   reqDataString: String,
   resStatus: {
@@ -93,10 +93,10 @@ const rrSchema = new mongoose.Schema({
       validator: function (v) {
         /* Making validation true in case of DraftService.
           In other cases, apply normal validations. */
-          try{
-            this.parent().parent();
-            return true;
-          }catch (e){/* Not a draft service so continue below */}
+        try {
+          if (this.parent().parent().constructor.modelName === 'DraftService') return true;
+          else return false;
+        } catch (e) {/* Not a draft service so continue below */ }
         if (this.payloadType === 'JSON') {
           try {
             JSON.parse(JSON.stringify(v));
@@ -117,11 +117,11 @@ const rrSchema = new mongoose.Schema({
       },
       message: constants.PAYLOADTYPE_RESDATA_NOMATCH_ERR
     },
-    required: [function() { 
-            return this.parent().type === 'SOAP'; 
-          }, 
-          constants.REQUIRED_RESPONSE_PAYLOAD_ERR
-        ]
+    required: [function () {
+      return this.parent().type === 'SOAP';
+    },
+    constants.REQUIRED_RESPONSE_PAYLOAD_ERR
+    ]
   },
   resDataString: String,
   label: String
