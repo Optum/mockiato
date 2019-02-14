@@ -60,7 +60,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             headerMask : headerMask || ['Content-Type'],  
             service : {
                 basePath : path.substring(1),
-                sut:{name:sut, members:memberArry},
+                sut:{name:sut},
                 name:name,
                 type:protocol
             },
