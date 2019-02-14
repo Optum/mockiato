@@ -8,6 +8,12 @@ const pairSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     validate: {
       validator: function (v) {
+      /* Making validation true in case of DraftService.
+        In other cases, apply normal validations. */
+        try{
+          this.parent().parent();
+          return true;
+        }catch (e){/* Not a draft service so continue below */}
         try {
           libxmljs.parseXml(v);
           return true;
@@ -23,6 +29,12 @@ const pairSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     validate: {
       validator: function (v) {
+      /* Making validation true in case of DraftService.
+        In other cases, apply normal validations. */
+        try{
+          this.parent().parent();
+          return true;
+        }catch (e){/* Not a draft service so continue below */}
         try {
           libxmljs.parseXml(v);
           return true;
