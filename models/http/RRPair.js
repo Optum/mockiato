@@ -49,9 +49,8 @@ const rrSchema = new mongoose.Schema({
         /* Making validation true in case of DraftService.
           In other cases, apply normal validations. */
         try {
-          if (this.parent().parent().constructor.modelName === 'DraftService') return true;
-          else return false;
-        } catch (e) {/* Not a draft service so continue below */ }
+          if (this.parent().parent().constructor.modelName === 'DraftService') return true; //else continue validations.
+        } catch (e) {/* Not a draft service so continue below validations*/ }
         if (this.payloadType === 'JSON') {
           try {
             JSON.parse(JSON.stringify(v));
@@ -94,9 +93,8 @@ const rrSchema = new mongoose.Schema({
         /* Making validation true in case of DraftService.
           In other cases, apply normal validations. */
         try {
-          if (this.parent().parent().constructor.modelName === 'DraftService') return true;
-          else return false;
-        } catch (e) {/* Not a draft service so continue below */ }
+          if (this.parent().parent().constructor.modelName === 'DraftService') return true; //else continue validations.
+        } catch (e) {/* Not a draft service so continue below validations*/ }
         if (this.payloadType === 'JSON') {
           try {
             JSON.parse(JSON.stringify(v));
