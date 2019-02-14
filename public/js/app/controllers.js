@@ -27,8 +27,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       };
     }])
 
-    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
-      function ($scope, apiHistoryService, sutService,authService,suggestionsService,helperFactory,ctrlConstants){
+    .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService',
+      function ($scope, apiHistoryService, sutService,authService,suggestionsService,helperFactory,ctrlConstants,modalService){
             $scope.myUser = authService.getUserInfo().username;
             $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
             $scope.servicevo = {};
@@ -171,6 +171,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                }); 
             }
           };
+          $scope.showTemplateHelp = function(){
+            modalService.showTemplateHelp();
+          
+        }
     }])
 
     .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 
@@ -1282,8 +1286,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
       });
       $scope.pollForRRPairs();
      }])   
-    .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',"$location",
-        function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService,$location) {    
+    .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',"$location",'modalService',
+        function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService,$location,modalService) {    
           
           $scope.statusCodes = suggestionsService.getStatusCodes();
             $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -1633,6 +1637,10 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             $scope.totalDisplayed += 10;
           };
 
+          $scope.showTemplateHelp = function(){
+              modalService.showTemplateHelp();
+            
+          }
           //To Show Service Success Modal when a new service is created.
           if($routeParams.frmWher=='frmServCreate'){
             $http.get('/api/services/' + $routeParams.id)
@@ -1650,6 +1658,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               });
             $('#success-modal').modal('toggle');
           }
+
+
     }])
 
     .controller("selectServiceController", ['$scope', 'apiHistoryService','authService',
