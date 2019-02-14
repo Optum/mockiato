@@ -224,10 +224,6 @@ describe('API tests', function() {
                 .send(mqService)
                 .expect(200)
                 .expect(function(res) {
-                    console.log("Mqreq: ");
-                    console.log(res);
-                    console.log("mqserv: ");
-                    console.log(mqService);
                     id = res.body._id;
                 }).end(done);
         });
@@ -375,3 +371,6 @@ describe('API tests', function() {
     });
 });
 
+module.export = {
+    token : token
+}
