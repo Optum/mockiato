@@ -50,7 +50,9 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
         //Ensure path starts with /
         if(this.path.substring(0,1) != "/")
             this.path = "/" + this.path;     
-    
+        
+        //Make sure it starts with ONLY one /
+        this.path.replace(/^\/+/,"/");
         this.model = Recording.create({
             sut : {name:sut},
             path : path,
@@ -59,7 +61,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             remotePort : remotePort || 80,
             headerMask : headerMask || ['Content-Type'],  
             service : {
-                basePath : path.substring(1),
+                basePath : path,
                 sut:{name:sut},
                 name:name,
                 type:protocol
