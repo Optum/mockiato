@@ -197,6 +197,7 @@ function registerRRPair(service, rrpair) {
         // send matched data back to client
         setRespHeaders();
         if (rrpair.resStatus && rrpair.resData) {
+          resp.status(rrpair.resStatus);
           //Give .send a buffer instead of a string so it won't yell at us about content-types
 
 
