@@ -1,0 +1,202 @@
+<p>
+    Matching templates allow the user to select which fields Mockiato should attempt to match on, and/or provide specific conditions
+    for if a field is considered to have matched.
+</p>
+<h3>Template structure</h3>
+<p>
+    A matching template should mirror the incoming request in structure, but only include fields that you wish Mockiato to attempt
+    to match on. E.g. if your incoming request looks like:
+    <pre>
+        <code>
+            {
+                "abc":"def",
+                "foo":"bar"
+            }
+        </code>
+    </pre> But you only want to match on the "abc" field, ignoring "foo", you could construct a matching template as such:
+    <pre>
+        <code>
+            {
+                "abc":""
+            }
+        </code>
+    </pre> Then, Mockiato will ONLY attempt to match on "abc", so any of these requests would work:
+    <pre>
+        <code>
+            {
+                "abc":"def"
+            }
+        </code>
+    </pre>
+    <pre>
+        <code>
+            {
+                "abc":"def",
+                "foo":"bar"
+            }
+        </code>
+    </pre>
+    <pre>
+        <code>
+            {
+                "abc":"def",
+                "foo":"123",
+                "nonsense","argument"
+            }
+        </code>
+    </pre>
+</p>
+<h3>Conditions</h3>
+<p><b>NOTE: Conditions will only work with SOAP and REST services, NOT MQ.</b></p>
+<p>Conditions are tests that Mockiato can apply to specific fields during matching- for instance, Mockiato can use the 'any' condition to test only that a field is present, but not test its value, or the 'lt' condition to test that a field's value is less than a given value. This is done by filling the value of a field with a 'condition string'. This string can contain one or more conditions, separated by a semicolon, ";". The argument passed to the condition is seperated by a colon, ":". A field is only considered matched if ALL conditions provided are matched.</p>
+<pre>
+    <code>
+        {
+            "abc":"lt:4"
+        }
+    </code>
+</pre>
+<h4>List of conditions</h4>
+<table class="table">
+    <tr>
+        <th>
+            Condition
+        </th>
+        <th>
+            Name
+        </th>
+        <th>
+            Argument
+        </th>
+        <th>
+            Description
+        </th>
+    </tr>
+    <tr>
+        <td>
+            lt
+        </td>
+        <td>
+            Less Than
+        </td>
+        <td>
+            A number
+        </td>
+        <td>
+            This condition evaluates true if and only if the request's value for this field is less than the argument provided.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            gt
+        </td>
+        <td>
+            Greater Than
+        </td>
+        <td>
+            A number
+        </td>
+        <td>
+            This condition evaluates true if and only if the request's value for this field is greater than the argument provided.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            any
+        </td>
+        <td>
+            Any
+        </td>
+        <td>
+            none
+        </td>
+        <td>
+            This condition evaluates true if and only if the field is present in the request. No further evaluation is made (any value may be passed)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            regex
+        </td>
+        <td>
+            Regular Expression
+        </td>
+        <td>
+            A javascript regular expression
+        </td>
+        <td>
+            This condition evaluates true if and only if the request's value for this field CONTAINS an expression that matches this regular expression (This means if you want an exact, complete match, you will need to use ^ and $)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            map
+        </td>
+        <td>
+            Map value
+        </td>
+        <td>
+            A parameter name
+        </td>
+        <td>
+            This condition always evaluates true. Additionally, it takes the incoming request value and maps it to a parameter name, which can then be used to reference this value to echo it in the response Mockiato gives to the user. NOTE: This ALWAYS resolves true. If you want to ensure this field is present, pair with the 'any' condition.
+        </td>
+    </tr>
+</table>
+<h4>Value Mapping</h4>
+<p>Using the 'Map' condition, Mockiato can map values from the request to the response dynamically. This is done by giving a parameter name to the map condition to save a value from the request to. Then, template tags are used in the configured response, as: {{parameterName}}</p>
+<p>For instance, if your request looked like:</p>
+<pre>
+        <code>
+            {
+                "abc":"def",
+                "foo":"bar"
+            }
+        </code>
+    </pre>
+
+<p>And your response like:</p>
+
+<pre>
+    <code>
+        {
+            "firstName":"Bob",
+            "lastName":"Johnson"
+        }
+    </code>
+</pre>
+
+<p>And you wanted to map the value of 'abc' in the request to the value of 'firstName' in the response, you would set up a matching template like this:</p>
+
+<pre>
+    <code>
+        {
+            "abc":"map:fname",
+            "foo":""
+        }
+    </code>
+</pre>
+
+<p>And a response like this:</p>
+
+<pre>
+    <code>
+        {
+            "firstName":"{{fname}}",
+            "lastName":"Johnson"
+        }
+    </code>
+</pre>
+
+<p>Then, any value for 'abc' will be accepted, and mapped into the value of firstName in the response.</p>
+
+<h4>Multiple Conditions</h4>
+<p>Mockiato can evaluate multiple conditions on each field. To do this, just separate your conditions by a semicolon- ";". Each condition must evaluate true for this field to be considered a match. For example, if you wanted to use regular expressions to make sure a field was a valid Social Security Number, AND wanted to map its value to the response, you could do:</p>
+<pre>
+    <code>
+        {
+            "ssn":"regex:^[0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]$;map:ssn"
+        }
+    </code>
+</pre>
+<p>Then, any field will be evaluated against the regular expression, AND be mapped to the parameter name 'ssn'.</p>
