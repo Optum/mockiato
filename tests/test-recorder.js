@@ -110,9 +110,6 @@ describe('Recorder Tests', function() {
             request
                 .post('/recording/live/' + mockGroup.name + "/virtual/" + mockGroup.name + baseService.basePath)
                 .send(serviceRequest)
-                .expect(function(res){
-                    console.log(res.error);
-                })
                 .expect(200)
                 .end(done);
         });
@@ -164,7 +161,6 @@ describe('Recorder Tests', function() {
                 .expect(200)
                 .expect(function(res){
                     recordedService = res.body.service;
-                    console.log(recordedService);
                 })
                 .end(done);
         });
