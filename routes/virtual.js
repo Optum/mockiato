@@ -4,9 +4,8 @@ const xml2js = require('xml2js');
 const debug = require('debug')('matching');
 const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
-const logger = require('../winston');
 const invoke = require('./invoke');
-
+const matchTemplateController = require('../controllers/matchTemplateController');
 
   
 // function to simulate latency
@@ -48,7 +47,7 @@ function registerRRPair(service, rrpair) {
     var processRRPair = function(){
       req.msgContainer = req.msgContainer || {};
       req.msgContainer.reqMatched = false;
-
+      delete req._Mockiato_Flat_ReqData;
       if (req.method === rrpair.verb) {
         // convert xml to js object
         if (rrpair.payloadType === 'XML') {
@@ -96,57 +95,55 @@ function registerRRPair(service, rrpair) {
 
       // try exact math
       match = deepEquals(payload, reqData);
-
+      var templateOptions;
       if (!match) {
         // match based on template
         let templates = service.matchTemplates;
 
         if (templates && templates.length) {
-          for (let template of templates) {
+          let flatPayload, flatReqData;
+
+          //Check for cached flats. Cache flats if not done yet
+          if(req._Mockiato_Flat_Payload)
+            flatPayload = req._Mockiato_Flat_Payload;
+          else{
+            flatPayload = flattenObject(payload);
+            req._Mockiato_Flat_Payload = flatPayload;
+          }
+          if(req._Mockiato_Flat_ReqData)
+            flatReqData = req._Mockiato_Flat_Payload;
+          else{
+            flatReqData = flattenObject(reqData);
+            req._Mockiato_Flat_ReqData = flatReqData;
+          }
+          if(!(req._Mockiato_Flat_Templates)){
+            req._Mockiato_Flat_Templates = [];
+          }
+
+          for (let i = 0; i < templates.length; i++) {
+            let template = templates[i];
+            
+
             if (!template) {
               break;
             }
-            
-            if (rrpair.payloadType === 'XML') {
-              xml2js.parseString(template, function(err, xmlTemplate) {
-                if (err) {
-                  logEvent(err);
-                  return;
-                }
-                template = xmlTemplate;
-              });
-            }
-            else if (rrpair.payloadType === 'JSON') {
-              try {
-                template = JSON.parse(template);
-              }
-              catch(e) {
-                debug(e);
+            let flatTemplate;
+            if(req._Mockiato_Flat_Templates.length > i){
+              flatTemplate = req._Mockiato_Flat_Templates[i];
+              if(flatTemplate === false)
                 continue;
-              }
-            }
-    
-            const flatTemplate = flattenObject(template);
-            const flatPayload  = flattenObject(payload);
-            const flatReqData  = flattenObject(reqData);
-    
-            const trimmedPayload = {}; const trimmedReqData = {};
+            }else{
+              flatTemplate = matchTemplateController.parseAndFlattenTemplate(template,rrpair.payloadType);
               
-            for (let field in flatTemplate) {
-              trimmedPayload[field] = flatPayload[field];
-              trimmedReqData[field] = flatReqData[field];
+              req._Mockiato_Flat_Templates.push(flatTemplate);
+              if(flatTemplate === false)
+                continue;
+              
             }
-            
-            logEvent(path, label, 'received payload (from template): ' + JSON.stringify(trimmedPayload, null, 2));
-            logEvent(path, label, 'expected payload (from template): ' + JSON.stringify(trimmedReqData, null, 2));
 
-            match = deepEquals(trimmedPayload, trimmedReqData);
-
-            // make sure we're not comparing {} == {}
-            if (match && JSON.stringify(trimmedPayload) === '{}') {
-              match = false;
-            }
-            
+            templateOptions = matchTemplateController.matchOnTemplate(flatTemplate,rrpair,flatPayload,flatReqData,path);
+            if(templateOptions !== false)
+              match = true;
             if (match) break;
           }
         }
@@ -202,17 +199,29 @@ function registerRRPair(service, rrpair) {
         if (rrpair.resStatus && rrpair.resData) {
           resp.status(rrpair.resStatus);
           //Give .send a buffer instead of a string so it won't yell at us about content-types
-          if(typeof rrpair.resData === "object")
-            resp.status(rrpair.resStatus).send(new Buffer(JSON.stringify(rrpair.resData)));
-          else
-            resp.status(rrpair.resStatus).send(new Buffer(rrpair.resData));
+
+
+          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resData;
+
+          //Handle template mapping
+          if(templateOptions){
+            resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
+          }
+
+
+          resp.send(new Buffer(resString));
         }
         else if (!rrpair.resStatus && rrpair.resData) {
           //Give .send a buffer instead of a string so it won't yell at us about content-types
-          if(typeof rrpair.resData === "object")
-            resp.send(new Buffer(JSON.stringify(rrpair.resData)));
-          else
-            resp.send(new Buffer(rrpair.resData));
+          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resdata;
+
+          //Handle template mapping
+          if(templateOptions){
+            resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
+          }
+
+
+          resp.send(new Buffer(resString));
         }
         else if (rrpair.resStatus && !rrpair.resData) {
           resp.sendStatus(rrpair.resStatus);
@@ -345,16 +354,7 @@ function deregisterService(service) {
   });
 }
 
-function logEvent(path, label, msg) {
-  debug(path, label, msg);
 
-  let event = {};
-  event.path = path;
-  event.label = label;
-  event.msg = msg;
-
-  logger.info(event);
-}
 
 module.exports = {
   router: router,

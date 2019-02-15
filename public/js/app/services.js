@@ -1,5 +1,19 @@
 var serv = angular.module('mockapp.services',['mockapp.factories'])
 
+    .service('modalService',['$http','$rootScope','servConstants',
+    function($http,$rootScope,servConstants){
+      function setRemoteModal(title,remoteBodyLocation,footer){
+        $http.get(remoteBodyLocation).then(function(rsp){
+          $('#genricMsg-dialog').find('.modal-title').text(title);
+          $('#genricMsg-dialog').find('.modal-body').html(rsp.data);
+          $('#genricMsg-dialog').find('.modal-footer').html("");
+          $('#genricMsg-dialog').modal('toggle');
+        });
+      }
+      this.showTemplateHelp = function(){
+        setRemoteModal(servConstants.MCH_HELP_TITLE,"/partials/modals/templateHelpModal.html","");
+      }
+    }])
     .service('authService', ['$http', '$window', '$location', '$rootScope', 'servConstants', 
         function($http, $window, $location, $rootScope, servConstants) {
             var userInfo;
@@ -52,6 +66,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.LOGIN_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(servConstants.LOGIN_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
                 });
             };
@@ -133,9 +148,32 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     .service('apiHistoryService', ['$http', '$location', 'authService', 'feedbackService', 'xmlService', 'servConstants','$routeParams',
         function($http, $location, authService, feedbackService, xmlService, servConstants,$routeParams) {
 
+            this.deleteRecordedLiveRRPair = function(serviceId,rrPairId){
+              var token = authService.getUserInfo().token;
+              return $http.delete('/api/services/' + serviceId + '/recorded/' + rrPairId + "?token=" + token);
+            }
+
+            this.addRRPairToService = function(serviceId,rr){
+              var token = authService.getUserInfo().token;
+              return $http.patch('/api/services/' + serviceId + '/rrpairs?token=' + token, rr);
+            }
+
+            this.getRecordedLiveRRPairs = function(serviceId){
+              return $http.get('/api/services/' + serviceId + '/recorded');
+            }
+
             //gets all recordings, unfiltered
             this.getRecordings = function(){
                 return $http.get('/api/recording');
+            }
+
+            this.startRecorder = function(recorder){
+              return $http.patch('/api/recording/' + recorder._id + "/start");
+              
+            }
+
+            this.stopRecorder = function(recorder){
+              return $http.patch('/api/recording/' + recorder._id + "/stop");
             }
 
             this.getRecordingById = function(id){
@@ -375,6 +413,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     failStatusCodes : failCodesArray,
                     failStrings : failStringsArray,
                     ssl : servicevo.invokeSSL,
+                    record : servicevo.liveRecordCheck,
                     liveFirst : servicevo.liveInvokePrePost == 'PRE'
                   };
                   
@@ -389,12 +428,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .then(function(response) {
                       var data = response.data;
                       console.log(data);
-                      if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                      $('#genricMsg-dialog').modal('toggle');
-                      }
-                      else{
                       if(isRecording){
                         $http.delete('/api/recording/' + $routeParams.id).then(function(){
                           $location.path('/update/' + data._id + '/frmServCreate');
@@ -402,13 +435,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       }else{
                         $location.path('/update/' + data._id + '/frmServCreate');
                       }
-                    }
                   })
 
                   .catch(function(err) {
                     console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
+                      $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                   });
                 }
@@ -418,14 +451,20 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .then(function(response) {
                       var data = response.data;
                       console.log(data);
+                                            
+                      if($routeParams.frmWher == 'frmDraft'){
+                          $location.path('/');
+                      }else{
                       feedbackService.displayServiceInfo(data);
+                      }                
                       $('#success-modal').modal('toggle');
                   })
 
                   .catch(function(err) {
                       console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.err.data.error);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                   });
                 }
@@ -613,20 +652,19 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               if (!isUpdate) {
                 $http.post('/api/services/draftservice?token=' + token, servData)
                 .then(function(response) {
-                    var data = response.data;
-                    console.log(data);
-                    if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                      $('#genricMsg-dialog').modal('toggle');
-                    }
-                    $('#service-save-success-modal').modal('toggle');
+                    var data;
+                    if(response.data.mqservice)
+                        data = response.data.mqservice;
+                    else
+                        data = response.data.service;
+                    console.log(data);                    $('#service-save-success-modal').modal('toggle');
                 })
 
                 .catch(function(err) {
                   console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.SERVICE_SAVE_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(servConstants.SERVICE_SAVE_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
                 });
               }
@@ -649,6 +687,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.SERVICE_SAVE_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(servConstants.SERVICE_SAVE_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
                 });
               }
@@ -703,7 +742,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   remotePort:servicevo.remotePort,
                   basePath:servicevo.basePath,
                   headerMask:[],
-                  ssl:servicevo.ssl
+                  ssl:servicevo.ssl,
+                  creator:servicevo.currentUser,
+                  filters:{
+                    enabled:servicevo.filterEnable,
+                    bodyStrings:[],
+                    headers:[],
+                    statuses:[]
+                  }
                   
                 }
 
@@ -715,6 +761,25 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if(head.k)
                     recorder.headerMask.push(head.k.originalObject);
                 }
+
+                //Extract filters
+                servicevo.filterStatusCodes.forEach(function(code){
+                  if(code.v){
+                    recorder.filters.statuses.push(parseInt(code.v));
+                  }
+                });
+                servicevo.filterStrings.forEach(function(string){
+                  if(string.v){
+                    recorder.filters.bodyStrings.push(string.v);
+                  }
+                });
+                servicevo.filterHeaders.forEach(function(header){
+                  if(header.k){
+                    recorder.filters.headers.push({key:header.k,value:header.v});
+                  }
+                });
+
+
                 console.log(servicevo);
 
 
@@ -731,14 +796,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 .catch(function(err) {
                     console.log(err);
-                    if(err.data.error == "OverlappingRecorderPathError"){
-                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.DUP_RECORDER_PATH_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.DUP_RECORDER_PATH_BODY);
-                    }else{
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_TITLE);
-                    }
-                    $('#genricMsg-dialog').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
+                      $('#genricMsg-dialog').modal('toggle');
                 });
 
             };
@@ -751,6 +812,22 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 var sutlist = sutFactory.getAllSUT();
                 return sutlist;
             };
+
+            this.getAllSUTPromise = function(){
+              return new Promise(function(resolve,reject){
+                $http.get('/api/systems').then(function(response){
+                  var sutlist = [];
+                  response.data.forEach(function(sutData) {
+                    var sut = {
+                      name: sutData.name
+                    };
+                   
+                    sutlist.push(sut);
+                  });
+                  resolve(sutlist);
+              });
+            });
+          };
 
           this.getGroupsToBeDeleted = function(user){
               var deleteSutList = sutFactory.getGroupsToBeDeleted(user);
@@ -799,6 +876,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               console.log(err);
               $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
               $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
               $('#genricMsg-dialog').modal('toggle');
             });}
 
@@ -855,15 +933,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
               .then(function (response) {
                 var data = response.data;
-                if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
-                  $('#genricMsg-dialog').modal('toggle');
-                  }
-                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-              }})
+              })
               .catch(function (err) {
                 console.log(err.data.error);
                 return message(err.data.error);
@@ -920,21 +991,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             })
               .then(function (response) {
                 var data = response.data;
-                if(data.error == 'twoSeviceDiffNameSameBasePath'){
-                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY);
-                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.CLOSE_PRMRY_BTN_FOOTER);
-                  $('#genricMsg-dialog').modal('toggle');
-                  }
-                  else{
                 $location.path('/update/' + data._id + '/frmServCreate');
-               } 
                return message(response.data.error);
                })
               .catch(function (err) {
                 console.log(err);
                 $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_SPEC_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                 $('#genricMsg-dialog').modal('toggle');
               });
         };
@@ -1057,6 +1121,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   console.log(e);
                   $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
                   $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY_IMPORT_TEMPLATE);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                   $('#genricMsg-dialog').modal('toggle');
                   return;
                 }
@@ -1072,6 +1137,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     console.log(err);
                     $('#genricMsg-dialog').find('.modal-title').text(servConstants.ADD_SUT_FAIL_ERR_TITLE);
                     $('#genricMsg-dialog').find('.modal-body').text(servConstants.ADD_SUT_FAIL_ERR_BODY);
+                    $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                     $('#genricMsg-dialog').modal('toggle');
                 });
 
@@ -1083,19 +1149,31 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 })
                 .catch(function(err) {
                     console.log(err);
-                    $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                    $('#genricMsg-dialog').find('.modal-body').text(servConstants.PUB_FAIL_ERR_BODY);
-                    $('#genricMsg-dialog').modal('toggle');
+                      $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                      $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                      $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);  
+                      $('#genricMsg-dialog').modal('toggle');   
                 });
             };
 
     }])
 
-    .service('userService', ['userFactory',
-        function(userFactory) {
+    .service('userService', ['userFactory','$http',
+        function(userFactory,$http) {
             this.getAllUsers = function() {
                 return userFactory.getAllUsers();
             };
+            this.getAllUsersPromise = function() {
+              return new Promise(function(resolve,reject){
+                $http.get('/api/users').then(function(response){
+                  var userlist = [];
+                  response.data.forEach(function(userData){
+                    userlist.push({name:userData.uid});
+                  });
+                  resolve(userlist);
+                });
+              });
+          };
     }])
 
     .service('suggestionsService', ['statusCodesFactory', 'headersFactory',
@@ -1145,18 +1223,15 @@ serv.constant("servConstants", {
         "LOGIN_ERR_TITLE" : "Login Error",
         "LOGIN_ERR_BODY" : "Invalid credentials. Please try again.",
         "PUB_FAIL_ERR_TITLE" : "Publish Failure Error",
-        "PUB_FAIL_ERR_BODY" : "Please ensure your request / response pairs are well formed.",
         "PUB_FAIL_ERR_BODY_IMPORT_TEMPLATE" : "Please ensure you have uploaded a file in JSON format.",
-        "TWOSRVICE_DIFFNAME_SAMEBP_ERR_BODY" : "There is another service already exist in our system with same basepath.",
         "UPLOAD_FAIL_ERR_TITLE" : "Upload Failure Error",
         "UPLOAD_FAIL_ERR_BODY" : "Error occured in bulk upload.",
         "ADD_SUT_FAIL_ERR_TITLE" : "SUT Add Error",
         "ADD_SUT_FAIL_ERR_BODY" : "Error occured in creating new SUT.",
-        "PUB_SPEC_FAIL_ERR_BODY": "Spec publish failed. Please verify again the URL you have entered or spec file you have uploaded.",
         "SOME_ERR_IN_UPLOADING_ZIP" : "There is some problem in uploading this zip file." ,
-        "CLOSE_PRMRY_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-lg btn-primary">Close</button>',
         "DUP_RECORDER_PATH_TITLE" : "Publish Failure: Duplicate Path",
-        "DUP_RECORDER_PATH_BODY" : "This recorder's group and path overlap with an active recorder.",
         "SERVICE_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
-        "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed"
+        "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed",
+        "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
+        "MCH_HELP_TITLE" : "Match Templates Help"
       });
