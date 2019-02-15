@@ -423,7 +423,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
             sut: service.sut,
             name: service.name,
             type: service.type,
-            basePath: service.basePath
+            basePath: service.basePath.substring(0,1) == "/" ? service.basePath.substring(1) : service.basePath
           };
           $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
           $scope.servicevo.rawpairs = processRRPairs(service.rrpairs);
