@@ -1,8 +1,10 @@
 const app = require('../app');
 const request = require('supertest').agent(app);
-const YAML = require('yamljs');
 const test = require('./test.js');
-const port = process.env.PORT || '8080';
+
+
+
+
 
 let recId;
 let id;
@@ -14,8 +16,7 @@ let token = '?token=';
 const resource    = '/api/recording';
 const baseService = require('./resources/Recorder/Record_Test_Base_Service.json');
 const serviceRequest = require('./resources/Recorder/recorder_test_rec-req.json');
-const recorder = require('./resources/Recorder/recorder.json');
-
+const recorder = require('./resources/Recorder/recorder.1.json');
 
 const mockUser = {
     username: getRandomString(),
@@ -31,9 +32,11 @@ function getRandomString() {
     return  Math.random().toString(36).substring(2, 15);
 }
 
+
 baseService.sut = mockGroup;
 recorder.sut = mockGroup.name;
-
+recorder.basePath = '/virtual/' + mockGroup.name + baseService.basePath;
+recorder.remotePort = process.env.PORT;
 
 describe('Recorder Tests', function() {
     this.timeout(15000);
@@ -63,6 +66,16 @@ describe('Recorder Tests', function() {
                 .expect(200)
                 .end(done);
         });
+        it('Creates the base service', function(done) {
+            request
+                .post('/api/services' + token)
+                .send(baseService)
+                .expect(200)
+                .expect(function(res){
+                    id = res.body._id;
+                })
+                .end(done);
+        });
     });
 
    
@@ -76,7 +89,6 @@ describe('Recorder Tests', function() {
             
             .expect(function(res){
                 recId = res.body._id;
-                console.log("PORT: " + port);
             })
             .expect(200)
             .end(done);
@@ -96,8 +108,11 @@ describe('Recorder Tests', function() {
     describe('Request against Recorder',function(){
         it('Returns a good response',function(done){
             request
-                .get('/recording/live/' + mockGroup.name + recorder.basePath)
+                .post('/recording/live/' + mockGroup.name + "/virtual/" + mockGroup.name + baseService.basePath)
                 .send(serviceRequest)
+                .expect(function(res){
+                    console.log(res.error);
+                })
                 .expect(200)
                 .end(done);
         });
@@ -122,7 +137,8 @@ describe('Recorder Tests', function() {
         });
         it('Verifies the recorder is stopped',function(done){
             request
-                .get('/recording/live/' + mockGroup.name + recorder.basePath)
+                .post('/recording/live/' + mockGroup.name + "/virtual/" + mockGroup.name + baseService.basePath)
+                .send(serviceRequest)
                 .expect(404)
                 .end(done);
         });
@@ -134,7 +150,8 @@ describe('Recorder Tests', function() {
         });
         it('Verifies the recorder is started',function(done){
             request
-                .get('/recording/live/' + mockGroup.name + recorder.basePath)
+                .post('/recording/live/' + mockGroup.name + "/virtual/" + mockGroup.name + baseService.basePath)
+                .send(serviceRequest)
                 .expect(200)
                 .end(done);
         });
@@ -164,7 +181,8 @@ describe('Recorder Tests', function() {
         });
         it('Verifies service was created',function(done){
             request
-                .get('/virtual' + recMadeBase)
+                .post("/virtual/" + mockGroup.name + baseService.basePath)
+                .send(serviceRequest)
                 .expect(200,done);
         })
         it('Deletes the recording',function(done){
@@ -174,7 +192,8 @@ describe('Recorder Tests', function() {
         });
         it('Verifies the recorder is deleted',function(done){
             request
-                .get('/recording/live/' + mockGroup.name + recorder.basePath)
+                .post('/recording/live/' + mockGroup.name + "/virtual/" + mockGroup.name + baseService.basePath)
+                .send(serviceRequest)
                 .expect(404)
                 .end(done);
         });
@@ -185,6 +204,12 @@ describe('Recorder Tests', function() {
         it('Deletes recorded service', function(done) {
             request
                 .delete('/api/services/' + recMadeServId + token)
+                .expect(200)
+                .end(done);
+        });
+        it('Deletes the base service', function(done) {
+            request
+                .delete('/api/services/' + id + token)
                 .expect(200)
                 .end(done);
         });

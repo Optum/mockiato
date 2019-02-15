@@ -4,6 +4,8 @@ process.env.MOCKIATO_MODE = 'single';
 const app = require('../app');
 const request = require('supertest').agent(app);
 const YAML = require('yamljs');
+process.env.PORT = 15001;
+const www = require('../bin/www');
 
 let id = '';
 let token = '?token=';
