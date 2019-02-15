@@ -207,7 +207,7 @@ function registerRRPair(service, rrpair) {
             resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
           }
 
-
+          resp.status(rrpair.resStatus);
           resp.send(new Buffer(resString));
         }
         else if (!rrpair.resStatus && rrpair.resData) {
