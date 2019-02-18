@@ -931,7 +931,7 @@ function updateService(req, res) {
         let templates = service.matchTemplates;
 
         if (templates && templates.length && templates[0]) {
-          for (let rrpair of serv.rrpairs) {
+          for (let rrpair of service.rrpairs) {
             for (let template of templates) {
               if (!template) {
                 break;
