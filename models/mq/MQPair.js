@@ -9,15 +9,18 @@ const pairSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     validate: {
       validator: function (v) {
-        if (this.payloadType === 'XML') {
-          try {
-            libxmljs.parseXml(v);
-            return true;
-          } catch (e) {
-            return false;
-          }
+      /* Making validation true in case of DraftService.
+        In other cases, apply normal validations. */
+        try{
+          this.parent().parent();
+          return true;
+        }catch (e){/* Not a draft service so continue below */}
+        try {
+          libxmljs.parseXml(v);
+          return true;
+        } catch (e) {
+          return false;
         }
-        return true;
       },
       message: constants.MQ_VALID_XML_PAYLOAD_ERR
     },
@@ -27,15 +30,18 @@ const pairSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     validate: {
       validator: function (v) {
-        if (this.payloadType === 'XML') {
-          try {
-            libxmljs.parseXml(v);
-            return true;
-          } catch (e) {
-            return false;
-          }
+      /* Making validation true in case of DraftService.
+        In other cases, apply normal validations. */
+        try{
+          this.parent().parent();
+          return true;
+        }catch (e){/* Not a draft service so continue below */}
+        try {
+          libxmljs.parseXml(v);
+          return true;
+        } catch (e) {
+          return false;
         }
-        return true;
       },
       message: constants.MQ_VALID_XML_PAYLOAD_ERR
     },
