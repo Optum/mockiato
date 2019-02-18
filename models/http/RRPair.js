@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const libxmljs = require("libxmljs");
+const xml2js = require("xml2js");
 const constants = require('../../lib/util/constants');
 
 const rrSchema = new mongoose.Schema({
@@ -59,12 +59,12 @@ const rrSchema = new mongoose.Schema({
             return false;
           }
         } else if (this.payloadType === 'XML') {
-          try {
-            libxmljs.parseXml(v);
-            return true;
-          } catch (e) {
-            return false;
-          }
+          try{
+          xml2js.parseString(v, function (err, result) {
+            if(err) throw err;
+          });
+          return true;
+        }catch(e){return false;}
         } else {
           return true;
         }
@@ -103,12 +103,12 @@ const rrSchema = new mongoose.Schema({
             return false;
           }
         } else if (this.payloadType === 'XML') {
-          try {
-            libxmljs.parseXml(v);
+          try{
+            xml2js.parseString(v, function (err, result) {
+              if(err) throw err;
+            });
             return true;
-          } catch (e) {
-            return false;
-          }
+          }catch(e){return false;}
         } else {
           return true;
         }
