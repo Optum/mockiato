@@ -137,9 +137,11 @@ function init() {
 
   // register SOAP / REST virts from DB
   virtual.registerAllRRPairsForAllServices();
+  virtual.registerAllMQServices();
+
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
-  app.use('/virtual',invoke.router);
+  app.use('/virtual', invoke.router);
 
   // initialize recording routers
   const recorder = require('./routes/recording');

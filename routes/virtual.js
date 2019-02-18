@@ -3,6 +3,7 @@ const router = express.Router();
 const xml2js = require('xml2js');
 const debug = require('debug')('matching');
 const Service = require('../models/http/Service');
+const MQService = require('../models/mq/MQService');
 const removeRoute = require('../lib/remove-route');
 const invoke = require('./invoke');
 const matchTemplateController = require('../controllers/matchTemplateController');
@@ -212,13 +213,12 @@ function registerRRPair(service, rrpair) {
         }
         else if (!rrpair.resStatus && rrpair.resData) {
           //Give .send a buffer instead of a string so it won't yell at us about content-types
-          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resdata;
+          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resData;
 
           //Handle template mapping
           if(templateOptions){
             resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
           }
-
 
           resp.send(new Buffer(resString));
         }
@@ -300,7 +300,7 @@ function registerRRPair(service, rrpair) {
 
 // register all RR pairs for all SOAP / REST services from db
 function registerAllRRPairsForAllServices() {
-  Service.find({ $or: [{ type:'SOAP' }, { type:'REST' }] }, function(err, services) {
+  Service.find({}, function(err, services) {
     if (err) {
       debug('Error registering services: ' + err);
       return;
@@ -309,9 +309,8 @@ function registerAllRRPairsForAllServices() {
     try {
       services.forEach(function(service){
         if (service.running) {
-          service.rrpairs.forEach(function(rrpair){
-            registerRRPair(service, rrpair);
-          });
+          registerService(service);
+
           if(service.liveInvocation && service.liveInvocation.enabled){
             invoke.registerServiceInvoke(service);
           }
@@ -353,7 +352,30 @@ function deregisterService(service) {
   });
 }
 
+function registerAllMQServices() {
+  MQService.find({}, function(err, mqservices) {
+    if (err) {
+      debug('Error registering services: ' + err);
+      return;
+    }
 
+    mqservices.forEach(function(mqservice) {
+      if (mqservice.running) {
+        registerMQService(mqservice);
+      }
+    });
+  });
+}
+
+function registerMQService(mqserv) {
+  mqserv.basePath = '/mq';
+  
+  mqserv.rrpairs.forEach(function(rrpair){
+    rrpair.verb = 'POST';
+    rrpair.payloadType = 'XML';
+    registerRRPair(mqserv, rrpair);
+  });
+}
 
 module.exports = {
   router: router,
@@ -361,5 +383,7 @@ module.exports = {
   registerRRPair: registerRRPair,
   deregisterRRPair: deregisterRRPair,
   deregisterService: deregisterService,
+  registerMQService: registerMQService,
+  registerAllMQServices: registerAllMQServices,
   registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
 };
