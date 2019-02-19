@@ -197,6 +197,7 @@ function registerRRPair(service, rrpair) {
         // send matched data back to client
         setRespHeaders();
         if (rrpair.resStatus && rrpair.resData) {
+          resp.status(rrpair.resStatus);
           //Give .send a buffer instead of a string so it won't yell at us about content-types
 
 
@@ -212,7 +213,7 @@ function registerRRPair(service, rrpair) {
         }
         else if (!rrpair.resStatus && rrpair.resData) {
           //Give .send a buffer instead of a string so it won't yell at us about content-types
-          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resdata;
+          let resString = typeof rrpair.resData == "object" ? JSON.stringify(rrpair.resData) : rrpair.resData;
 
           //Handle template mapping
           if(templateOptions){

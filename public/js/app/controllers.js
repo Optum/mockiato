@@ -1658,8 +1658,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               });
             $('#success-modal').modal('toggle');
           }
-
-
     }])
 
     .controller("selectServiceController", ['$scope', '$http', '$routeParams', 'feedbackService', 'apiHistoryService','authService', 'ctrlConstants',
@@ -2205,8 +2203,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         if ($scope.uploadRRPair) {
           $scope.uploadSuccessMessage = "";
           $scope.uploadErrMessage = "";
-          if($scope.uploadRRPair.name.endsWith(".zip"))
-          {
+          if ($scope.uploadRRPair.name.endsWith(".zip")) {
             zipUploadAndExtractService.zipUploadAndExtract($scope.uploadRRPair, function (file_upload_name_id) {
               if (file_upload_name_id) {
                 $scope.uploadSuccessMessage = ctrlConstants.BULK_UPLOAD_SUCCESS_MSG + $scope.uploadRRPair.name;
@@ -2287,8 +2284,7 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 filename = "";
               }
               publishSpecService.publishSpec(spec, file_id, filename, function(message){
-                if(message == 'twoSeviceDiffNameSameBasePath')
-                { $scope.flag= true;}
+            if (message == 'twoSeviceDiffNameSameBasePath') { $scope.flag = true; }
               });
             } else {
               $scope.uploadErrMessage = ctrlConstants.SPEC_FILE_TYPE_URL_PUBLISH_ERROR;
@@ -2297,7 +2293,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           };
     }])
 
-    .controller("deletedServiceController", ['$scope','$http','$location','$routeParams','$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
     function($scope,$http,$location,$routeParams,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
         Promise.all([sutService.getAllSUTPromise(),userService.getAllUsersPromise()]).then(function(values){
         
@@ -2532,11 +2527,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
         };
     }])
 
-    .controller("draftServiceController", ['$scope', '$http','$location','$routeParams','$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants', 
     function($scope,$http,$location,$routeParams,$timeout,sutService,feedbackService,apiHistoryService,userService,authService,FileSaver,Blob,ctrlConstants){
-    Promise.all([sutService.getAllSUTPromise(),userService.getAllUsersPromise()]).then(function(values){       
-	
-		
+    Promise.all([sutService.getAllSUTPromise(),userService.getAllUsersPromise()]).then(function(values){
 		$scope.sutlist = values[0];
           $scope.userlist = values[1];
           if($routeParams.user || $routeParams.sut)
@@ -2613,8 +2605,8 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                 .catch(function(err) {
                     console.log(err);
                 });
-            }
-			
+            }	
+      };
 			   function performUpdateOnPathParams(){
           $scope.filtersSelected($routeParams.sut ? {name:$routeParams.sut} : null,$routeParams.user ? {name:$routeParams.user}:null);
           if($routeParams.sut){
@@ -2651,7 +2643,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
           $scope.servicelist = [];
         };
 
-
           //returning a promise from factory didnt seem to work with .then() function here, alternative solution
             $http.get('/api/systems')
               .then(function (response) {
@@ -2668,8 +2659,6 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
                     }
                   });
                 });
-              })
-
               .catch(function (err) {
                 console.log(err);
               });
@@ -2678,13 +2667,11 @@ var ctrl = angular.module("mockapp.controllers",['mockapp.services','mockapp.fac
               $http.get('/api/users/admin')
                 .then(function(response) {
                     $scope.adminUser = response.data;
-                    })
-
               .catch(function(err) {
                   console.log(err);
               });
 
-        };
+       };
 
       $scope.deleteDraftService = function (service) {
         $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
