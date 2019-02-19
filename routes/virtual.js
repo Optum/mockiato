@@ -4,6 +4,7 @@ const xml2js = require('xml2js');
 const debug = require('debug')('matching');
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
+const System = require('../models/common/System');
 const removeRoute = require('../lib/remove-route');
 const invoke = require('./invoke');
 const matchTemplateController = require('../controllers/matchTemplateController');
@@ -368,12 +369,56 @@ function registerAllMQServices() {
 }
 
 function registerMQService(mqserv) {
-  mqserv.basePath = '/mq';
+  System.find({ 'name' : mqserv.sut.name }, function(err, systems) {
+    if (err) {
+      debug('Error registering MQ service: ' + err);
+      return;
+    }
+
+    if (!systems.length || !systems[0]) {
+      debug('System not found: ' + mqserv.sut.name );
+      return;
+    }
+
+    let mqinfo = systems[0].mqInfo;
+
+    if (!mqinfo) {
+      debug('System does not have MQ info: ' + mqserv.sut.name );
+      return;
+    }
+
+    mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
   
-  mqserv.rrpairs.forEach(function(rrpair){
-    rrpair.verb = 'POST';
-    rrpair.payloadType = 'XML';
-    registerRRPair(mqserv, rrpair);
+    mqserv.rrpairs.forEach(function(rrpair){
+      rrpair.verb = 'POST';
+      rrpair.payloadType = 'XML';
+      registerRRPair(mqserv, rrpair);
+    });
+  });
+}
+
+function deregisterMQService(mqserv) {
+  System.find({ 'name' : mqserv.sut.name }, function(err, systems) {
+    if (err) {
+      debug('Error deregistering MQ service: ' + err);
+      return;
+    }
+
+    if (!systems.length || !systems[0]) {
+      debug('System not found: ' + mqserv.sut.name );
+      return;
+    }
+
+    let mqinfo = systems[0].mqInfo;
+
+    if (!mqinfo) {
+      debug('System does not have MQ info: ' + mqserv.sut.name );
+      return;
+    }
+
+    mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+  
+    deregisterService(mqserv);
   });
 }
 
@@ -384,6 +429,7 @@ module.exports = {
   deregisterRRPair: deregisterRRPair,
   deregisterService: deregisterService,
   registerMQService: registerMQService,
+  deregisterMQService: deregisterMQService,
   registerAllMQServices: registerAllMQServices,
   registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
 };
