@@ -13,12 +13,12 @@ const pairSchema = new mongoose.Schema({
         try{
           if (this.parent().parent().constructor.modelName === 'DraftService') return true; //else continue validations.
         } catch (e) {/* Not a draft service so continue below validations*/ }
-        /* try{
+        try{
           xml2js.parseString(v, function (err, result) {
             if(err) throw err;
           });
           return true;
-        }catch(e){return false;} */return true;
+        }catch(e){return false;}
       },
       message: constants.MQ_VALID_XML_REQ_ERR
     },
@@ -33,12 +33,12 @@ const pairSchema = new mongoose.Schema({
         try{
           if (this.parent().parent().constructor.modelName === 'DraftService') return true; //else continue validations.
         } catch (e) {/* Not a draft service so continue below validations*/ }
-        /* try{
+        try{
           xml2js.parseString(v, function (err, result) {
             if(err) throw err;
           });
           return true;
-        }catch(e){return false;} */return true;
+        }catch(e){return false;}
       },
       message: constants.MQ_VALID_XML_RES_ERR
     },

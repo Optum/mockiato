@@ -875,7 +875,7 @@ function updateService(req, res) {
   const type = req.body.type;
   const BaseService = (type === 'MQ') ? MQService : Service;
 
-  // find service by ID and update.
+  // find service by ID and update
   BaseService.findById(req.params.id, function (err, service) {
     if (err) {
       handleError(err, res, 400);
