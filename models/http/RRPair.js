@@ -59,12 +59,12 @@ const rrSchema = new mongoose.Schema({
             return false;
           }
         } else if (this.payloadType === 'XML') {
-          try{
+          /* try{
           xml2js.parseString(v, function (err, result) {
             if(err) throw err;
           });
           return true;
-        }catch(e){return false;}
+        }catch(e){return false;} */return true;
         } else {
           return true;
         }
@@ -103,12 +103,12 @@ const rrSchema = new mongoose.Schema({
             return false;
           }
         } else if (this.payloadType === 'XML') {
-          try{
+          /* try{
             xml2js.parseString(v, function (err, result) {
               if(err) throw err;
             });
             return true;
-          }catch(e){return false;}
+          }catch(e){return false;} */return true;
         } else {
           return true;
         }
