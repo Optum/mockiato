@@ -1008,63 +1008,64 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         function() {
 
           this.getDataType = function(dataType){
-            var dataOut;
-            switch(dataType){
-              case "First Name":
-                dataOut = chance.first();
-                break;
-              case "Last Name":
-                dataOut = chance.last();
-                break;
-              case "Boolean":
-                dataOut = chance.bool();
-                break;
-              case "Country":
-                dataOut = chance.country({full: true});
-                break;
-              case "Birthday":
-                dataOut = chance.birthday({string: true});
-                break;
-              case "Email Address":
-                dataOut = chance.email({domain: 'example.com'});
-                break;
-              case "IP Address":
-                dataOut = chance.ip();
-                break;
-              case "Street Address":
-                dataOut = chance.address();
-                break;
-              case "Date":
-                dataOut = chance.date({string: true});
-                break;
-              case "Day of Week":
-                dataOut = chance.weekday();
-                break;
-              case "Year":
-                dataOut = chance.year({min: 1900, max: 2100});
-                break;
-              case "Integer":
-                dataOut = chance.integer({min: 1, max: 10});
-                break;
+            if(dataType != null){
+              var dataOut;
+              switch(dataType){
+                case "First Name":
+                  dataOut = chance.first();
+                  break;
+                case "Last Name":
+                  dataOut = chance.last();
+                  break;
+                case "Boolean":
+                  dataOut = chance.bool();
+                  break;
+                case "Country":
+                  dataOut = chance.country({full: true});
+                  break;
+                case "Birthday":
+                  dataOut = chance.birthday({string: true});
+                  break;
+                case "Email Address":
+                  dataOut = chance.email({domain: 'example.com'});
+                  break;
+                case "IP Address":
+                  dataOut = chance.ip();
+                  break;
+                case "Street Address":
+                  dataOut = chance.address();
+                  break;
+                case "Date":
+                  dataOut = chance.date({string: true});
+                  break;
+                case "Day of Week":
+                  dataOut = chance.weekday();
+                  break;
+                case "Year":
+                  dataOut = chance.year({min: 1900, max: 2100});
+                  break;
+                case "Integer":
+                  dataOut = chance.integer({min: 1, max: 10});
+                  break;
 
-              case "String":
-                dataOut = chance.string({ length: 10 });
-                break;
+                case "String":
+                  dataOut = chance.string({ length: 10 });
+                  break;
 
-              case "Numeric String":
-                dataOut = chance.string({ length: 10, pool: '0123456789'});
-                break;
+                case "Numeric String":
+                  dataOut = chance.string({ length: 10, pool: '0123456789'});
+                  break;
 
-              case "String w/o Special Chars":
-                dataOut = chance.string({ length: 10, pool: '0123456789qwertyuiopasdfghjklzxcvbnm' });
-                break;
+                case "String w/o Special Chars":
+                  dataOut = chance.string({ length: 10, pool: '0123456789qwertyuiopasdfghjklzxcvbnm' });
+                  break;
 
-              default:
-                //handles all chancejs functions that are spelled exactly the same in interface. ie: Zip to zip()
-                dataOut = eval("chance." + dataType.toLowerCase() + "()");
-            }
-
-            return dataOut;
+                default:
+                  //handles all chancejs functions that are spelled exactly the same in interface. ie: Zip to zip()
+                  dataOut = eval("chance." + dataType.toLowerCase() + "()");
+                }
+              }
+              return dataOut;
           };
 
           this.json2xml = function(data){
