@@ -479,7 +479,7 @@ function getServicesArchiveBySystem(req, res) {
   let allServices = [];
 
   const query = { $or: [ { 'service.sut.name': req.params.name }, { 'mqservice.sut.name': req.params.name } ] };
-
+console.log(query);
   Archive.find(query, function(err, services) {
     if (err) {
       handleError(err, res, 500);
@@ -542,27 +542,31 @@ function getServicesByQuery(req, res) {
 }
 
 function getArchiveServices(req, res) {
-  const sut  = req.query.sut;
-  const user = req.query.user;
+ //const query = {};
 
-  const query = { $or: [ { 'service.sut.name': sut }, { 'mqservice.sut.name': sut },{ 'service.user.uid': user }, 
-            { 'mqservice.user.uid': user } ] };
+ const sut  = req.query.sut;
+ const user = req.query.user;
 
-  Archive.find(query, function(err, services)	{
-      if (err)	{
-        handleError(err, res, 500);
-        return;
-      }
-      return res.json(services);
-  });
+  const query = { $and :[ {$or: [ { 'service.sut.name': sut }, { 'mqservice.sut.name': sut }] },{$or : [{ 'service.user.uid': user }, 
+           { 'mqservice.user.uid': user } ]}] };
+
+ Archive.find(query, function(err, services)	{
+     if (err)	{
+       handleError(err, res, 500);
+       return;
+     }
+     return res.json(services);
+ });
 }
 
 function getDraftServices(req, res) {
+ // const query = {};
+  
   const sut  = req.query.sut;
   const user = req.query.user;
 
-  const query = { $or: [ { 'service.sut.name': sut }, { 'mqservice.sut.name': sut },{ 'service.user.uid': user }, 
-            { 'mqservice.user.uid': user } ] };
+  const query = { $and :[ {$or: [ { 'service.sut.name': sut }, { 'mqservice.sut.name': sut }] },{$or : [{ 'service.user.uid': user }, 
+            { 'mqservice.user.uid': user } ]}] };
 
   DraftService.find(query, function(err, services)	{
       if (err)	{
