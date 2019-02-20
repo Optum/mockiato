@@ -69,7 +69,6 @@ describe('Match Template Tests', function() {
                 .expect(200)
                 .expect(function(res){
                     id = res.body._id;
-                    console.log(res.body.rrpairs);
                 })
                 .end(done);
         });
@@ -82,6 +81,12 @@ describe('Match Template Tests', function() {
                     .post('/virtual/' + mockGroup.name + service.basePath)
                     .send(req.req)
                     .expect(req.status)
+                    .expect(function(res){
+                        if((req.req.d && res.body.d) && req.req.d != res.body.d){
+                            throw new Error("Mapping was not performed correctly");
+                        
+                        }
+                    })
                     .end(done);
             });
         }

@@ -70,7 +70,6 @@ describe('Live Invocation Tests', function() {
                 .expect(200)
                 .expect(function(res){
                     baseId = res.body._id;
-                    console.log(res.body.rrpairs);
                 })
                 .end(done);
         });
@@ -92,9 +91,6 @@ describe('Live Invocation Tests', function() {
                 .post('/virtual/' + mockGroup.name + service.basePath)
                 .set('content-type','application/json')
                 .send(requests[1])
-                .expect(function(res){
-                    console.log(res);
-                })
                 .expect(201)
                 .expect('_mockiato-is-live-backend','true')
                 .end(done);
