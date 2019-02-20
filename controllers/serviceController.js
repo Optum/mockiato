@@ -1584,23 +1584,3 @@ module.exports = {
 };
 
 
-//Add resDataString and rspDataString to every existing service on boot, if they do not already have it
-Service.find({'rrpairs.resDataString':{$exists:false},'rrpairs.reqDataString':{$exists:false}},function(err,docs){
-  if(err){
-    console.log(err);
-  }else{
-    if(docs){
-      docs.forEach(function(doc){
-        if(doc.rrpairs){
-          doc.rrpairs.forEach(function(rrpair){
-            if(rrpair.reqData)
-              rrpair.reqDataString = typeof rrpair.reqData == 'string' ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-            if(rrpair.resData)
-              rrpair.resDataString = typeof rrpair.resData == 'string' ? rrpair.resData : JSON.stringify(rrpair.resData);
-          });
-        }
-        doc.save();
-      });
-    }
-  }
-});
