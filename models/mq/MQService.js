@@ -22,6 +22,7 @@ const mqSchema = new mongoose.Schema({
     type: String,
     required: [true, constants.REQUIRED_SERVICE_TYPE_ERR]
   },
+  mqInfo: MQInfo.schema,
   matchTemplates: [mongoose.Schema.Types.Mixed],
   rrpairs: {
     type: [MQPair.schema],

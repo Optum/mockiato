@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const xml2js = require('xml2js');
-const debug = require('debug')('matching');
+const debug = require('debug')('default');
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 const System = require('../models/common/System');
@@ -156,7 +156,7 @@ function registerRRPair(service, rrpair) {
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
           if (!req.query) {
-            debug("expected queries in request");
+            logEvent(path, label, "expected queries in request");
             return false;
           }
           let matchedQueries = true;
@@ -370,57 +370,33 @@ function registerAllMQServices() {
 }
 
 function registerMQService(mqserv) {
-  System.find({ 'name' : mqserv.sut.name }, function(err, systems) {
-    if (err) {
-      debug('Error registering MQ service: ' + err);
-      return;
-    }
+  let mqinfo = mqserv.mqInfo;
 
-    if (!systems.length || !systems[0]) {
-      debug('System not found: ' + mqserv.sut.name );
-      return;
-    }
+  if (!mqinfo) {
+    debug('Service does not have MQ info: ' + mqserv.name);
+    return;
+  }
 
-    let mqinfo = systems[0].mqInfo;
+  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
 
-    if (!mqinfo) {
-      debug('System does not have MQ info: ' + mqserv.sut.name );
-      return;
-    }
-
-    mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
-  
-    mqserv.rrpairs.forEach(function(rrpair){
-      rrpair.verb = 'POST';
-      rrpair.payloadType = 'XML';
-      registerRRPair(mqserv, rrpair);
-    });
+  mqserv.rrpairs.forEach(function(rrpair){
+    rrpair.verb = 'POST';
+    rrpair.payloadType = 'XML';
+    registerRRPair(mqserv, rrpair);
   });
 }
 
 function deregisterMQService(mqserv) {
-  System.find({ 'name' : mqserv.sut.name }, function(err, systems) {
-    if (err) {
-      debug('Error deregistering MQ service: ' + err);
-      return;
-    }
+  let mqinfo = mqserv.mqInfo;
 
-    if (!systems.length || !systems[0]) {
-      debug('System not found: ' + mqserv.sut.name );
-      return;
-    }
+  if (!mqinfo) {
+    debug('Service does not have MQ info: ' + mqserv.name);
+    return;
+  }
 
-    let mqinfo = systems[0].mqInfo;
+  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
 
-    if (!mqinfo) {
-      debug('System does not have MQ info: ' + mqserv.sut.name );
-      return;
-    }
-
-    mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
-  
-    deregisterService(mqserv);
-  });
+  deregisterService(mqserv);
 }
 
 module.exports = {

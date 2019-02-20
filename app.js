@@ -159,13 +159,21 @@ function init() {
         const action  = msg.action;
         debug(action);
 
-        virtual.deregisterService(service);
-        invoke.deregisterServiceInvoke(service);
-        if (action === 'register') {
-          virtual.registerService(service);
-          
-          if(service.liveInvocation && service.liveInvocation.enabled){
-            invoke.registerServiceInvoke(service);
+        if (service.type !== 'MQ') {
+          virtual.deregisterService(service);
+          invoke.deregisterServiceInvoke(service);
+          if (action === 'register') {
+            virtual.registerService(service);
+            
+            if(service.liveInvocation && service.liveInvocation.enabled){
+              invoke.registerServiceInvoke(service);
+            }
+          }
+        }
+        else {
+          virtual.deregisterMQService(service);
+          if (action === 'register') {
+            virtual.registerMQService(service);
           }
         }
       }else if(msg.recorder){
