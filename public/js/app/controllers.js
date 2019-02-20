@@ -1204,6 +1204,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
         $('#genricMsg-dialog').modal('toggle');
         $('#modal-btn-yes').on("click", function () {
+          
           $scope.performDelete(rr);
         });
       }
@@ -1219,6 +1220,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.MRG_CONFIRM_FOOTER);
         $('#genricMsg-dialog').modal('toggle');
         $('#modal-btn-yes').on("click", function () {
+          if($scope.servicevo.type == "SOAP"){
+            rr.payloadType = "XML";
+            rr.method = "POST";
+          }
           apiHistoryService.addRRPairToService($scope.servicevo.id, rr).then(function (result) {
             $scope.performDelete(rr);
           });
