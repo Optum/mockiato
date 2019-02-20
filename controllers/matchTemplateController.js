@@ -97,6 +97,9 @@ function processCondition(field,conditionString,flatPayload){
  * @param {*} flatPayload 
  */
 function preProcessCondition(field,conditionString,flatPayload){
+    if(!(conditionString instanceof String)){
+        return false;
+    }
     var split = conditionString.split(";");
     var opts = {};
     for(let splString of split){
