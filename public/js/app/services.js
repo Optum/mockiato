@@ -657,7 +657,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                         data = response.data.mqservice;
                     else
                         data = response.data.service;
-                    console.log(data);                    $('#service-save-success-modal').modal('toggle');
+                    console.log(data);                   
+               
+                    $location.path('/showDraftService/' + data._id + '/frmCreateDraft');
+                 
+                    $('#service-save-success-modal').modal('toggle');
                 })
 
                 .catch(function(err) {
