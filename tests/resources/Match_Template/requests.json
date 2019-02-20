@@ -1,0 +1,65 @@
+[
+	{
+		 "desc": "Tests matching no-condition template",
+		 "status": 200,
+		 "req": {
+			 "a": true,
+			 "b": 123
+		}
+	},
+	{
+		 "desc": "Tests non-matching no-condition template",
+		 "status": 404,
+		 "req": {
+			 "a": false
+		}
+	},
+	{
+		 "desc": "Tests matching condition template",
+		 "status": 200,
+		 "req": {
+			 "c": 3,
+			 "d": "555-55-1234",
+			 "e": "words go here",
+			 "f": true
+		}
+	},
+	{
+		 "desc": "Tests non-matching condition 'regex'",
+		 "status": 404,
+		 "req": {
+			 "c": 3,
+			 "d": "555-55-123z",
+			 "e": "words go here",
+			 "f": true
+		}
+	},
+	{
+		 "desc": "Tests non-matching condition 'lt'",
+		 "status": 404,
+		 "req": {
+			 "c": 5,
+			 "d": "555-55-1234",
+			 "e": "words go here",
+			 "f": true
+		}
+	},
+	{
+		 "desc": "Tests non-matching condition 'any'",
+		 "status": 404,
+		 "req": {
+			 "c": 3,
+			 "d": "555-55-1234",
+			 "f": true
+		}
+	},
+	{
+		 "desc": "Tests non-matching on exact reqData match",
+		 "status": 404,
+		 "req": {
+			 "c": 3,
+			 "d": "555-55-1234",
+			 "f": true
+		}
+	}
+]
