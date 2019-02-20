@@ -126,6 +126,37 @@ describe('API tests', function() {
                 .end(done);
         });
     });
+    describe('Retrieve REST service\'s rrpairs', function() {
+        it('Responds with the correct service\'s rr pairs', function(done) {
+            request
+                .get(resource + '/' + id + '/rrpairs')
+                .expect(200)
+                .end(done);
+        });
+        it('Responds with a 500 error with an invalid id', function(done) {
+            request
+                .get(resource + '/' + id + "ABCDZZ" + '/rrpairs')
+                .expect(500)
+                .end(done);
+        });
+    });
+    describe('Adds an RRPair to the rest service', function() {
+        it('Responds with the correct service\'s rr pairs', function(done) {
+            request
+                .patch(resource + '/' + id + '/rrpairs' + token)
+                .send(restService.rrpairs[0])
+                .expect(200)
+                .end(done);
+        });
+        it('Responds with a 404 for wrong (but valid) id', function(done) {
+            request
+                .patch(resource + '/' + id.slice(0,-1) + '1' + '/rrpairs' + token)
+                .send(restService.rrpairs[0])
+                .expect(404)
+                .end(done);
+        });
+
+    });
     
     describe('Test REST service', function() {
         it('Responds with the virtual data', function(done) {
@@ -235,6 +266,12 @@ describe('API tests', function() {
         it('Responds with the correct service', function(done) {
             request
                 .get(resource + '/' + id)
+                .expect(200)
+                .end(done);
+        });
+        it('Responds with the correct service\'s RR pairs', function(done) {
+            request
+                .get(resource + '/' + id + "/rrpairs")
                 .expect(200)
                 .end(done);
         });
