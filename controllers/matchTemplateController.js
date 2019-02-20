@@ -76,7 +76,6 @@ function processCondition(field,conditionString,flatPayload){
             case "any":
                 return flatPayload[field] !== undefined && flatPayload[field] !== '';
             case "regex":
-                
                 var reg = new RegExp(split[1]);
                 return flatPayload[field].match(reg) !== null;
             default:
