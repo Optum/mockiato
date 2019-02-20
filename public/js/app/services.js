@@ -453,11 +453,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       console.log(data);
                                             
                       if($routeParams.frmWher == 'frmDraft'){
-                          $location.path('/');
+                        $location.path('/selectService/'+ data._id);
                       }else{
                       feedbackService.displayServiceInfo(data);
-                      }                
                       $('#success-modal').modal('toggle');
+                    }
                   })
 
                   .catch(function(err) {
@@ -683,7 +683,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                         data = response.data.service;
                     
                     console.log(data);
-                    feedbackService.displayServiceInfo(data);
                     $('#service-save-success-modal').modal('toggle');
                 })
 
