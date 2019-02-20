@@ -163,7 +163,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
-            .when("/selectService", {
+            .when("/selectService/:id", {
                 templateUrl: "partials/selectService.html",
                 controller: "selectServiceController",
                 resolve: {
@@ -279,7 +279,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
             .otherwise({
-                redirectTo: "/selectService"
+                redirectTo: "/selectService/home"
             });
     }]);
 

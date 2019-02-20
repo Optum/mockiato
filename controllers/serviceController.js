@@ -997,8 +997,6 @@ function updateServiceAsDraft(req, res) {
       handleError(err, res, 500);
       return;
     }
-  //  if (draftservice.service) {
-    console.log('Inside updateServiceAsDraft: ' + draftservice); 
 
     if(draftservice.service){
       // don't let consumer alter name, base path, etc.
