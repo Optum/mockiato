@@ -1544,7 +1544,10 @@ function addRRPair(req,res){
     });
 
   },(err)=>{
-    handleError(err,res,500);
+    if(err == "No Service Found")
+      handleError(err,res,404);
+    else
+      handleError(err,res,401);
   });
 }
 
