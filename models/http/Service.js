@@ -167,8 +167,10 @@ function filterDuplicateRecordedPairs(service){
     //if changes were made, save them
     if(rrPairs.length != pairs.length){
       service.liveInvocation.recordedRRPairs = rrPairs;
-      logEvent("","Mongoose","Saving modified pairs");
-      service.save();
+      logEvent("","Mongoose","Saving modified pairs. Old count:" + pairs.length  + " New count: " + rrPairs.length);
+      service.save(function(err){
+        logEvent("","Mongoose",err);
+      });
     }
 
   }
