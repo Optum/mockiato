@@ -66,7 +66,7 @@ function createRRPairFromReqRes(req,res,service){
     var contentType = req.get("content-type");
     if(contentType == "text/json" || contentType == "application/json"){
         myRRPair.payloadType = "JSON";
-    }else if(contentType == "text/xml" || contentType == "application/xml"){
+    }else if(contentType == "text/xml" || contentType == "application/xml" || service.type == "SOAP"){
         myRRPair.payloadType = "XML";
     }else{
         myRRPair.payloadType = "PLAIN";
