@@ -167,6 +167,7 @@ function filterDuplicateRecordedPairs(service){
     //if changes were made, save them
     if(rrPairs.length != pairs.length){
       service.liveInvocation.recordedRRPairs = rrPairs;
+      logEvent("","Mongoose","Saving modified pairs");
       service.save();
     }
 
