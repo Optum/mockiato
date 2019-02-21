@@ -165,11 +165,10 @@ function createRRPairFromReqRes(req,res,service){
                     }
 
                     if(service.liveInvocation.record){
-                        logEvent(req.path,service.name,"Is recording id " + service.id);
-                        logEvent(req.path,service.name,JSON.stringify(service));
+                        logEvent(req.path,service.name,"Is recording id " + service._id);
 
                         var rrpair = createRRPairFromReqRes(req,remoteRsp,service);
-                        Service.update({_id:service.id},
+                        Service.update({_id:service._id},
                             {$push:
                                 {'liveInvocation.recordedRRPairs':rrpair}
                             },
