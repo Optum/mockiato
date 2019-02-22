@@ -66,7 +66,7 @@ function createRRPairFromReqRes(req,res,service){
     var contentType = req.get("content-type");
     if(contentType == "text/json" || contentType == "application/json"){
         myRRPair.payloadType = "JSON";
-    }else if(contentType == "text/xml" || contentType == "application/xml"){
+    }else if(contentType == "text/xml" || contentType == "application/xml" || service.type == "SOAP"){
         myRRPair.payloadType = "XML";
     }else{
         myRRPair.payloadType = "PLAIN";
@@ -165,15 +165,17 @@ function createRRPairFromReqRes(req,res,service){
                     }
 
                     if(service.liveInvocation.record){
+                        logEvent(req.path,service.name,"Is recording id " + service._id);
+
                         var rrpair = createRRPairFromReqRes(req,remoteRsp,service);
-                        Service.update({_id:service.id},
+                        Service.update({_id:service._id},
                             {$push:
                                 {'liveInvocation.recordedRRPairs':rrpair}
                             },
                             function(err,raw){
                                 if(err){
-                                    console.log(err);
-                                    console.log(raw);
+                                    logEvent(req.path,service.name,err);
+                                    logEvent(req.path,service.name,raw);
                                 }
                             });
                     }

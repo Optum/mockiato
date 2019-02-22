@@ -1234,6 +1234,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
         $('#genricMsg-dialog').modal('toggle');
         $('#modal-btn-yes').on("click", function () {
+          
           $scope.performDelete(rr);
         });
       }
@@ -1249,6 +1250,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.MRG_CONFIRM_FOOTER);
         $('#genricMsg-dialog').modal('toggle');
         $('#modal-btn-yes').on("click", function () {
+          if($scope.servicevo.type == "SOAP"){
+            rr.payloadType = "XML";
+            rr.method = "POST";
+          }
           apiHistoryService.addRRPairToService($scope.servicevo.id, rr).then(function (result) {
             $scope.performDelete(rr);
           });
@@ -1691,14 +1696,31 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       }
     }])
 
-  .controller("selectServiceController", ['$scope', 'apiHistoryService', 'authService',
-    function ($scope, apiHistoryService, authService) {
+    .controller("selectServiceController", ['$scope', '$http', '$routeParams', 'feedbackService', 'apiHistoryService','authService', 'ctrlConstants',
+    function($scope,$http,$routeParams,feedbackService,apiHistoryService,authService,ctrlConstants){
       $scope.serviceList = [];
       apiHistoryService.getRecentModifiedServices(5, authService.getUserInfo().username).then(function (response) {
         var data = response.data;
         $scope.serviceList = data;
         console.log(data);
       });
+    //To Show Service Success Modal when a new service is created from Draft.
+      if($routeParams.id !== 'home'){
+        $http.get('/api/services/' + $routeParams.id)
+          .then(function(response) {
+              var data = response.data;
+              console.log(data);
+              feedbackService.displayServiceInfo(data);
+          })
+          .catch(function(err) {
+              console.log(err);
+                $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+                $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
+                $('#genricMsg-dialog').modal('toggle');
+          });
+        $('#success-modal').modal('toggle');
+      }
     }])
   .controller("recorderListController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
