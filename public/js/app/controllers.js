@@ -1289,7 +1289,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
     }])
   .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location,modalService) {
-
+      
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -1373,6 +1373,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                     return true;
                   }
                   else {
+                    
                     return false;
                   }
                 };
@@ -1492,7 +1493,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
       this.getService();
-
 
       $scope.addFailStatus = function () {
         $scope.servicevo.failStatuses.push({ val: '' });
