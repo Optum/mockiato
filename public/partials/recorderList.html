@@ -19,15 +19,23 @@
     </div>
     <div class="col-xs-12" >
         <table class="table table-bordered table-striped well">
-            <tr>
-                <th>Name</th>
-                <th>Group</th>
-                <th>Type</th>
-                <th>Base URL</th>
-                <th>Delete</th>
-            </tr>
-            <tr ng-repeat="recorder in recordingList" style=" word-break:break-all">
-                <td style="width:120px"><a href="#!viewRecorder/{{ recorder._id }}">{{recorder.name}}</a></td>
+                <tr>
+                        <th>
+                            Name <a href="" title="sort by name" align="right" ng-click="orderByField='name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a></td>
+                        </th>
+                        <th>
+                            Group <a href="" title="sort by group" ng-click="orderByField='sut.name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                        </th>
+                        <th>
+                            Type <a href="" title="sort by type" ng-click="orderByField='protocol'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                        </th>
+                        <th>
+                            Base URL <a href="" title="sort by base url" ng-click="orderByField='sut.name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                        </th>
+                        <th>Action</th>
+                </tr>
+            <tr ng-repeat="recorder in recordingList | orderBy:orderByField:reverseSort" style=" word-break:break-all">
+                <td style="width:120px"><a href="#!viewRecorder/{{ recorder._id }}" title="watch recorder">{{recorder.name}}</a></td>
                 <td style="width:120px">{{recorder.sut.name}}</td>
                 <td>{{recorder.protocol}}</td>
                 <td class="urlmax">{{ mockiatoHost + '/recording/live/' + recorder.sut.name + recorder.path }}</td>
