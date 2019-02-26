@@ -436,6 +436,36 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           pollForNewRRPair(3000);
         });
 
+      //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+      $http.get('/api/systems')
+        .then(function (response) {
+          var newsutlist = [];
+          response.data.forEach(function (sutData) {
+            var sut = {
+              name: sutData.name,
+              members: sutData.members
+            };
+            sut.members.forEach(function (memberlist) {
+              if (memberlist.includes($scope.myUser)) {
+                newsutlist.push(sut.name);
+              }
+            });
+          });
+          $scope.canEdit = function () {
+            if (newsutlist.includes($scope.servicevo.sut.name)) {
+              return true;
+            }
+            else {
+
+              return false;
+            }
+          };
+        })
+
+        .catch(function (err) {
+          console.log(err);
+        });
+
       $scope.publishService = function (servicevo) {
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
@@ -1296,7 +1326,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
     }])
   .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location,modalService) {
-
+      
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -1380,6 +1410,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                     return true;
                   }
                   else {
+                    
                     return false;
                   }
                 };
@@ -1499,7 +1530,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
       this.getService();
-
 
       $scope.addFailStatus = function () {
         $scope.servicevo.failStatuses.push({ val: '' });
