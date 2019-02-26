@@ -22,16 +22,26 @@
     <div class="col-xs-12" >
         <table class="table table-bordered table-striped well">
             <tr>
-                <th>Name</th>
+                <th>
+                    Name <a href="" title="sort by name" align="right" ng-click="orderByField='name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a></td>
+                </th>
                 <th>Owner</th>
-                <th>Group</th>
-                <th>Type</th>
-                <th>Base URL</th>
-                <th>Transactions</th>
+                <th>
+                    Group <a href="" title="sort by group" ng-click="orderByField='sut.name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th>
+                    Type <a href="" title="sort by type" ng-click="orderByField='type'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th>
+                    Base URL <a href="" title="sort by base url" ng-click="orderByField='basePath'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th>
+                    Transactions <a href="" title="sort by transactions" ng-click="orderByField='txnCount'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
                 <th>Action</th>
             </tr>
-            <tr ng-repeat="service in servicelist" style=" word-break:break-all">
-                <td style="width:120px"><a href="#!update/{{ service._id }}/frmServHistory">{{service.name}}</a></td>
+            <tr ng-repeat="service in servicelist | orderBy:orderByField:reverseSort" style=" word-break:break-all">
+                <td style="width:120px"><a href="#!update/{{ service._id }}/frmServHistory" title="edit this service">{{service.name}}</a></td>
                 <td>{{service.user.uid}}</td>
                 <td style="width:120px">{{service.sut.name}}</td>
                 <td>{{service.type}}</td>

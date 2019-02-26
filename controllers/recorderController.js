@@ -57,7 +57,7 @@ var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,
             sut : {name:sut},
             path : path,
             remoteHost : remoteHost,
-            protocolf : protocol || 'REST',
+            protocol : protocol || 'REST',
             remotePort : remotePort || 80,
             headerMask : headerMask || ['Content-Type'],  
             service : {
