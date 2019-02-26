@@ -179,6 +179,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants',
     function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants) {
+      $scope.orderByField = 'name';
+      $scope.reverseSort = false;
       $scope.myUser = authService.getUserInfo().username;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.servicevo = {};
@@ -1760,7 +1762,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("serviceHistoryController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
+        
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)
@@ -2302,7 +2306,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("deletedServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)
@@ -2539,7 +2544,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("draftServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)
