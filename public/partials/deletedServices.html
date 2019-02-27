@@ -22,28 +22,28 @@
     <div class="col-xs-12" >
         <table class="table table-bordered table-striped well">
                 <tr>
-                        <th>
+                        <th style="white-space: nowrap">
                             Name <a href="" title="sort by name" align="right" ng-click="orderByField='name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a></td>
                         </th>
-                        <th>Owner</th>
-                        <th>
+                        <th style="white-space: nowrap">Owner</th>
+                        <th style="white-space: nowrap">
                             Group <a href="" title="sort by group" ng-click="orderByField='sut.name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
                         </th>
-                        <th>
+                        <th style="white-space: nowrap">
                             Type <a href="" title="sort by type" ng-click="orderByField='type'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
                         </th>
-                        <th>
+                        <th style="white-space: nowrap">
                             Base URL <a href="" title="sort by base url" ng-click="orderByField='basePath'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
                         </th>
-                        <th>Action</th>
+                        <th style="white-space: nowrap">Action</th>
                 </tr>
             <tr ng-repeat="service in servicelist | orderBy:orderByField:reverseSort" style=" word-break:break-all">
-                <td style="width:120px"><a href="#!showArchiveService/{{ service._id }}/frmArchive" title="view service details">{{service.name}}</a></td>
-                <td>{{service.user.uid}}</td>
-                <td style="width:120px">{{service.sut.name}}</td>
-                <td>{{service.type}}</td>
-                <td class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
-                <td>
+                <td style="width:150px"><a href="#!showArchiveService/{{ service._id }}/frmArchive" title="view service details">{{service.name}}</a></td>
+                <td style="white-space: nowrap">{{service.user.uid}}</td>
+                <td zstyle="white-space: nowrap">{{service.sut.name}}</td>
+                <td style="white-space: nowrap">{{service.type}}</td>
+                <td style="widows: 330px" class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
+                <td style="width:340px">
                     <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)"><i class="glyphicon glyphicon-info-sign"></i></button>&nbsp;
                     <button class="btn btn-primary" title="Export your service as a JSON file to save, send, or import anytime" ng-click="exportService(service)">Export <i class="glyphicon glyphicon-export"></i></button>&nbsp;
                     <button class="btn btn-success" ng-if="adminUser===myUser || myGroups.includes(service.sut.name)" title="Restore Service" ng-click="restoreService(service)">Restore <i class="glyphicon glyphicon-repeat"></i></button>
