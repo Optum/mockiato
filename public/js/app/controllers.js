@@ -533,15 +533,18 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                     }
                   });
                 });
-                $scope.canEdit = function () {
-                  return false;
-                };
               })
-
               .catch(function (err) {
                 console.log(err);
               });
 
+              $scope.canEdit = function () {
+                return false;
+              };
+
+            if ($routeParams.frmWher == 'frmArchive') {
+              $scope.isFrmArchive = true;
+            }
             if (service.lastUpdateUser) {
               $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
             }
