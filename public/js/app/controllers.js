@@ -179,6 +179,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants',
     function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants) {
+      $scope.orderByField = 'name';
+      $scope.reverseSort = false;
       $scope.myUser = authService.getUserInfo().username;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.servicevo = {};
@@ -434,6 +436,36 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           pollForNewRRPair(3000);
         });
 
+      //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+      $http.get('/api/systems')
+        .then(function (response) {
+          var newsutlist = [];
+          response.data.forEach(function (sutData) {
+            var sut = {
+              name: sutData.name,
+              members: sutData.members
+            };
+            sut.members.forEach(function (memberlist) {
+              if (memberlist.includes($scope.myUser)) {
+                newsutlist.push(sut.name);
+              }
+            });
+          });
+          $scope.canEdit = function () {
+            if (newsutlist.includes($scope.servicevo.sut.name)) {
+              return true;
+            }
+            else {
+
+              return false;
+            }
+          };
+        })
+
+        .catch(function (err) {
+          console.log(err);
+        });
+
       $scope.publishService = function (servicevo) {
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
@@ -501,15 +533,18 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                     }
                   });
                 });
-                $scope.canEdit = function () {
-                  return false;
-                };
               })
-
               .catch(function (err) {
                 console.log(err);
               });
 
+              $scope.canEdit = function () {
+                return false;
+              };
+
+            if ($routeParams.frmWher == 'frmArchive') {
+              $scope.isFrmArchive = true;
+            }
             if (service.lastUpdateUser) {
               $scope.servicevo.lastUpdateUser = service.lastUpdateUser.uid;
             }
@@ -749,19 +784,13 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               rr.resHeadersArr = [];
               rr.method = rr.verb;
 
-              if (rr.payloadType === 'JSON') {
-                rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
-                rr.responsepayload = JSON.stringify(rr.resData, null, 4);
-
-                //Handle empty JSON object- stringify surrounds in "" 
-                if (rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\"") {
-                  rr.responsepayload = rr.responsepayload.substring(1, 3);
-                }
+              //Handle empty JSON object- stringify surrounds in "" 
+              if (rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\"") {
+                rr.responsepayload = rr.responsepayload.substring(1, 3);
               }
-              else {
-                rr.requestpayload = rr.reqData;
-                rr.responsepayload = rr.resData;
-              }
+                            
+              rr.requestpayload = rr.reqData;
+              rr.responsepayload = rr.resData;            
 
               // map object literals to arrays for Angular view
               if (rr.reqHeaders) {
@@ -1204,6 +1233,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
         $('#genricMsg-dialog').modal('toggle');
         $('#modal-btn-yes').on("click", function () {
+          
           $scope.performDelete(rr);
         });
       }
@@ -1219,6 +1249,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.MRG_CONFIRM_FOOTER);
         $('#genricMsg-dialog').modal('toggle');
         $('#modal-btn-yes').on("click", function () {
+          if($scope.servicevo.type == "SOAP"){
+            rr.payloadType = "XML";
+            rr.method = "POST";
+          }
           apiHistoryService.addRRPairToService($scope.servicevo.id, rr).then(function (result) {
             $scope.performDelete(rr);
           });
@@ -1289,7 +1323,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
     }])
   .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location,modalService) {
-
+      
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -1373,6 +1407,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                     return true;
                   }
                   else {
+                    
                     return false;
                   }
                 };
@@ -1492,7 +1527,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
       this.getService();
-
 
       $scope.addFailStatus = function () {
         $scope.servicevo.failStatuses.push({ val: '' });
@@ -1755,7 +1789,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("serviceHistoryController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
+        
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)
@@ -2297,7 +2333,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("deletedServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)
@@ -2534,7 +2571,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("draftServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)

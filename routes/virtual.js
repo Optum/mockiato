@@ -95,62 +95,62 @@ function registerRRPair(service, rrpair) {
         }
       }
 
-      // try exact math
-      match = deepEquals(payload, reqData);
+      let templates = service.matchTemplates;
       var templateOptions;
-      if (!match) {
+      if (templates && templates.length && templates[0] != "") {
+      
         // match based on template
-        let templates = service.matchTemplates;
+      
+        let flatPayload, flatReqData;
 
-        if (templates && templates.length) {
-          let flatPayload, flatReqData;
+        //Check for cached flats. Cache flats if not done yet
+        if(req._Mockiato_Flat_Payload)
+          flatPayload = req._Mockiato_Flat_Payload;
+        else{
+          flatPayload = flattenObject(payload);
+          req._Mockiato_Flat_Payload = flatPayload;
+        }
+        if(req._Mockiato_Flat_ReqData)
+          flatReqData = req._Mockiato_Flat_Payload;
+        else{
+          flatReqData = flattenObject(reqData);
+          req._Mockiato_Flat_ReqData = flatReqData;
+        }
+        if(!(req._Mockiato_Flat_Templates)){
+          req._Mockiato_Flat_Templates = [];
+        }
 
-          //Check for cached flats. Cache flats if not done yet
-          if(req._Mockiato_Flat_Payload)
-            flatPayload = req._Mockiato_Flat_Payload;
-          else{
-            flatPayload = flattenObject(payload);
-            req._Mockiato_Flat_Payload = flatPayload;
-          }
-          if(req._Mockiato_Flat_ReqData)
-            flatReqData = req._Mockiato_Flat_Payload;
-          else{
-            flatReqData = flattenObject(reqData);
-            req._Mockiato_Flat_ReqData = flatReqData;
-          }
-          if(!(req._Mockiato_Flat_Templates)){
-            req._Mockiato_Flat_Templates = [];
-          }
+        for (let i = 0; i < templates.length; i++) {
+          let template = templates[i];
+          
 
-          for (let i = 0; i < templates.length; i++) {
-            let template = templates[i];
+          if (!template) {
+            break;
+          }
+          let flatTemplate;
+          if(req._Mockiato_Flat_Templates.length > i){
+            flatTemplate = req._Mockiato_Flat_Templates[i];
+            if(flatTemplate === false)
+              continue;
+          }else{
+            flatTemplate = matchTemplateController.parseAndFlattenTemplate(template,rrpair.payloadType);
             
-
-            if (!template) {
-              break;
-            }
-            let flatTemplate;
-            if(req._Mockiato_Flat_Templates.length > i){
-              flatTemplate = req._Mockiato_Flat_Templates[i];
-              if(flatTemplate === false)
-                continue;
-            }else{
-              flatTemplate = matchTemplateController.parseAndFlattenTemplate(template,rrpair.payloadType);
-              
-              req._Mockiato_Flat_Templates.push(flatTemplate);
-              if(flatTemplate === false)
-                continue;
-              
-            }
-
-            templateOptions = matchTemplateController.matchOnTemplate(flatTemplate,rrpair,flatPayload,flatReqData,path);
-            if(templateOptions !== false)
-              match = true;
-            if (match) break;
+            req._Mockiato_Flat_Templates.push(flatTemplate);
+            if(flatTemplate === false)
+              continue;
+            
           }
+
+          templateOptions = matchTemplateController.matchOnTemplate(flatTemplate,rrpair,flatPayload,flatReqData,path);
+          if(templateOptions !== false)
+            match = true;
+          if (match) break;
         }
       }
-
+      
+      else{
+        match = deepEquals(payload, reqData);
+      }
       if ((!rrpair.reqData && JSON.stringify(payload, null, 2)=='{}')|| match) {
         // check request queries
         if (rrpair.queries) {
