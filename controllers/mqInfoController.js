@@ -1,6 +1,5 @@
 const request = require('request');
-const MQInfo  = require('../models/mq/MQInfo');
-const debug = require('debug')('default');
+const debug   = require('debug')('default');
 const mockiatoJmsUri = process.env.MOCKIATO_JMS_URI;
 
 function getMQInfo(req, res) {
