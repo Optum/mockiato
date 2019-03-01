@@ -35,13 +35,38 @@ const mqSchema = new mongoose.Schema({
   lastUpdateUser:{
     type: User.schema
   },
+  delay: {
+    // force integer only
+    type: Number,
+    default: 0,
+    validate: {
+      validator: function (v) {
+        if (Number.isInteger(v) && v >= 0)
+          return true;
+          else return false;
+      },
+      message: '{VALUE}'+constants.NOT_VALID_INTEGER+'({PATH}).'
+    }
+  },
+  delayMax: {
+    // force integer only
+    type: Number,
+    default: 0,
+    validate: {
+      validator: function (v) {
+        if (Number.isInteger(v) && v >= 0)
+          return true;
+          else return false;
+      },
+      message: '{VALUE}'+constants.NOT_VALID_INTEGER+'({PATH}).'
+    }
+  },
   txnCount: {
     type: Number,
     default: 0,
     get: function(v) { return Math.round(v); },
     set: function(v) { return Math.round(v); }
   },
-
 },{timestamps:{createdAt:'createdAt',updatedAt:'updatedAt'}});
 
 mqSchema.set('usePushEach', true);
