@@ -213,6 +213,9 @@ function init() {
   const users = require('./routes/users');
   app.use('/api/users', users);
 
+  const mqinfo = require('./routes/mqInfo');
+  app.use('/api/mqinfo', mqinfo);
+
   // handle no match responses
   app.use(/\/((?!recording).)*/,function(req, res, next) {
     if (!req.msgContainer) {
