@@ -374,7 +374,21 @@ function registerMQService(mqserv) {
 
   if (!mqinfo) {
     debug('Service does not have MQ info: ' + mqserv.name);
-    return;
+    
+    const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
+    const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
+
+    if (!defaultManager || ! defaultQueue) {
+      debug('No default queue manager / request queue is configured');
+      return;
+    }
+
+    debug('Setting queue manager / request queue to default values: ' + defaultManager + '.' + defaultQueue);
+
+    mqInfo = {
+      manager: defaultManager,
+      reqQueue: defaultQueue
+    };
   }
 
   mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
@@ -391,7 +405,19 @@ function deregisterMQService(mqserv) {
 
   if (!mqinfo) {
     debug('Service does not have MQ info: ' + mqserv.name);
-    return;
+    
+
+    if (!defaultManager || ! defaultQueue) {
+      debug('No default queue manager / request queue is configured');
+      return;
+    }
+
+    debug('Setting queue manager / request queue to default values: ' + defaultManager + '.' + defaultQueue);
+
+    mqInfo = {
+      manager: defaultManager,
+      reqQueue: defaultQueue
+    };
   }
 
   mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
