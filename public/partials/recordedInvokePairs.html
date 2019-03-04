@@ -1,7 +1,8 @@
-<h2>Update Mock Service</h2>
-<h4 ng-show="!canEdit() && !isFrmArchive" class="text-info">You are unable to edit this service because you aren't part of the group "{{servicevo.sut.name}}". You can request access from the user: {{servicevo.lastUpdateUser}}.</h4>
-<fieldset ng-disabled="!canEdit()">
+<h2>Merge Recorded Live Invocation Request/Responses</h2>
+<h4 ng-show="!canEdit()" class="text-info">You are unable to edit this service because you aren't part of the group "{{servicevo.sut.name}}". You can request access
+  from the user: {{servicevo.lastUpdateUser}}.</h4>
 <form name="form" ng-disabled="!canEdit()" class="well col-xs-12">
+  <fieldset ng-disabled="true">
   <div class="form-group row">
     <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
     <div class="col-xs-8">
@@ -71,15 +72,10 @@
     <div class="col-xs-9">
       <fieldset data-ng-repeat="template in servicevo.matchTemplates">
         <div class="row">
-          <div class="col-xs-9">
+          <div class="col-xs-10">
             <textarea class="form-control vertResize" ng-model="template.val" placeholder="Define a template for request matching"></textarea><br>
           </div>
 
-          <div class="col-xs-1">
-            <button class="btn btn-info" title="Service Info" ng-click="showTemplateHelp()" ng-show="$first">
-              <i class="glyphicon glyphicon-question-sign"></i> 
-            </button>
-          </div>
           <div class="col-xs-1">
             <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeTemplate($index)">
               <span class="glyphicon glyphicon-minus"></span>
@@ -203,9 +199,6 @@
         <div class="col-xs-1">
           <input type="checkbox" id="recordcheck" ng-model="servicevo.liveRecordCheck" ng-click="">
         </div>
-        <div class="col-xs-2">
-          <button type="button" id="viewRecorded" ng-click="viewRecorded()" class="btn btn-danger">View Recorded Transactions</button>
-        </div>
       </div>
     <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
   </div>
@@ -224,24 +217,24 @@
     <label class="col-xs-2 col-form-label">Updated By:</label>
     <div class="col-xs-3"><input id="updated_user" class="form-control" ng-model="servicevo.lastUpdateUser" ng-disabled="true"></div>
   </div>
-
+</fieldset>
   <!--begin RR pairs-->
-    <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs | limitTo:totalDisplayed">
+    <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs">
     <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
       <div class="form-group row">
-        <div class="col-xs-10">
+        <div class="col-xs-9">
           <h4><ins><i>Request / Response Pair</i></ins></h4>
         </div>
 
-        <div class="col-xs-1" ng-if="servicevo.rawpairs.length > 1">
-          <button type="button" class="btn btn-danger" ng-click="removeRRPair($index)">
+        <div class="col-xs-1">
+          <button type="button" class="btn btn-danger" ng-click="deleteRRPair(rr)">
             Delete
           </button>
         </div>
 
-        <div class="col-xs-1">
-          <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewRRPair()">
-            Add
+        <div class="col-xs-2">
+          <button type="button" class="btn btn-success" ng-click="mergeRRPair(rr)">
+            Merge into Service
           </button>
         </div>
       </div>
@@ -450,19 +443,10 @@
       </div>
     </fieldset>
 
-    <div ng-show="totalDisplayed <= servicevo.rawpairs.length">
-      <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
-      <btn class="btn btn-default" ng-click="loadMore()">
-        Show more pairs <span class="glyphicon glyphicon-chevron-down"></span>
-      </btn>
-    </div>
 
-  <div class="form-group row">
-    <div class="col-sm-12">
-      <button ng-disabled="form.$invalid || !canEdit()" type="button" class="btn btn-xl btn-primary center-block" ng-click="updateService(servicevo)">Update</button>
-    </div>
-  </div>
-</fieldset>
+
+  
+
 </form>
 
 <script>
