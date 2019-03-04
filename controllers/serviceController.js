@@ -1117,6 +1117,7 @@ function restoreService(req, res) {
     }
     if (archive.service) {
       let newService  = {
+        _id:archive.service._id,
         sut: archive.service.sut,
         user: archive.service.user,
         name: archive.service.name,
