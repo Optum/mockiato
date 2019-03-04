@@ -1789,9 +1789,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("serviceHistoryController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-        $scope.orderByField = 'name';
-        $scope.reverseSort = false;
-        
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)
@@ -1855,6 +1852,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               console.log(err);
             });
         }
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
       };
 
       function performUpdateOnPathParams() {
@@ -2333,8 +2332,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("deletedServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-        $scope.orderByField = 'name';
-        $scope.reverseSort = false;
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)
@@ -2412,7 +2409,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               console.log(err);
             });
         }
-
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
       };
       function performUpdateOnPathParams() {
         $scope.filtersSelected($routeParams.sut ? { name: $routeParams.sut } : null, $routeParams.user ? { name: $routeParams.user } : null);
@@ -2571,8 +2569,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
   .controller("draftServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
-        $scope.orderByField = 'name';
-        $scope.reverseSort = false;
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
         if ($routeParams.user || $routeParams.sut)
@@ -2650,6 +2646,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               console.log(err);
             });
         }
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
       };
         function performUpdateOnPathParams() {
           $scope.filtersSelected($routeParams.sut ? { name: $routeParams.sut } : null, $routeParams.user ? { name: $routeParams.user } : null);
