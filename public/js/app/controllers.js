@@ -27,8 +27,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
     }])
 
-  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService',
-    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants,modalService) {
+  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService', 'mqInfoFactory',
+    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants, modalService, mqInfoFactory) {
       $scope.myUser = authService.getUserInfo().username;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.servicevo = {};
@@ -50,6 +50,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+      $scope.mqServers = mqInfoFactory.getMQInfo().servers;
 
       $scope.addFailStatus = function () {
         $scope.servicevo.failStatuses.push({ val: '' });
@@ -1321,11 +1322,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       });
       $scope.pollForRRPairs();
     }])
-  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location,modalService) {
+  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
       
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+      $scope.mqServers = mqInfoFactory.getMQInfo().servers;
 
       this.getService = function () {
         apiHistoryService.getServiceById($routeParams.id)
