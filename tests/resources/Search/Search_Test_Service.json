@@ -8,7 +8,7 @@
 			"jlegeyt"
 		]
 	},
-	 "name": "Invoke Test",
+	 "name": "Search Test",
 	 "type": "REST",
 	 "basePath": "/invokeme",
 	 "lastUpdateUser": {
@@ -20,7 +20,7 @@
 		 "enabled": true,
 		 "remoteHost": "localhost",
 		 "remotePort": 15001,
-		 "remoteBasePath": "/recordme",
+		 "remoteBasePath": "/searchme",
 		 "failStatusCodes": [
 			202
 		],
