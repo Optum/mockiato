@@ -1,0 +1,9 @@
+{
+	 "test": "one",
+	 "test2:": true,
+	 "test3:": 12345,
+	 "testObj:": {
+		 "innerTest:": "testo",
+		 "innterTest2:": "testooo"
+	}
+}
