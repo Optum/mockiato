@@ -1,4 +1,6 @@
 <h2>Finalize Recording</h2>
+<h4 ng-show="!canEdit()" class="text-info">You are unable to edit this service because you aren't part of the group "{{servicevo.sut.name}}".</h4>
+<fieldset ng-disabled="!canEdit()">
 <form name="form" class="well col-xs-12">
   <div class="form-group row">
     <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
@@ -331,6 +333,7 @@
       <button ng-disabled="form.$invalid || (servicevo.rawpairs.length == 0)" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishService(servicevo)">Finalize and Publish</button>
     </div>
   </div>
+</fieldset>
 </form>
 
 <script>
