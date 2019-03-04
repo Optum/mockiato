@@ -23,11 +23,16 @@ function getMQInfo(req, res) {
 }
 
 function parseInfo(body) {
-  let data  = JSON.parse(body);
-  let info  = data['applicationConfig: [classpath:/application.yml]'];
-  let final = unflattenObject(info);
+  let obj  = JSON.parse(body);
+  let info  = unflattenObject(obj['applicationConfig: [classpath:/application.yml]']);
+  let final = info.mockiato.mq;
 
-  return final.mockiato.mq;
+  final.defaults = {
+    manager: process.env.DEFAULT_QUEUE_MANAGER,
+    reqQueue: process.env.DEFAULT_REQUEST_QUEUE
+  };
+
+  return final;
 }
 
 module.exports = {
