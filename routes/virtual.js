@@ -145,11 +145,11 @@ function registerRRPair(service, rrpair) {
           if (match) break;
         }
       }
-      
-      else{
+      else {
         match = deepEquals(payload, reqData);
       }
-      if ((!rrpair.reqData && JSON.stringify(payload, null, 2)=='{}')|| match) {
+      
+      if (!rrpair.reqData || match) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
