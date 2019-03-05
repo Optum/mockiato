@@ -72,9 +72,10 @@ describe('API tests', function() {
 
     describe('Register new user', function() {
         it('Redirects to login', function(done) {
+            var userRegString = 'username='+mockUser.username+'&mail='+mockUser.mail+'&password='+mockUser.password;
             request
                 .post('/register')
-                .send(mockUser)
+                .send(userRegString)
                 .expect(302)
                 .end(done);
         });
