@@ -279,6 +279,7 @@
         <label class="col-xs-2 col-form-label">Queries:</label>
         <div class="col-xs-9">
           <fieldset data-ng-repeat="q in rr.queriesArr">
+            <br>
               <div class="row">
                 <div class="col-xs-5">
                   <input type="text" class="form-control" ng-model="q.k" placeholder="e.g. name">
@@ -288,8 +289,8 @@
                   <input type="text" class="form-control" ng-model="q.v" placeholder="e.g. value">
                 </div>
 
-                <div class="col-xs-1">
-                  <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeQuery(rr)">
+                <div class="col-xs-1" ng-if="rr.queriesArr.length > 1">
+                  <button type="button" class="btn btn-warning" ng-click="removeQuery(rr, $index)">
                     <span class="glyphicon glyphicon-minus"></span>
                   </button>
                 </div>
@@ -328,6 +329,7 @@
         <label class="col-xs-2 col-form-label">Request Headers:</label>
         <div class="col-xs-9">
           <fieldset data-ng-repeat="header in rr.reqHeadersArr">
+            <br>
               <div class="row">
                 <div class="col-xs-5">
                   <div angucomplete-alt
@@ -350,8 +352,8 @@
                   <input type="text" class="form-control" id="req-head-val-{{ header.id }}" ng-model="header.v" placeholder="e.g. application/json">
                 </div>
 
-                <div class="col-xs-1">
-                  <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeReqHeader(rr)">
+                <div class="col-xs-1" ng-if="rr.reqHeadersArr.length > 1">
+                  <button type="button" class="btn btn-warning" ng-click="removeReqHeader(rr, $index)">
                     <span class="glyphicon glyphicon-minus"></span>
                   </button>
                 </div>
@@ -397,6 +399,7 @@
         <label class="col-xs-2 col-form-label">Response Headers:</label>
         <div class="col-xs-9">
           <fieldset data-ng-repeat="header in rr.resHeadersArr">
+            <br>
               <div class="row">
                 <div class="col-xs-5">
                   <div angucomplete-alt
@@ -419,8 +422,8 @@
                   <input type="text" class="form-control" id="res-head-val-{{ header.id }}" ng-model="header.v" placeholder="e.g. application/json">
                 </div>
 
-                <div class="col-xs-1">
-                  <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeResHeader(rr)">
+                <div class="col-xs-1" ng-if="rr.resHeadersArr.length > 1">
+                  <button type="button" class="btn btn-warning" ng-click="removeResHeader(rr, $index)">
                     <span class="glyphicon glyphicon-minus"></span>
                   </button>
                 </div>

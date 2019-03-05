@@ -104,9 +104,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {       
+        rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -114,9 +113,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.resHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -124,9 +122,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {
+        rr.queriesArr.splice(index, 1);
       };
 
       $scope.setContentType = function (rr, type) {
@@ -218,9 +215,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         service.filterHeaders.splice(service.filterHeaders.length - 1);
       }
 
-      $scope.removeReqHeader = function (service) {
-        var lastItem = service.reqHeadersArr.length - 1;
-        service.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (service, index) {
+        service.reqHeadersArr.splice(index, 1);
       };
 
       $scope.createRecorder = function (servicevo) {
@@ -385,9 +381,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {
+        rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -400,9 +395,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -410,9 +404,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {
+        rr.queriesArr.splice(index, 1);
       };
       //Get this recorder's data
       apiHistoryService.getRecordingById($routeParams.id)
@@ -911,9 +904,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {      
+        rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -921,9 +913,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.resHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -931,9 +922,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {
+         rr.queriesArr.splice(index, 1);
       };
 
       $scope.updateService = function (servicevo) {
@@ -1264,9 +1254,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {
+       rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -1274,9 +1263,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.resHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -1284,9 +1272,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {        
+        rr.queriesArr.splice(index, 1);
       };
       var timeoutPromise;
       $scope.pollForRRPairs = function () {
@@ -1584,9 +1571,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {
+        rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -1594,9 +1580,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.resHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -1604,9 +1589,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {
+        rr.queriesArr.splice(index, 1);
+      };
+
+      $scope.removeQuery = function (rr, index) {
+        rr.queriesArr.splice(index, 1);
       };
 
       $scope.updateService = function (servicevo) {
