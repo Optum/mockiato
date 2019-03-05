@@ -79,6 +79,7 @@
     <label class="col-xs-2 col-form-label">Headers to Keep:</label>
     <div class="col-xs-9">
       <fieldset data-ng-repeat="header in servicevo.reqHeadersArr">
+        <br>
           <div class="row">
             <div class="col-xs-5">
               <div angucomplete-alt
@@ -93,8 +94,8 @@
                 match-class="highlight">
               </div>
             </div>
-            <div class="col-xs-1">
-              <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeReqHeader(servicevo)">
+            <div class="col-xs-1" ng-if="rr.reqHeadersArr.length > 1">
+              <button type="button" class="btn btn-warning" ng-click="removeReqHeader(servicevo, $index)">
                 <span class="glyphicon glyphicon-minus"></span>
               </button>
             </div>
