@@ -150,7 +150,7 @@ describe('API tests', function() {
         });
         it('Responds with a 404 for wrong (but valid) id', function(done) {
             request
-                .patch(resource + '/' + id.slice(0,-1) + '1' + '/rrpairs' + token)
+                .patch(resource + '/' + id.slice(0,-1) + (id.slice(-1) != '1' ? '1' : '2') + '/rrpairs' + token)
                 .send(restService.rrpairs[0])
                 .expect(404)
                 .end(done);
