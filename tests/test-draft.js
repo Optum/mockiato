@@ -137,7 +137,7 @@ describe('Search and Get Tests', function() {
                 })
                 .end(done);
         });
-        it('Starts the service',function(done){
+        /*it('Starts the service',function(done){
             request
                 .post('/api/services/' + id + '/toggle' + token)
                 .expect(200)
@@ -148,16 +148,16 @@ describe('Search and Get Tests', function() {
                 .post('/virtual/' + mockGroup.name + service.basePath)
                 .send(testReq)
                 .expect(200,done);
-        });
+        });*/
    });
  
     describe('Cleanup', function() {
-        it('Deletes the service', function(done) {
+        /*it('Deletes the service', function(done) {
             request
                 .delete('/api/services/' + id + token)
                 .expect(200)
                 .end(done);
-        });
+        });*/
         it('Deletes group', function(done) {
             request
                 .delete('/api/systems/' + mockGroup.name + token)
