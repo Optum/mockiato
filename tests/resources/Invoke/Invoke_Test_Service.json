@@ -1,0 +1,117 @@
+{
+	 "updatedAt": "2019-02-14T16:39:01.206Z",
+	 "createdAt": "2019-02-14T16:39:01.206Z",
+	 "sut": {
+		 "name": "RecordTest",
+		 "__v": 0,
+		 "members": [
+			"jlegeyt"
+		]
+	},
+	 "name": "Invoke Test",
+	 "type": "REST",
+	 "basePath": "/invokeme",
+	 "lastUpdateUser": {
+		 "uid": "jlegeyt",
+		 "mail": "john_legeyt@optum.com",
+		 "_id": "5c6599a5b75e2abea8145734"
+	},
+	 "liveInvocation": {
+		 "enabled": true,
+		 "remoteHost": "localhost",
+		 "remotePort": 15001,
+		 "remoteBasePath": "/recordme",
+		 "failStatusCodes": [
+			202
+		],
+		 "failStrings": [
+			"failme"
+		],
+		 "record": true,
+		 "liveFirst": true
+	},
+	 "running": true,
+	 "txnCount": 0,
+	 "delayMax": 0,
+	 "delay": 0,
+	 "rrpairs": [
+		{
+			 "verb": "POST",
+			 "payloadType": "JSON",
+			 "reqHeaders": {
+				 "Content-Type": "application/json"
+			},
+			 "reqData": {
+				 "test": "one",
+				 "test2:": true,
+				 "test3:": 12345,
+				 "testObj:": {
+					 "innerTest:": "testo",
+					 "innterTest2:": "testooo"
+				}
+			},
+			 "resHeaders": {
+				 "Content-Type": "application/json"
+			},
+			 "resData": {
+				 "response": "This is a virtual response"
+			},
+			 "reqDataString": "{\"test\":\"one\",\"test2:\":true,\"test3:\":12345,\"testObj:\":{\"innerTest:\":\"testo\",\"innterTest2:\":\"testooo\"}}",
+			 "resDataString": "{\"response\":\"This is a virtual response\"}",
+			 "resStatus": 200
+		},
+		{
+			 "verb": "POST",
+			 "payloadType": "JSON",
+			 "reqHeaders": {
+				 "Content-Type": "application/json"
+			},
+			 "reqData": {
+				 "test": "three",
+				 "test2:": true,
+				 "test3:": 12345,
+				 "testObj:": {
+					 "innerTest:": "testo",
+					 "innterTest2:": "testooo"
+				}
+			},
+			 "resHeaders": {
+				 "Content-Type": "application/json"
+			},
+			 "resData": {
+				 "response": "This is a virtual response"
+			},
+			 "reqDataString": "{\"test\":\"one\",\"test2:\":true,\"test3:\":12345,\"testObj:\":{\"innerTest:\":\"testo\",\"innterTest2:\":\"testooo\"}}",
+			 "resDataString": "{\"response\":\"This is a virtual response\"}",
+			 "resStatus": 200
+		},
+		{
+			 "verb": "POST",
+			 "payloadType": "JSON",
+			 "reqHeaders": {
+				 "Content-Type": "application/json"
+			},
+			 "reqData": {
+				 "test": "four",
+				 "test2:": true,
+				 "test3:": 12345,
+				 "testObj:": {
+					 "innerTest:": "testo",
+					 "innterTest2:": "testooo"
+				}
+			},
+			 "resHeaders": {
+				 "Content-Type": "application/json"
+			},
+			 "resData": {
+				 "response": "This is a virtual response"
+			},
+			 "reqDataString": "{\"test\":\"one\",\"test2:\":true,\"test3:\":12345,\"testObj:\":{\"innerTest:\":\"testo\",\"innterTest2:\":\"testooo\"}}",
+			 "resDataString": "{\"response\":\"This is a virtual response\"}",
+			 "resStatus": 200
+		}
+	],
+	 "matchTemplates": [
+		""
+	]
+}
