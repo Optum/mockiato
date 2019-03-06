@@ -1,8 +1,7 @@
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
 
-const xml2js = require('xml2js');
-const xmlBuilder = new xml2js.Builder();
+
 
 function getPairsByServiceId(req, res) {
   Service.findById(req.params.serviceId, function(err, service)	{
