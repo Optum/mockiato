@@ -10,7 +10,7 @@ const www = require('../bin/www');
 let id;
 let token = '?token=';
 
-const service = require("./resources/search/Search_Test_Service.json");
+const service = require("./resources/Search/Search_Test_Service.json");
 
 
 const mockUser = {
