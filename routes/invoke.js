@@ -41,6 +41,7 @@ function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
     rsp.status(remoteRsp.statusCode);
 
     rsp.set(remoteRsp.headers);
+    rsp.set('_mockiato-is-live-backend','true')
     if(body){
         rsp.send(new Buffer(body));
     }else{

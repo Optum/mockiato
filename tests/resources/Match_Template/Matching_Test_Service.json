@@ -1,0 +1,86 @@
+{
+  "updatedAt": "2019-02-20T19:02:58.837Z",
+  "createdAt": "2019-02-20T18:11:32.098Z",
+  "sut": {
+    "name": "JohnTestGroup",
+    "__v": 0,
+    "members": [
+      "jlegeyt",
+      ""
+    ]
+  },
+  "name": "Matching Template Test",
+  "type": "REST",
+  "basePath": "/match",
+  "lastUpdateUser": {
+    "mail": "john_legeyt@optum.com",
+    "uid": "jlegeyt",
+    "_id": "5c6da44d9bf6263544bd5938"
+  },
+  "liveInvocation": {
+    "liveFirst": false,
+    "recordedRRPairs": [],
+    "record": false,
+    "failStrings": [
+      ""
+    ],
+    "failStatusCodes": [
+      null
+    ]
+  },
+  "running": true,
+  "txnCount": 7,
+  "delayMax": 0,
+  "delay": 0,
+  "rrpairs": [
+    {
+      "resDataString": "{\"response\":\"This is a good response\"}",
+      "reqDataString": "{\"a\":true,\"b\":5}",
+      "verb": "POST",
+      "payloadType": "JSON",
+      "reqHeaders": {
+        "Content-Type": "application/json"
+      },
+      "reqData": {
+        "a": true,
+        "b": 5
+      },
+      "resHeaders": {
+        "Content-Type": "application/json"
+      },
+      "resData": {
+        "response": "This is a good response"
+      },
+      "resStatus": 200
+    },
+    {
+      "resDataString": "{\"c\":5,\"d\":\"{{ssn}}\",\"e\":\"words go here\",\"f\":true}",
+      "reqDataString": "{\"c\":\"5\",\"d\":\"555-55-5555\",\"e\":\"words go here\",\"f\":true}",
+      "verb": "POST",
+      "payloadType": "JSON",
+      "reqHeaders": {
+        "Content-Type": "application/json"
+      },
+      "reqData": {
+        "c": "5",
+        "d": "555-55-5555",
+        "e": "words go here",
+        "f": true
+      },
+      "resHeaders": {
+        "Content-Type": "application/json"
+      },
+      "resData": {
+        "c": 5,
+        "d": "{{ssn}}",
+        "e": "words go here",
+        "f": true
+      },
+      "resStatus": 200
+    }
+  ],
+  "matchTemplates": [
+    "{\n\t\"a\":\"\"\n}",
+    "{\n\t\"c\":\"lt:4\",\n\t\"d\":\"regex:^[0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]$;map:ssn\",\n\t\"e\":\"any\",\n\t\"f\":\"\"\n}"
+  ]
+}
