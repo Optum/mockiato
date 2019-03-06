@@ -58,6 +58,8 @@ function processCondition(field,conditionString,flatPayload){
         switch(split[0]){
             case "map":
                 var map = {};
+                if(flatPayload[field]  === undefined)
+                    return false;
                 map[split[1]] = flatPayload[field] || '';
                 return {map};
             case "lt":  
