@@ -4,6 +4,7 @@ const removeRoute = require('../lib/remove-route');
 const requestNode = require('request');
 const Service = require('../models/http/Service');
 const timeBetweenTransactionUpdates = process.env.MOCKIATO_TRANSACTON_UPDATE_TIME || 5000;
+const xml2js = require("xml2js");
 
 var transactions = {};
 
@@ -69,6 +70,15 @@ function createRRPairFromReqRes(req,res,service){
         myRRPair.payloadType = "JSON";
     }else if(contentType == "text/xml" || contentType == "application/xml" || service.type == "SOAP"){
         myRRPair.payloadType = "XML";
+        xml2js.parseString(req.body, function (err, result) {
+            if(err)
+                myRRPair.payloadType = "PLAIN";
+            else
+            xml2js.parseString(res.body, function (err, result) {
+                if(err)
+                    myRRPair.payloadType = "PLAIN";
+            });
+        });
     }else{
         myRRPair.payloadType = "PLAIN";
     }
