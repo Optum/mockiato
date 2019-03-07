@@ -244,8 +244,13 @@ function registerServiceInvoke(service){
     var path = service.basePath + "/?*";
     router.all(path,function(req,rsp,next){
 
-        
-        if(service.liveInvocation && service.liveInvocation.enabled){
+        var override = req.get("_mockiato-use-live");
+        var overrideIsSet = false;
+        if(override){
+            overrideIsSet = true;
+            override = override.toLowerCase() === "true";
+        }
+        if(service.liveInvocation && service.liveInvocation.enabled && (!overrideIsSet || override)){
             //This should trigger only if it is a "pre-invoke" and the service itself doesn't catch it at all (no sub-path match)
             if(service.liveInvocation.liveFirst && !req._mockiatoLiveInvokeHasRun){
                 invokeBackendVerify(service,req).then(function(remoteRsp,remoteRspBody){
@@ -275,6 +280,9 @@ function registerServiceInvoke(service){
                 rsp.set('_mockiato-is-live-backend','false');
                 next();
             }
+        }else{
+            rsp.set('_mockiato-is-live-backend','false');
+            next(); 
         }
     });
 }
