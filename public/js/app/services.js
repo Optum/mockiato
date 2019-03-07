@@ -119,10 +119,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     op.path = op.path.slice(0,-1);
 
                   var qs = '?';
-                  var qArr = Object.entries(rr.queries);
-
+                  var qArr = Object.entries(rr.queries);                  
                   qArr.forEach(function(q) {
-                    qs = qs + q[0] + '=' + q[1] + '&';
+                    if( q[0] != '' && q[1] != ''){
+                      qs = qs + q[0] + '=' + q[1] + '&';
+                    }
                   });
 
                   // trim last &
