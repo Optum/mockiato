@@ -1095,14 +1095,18 @@ function deleteService(req, res) {
     else {
       MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
         if (error) debug(error);
-        mqService.running=false;
-        let archive  = {mqservice:mqService};
-        Archive.create(archive, function (err, callback) {
-          if (err) {
-            handleError(err, res, 500);
-          }
-        });
-        res.json({ 'message' : 'deleted', 'id' : mqService._id });
+        if(mqService){
+          mqService.running=false;
+          let archive  = {mqservice:mqService};
+          Archive.create(archive, function (err, callback) {
+            if (err) {
+              handleError(err, res, 500);
+            }
+          });
+          res.json({ 'message' : 'deleted', 'id' : mqService._id });
+        }else{
+          handleError({error:"Service not found"},res,404);
+        }
       });
     }
   });
@@ -1423,8 +1427,11 @@ function permanentDeleteService(req, res) {
       handleError(err, res, 500);
       return;
     }
-    if(archive.service) res.json({ 'message' : 'deleted', 'id' : archive.service._id });
-    else if(archive.mqservice) res.json({ 'message' : 'deleted', 'id' : archive.mqservice._id });
+    if(archive && archive.service) res.json({ 'message' : 'deleted', 'id' : archive.service._id });
+    else if(archive && archive.mqservice) res.json({ 'message' : 'deleted', 'id' : archive.mqservice._id });
+    else{
+      handleError({error:"Archive service not found"},res,404);
+    }
   });
 }
 
