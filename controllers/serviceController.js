@@ -361,8 +361,10 @@ function getArchiveServiceInfo(req, res) {
       return;
     }
 
-      if (services) {
+      if (services && services.length) {
         return res.json(services[0]);
+      }else{
+        handleError({error:"Archive service not found"},res,404);
       }
   });
 }
