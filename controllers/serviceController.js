@@ -63,7 +63,7 @@ function createService(serv,req){
           serv.sut = system; //Make sure service has full system info, including proper ID!
           performCreate();
         }else{
-          reject(new Error(constants.USER_NOT_AUTHORIZED_ERR));
+          reject(constants.USER_NOT_AUTHORIZED_ERR);
         }
       });
 
@@ -1232,7 +1232,7 @@ function specUpload(req, res) {
 }
 
 function publishExtractedRRPairs(req, res) {
-  const type = req.query.type;
+  const type = req.query.type.toUpperCase();
   const base = req.query.url;
   const name = req.query.name;
   const sut = { name: req.query.group };
