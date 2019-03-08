@@ -214,7 +214,6 @@ describe('Search and Get Tests', function() {
                 .delete('/api/services/' + id + token)
                 .expect(function(res){
                     id = res.body.id;
-                    console.log(res.body);
                 })
                 .expect(200,done);
         });
