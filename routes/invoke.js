@@ -4,6 +4,7 @@ const removeRoute = require('../lib/remove-route');
 const requestNode = require('request');
 const Service = require('../models/http/Service');
 const timeBetweenTransactionUpdates = process.env.MOCKIATO_TRANSACTON_UPDATE_TIME || 5000;
+const xml2js = require("xml2js");
 
 var transactions = {};
 
@@ -69,6 +70,15 @@ function createRRPairFromReqRes(req,res,service){
         myRRPair.payloadType = "JSON";
     }else if(contentType == "text/xml" || contentType == "application/xml" || service.type == "SOAP"){
         myRRPair.payloadType = "XML";
+        xml2js.parseString(req.body, function (err, result) {
+            if(err)
+                myRRPair.payloadType = "PLAIN";
+            else
+            xml2js.parseString(res.body, function (err, result) {
+                if(err)
+                    myRRPair.payloadType = "PLAIN";
+            });
+        });
     }else{
         myRRPair.payloadType = "PLAIN";
     }
@@ -234,8 +244,13 @@ function registerServiceInvoke(service){
     var path = service.basePath + "/?*";
     router.all(path,function(req,rsp,next){
 
-        
-        if(service.liveInvocation && service.liveInvocation.enabled){
+        var override = req.get("_mockiato-use-live");
+        var overrideIsSet = false;
+        if(override){
+            overrideIsSet = true;
+            override = override.toLowerCase() === "true";
+        }
+        if(service.liveInvocation && service.liveInvocation.enabled && (!overrideIsSet || override)){
             //This should trigger only if it is a "pre-invoke" and the service itself doesn't catch it at all (no sub-path match)
             if(service.liveInvocation.liveFirst && !req._mockiatoLiveInvokeHasRun){
                 invokeBackendVerify(service,req).then(function(remoteRsp,remoteRspBody){
@@ -265,6 +280,9 @@ function registerServiceInvoke(service){
                 rsp.set('_mockiato-is-live-backend','false');
                 next();
             }
+        }else{
+            rsp.set('_mockiato-is-live-backend','false');
+            next(); 
         }
     });
 }
