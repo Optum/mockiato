@@ -1437,8 +1437,11 @@ function deleteDraftService(req, res) {
       handleError(err, res, 500);
       return;
     }
-    if(draft.service) res.json({ 'message' : 'deleted', 'id' : draft.service._id });
-    else if(draft.mqservice) res.json({ 'message' : 'deleted', 'id' : draft.mqservice._id });
+    if(draft && draft.service) res.json({ 'message' : 'deleted', 'id' : draft.service._id });
+    else if(draft && draft.mqservice) res.json({ 'message' : 'deleted', 'id' : draft.mqservice._id });
+    else{
+      handleError({error:"Draft service not found"},res,404);
+    }
   });
 }
 
