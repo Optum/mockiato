@@ -278,8 +278,20 @@ function registerRRPair(service, rrpair) {
       }
     }
 
+    //Check for live invo override header
+    var override = req.get("_mockiato-use-live");
+    var overrideIsSet = false;
+    if(override){
+      if(service.liveInvocation.remoteHost != undefined && service.liveInvocation.remotePort != undefined){
+        override = override.toLowerCase() === "true";
+        overrideIsSet = true;
+      }else{
+        override = false;
+      }
+    }
+
     //If live invocation is enabled, and invoke first is selected, and we haven't run this yet...
-    if(service.liveInvocation && service.liveInvocation.enabled && service.liveInvocation.liveFirst &&  !req._mockiatoLiveInvokeHasRun){
+    if(((service.liveInvocation && service.liveInvocation.enabled && service.liveInvocation.liveFirst && !overrideIsSet) || (override && overrideIsSet)) &&  !req._mockiatoLiveInvokeHasRun){
       var prom = invoke.invokeBackendVerify(service,req);
       req._mockiatoLiveInvokeHasRun = true;
       prom.then(function(remoteRsp,remoteRspBody){
