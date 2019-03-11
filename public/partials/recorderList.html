@@ -19,21 +19,31 @@
     </div>
     <div class="col-xs-12" >
         <table class="table table-bordered table-striped well">
-            <tr>
-                <th>Name</th>
-                <th>Group</th>
-                <th>Type</th>
-                <th>Active</th>
-                <th>Base URL</th>
-                <th>Delete</th>
-            </tr>
-            <tr ng-repeat="recorder in recordingList" style=" word-break:break-all">
-                <td style="width:120px"><a href="#!viewRecorder/{{ recorder._id }}">{{recorder.name}}</a></td>
-                <td style="width:120px">{{recorder.sut.name}}</td>
-                <td>{{recorder.protocol}}</td>
-                <td>{{recorder.active}}</td>
-                <td class="urlmax">{{ mockiatoHost + '/recording/live/' + recorder.sut.name + recorder.path }}</td>
-                <td><button class="btn btn-default" title="Delete recorder" ng-click="deleteRecording(recorder)"><i class="glyphicon glyphicon-trash"></i></button></td>
+                <tr>
+                        <th style="white-space: nowrap">
+                            Name <a href="" title="sort by name" align="right" ng-click="orderByField='name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a></td>
+                        </th>
+                        <th style="white-space: nowrap">
+                            Group <a href="" title="sort by group" ng-click="orderByField='sut.name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                        </th>
+                        <th style="white-space: nowrap">
+                            Type <a href="" title="sort by type" ng-click="orderByField='protocol'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                        </th>
+                        <th style="white-space: nowrap">
+                            Base URL <a href="" title="sort by base url" ng-click="orderByField='sut.name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                        </th>
+                        <th style="white-space: nowrap">Action</th>
+                </tr>
+            <tr ng-repeat="recorder in recordingList | orderBy:orderByField:reverseSort" style=" word-break:break-all">
+                <td style="width:200px"><a href="#!viewRecorder/{{ recorder._id }}" title="watch recorder">{{recorder.name}}</a></td>
+                <td style="white-space: nowrap">{{recorder.sut.name}}</td>
+                <td style="white-space: nowrap">{{recorder.protocol}}</td>
+                <td  style="width:660px" class="urlmax">{{ mockiatoHost + '/recording/live/' + recorder.sut.name + recorder.path }}</td>
+                <td style="white-space: nowrap">
+                    <button class="btn btn-danger"  ng-show="recorder.running === true" ng-click="stopRecorder(recorder)">Stop <i class="glyphicon glyphicon-stop"></i></button>
+                    <button class="btn btn-success" ng-show="recorder.running === false" ng-click="startRecorder(recorder)">Start <i class="glyphicon glyphicon-play"></i></button>
+                    <button class="btn btn-default" title="Delete recorder" ng-click="deleteRecording(recorder)"><i class="glyphicon glyphicon-trash"></i></button>
+                </td>
             </tr>
         </table>
     </div>

@@ -32,20 +32,20 @@
 <h2>Recently Modified Services</h2>
 <table class="table table-bordered table-striped well">
     <tr>
-        <th>Name</th>
-        <th>Owner</th>
-        <th>Group</th>
-        <th>Type</th>
-        <th>Base URL</th>
-        <th>Last Modified By</th>
+        <th style="white-space: nowrap">Name</th>
+        <th style="white-space: nowrap">Owner</th>
+        <th style="white-space: nowrap">Group</th>
+        <th style="white-space: nowrap">Type</th>
+        <th style="white-space: nowrap">Base URL</th>
+        <th style="white-space: nowrap">Last Modified By</th>
     </tr>
     <tr ng-repeat="service in serviceList" style=" word-break:break-all">
-        <td style="width:120px"><a href="#!update/{{ service.id }}/frmSelectService">{{service.name}}</a></td>
-        <td>{{service.user.uid}}</td>
-        <td style="width:120px">{{service.sut.name}}</td>
-        <td>{{service.type}}</td>
-        <td class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
-        <td>{{service.lastUpdateUser.uid}}</td>
+        <td style="width:180px"><a href="#!update/{{ service.id }}/frmSelectService">{{service.name}}</a></td>
+        <td style="white-space: nowrap">{{service.user.uid}}</td>
+        <td style="white-space: nowrap">{{service.sut.name}}</td>
+        <td style="white-space: nowrap">{{service.type}}</td>
+        <td style="width:640px" class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
+        <td style="white-space: nowrap">{{service.lastUpdateUser.uid}}</td>
     </tr>
 </table>
 </div>

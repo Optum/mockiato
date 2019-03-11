@@ -5,18 +5,29 @@ const System = require('../common/System');
 
 const MQPair = require('./MQPair');
 const MQInfo = require('./MQInfo');
+const constants = require('../../lib/util/constants');
 
 const mqSchema = new mongoose.Schema({
-  sut: System.schema,
+  sut: {
+    type: System.schema,
+    required: [true, constants.REQUIRED_SUT_ERR]
+  },
   user: User.schema,
   name: { 
-    type: String, 
+    type: String,
+    required: [true, constants.REQUIRED_SERVICE_NAME_ERR],
     index: true
   },
-  type: String,
+  type: {
+    type: String,
+    required: [true, constants.REQUIRED_SERVICE_TYPE_ERR]
+  },
   matchTemplates: [mongoose.Schema.Types.Mixed],
   connInfo: MQInfo.schema,
-  rrpairs: [MQPair.schema],
+  rrpairs: {
+    type: [MQPair.schema],
+    required: [true, constants.REQUIRED_RRPAIRS_ERR]
+  },
   running: {
     type: Boolean,
     default: true

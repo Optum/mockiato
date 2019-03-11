@@ -79,6 +79,7 @@
     <label class="col-xs-2 col-form-label">Headers to Keep:</label>
     <div class="col-xs-9">
       <fieldset data-ng-repeat="header in servicevo.reqHeadersArr">
+        <br>
           <div class="row">
             <div class="col-xs-5">
               <div angucomplete-alt
@@ -87,16 +88,14 @@
                 pause="100"
                 selected-object="header.k"
                 local-data="possibleHeaders"
-                override-suggestions="true"
-                search-fields="name"
-                title-field="name"
+ 
                 minlength="3"
                 input-class="form-control"
                 match-class="highlight">
               </div>
             </div>
-            <div class="col-xs-1">
-              <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeReqHeader(servicevo)">
+            <div class="col-xs-1" ng-if="rr.reqHeadersArr.length > 1">
+              <button type="button" class="btn btn-warning" ng-click="removeReqHeader(servicevo, $index)">
                 <span class="glyphicon glyphicon-minus"></span>
               </button>
             </div>
@@ -111,6 +110,101 @@
     </div>
   </div>
 
+  <div class="form-group row">
+    <label for="filter_enable" class="col-xs-2 col-form-label">Filter responses:</label>
+    
+    
+    <div class="col-xs-1">
+      <input type="checkbox" id="livecheck" ng-model="servicevo.filterEnable" ng-click="">
+    </div>
+  </div>
+
+  <div id="filter_fields"  ng-show="servicevo.filterEnable">
+    
+    <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+    <div class="form-group row">
+      
+      <label class="col-xs-2 col-form-label">Filter status codes:</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="code in servicevo.filterStatusCodes">
+            <div class="row">
+              <div class="col-xs-3">
+                <input type="text" class="form-control" ng-model="code.v" placeholder="e.g. 404">
+              </div>
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeStatusCode(servicevo)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+  
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewStatusCode(servicevo)">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      
+      <label class="col-xs-2 col-form-label">Filter body string:</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="string in servicevo.filterStrings">
+            <div class="row">
+              <div class="col-xs-3">
+                <input type="text" class="form-control" ng-model="string.v" placeholder="e.g. error">
+              </div>
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeString(servicevo)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+  
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewString(servicevo)">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      
+      <label class="col-xs-2 col-form-label">Filter headers:</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="header in servicevo.filterHeaders">
+            <div class="row">
+              
+              <div class="col-xs-3">
+                  <input type="text" class="form-control" ng-model="header.k" placeholder="e.g. error-message">
+              </div>
+              
+              <div class="col-xs-3">
+                  <input type="text" class="form-control" ng-model="header.v" placeholder="e.g. DataFault">
+              </div>
+
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeFilterHeader(servicevo)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+  
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewFilterHeader(servicevo)">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+  </div>
   <div class="form-group row">
     <div class="col-sm-12">
       <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-primary center-block" ng-click="createRecorder(servicevo)">Publish</button>

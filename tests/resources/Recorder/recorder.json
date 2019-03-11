@@ -1,0 +1,15 @@
+{
+    "type": "REST",
+    "sut": "RecordTest",
+    "name": "Test Recorder",
+    "remoteHost": "google.com",
+    "remotePort": "80",
+    "basePath": "/a",
+    "headerMask": [],
+    "creator": "jlegeyt",
+    "filters": {
+      "bodyStrings": [],
+      "headers": [],
+      "statuses": []
+    }
+  }

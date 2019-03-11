@@ -66,8 +66,15 @@ fact.factory('sutFactory', ['$http', '$q', function($http, $q) {
                                     $http.get('/api/services/sut/' + sut.name+'/archive')
                                     .then(function (response) {
                                             if(response.data.length==0){
+                                                    $http.get('/api/services/sut/' + sut.name+'/draft')
+                                                    .then(function (response) {
+                                                        if(response.data.length==0){
+                                                $http.get('/api/recording/sut/' + sut.name)
+                                                .then(function (response) {
+                                                    if(response.data.length==0){
+                                                  //  console.log("Wee found",response.data);
                                         deleteSutList.push(sut);
-                                }
+                                                          }  })}})}
                             
                         })
                     }})

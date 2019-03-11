@@ -4,6 +4,7 @@ const removeRoute = require('../lib/remove-route');
 const requestNode = require('request');
 const Service = require('../models/http/Service');
 const timeBetweenTransactionUpdates = process.env.MOCKIATO_TRANSACTON_UPDATE_TIME || 5000;
+const xml2js = require("xml2js");
 
 var transactions = {};
 
@@ -41,14 +42,90 @@ function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
     rsp.status(remoteRsp.statusCode);
 
     rsp.set(remoteRsp.headers);
+    rsp.set('_mockiato-is-live-backend','true')
     if(body){
         rsp.send(new Buffer(body));
     }else{
         rsp.end();
     }
+    
 }
 
 
+/**
+ * Creates an RR pair from 1) an incoming request to Mockiato and 2) a response gotten from a remote server by forwarding that request and 3) An associated service
+ * 
+ * @param {*} req Express req 
+ * @param {*} res Response from remote server
+ * @return An object that should conform to the RRPair spec, NOT an RRPair model. 
+ */
+function createRRPairFromReqRes(req,res,service){
+
+    //Build from req first
+    var myRRPair = {}
+    myRRPair.verb = req.method;
+    myRRPair.queries = req.query;
+    var contentType = req.get("content-type");
+    if(contentType == "text/json" || contentType == "application/json"){
+        myRRPair.payloadType = "JSON";
+    }else if(contentType == "text/xml" || contentType == "application/xml" || service.type == "SOAP"){
+        myRRPair.payloadType = "XML";
+        xml2js.parseString(req.body, function (err, result) {
+            if(err)
+                myRRPair.payloadType = "PLAIN";
+            else
+            xml2js.parseString(res.body, function (err, result) {
+                if(err)
+                    myRRPair.payloadType = "PLAIN";
+            });
+        });
+    }else{
+        myRRPair.payloadType = "PLAIN";
+    }
+    if(myRRPair.payloadType == "JSON"){
+        //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+        try{
+            myRRPair.reqData = JSON.parse(req.body);
+        }catch(err){
+            myRRPair.reqData = req.body;
+            myRRPair.payloadType = "PLAIN";
+        }
+    }
+    else
+        myRRPair.reqData = req.body;
+
+    //Get relative path to base path for this RRPair
+    var fullBasePath = req.baseUrl + service.basePath;
+    var fullIncomingPath = req.baseUrl + req.path;
+    var diff = fullIncomingPath.replace(new RegExp(escapeRegExp(fullBasePath),"i"),"");
+    if(diff && diff[diff.length-1] == "/"){
+        diff = diff.substring(0,diff.length-1); 
+    }
+    if(diff.substring(0,1) == "/")
+        diff = diff.substring(1);
+    
+    if(diff)
+        myRRPair.path = "/" + diff;
+
+    //Record response info to rr pair
+    myRRPair.resStatus = res.statusCode;
+    if(myRRPair.payloadType == "JSON"){
+        //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
+        try{
+            myRRPair.resData = JSON.parse(res.body);
+        }catch(err){
+            myRRPair.resData = res.body;
+            myRRPair.payloadType = "PLAIN";
+        }
+    }else{
+        myRRPair.resData = res.body;
+    }
+    myRRPair.resHeaders = res.headers;
+
+
+    
+    return myRRPair;
+}
   
   /**
    * Makes a backend request based on the incoming request and the service associated. 
@@ -97,6 +174,24 @@ function mapRemoteResponseToResponse(rsp,remoteRsp,remoteBody){
                     if(err) { 
                         return reject(err);
                     }
+
+                    if(service.liveInvocation.record){
+                        logEvent(req.path,service.name,"Is recording id " + service._id);
+
+                        var rrpair = createRRPairFromReqRes(req,remoteRsp,service);
+                        Service.update({_id:service._id},
+                            {$push:
+                                {'liveInvocation.recordedRRPairs':rrpair}
+                            },
+                            function(err,raw){
+                                if(err){
+                                    logEvent(req.path,service.name,err);
+                                    logEvent(req.path,service.name,raw);
+                                }
+                            });
+                    }
+                        
+                        
                     return resolve(remoteRsp,remoteBody);
                 }).bind(this));
         
@@ -149,8 +244,13 @@ function registerServiceInvoke(service){
     var path = service.basePath + "/?*";
     router.all(path,function(req,rsp,next){
 
-        
-        if(service.liveInvocation && service.liveInvocation.enabled){
+        var override = req.get("_mockiato-use-live");
+        var overrideIsSet = false;
+        if(override){
+            overrideIsSet = true;
+            override = override.toLowerCase() === "true";
+        }
+        if(service.liveInvocation && service.liveInvocation.enabled && (!overrideIsSet || override)){
             //This should trigger only if it is a "pre-invoke" and the service itself doesn't catch it at all (no sub-path match)
             if(service.liveInvocation.liveFirst && !req._mockiatoLiveInvokeHasRun){
                 invokeBackendVerify(service,req).then(function(remoteRsp,remoteRspBody){
@@ -180,6 +280,9 @@ function registerServiceInvoke(service){
                 rsp.set('_mockiato-is-live-backend','false');
                 next();
             }
+        }else{
+            rsp.set('_mockiato-is-live-backend','false');
+            next(); 
         }
     });
 }
