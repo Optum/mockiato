@@ -30,6 +30,7 @@
 			 "reqHeaders": {
 				 "Content-Type": "application/json"
 			},
+			"label":"DraftRsp",
 			 "reqData": {
 				 "test": "one",
 				 "test2:": true,
@@ -38,9 +39,6 @@
 					 "innerTest:": "testo",
 					 "innterTest2:": "testooo"
 				}
-			},
-			 "resHeaders": {
-				 "Content-Type": "application/json"
 			},
 			 "resData": {
 				 "response": "This is a virtual response"

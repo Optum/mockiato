@@ -9,6 +9,7 @@ const www = require('../bin/www');
 
 let id = '';
 let token = '?token=';
+let group; 
 
 const resource    = '/api/services';
 const oasService = './api-docs.yml';
@@ -105,7 +106,24 @@ describe('API tests', function() {
                 .end(done);
         });
     });  
-
+    describe('Get group and update',function(){
+        it('Gets the group',function(done){
+            request
+                .get('/api/systems/' + mockGroup.name)
+                .expect(200)
+                .expect(function(rsp){
+                    group = rsp.body;
+                })
+                .end(done);
+        });
+        it('Updates the group',function(done){
+            request
+                .put('/api/systems/' + mockGroup.name + token)
+                .send(group)
+                .expect(200)
+                .end(done);
+        });
+    });
     describe('Create REST service', function() {
         it('Responds with the new service', function(done) {
             request
