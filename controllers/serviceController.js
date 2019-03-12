@@ -1052,16 +1052,20 @@ function toggleService(req, res) {
           handleError(error, res, 500);
           return;
         }
-
-        mqService.running = !mqService.running;
-        mqService.save(function(e2, mqService) {
-          if (e2)	{
-            handleError(e2, res, 500);
-            return;
-          }
+        if(mqService){
+          mqService.running = !mqService.running;
+          mqService.save(function(e2, mqService) {
+            if (e2)	{
+              handleError(e2, res, 500);
+              return;
+            }
 
           res.json({'message': 'toggled', 'service': mqService });
-        });
+        
+
+         });
+        }
+        handleError("Service not Found",res,404);
       });
     }
   });
