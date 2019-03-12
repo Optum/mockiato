@@ -100,6 +100,12 @@ describe('Bulk Upload Tests', function() {
 
  
     describe('Cleanup', function() { 
+        it('Deletes the service',function(done){
+            request
+                .delete('/api/services/' + id + token)
+                .expect(200)
+                .end(done);
+        });
         it('Deletes group', function(done) {
             request
                 .delete('/api/systems/' + mockGroup.name + token)
