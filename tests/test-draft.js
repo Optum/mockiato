@@ -194,6 +194,7 @@ describe('Search and Get Tests', function() {
                 .expect(200)
                 .expect(function(rsp){
                     id = rsp.body.id;
+                    console.log("id:" + id);
                 })
                 .end(done);
         });
