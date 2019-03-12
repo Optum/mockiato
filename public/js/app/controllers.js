@@ -50,7 +50,30 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
-      $scope.mqServers = mqInfoFactory.getMQInfo().servers;
+      
+      mqInfoFactory.getMQInfo()
+        .then(function(response) {
+          var mqServers = [];
+          var servers = response.data.servers;
+
+          var c = 0;
+          servers.forEach(function(server) {
+            server.queues.forEach(function(queuePair) {
+              mqServers.push({
+                id: c++,
+                manager: server.manager,
+                reqQueue: queuePair.reqQueue
+              });
+            });
+          });
+
+          console.log(mqServers);
+          $scope.mqServers = mqServers;
+        })
+
+        .catch(function(err) {
+          console.log(err);
+        });
 
       $scope.addFailStatus = function () {
         $scope.servicevo.failStatuses.push({ val: '' });
@@ -1327,7 +1350,14 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
-      $scope.mqServers = mqInfoFactory.getMQInfo().servers;
+      mqInfoFactory.getMQInfo()
+        .then(function(response) {
+          $scope.mqServers = response.data.servers;
+        })
+
+        .catch(function(err) {
+          console.log(err);
+        });
 
       this.getService = function () {
         apiHistoryService.getServiceById($routeParams.id)

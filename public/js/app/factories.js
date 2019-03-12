@@ -190,19 +190,7 @@ fact.factory('statusCodesFactory', ['$http', function($http) {
 fact.factory('mqInfoFactory', ['$http', function($http) {
     return {
         getMQInfo: function() {
-          var mqInfo = {};
-
-          $http.get('/api/mqinfo')
-
-          .then(function(response) {
-              mqInfo = response.data;
-          })
-
-          .catch(function(err) {
-              console.log(err);
-          });
-
-          return mqInfo;
+          return $http.get('/api/mqinfo');
         }
     };
 }]);
