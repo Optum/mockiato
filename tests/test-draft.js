@@ -126,7 +126,6 @@ describe('Search and Get Tests', function() {
                     id = res.body._id;
                 })
                 .end(done);
-                
         });
         it('Deletes the draft service',function(done){
             request
@@ -194,15 +193,16 @@ describe('Search and Get Tests', function() {
                 .expect(200)
                 .expect(function(rsp){
                     id = rsp.body.id;
-                    console.log("id:" + id);
                 })
                 .end(done);
         });
         it('Starts the service',function(done){
-            request
-                .post('/api/services/' + id + '/toggle' + token)
-                .expect(200)
-                .end(done);
+            setTimeout(function(){
+                request
+                    .post('/api/services/' + id + '/toggle' + token)
+                    .expect(200)
+                    .end(done);
+            },2000);
         });
         it('Ensures the service works',function(done){
             request
