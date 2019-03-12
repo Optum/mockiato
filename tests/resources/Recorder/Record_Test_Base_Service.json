@@ -29,8 +29,8 @@
   },
   "running": true,
   "txnCount": 0,
-  "delayMax": 0,
-  "delay": 0,
+  "delayMax": 200,
+  "delay": 100,
   "rrpairs": [
     {
       "verb": "POST",
