@@ -197,12 +197,10 @@ describe('Search and Get Tests', function() {
                 .end(done);
         });
         it('Starts the service',function(done){
-            setTimeout(function(){
-                request
-                    .post('/api/services/' + id + '/toggle' + token)
-                    .expect(200)
-                    .end(done);
-            },2000);
+            request
+                .post('/api/services/' + id + '/toggle' + token)
+                .expect(200)
+                .end(done);
         });
         it('Ensures the service works',function(done){
             request

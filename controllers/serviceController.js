@@ -1145,9 +1145,10 @@ function restoreService(req, res) {
         function (err) {
         if (err) {
           handleError(err, res, 500);
-        }
+        }else
+          res.json({ 'message' : 'restored', 'id' : archive.service._id });
       });
-      res.json({ 'message' : 'restored', 'id' : archive.service._id });
+      
     }
     else {
         let newMQService  = {
