@@ -1141,16 +1141,18 @@ function restoreService(req, res) {
         rrpairs: archive.service.rrpairs,
         lastUpdateUser: archive.service.lastUpdateUser
       };
-      createService(newService,req).then(function(service){},
+      createService(newService,req).then(function(service){
+        res.json({ 'message' : 'restored', 'id' : archive.service._id });
+      },
         function (err) {
         if (err) {
           handleError(err, res, 500);
-        }else
-          res.json({ 'message' : 'restored', 'id' : archive.service._id });
+        }
+          
       });
       
     }
-    else {
+    else if(archive.mqservice){
         let newMQService  = {
           sut: archive.mqservice.sut,
           user: archive.mqservice.user,
@@ -1161,12 +1163,16 @@ function restoreService(req, res) {
           rrpairs: archive.mqservice.rrpairs,
           connInfo: archive.mqservice.connInfo
         };
-        createService(newMQService,req).then( function(serv) {},function (err) {
+        createService(newMQService,req).then( function(serv) {
+          res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
+        },function (err) {
           if (err) {
             handleError(err, res, 500);
           }
         });
-        res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
+        
+    }else{
+      handleError("Archive service malformed or not present.",res,404);
     }
   });
 }
