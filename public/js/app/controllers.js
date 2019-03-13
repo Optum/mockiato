@@ -160,7 +160,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
           $('#modal-btn-yes').on("click", function () {
@@ -476,7 +476,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         catch (e) {
           console.log(e);
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
         }
@@ -941,7 +941,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
           $('#modal-btn-yes').on("click", function () {
@@ -1612,7 +1612,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
         }
