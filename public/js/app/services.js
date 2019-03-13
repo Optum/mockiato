@@ -348,7 +348,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     }
 
                     // only save request data for non-GETs
-                    if (rr.method !== 'GET') {
+                    if (reqPayload) {
                       rr.reqData = reqPayload;
                     }
                     rr.resData = resPayload;
@@ -575,7 +575,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   }
 
                   // only save request data for non-GETs
-                  if (rr.method !== 'GET') {
+                  if (reqPayload) {
                     rr.reqData = reqPayload;
                   }
                   rr.resData = resPayload;
