@@ -349,8 +349,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       rr.reqHeaders = reqHeaders;
                     }
 
-                    // only save request data for non-GETs
-                    if (rr.method !== 'GET') {
+                    // adding reqpayload to GET also
+                    if (reqPayload) {
+                      rr.reqData = reqPayload;
+                    }
+                    else if(isUpdate) //to save blank request also in case we are trying to update an existing request
+                    {
                       rr.reqData = reqPayload;
                     }
                     rr.resData = resPayload;
@@ -576,8 +580,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rr.reqHeaders = reqHeaders;
                   }
 
-                  // only save request data for non-GETs
-                  if (rr.method !== 'GET') {
+                  // save requestpayload for GET also
+                  if (reqPayload) {
+                    rr.reqData = reqPayload;
+                  }
+                  else if(isUpdate)  //to save blank request also in case we are trying to update an existing request
+                  {
                     rr.reqData = reqPayload;
                   }
                   rr.resData = resPayload;
