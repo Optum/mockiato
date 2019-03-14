@@ -84,13 +84,8 @@
             <textarea class="form-control vertResize" ng-model="template.val" placeholder="Define a template for request matching"></textarea><br>
           </div>
 
-          <div class="col-xs-1">
-            <button class="btn btn-info" title="Service Info" ng-click="showTemplateHelp()" ng-show="$first">
-              <i class="glyphicon glyphicon-question-sign"></i> 
-            </button>
-          </div>
-          <div class="col-xs-1">
-            <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeTemplate($index)">
+          <div class="col-xs-1"  ng-if="servicevo.matchTemplates.length >1">
+            <button type="button" class="btn btn-warning" ng-click="removeTemplate($index)">
               <span class="glyphicon glyphicon-minus"></span>
             </button>
           </div>
@@ -98,6 +93,12 @@
           <div class="col-xs-1">
             <button type="button" class="btn btn-success" ng-show="$last" ng-click="addTemplate()">
               <span class="glyphicon glyphicon-plus"></span>
+            </button>
+          </div>
+
+          <div class="col-xs-1">
+            <button class="btn btn-info" title="Service Info" ng-click="showTemplateHelp()" ng-show="$first">
+              <i class="glyphicon glyphicon-question-sign"></i> 
             </button>
           </div>
         </div>
@@ -295,18 +296,19 @@
         <label class="col-xs-2 col-form-label">Queries:</label>
         <div class="col-xs-9">
           <fieldset data-ng-repeat="q in rr.queriesArr">
+            <br>
               <div class="row">
                 <div class="col-xs-5">
                   <input type="text" class="form-control" ng-model="q.k" placeholder="e.g. name">
                 </div>
 
                 <div class="col-xs-5">
-                  <input type="text" class="form-control" ng-model="q.v" placeholder="e.g. value">
+                  <input type="text" class="form-control" ng-model="q.v" placeholder="e.g. value">                  
                 </div>
 
-                <div class="col-xs-1">
-                  <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeQuery(rr)">
-                    <span class="glyphicon glyphicon-minus"></span>
+                <div class="col-xs-1" ng-if="rr.queriesArr.length > 1">
+                  <button type="button" class="btn btn-warning"  ng-click="removeQuery(rr, $index)">
+                      <span class="glyphicon glyphicon-minus"></span>
                   </button>
                 </div>
 
@@ -344,6 +346,7 @@
         <label class="col-xs-2 col-form-label">Request Headers:</label>
         <div class="col-xs-9">
           <fieldset data-ng-repeat="header in rr.reqHeadersArr">
+              <br>
               <div class="row">
                 <div class="col-xs-5">
                   <div angucomplete-alt
@@ -366,8 +369,8 @@
                   <input type="text" class="form-control" id="req-head-val-{{ header.id }}" ng-model="header.v" placeholder="e.g. application/json">
                 </div>
 
-                <div class="col-xs-1">
-                  <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeReqHeader(rr)">
+                <div class="col-xs-1" ng-if="rr.reqHeadersArr.length > 1"> 
+                  <button type="button" class="btn btn-warning" ng-click="removeReqHeader(rr, $index)">
                     <span class="glyphicon glyphicon-minus"></span>
                   </button>
                 </div>
@@ -382,7 +385,7 @@
         </div>
       </div>
 
-      <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'">
+      <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show=" servicevo.type === 'SOAP' || servicevo.type === 'REST' || servicevo.type === 'MQ'">
         <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
         <div class="col-xs-9">
           <textarea ng-required="servicevo.type !== 'REST'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
@@ -413,6 +416,7 @@
         <label class="col-xs-2 col-form-label">Response Headers:</label>
         <div class="col-xs-9">
           <fieldset data-ng-repeat="header in rr.resHeadersArr">
+              <br>
               <div class="row">
                 <div class="col-xs-5">
                   <div angucomplete-alt
@@ -435,8 +439,9 @@
                   <input type="text" class="form-control" id="res-head-val-{{ header.id }}" ng-model="header.v" placeholder="e.g. application/json">
                 </div>
 
-                <div class="col-xs-1">
-                  <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeResHeader(rr)">
+                
+                <div class="col-xs-1" ng-if="rr.resHeadersArr.length > 1">
+                  <button type="button" class="btn btn-warning" ng-click="removeResHeader(rr, $index)">
                     <span class="glyphicon glyphicon-minus"></span>
                   </button>
                 </div>

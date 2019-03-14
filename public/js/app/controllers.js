@@ -128,9 +128,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {       
+        rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -138,9 +137,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.resHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -148,9 +146,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {
+        rr.queriesArr.splice(index, 1);
       };
 
       $scope.setContentType = function (rr, type) {
@@ -187,7 +184,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
           $('#modal-btn-yes').on("click", function () {
@@ -242,9 +239,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         service.filterHeaders.splice(service.filterHeaders.length - 1);
       }
 
-      $scope.removeReqHeader = function (service) {
-        var lastItem = service.reqHeadersArr.length - 1;
-        service.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (service, index) {
+        service.reqHeadersArr.splice(index, 1);
       };
 
       $scope.createRecorder = function (servicevo) {
@@ -254,8 +250,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
 
     }])
-  .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', '$timeout',
-    function ($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, $timeout) {
+  .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', '$timeout', 'authService',
+    function ($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, $timeout, authService) {
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
       var totalRRPairs = 0;
@@ -409,9 +405,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {
+        rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -424,9 +419,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -434,9 +428,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {
+        rr.queriesArr.splice(index, 1);
       };
       //Get this recorder's data
       apiHistoryService.getRecordingById($routeParams.id)
@@ -459,6 +452,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
           pollForNewRRPair(3000);
         });
+
+      $scope.myUser = authService.getUserInfo().username;
 
       //returning a promise from factory didnt seem to work with .then() function here, alternative solution
       $http.get('/api/systems')
@@ -505,7 +500,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         catch (e) {
           console.log(e);
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
         }
@@ -680,8 +675,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       this.getService();
     }])
 
-  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {
+  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', 'modalService',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, modalService) {
 
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -935,9 +930,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {      
+        rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -945,9 +939,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.resHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -955,9 +948,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {
+         rr.queriesArr.splice(index, 1);
       };
 
       $scope.updateService = function (servicevo) {
@@ -973,7 +965,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
           $('#modal-btn-yes').on("click", function () {
@@ -1050,6 +1042,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.totalDisplayed += 10;
       };
 
+      $scope.showTemplateHelp = function(){
+        modalService.showTemplateHelp();
+      
+    }
     }])
 
   .controller("mergeRecordedController", ['$scope', '$routeParams', 'apiHistoryService', 'authService', '$http', '$timeout', 'ctrlConstants',
@@ -1288,9 +1284,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {
+       rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -1298,9 +1293,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.resHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -1308,9 +1302,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {        
+        rr.queriesArr.splice(index, 1);
       };
       var timeoutPromise;
       $scope.pollForRRPairs = function () {
@@ -1616,9 +1609,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.reqHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeReqHeader = function (rr) {
-        var lastItem = rr.reqHeadersArr.length - 1;
-        rr.reqHeadersArr.splice(lastItem);
+      $scope.removeReqHeader = function (rr, index) {
+        rr.reqHeadersArr.splice(index, 1);
       };
 
       $scope.addNewResHeader = function (rr) {
@@ -1626,9 +1618,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.resHeadersArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeResHeader = function (rr) {
-        var lastItem = rr.resHeadersArr.length - 1;
-        rr.resHeadersArr.splice(lastItem);
+      $scope.removeResHeader = function (rr, index) {
+        rr.resHeadersArr.splice(index, 1);
       };
 
       $scope.addQuery = function (rr) {
@@ -1636,9 +1627,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         rr.queriesArr.push({ 'id': newItemNo });
       };
 
-      $scope.removeQuery = function (rr) {
-        var lastItem = rr.queriesArr.length - 1;
-        rr.queriesArr.splice(lastItem);
+      $scope.removeQuery = function (rr, index) {
+        rr.queriesArr.splice(index, 1);
+      };
+
+      $scope.removeQuery = function (rr, index) {
+        rr.queriesArr.splice(index, 1);
       };
 
       $scope.updateService = function (servicevo) {
@@ -1654,7 +1648,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
         }

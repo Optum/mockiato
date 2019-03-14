@@ -74,7 +74,8 @@
   } if (errorHint == 'SE') {
     document.getElementById("errMsg").innerHTML = "<strong>*Oops! Something went wrong.</strong>";
   }
-  var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i
+  var ck_uname = /^[a-zA-Z0-9]{4,10}$/;
+  var ck_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
   var ck_pword = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$/;
   function validate(form) {
     var uname = form.username.value;
@@ -86,6 +87,9 @@
     }
     if (uname != '' && uname.length < 4) {
       errors[errors.length] = "Username length must be a minimum of 4 characteres.";
+    }
+    if (uname != '' && !ck_uname.test(uname)) {
+      errors[errors.length] = "Username length must be between 4 & 10. Username shouldn't contain special Character and should start with alphanumeric.";
     }
     if (!ck_email.test(email)) {
       errors[errors.length] = "You must enter a valid email address.";
@@ -100,7 +104,18 @@
       reportErrors(errors);
       return false;
     }
-    return true;
+    var obj = { username: uname, mail: email, password: password };
+        var formData = JSON.stringify(obj);
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+          if (this.status == 302) {
+            window.location.href=window.location.origin+xhr.getResponseHeader('redirectUrl');
+          }
+        };
+        xhr.open('post', '/register', true);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        xhr.send(formData);
+    return false;
   }
   var errList = [];
   function reportErrors(errors) {

@@ -61,7 +61,7 @@ function createService(serv,req){
           serv.sut = system; //Make sure service has full system info, including proper ID!
           performCreate();
         }else{
-          reject(new Error(constants.USER_NOT_AUTHORIZED_ERR));
+          reject(constants.USER_NOT_AUTHORIZED_ERR);
         }
       });
 
@@ -372,8 +372,10 @@ function getArchiveServiceInfo(req, res) {
       return;
     }
 
-      if (services) {
+      if (services && services.length) {
         return res.json(services[0]);
+      }else{
+        handleError({error:"Archive service not found"},res,404);
       }
   });
 }
@@ -1089,17 +1091,19 @@ function toggleService(req, res) {
           handleError(error, res, 500);
           return;
         }
+        if(mqService){
+          mqService.running = !mqService.running;
+          mqService.save(function(e2, mqService) {
+            if (e2)	{
+              handleError(e2, res, 500);
+              return;
+            }
 
-        mqService.running = !mqService.running;
-        mqService.save(function(e2, mqService) {
-          if (e2)	{
-            handleError(e2, res, 500);
-            return;
-          }
-
-          res.json({'message': 'toggled', 'service': mqService });
-          syncWorkers(mqService, 'register');
-        });
+            res.json({'message': 'toggled', 'service': mqService });
+            syncWorkers(mqService, 'register');
+         });
+        }
+        handleError("Service not Found",res,404);
       });
     }
   });
@@ -1135,15 +1139,19 @@ function deleteService(req, res) {
     else {
       MQService.findOneAndRemove({ _id: req.params.id }, function(error, mqService) {
         if (error) debug(error);
-        mqService.running=false;
-        let archive  = {mqservice:mqService};
-        Archive.create(archive, function (err, callback) {
-          if (err) {
-            handleError(err, res, 500);
-          }
-        });
-        res.json({ 'message' : 'deleted', 'id' : mqService._id });
-        syncWorkers(mqService, 'register');
+        if(mqService){
+          mqService.running=false;
+          let archive  = {mqservice:mqService};
+          Archive.create(archive, function (err, callback) {
+            if (err) {
+              handleError(err, res, 500);
+            }
+          });
+          res.json({ 'message' : 'deleted', 'id' : mqService._id });
+          syncWorkers(mqService, 'register');
+        }else{
+          handleError({error:"Service not found"},res,404);
+        }
       });
     }
   });
@@ -1158,6 +1166,7 @@ function restoreService(req, res) {
     }
     if (archive.service) {
       let newService  = {
+        _id:archive.service._id,
         sut: archive.service.sut,
         user: archive.service.user,
         name: archive.service.name,
@@ -1171,15 +1180,18 @@ function restoreService(req, res) {
         rrpairs: archive.service.rrpairs,
         lastUpdateUser: archive.service.lastUpdateUser
       };
-      createService(newService,req).then(function(service){},
+      createService(newService,req).then(function(service){
+        res.json({ 'message' : 'restored', 'id' : archive.service._id });
+      },
         function (err) {
         if (err) {
           handleError(err, res, 500);
         }
+          
       });
-      res.json({ 'message' : 'restored', 'id' : archive.service._id });
+      
     }
-    else {
+    else if(archive.mqservice){
         let newMQService  = {
           sut: archive.mqservice.sut,
           user: archive.mqservice.user,
@@ -1190,12 +1202,16 @@ function restoreService(req, res) {
           rrpairs: archive.mqservice.rrpairs,
           mqInfo: archive.mqservice.mqInfo
         };
-        createService(newMQService,req).then( function(serv) {},function (err) {
+        createService(newMQService,req).then( function(serv) {
+          res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
+        },function (err) {
           if (err) {
             handleError(err, res, 500);
           }
         });
-        res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
+        
+    }else{
+      handleError("Archive service malformed or not present.",res,404);
     }
   });
 }
@@ -1266,7 +1282,7 @@ function specUpload(req, res) {
 }
 
 function publishExtractedRRPairs(req, res) {
-  const type = req.query.type;
+  const type = req.query.type.toUpperCase();
   const base = req.query.url;
   const name = req.query.name;
   const sut = { name: req.query.group };
@@ -1463,8 +1479,11 @@ function permanentDeleteService(req, res) {
       handleError(err, res, 500);
       return;
     }
-    if(archive.service) res.json({ 'message' : 'deleted', 'id' : archive.service._id });
-    else if(archive.mqservice) res.json({ 'message' : 'deleted', 'id' : archive.mqservice._id });
+    if(archive && archive.service) res.json({ 'message' : 'deleted', 'id' : archive.service._id });
+    else if(archive && archive.mqservice) res.json({ 'message' : 'deleted', 'id' : archive.mqservice._id });
+    else{
+      handleError({error:"Archive service not found"},res,404);
+    }
   });
 }
 
@@ -1477,8 +1496,11 @@ function deleteDraftService(req, res) {
       handleError(err, res, 500);
       return;
     }
-    if(draft.service) res.json({ 'message' : 'deleted', 'id' : draft.service._id });
-    else if(draft.mqservice) res.json({ 'message' : 'deleted', 'id' : draft.mqservice._id });
+    if(draft && draft.service) res.json({ 'message' : 'deleted', 'id' : draft.service._id });
+    else if(draft && draft.mqservice) res.json({ 'message' : 'deleted', 'id' : draft.mqservice._id });
+    else{
+      handleError({error:"Draft service not found"},res,404);
+    }
   });
 }
 
@@ -1585,7 +1607,10 @@ function addRRPair(req,res){
     });
 
   },(err)=>{
-    handleError(err,res,500);
+    if(err == "No Service Found")
+      handleError(err,res,404);
+    else
+      handleError(err,res,401);
   });
 }
 
@@ -1625,23 +1650,3 @@ module.exports = {
 };
 
 
-//Add resDataString and rspDataString to every existing service on boot, if they do not already have it
-Service.find({'rrpairs.resDataString':{$exists:false},'rrpairs.reqDataString':{$exists:false}},function(err,docs){
-  if(err){
-    console.log(err);
-  }else{
-    if(docs){
-      docs.forEach(function(doc){
-        if(doc.rrpairs){
-          doc.rrpairs.forEach(function(rrpair){
-            if(rrpair.reqData)
-              rrpair.reqDataString = typeof rrpair.reqData == 'string' ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-            if(rrpair.resData)
-              rrpair.resDataString = typeof rrpair.resData == 'string' ? rrpair.resData : JSON.stringify(rrpair.resData);
-          });
-        }
-        doc.save();
-      });
-    }
-  }
-});
