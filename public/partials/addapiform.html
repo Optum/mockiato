@@ -354,14 +354,14 @@
       </div>
     </div>
 
-    <div class="form-group row" ng-show="rr.method == 'GET'">
+    <div class="form-group row" ng-show=" servicevo.type == 'REST' && rr.method == 'GET'">
         <label for="service_GET_request_payload" class="col-xs-2 col-form-label">Add Request Payload For GET:</label>
         <div class="col-xs-9">
             <input type="checkbox" id="getpayloadcheck" ng-model="getpayloadcheck" ng-click="">
         </div>
       </div>
 
-    <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'|| getpayloadcheck">
+    <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show="rr.method !== 'GET' || servicevo.type === 'SOAP'|| servicevo.type === 'MQ'|| getpayloadcheck">
       <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
       <div class="col-xs-9">
         <textarea ng-required="servicevo.type !== 'REST'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
