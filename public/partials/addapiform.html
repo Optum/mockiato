@@ -71,15 +71,9 @@
             <div class="col-xs-9">
               <textarea class="form-control vertResize" ng-model="template.val" placeholder="Define a template for request matching"></textarea><br>
             </div>
-
-            <div class="col-xs-1">
-              <button class="btn btn-info" title="Service Info" ng-click="showTemplateHelp()" ng-show="$first">
-                <i class="glyphicon glyphicon-question-sign"></i> 
-              </button>
-            </div>
-            
-            <div class="col-xs-1">
-              <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeTemplate($index)">
+          
+            <div class="col-xs-1" ng-if="servicevo.matchTemplates.length > 1">
+              <button type="button" class="btn btn-warning"  ng-click="removeTemplate($index)">
                 <span class="glyphicon glyphicon-minus"></span>
               </button>
             </div>
@@ -87,6 +81,12 @@
             <div class="col-xs-1">
               <button type="button" class="btn btn-success" ng-show="$last" ng-click="addTemplate()">
                 <span class="glyphicon glyphicon-plus"></span>
+              </button>
+            </div>
+
+            <div class="col-xs-2">
+              <button class="btn btn-info" title="Match Template Help" ng-click="showTemplateHelp()" ng-show="$first">
+                <i class="glyphicon glyphicon-question-sign"></i> 
               </button>
             </div>
           </div>
