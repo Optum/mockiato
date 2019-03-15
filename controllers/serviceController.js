@@ -1119,61 +1119,92 @@ function deleteService(req, res) {
 }
 
 function restoreService(req, res) {
-  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
-  Archive.findOneAndRemove(query, function(err, archive)	{
-    if (err)	{
-      handleError(err, res, 500);
+  /* Beffore restoring a archive service first check if base path of archive service present in service table.
+  If present show an error message. */
+  const query1 = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  Archive.find(query1, function (err, archive) {
+    if (err) {
+      handleError(err, res, 500); 
       return;
     }
-    if (archive.service) {
-      let newService  = {
-        _id:archive.service._id,
-        sut: archive.service.sut,
-        user: archive.service.user,
-        name: archive.service.name,
-        type: archive.service.type,
-        delay: archive.service.delay,
-        delayMax: archive.service.delayMax,
-        basePath: archive.service.basePath,
-        txnCount: 0,
-        running: false,
-        matchTemplates: archive.service.matchTemplates,
-        rrpairs: archive.service.rrpairs,
-        lastUpdateUser: archive.service.lastUpdateUser
-      };
-      createService(newService,req).then(function(service){
-        res.json({ 'message' : 'restored', 'id' : archive.service._id });
-      },
-        function (err) {
-        if (err) {
-          handleError(err, res, 500);
-        }
-          
-      });
-      
-    }
-    else if(archive.mqservice){
-        let newMQService  = {
-          sut: archive.mqservice.sut,
-          user: archive.mqservice.user,
-          name: archive.mqservice.name,
-          type: archive.mqservice.type,
-          running: false,
-          matchTemplates: archive.mqservice.matchTemplates,
-          rrpairs: archive.mqservice.rrpairs,
-          connInfo: archive.mqservice.connInfo
-        };
-        createService(newMQService,req).then( function(serv) {
-          res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
-        },function (err) {
-          if (err) {
+      if (archive && archive[0].service) {
+        const query2  = { 'basePath': archive[0].service.basePath };
+        Service.findOne(query2, function(err, service)	{
+          if (err)	{
             handleError(err, res, 500);
+            return;
+          } if(service) {
+            handleError("There is already an active service present with same basepath.",res,404); return;
+          }else{
+            Archive.findOneAndRemove(query1, function(err, archive)	{
+              if (err)	{
+                handleError(err, res, 500);
+                return;
+              }
+              if (archive.service) {
+                let newService  = {
+                  _id:archive.service._id,
+                  sut: archive.service.sut,
+                  user: archive.service.user,
+                  name: archive.service.name,
+                  type: archive.service.type,
+                  delay: archive.service.delay,
+                  delayMax: archive.service.delayMax,
+                  basePath: archive.service.basePath,
+                  txnCount: 0,
+                  running: false,
+                  matchTemplates: archive.service.matchTemplates,
+                  rrpairs: archive.service.rrpairs,
+                  lastUpdateUser: archive.service.lastUpdateUser
+                };
+                createService(newService,req).then(function(service){
+                  res.json({ 'message' : 'restored', 'id' : archive.service._id });
+                },
+                  function (err) {
+                  if (err) {
+                    handleError(err, res, 500);
+                  }
+                    
+                });
+                
+              }
+              else{
+                handleError("Archive service malformed or not present.",res,404);
+              }
+            });
           }
         });
-        
-    }else{
-      handleError("Archive service malformed or not present.",res,404);
-    }
+      }
+      else {
+        Archive.findOneAndRemove(query1, function(err, archive)	{
+          if (err)	{
+            handleError(err, res, 500);
+            return;
+          }
+          if(archive.mqservice){
+            let newMQService  = {
+              sut: archive.mqservice.sut,
+              user: archive.mqservice.user,
+              name: archive.mqservice.name,
+              type: archive.mqservice.type,
+              running: false,
+              matchTemplates: archive.mqservice.matchTemplates,
+              rrpairs: archive.mqservice.rrpairs,
+              connInfo: archive.mqservice.connInfo
+            };
+            createService(newMQService,req).then( function(serv) {
+              res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
+            },function (err) {
+              if (err) {
+                handleError(err, res, 500);
+              }
+            });
+            
+        }else{
+          handleError("Archive service malformed or not present.",res,404);
+        }
+      });
+      }
   });
 }
 
