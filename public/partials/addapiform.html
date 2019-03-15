@@ -149,8 +149,8 @@
           <fieldset data-ng-repeat="status in servicevo.failStatuses">
             <div class="row">
               <div class="col-xs-3"><input type="text" class="form-control" id="status-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. 404"></div>
-              <div class="col-xs-1">
-                <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeFailStatus($index)">
+              <div class="col-xs-1" ng-if="servicevo.failStatuses.length >1">
+                <button type="button" class="btn btn-warning" ng-click="removeFailStatus($index)">
                   <span class="glyphicon glyphicon-minus"></span>
                 </button>
               </div>
@@ -170,9 +170,11 @@
           <div class="col-xs-9">
             <fieldset data-ng-repeat="status in servicevo.failStrings">
               <div class="row">
-                <div class="col-xs-6"><input type="text" class="form-control" id="string-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. error"></div>
-                <div class="col-xs-1">
-                  <button type="button" class="btn btn-warning" ng-show="$last && !$first" ng-click="removeFailString($index)">
+                <div class="col-xs-6"><input type="text" class="form-control" id="string-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. error">
+                </div>
+
+                <div class="col-xs-1" ng-if="servicevo.failStrings.length >1">
+                  <button type="button" class="btn btn-warning" ng-click="removeFailString($index)">
                     <span class="glyphicon glyphicon-minus"></span>
                   </button>
                 </div>
@@ -182,6 +184,7 @@
                     <span class="glyphicon glyphicon-plus"></span>
                   </button>
                 </div>
+                
               </div>
             </fieldset>
           </div>
