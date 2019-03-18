@@ -1133,7 +1133,7 @@ function restoreService(req, res) {
           if (err)	{
             handleError(err, res, 500);
             return;
-          } if(service) {
+          }else if (service) {
             handleError("There is already an active service present with same basepath.",res,404); return;
           }else{
             Archive.findOneAndRemove(query1, function(err, archive)	{
