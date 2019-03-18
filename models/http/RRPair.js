@@ -77,6 +77,10 @@ const rrSchema = new mongoose.Schema({
     constants.REQUIRED_REQUEST_PAYLOAD_ERR
     ]
   },
+  getPayloadRequired: {
+    type: Boolean,
+    default: true
+  },
   reqDataString: String,
   resStatus: {
     // force integer only

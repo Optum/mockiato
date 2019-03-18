@@ -1441,6 +1441,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               rr.resHeadersArr = [];
               rr.method = rr.verb;
 
+            
               if (rr.payloadType === 'JSON') {
                 rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
                 rr.responsepayload = JSON.stringify(rr.resData, null, 4);
