@@ -15,8 +15,8 @@
               REST
         </label>
         <label class="move-radios">
-          <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-disabled="true">
-            MQ
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-disabled="true">
+              MQ
         </label>
       </div>
     </div>
@@ -37,9 +37,7 @@
   <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
       <label for="queue_manager" class="col-xs-2 col-form-label">Request Queue:</label>
       <div class="col-xs-3">
-        <select class="form-control" id="queue_manager" ng-model="servicevo.mqinfo" ng-options="server.reqQueue group by server.manager for server in mqServers">
-            <option selected="selected" disabled="true"></option>
-        </select>
+        <input required type="text" id="queue_manager" class="form-control" ng-model="servicevo.mqInfo.reqQueue" ng-disabled="true">
       </div>
   </div>
 

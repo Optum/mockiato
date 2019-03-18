@@ -1444,6 +1444,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             if (service.updatedAt) {
               $scope.servicevo.updatedAt = service.updatedAt;
             }
+            if (service.mqInfo) {
+              $scope.servicevo.mqInfo = service.mqInfo;
+            }
 
             $scope.servicevo.matchTemplates = [];
             $scope.servicevo.rawpairs = [];
