@@ -396,6 +396,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 var servData = {
                     sut: { name: servicevo.sut.name },
+                    mqInfo: servicevo.mqInfo,
                     name: servicevo.name,
                     basePath: '/' + servicevo.basePath,
                     type: servicevo.type,

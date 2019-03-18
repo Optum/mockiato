@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const xml2js = require('xml2js');
-const debug = require('debug')('matching');
+const debug = require('debug')('default');
 const Service = require('../models/http/Service');
+const MQService = require('../models/mq/MQService');
 const removeRoute = require('../lib/remove-route');
 const invoke = require('./invoke');
 const matchTemplateController = require('../controllers/matchTemplateController');
@@ -154,7 +155,7 @@ function registerRRPair(service, rrpair) {
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
           if (!req.query) {
-            debug("expected queries in request");
+            logEvent(path, label, "expected queries in request");
             return false;
           }
           let matchedQueries = true;
@@ -219,7 +220,6 @@ function registerRRPair(service, rrpair) {
           if(templateOptions){
             resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
           }
-
 
           resp.send(new Buffer(resString));
         }
@@ -313,7 +313,7 @@ function registerRRPair(service, rrpair) {
 
 // register all RR pairs for all SOAP / REST services from db
 function registerAllRRPairsForAllServices() {
-  Service.find({ $or: [{ type:'SOAP' }, { type:'REST' }] }, function(err, services) {
+  Service.find({}, function(err, services) {
     if (err) {
       debug('Error registering services: ' + err);
       return;
@@ -322,9 +322,8 @@ function registerAllRRPairsForAllServices() {
     try {
       services.forEach(function(service){
         if (service.running) {
-          service.rrpairs.forEach(function(rrpair){
-            registerRRPair(service, rrpair);
-          });
+          registerService(service);
+
           if(service.liveInvocation && service.liveInvocation.enabled){
             invoke.registerServiceInvoke(service);
           }
@@ -366,7 +365,78 @@ function deregisterService(service) {
   });
 }
 
+function registerAllMQServices() {
+  MQService.find({}, function(err, mqservices) {
+    if (err) {
+      debug('Error registering services: ' + err);
+      return;
+    }
 
+    mqservices.forEach(function(mqservice) {
+      if (mqservice.running) {
+        registerMQService(mqservice);
+      }
+    });
+  });
+}
+
+function registerMQService(mqserv) {
+  let mqinfo = mqserv.mqInfo;
+
+  if (!mqinfo) {
+    debug('Service does not have MQ info: ' + mqserv.name);
+    
+    const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
+    const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
+
+    if (!defaultManager || ! defaultQueue) {
+      debug('No default queue manager / request queue is configured');
+      return;
+    }
+
+    debug('Setting queue manager / request queue to default values: ' + defaultManager + '/' + defaultQueue);
+
+    mqinfo = {
+      manager: defaultManager,
+      reqQueue: defaultQueue
+    };
+  }
+
+  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+
+  mqserv.rrpairs.forEach(function(rrpair){
+    rrpair.verb = 'POST';
+    rrpair.payloadType = 'XML';
+    registerRRPair(mqserv, rrpair);
+  });
+}
+
+function deregisterMQService(mqserv) {
+  let mqinfo = mqserv.mqInfo;
+
+  if (!mqinfo) {
+    debug('Service does not have MQ info: ' + mqserv.name);
+
+    const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
+    const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
+    
+    if (!defaultManager || ! defaultQueue) {
+      debug('No default queue manager / request queue is configured');
+      return;
+    }
+
+    debug('Setting queue manager / request queue to default values: ' + defaultManager + '/' + defaultQueue);
+
+    mqinfo = {
+      manager: defaultManager,
+      reqQueue: defaultQueue
+    };
+  }
+
+  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+
+  deregisterService(mqserv);
+}
 
 module.exports = {
   router: router,
@@ -374,5 +444,8 @@ module.exports = {
   registerRRPair: registerRRPair,
   deregisterRRPair: deregisterRRPair,
   deregisterService: deregisterService,
+  registerMQService: registerMQService,
+  deregisterMQService: deregisterMQService,
+  registerAllMQServices: registerAllMQServices,
   registerAllRRPairsForAllServices: registerAllRRPairsForAllServices
 };

@@ -31,6 +31,15 @@
    
   </div>
 
+  <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
+      <label for="queue_manager" class="col-xs-2 col-form-label">Request Queue:</label>
+      <div class="col-xs-3">
+        <select ng-disabled="!servicevo.sut" class="form-control" id="queue_manager" ng-model="servicevo.mqInfo" ng-options="label.reqQueue group by label.manager for label in mqLabels">
+            <option selected="selected" disabled="true"></option>
+        </select>
+      </div>
+  </div>
+
   <div class="form-group req row">
     <label for="service_name" class="col-xs-2 col-form-label">Name:</label>
     <div class="col-xs-9">
@@ -48,7 +57,7 @@
     </div>
   </div>
 
-  <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+  <div class="form-group row">
     <label for="service_delay" class="col-xs-2 col-form-label">Response Delay (ms):</label>
     <div class="col-xs-2">
       <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
@@ -445,3 +454,6 @@
     </div>
   </div>
 </form>
+
+<!-- Uncomment below to output service model in realtime (useful for debugging) -->
+<!-- {{ servicevo }} -->

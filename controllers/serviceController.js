@@ -16,6 +16,7 @@ const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
 const systemController = require('./systemController');
+const rrpairController = require('./rrpairController');
 const constants = require('../lib/util/constants');
 
 /**
@@ -37,9 +38,6 @@ function canUserEditServiceById(user,serviceId){
     });
   });
 }
-
-
-
 
 
 /**
@@ -70,28 +68,41 @@ function createService(serv,req){
     }else{
       performCreate();
     }
+
     function performCreate(){
-      if(serv.type == "MQ"){
-        MQService.create(serv,function(err,service){
+      if (serv.type === 'MQ'){
+        let templates = serv.matchTemplates;
+
+        if (templates && templates.length && templates[0]) {
+          for (let rrpair of serv.rrpairs) {
+            rrpair.templatedRequests = [];
+            for (let template of templates) {
+              if (!template) {
+                break;
+              }
+
+              rrpair.templatedRequests.push(rrpairController.trimRequestData(template, rrpair));
+            }
+          }
+        }
+
+        MQService.create(serv, function(err, service){
           if(err)
             reject(err);
           else
             resolve(service);
         });
-      }else{
-        Service.create(serv,function(err,service){
-          if(err)
+      }
+      else {
+        Service.create(serv, function(err, service){
+          if (err)
             reject(err);
           else 
             resolve(service);
         });
       }
     }
-  
-    
-
   });
-  
 }
 
 /**
@@ -649,9 +660,14 @@ function syncWorkers(service, action) {
       invoke.deregisterServiceInvoke(service);
 
       if (action === 'register') {
-        virtual.registerService(service);
-        if(service.liveInvocation && service.liveInvocation.enabled){
-          invoke.registerServiceInvoke(service);
+        if (service.type !== 'MQ') {
+          virtual.registerService(service);
+          if(service.liveInvocation && service.liveInvocation.enabled){
+            invoke.registerServiceInvoke(service);
+          }
+        }
+        else {
+          virtual.registerMQService(service);
         }
       }
       else {
@@ -709,11 +725,14 @@ function addService(req, res) {
   }
 
   if (type === 'MQ') {
-    serv.connInfo = req.body.connInfo;
+    if (req.body.mqInfo) {
+      serv.mqInfo = req.body.mqInfo;
+    }
     
     createService(serv,req).then(
       function(service){
         res.json(service);
+        syncWorkers(service, 'register');
       },
       // handler for db call
       function(err) {
@@ -846,7 +865,7 @@ function addServiceAsDraft(req, res) {
   }
 
   if (type === 'MQ') {
-    serv.connInfo = req.body.connInfo;
+    serv.mqInfo = req.body.mqInfo;
     let draftservice = {mqservice:serv};
     DraftService.create(draftservice, function(err, service) {
         if (err) {
@@ -888,6 +907,7 @@ function updateService(req, res) {
 
     if(service){
       service.rrpairs = req.body.rrpairs;
+      service.matchTemplates = req.body.matchTemplates;
       service.lastUpdateUser = req.decoded;
 
       //Cache string of reqData + rspData
@@ -920,6 +940,27 @@ function updateService(req, res) {
           service.delayMax = req.body.delayMax;
         }
       }
+      else {
+        let templatedRequests = [];
+        let templates = service.matchTemplates;
+
+        if (templates && templates.length && templates[0]) {
+          for (let rrpair of service.rrpairs) {
+            for (let template of templates) {
+              if (!template) {
+                break;
+              }
+
+              templatedRequests.push(rrpairController.trimRequestData(template, rrpair));
+            }
+            rrpair.templatedRequests = templatedRequests;
+          }
+        }
+
+        if (req.body.mqInfo) {
+          service.mqInfo = req.body.mqInfo;
+        }
+      }
 
       // save updated service in DB
       service.save(function (err, newService) {
@@ -929,9 +970,7 @@ function updateService(req, res) {
         }
 
         res.json(newService);
-        if (service.type !== 'MQ') {
-          syncWorkers(newService, 'register');
-        }
+        syncWorkers(newService, 'register');
       });
     }else{
       const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
@@ -953,77 +992,77 @@ function updateService(req, res) {
 }
 
 
-    function updateServiceAsDraft(req, res) {
-      const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
-      DraftService.findOne(query, function(err, draftservice)	{
-        if (err)	{
-          handleError(err, res, 500);
-          return;
-        }
-
-        if(draftservice.service){
-          // don't let consumer alter name, base path, etc.
-          draftservice.service.rrpairs = req.body.rrpairs;
-          draftservice.service.lastUpdateUser = req.decoded;
-
-          //Cache string of reqData + rspData
-          if(draftservice.service.rrpairs){
-            draftservice.service.rrpairs.forEach(function(rrpair){
-              if(rrpair.reqData)
-                rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-              if(rrpair.resData)
-                rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
-            });
-          }
-          if(req.body.liveInvocation){
-            draftservice.service.liveInvocation = req.body.liveInvocation;
-          }
-          if (req.body.matchTemplates) {
-            draftservice.service.matchTemplates = req.body.matchTemplates;
-          }
-          
-          const delay = req.body.delay;
-          if (delay || delay === 0) {
-            draftservice.service.delay = req.body.delay;
-          }
-
-          const delayMax = req.body.delayMax;
-          if (delayMax || delayMax === 0) {
-            draftservice.service.delayMax = req.body.delayMax;
-          }
-          
-        }else {
-          draftservice.mqservice.rrpairs = req.body.rrpairs;
-          draftservice.mqservice.lastUpdateUser = req.decoded;
-
-          //Cache string of reqData + rspData
-          if(draftservice.mqservice.rrpairs){
-            draftservice.mqservice.rrpairs.forEach(function(rrpair){
-              if(rrpair.reqData)
-                rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-              if(rrpair.resData)
-                rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
-            });
-          }
-          if(req.body.liveInvocation){
-            draftservice.mqservice.liveInvocation = req.body.liveInvocation;
-          }
-          if (req.body.matchTemplates) {
-            draftservice.mqservice.matchTemplates = req.body.matchTemplates;
-          }       
-        
-        }
-
-        // save updated service in DB
-        draftservice.save(function (err, newService) {
-          if (err) {
-            handleError(err, res, 500);
-            return;
-          }
-          res.json(newService);         
-        });
-      });
+function updateServiceAsDraft(req, res) {
+  const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
+  DraftService.findOne(query, function(err, draftservice)	{
+    if (err)	{
+      handleError(err, res, 500);
+      return;
     }
+
+    if(draftservice.service){
+      // don't let consumer alter name, base path, etc.
+      draftservice.service.rrpairs = req.body.rrpairs;
+      draftservice.service.lastUpdateUser = req.decoded;
+
+      //Cache string of reqData + rspData
+      if(draftservice.service.rrpairs){
+        draftservice.service.rrpairs.forEach(function(rrpair){
+          if(rrpair.reqData)
+            rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+          if(rrpair.resData)
+            rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+        });
+      }
+      if(req.body.liveInvocation){
+        draftservice.service.liveInvocation = req.body.liveInvocation;
+      }
+      if (req.body.matchTemplates) {
+        draftservice.service.matchTemplates = req.body.matchTemplates;
+      }
+      
+      const delay = req.body.delay;
+      if (delay || delay === 0) {
+        draftservice.service.delay = req.body.delay;
+      }
+
+      const delayMax = req.body.delayMax;
+      if (delayMax || delayMax === 0) {
+        draftservice.service.delayMax = req.body.delayMax;
+      }
+      
+    }else {
+      draftservice.mqservice.rrpairs = req.body.rrpairs;
+      draftservice.mqservice.lastUpdateUser = req.decoded;
+
+      //Cache string of reqData + rspData
+      if(draftservice.mqservice.rrpairs){
+        draftservice.mqservice.rrpairs.forEach(function(rrpair){
+          if(rrpair.reqData)
+            rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
+          if(rrpair.resData)
+            rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+        });
+      }
+      if(req.body.liveInvocation){
+        draftservice.mqservice.liveInvocation = req.body.liveInvocation;
+      }
+      if (req.body.matchTemplates) {
+        draftservice.mqservice.matchTemplates = req.body.matchTemplates;
+      }       
+    
+    }
+
+    // save updated service in DB
+    draftservice.save(function (err, newService) {
+      if (err) {
+        handleError(err, res, 500);
+        return;
+      }
+      res.json(newService);         
+    });
+  });
+}
 
 function toggleService(req, res) {
   Service.findById(req.params.id, function (err, service) {
@@ -1060,9 +1099,8 @@ function toggleService(req, res) {
               return;
             }
 
-          res.json({'message': 'toggled', 'service': mqService });
-        
-
+            res.json({'message': 'toggled', 'service': mqService });
+            syncWorkers(mqService, 'register');
          });
         }
         handleError("Service not Found",res,404);
@@ -1110,6 +1148,7 @@ function deleteService(req, res) {
             }
           });
           res.json({ 'message' : 'deleted', 'id' : mqService._id });
+          syncWorkers(mqService, 'register');
         }else{
           handleError({error:"Service not found"},res,404);
         }
@@ -1161,7 +1200,7 @@ function restoreService(req, res) {
           running: false,
           matchTemplates: archive.mqservice.matchTemplates,
           rrpairs: archive.mqservice.rrpairs,
-          connInfo: archive.mqservice.connInfo
+          mqInfo: archive.mqservice.mqInfo
         };
         createService(newMQService,req).then( function(serv) {
           res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });
