@@ -27,7 +27,7 @@ function parseInfo(body) {
   let info  = unflattenObject(obj['applicationConfig: [classpath:/application.yml]']);
   let final = info.mockiato.mq;
 
-  final.defaults = {
+  final.labels.default = {
     manager: process.env.DEFAULT_QUEUE_MANAGER,
     reqQueue: process.env.DEFAULT_REQUEST_QUEUE
   };
