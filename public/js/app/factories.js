@@ -187,6 +187,14 @@ fact.factory('statusCodesFactory', ['$http', function($http) {
     };
 }]);
 
+fact.factory('mqInfoFactory', ['$http', function($http) {
+    return {
+        getMQInfo: function() {
+          return $http.get('/api/mqinfo');
+        }
+    };
+}]);
+
 //Below function is complex one. Any change will break Duplicate Req check. - Pradeep
 fact.factory('helperFactory', [function () {
     return {

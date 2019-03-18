@@ -27,10 +27,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
     }])
 
-  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService',
-    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants,modalService) {
+  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService', 'mqInfoFactory',
+    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants, modalService, mqInfoFactory) {
       $scope.myUser = authService.getUserInfo().username;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+      $scope.mqLabelsOriginal = [];
       $scope.servicevo = {};
       $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
       $scope.servicevo.failStatuses = [{ id: 0, val: '' }];
@@ -50,6 +51,22 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
+      mqInfoFactory.getMQInfo()
+        .then(function(response) {
+          $scope.mqLabelsOriginal = response.data.labels;
+        })
+
+        .catch(function(err) {
+          console.log(err);
+        });
+
+      $scope.$watch('servicevo.sut', function(newSut, oldSut) {
+        $scope.mqLabels = $scope.mqLabelsOriginal.filter(function(label) {
+          return label.group === newSut.name;
+        });
+        console.log($scope.mqLabels);
+      });
 
       $scope.addFailStatus = function () {
         $scope.servicevo.failStatuses.push({ val: '' });
@@ -1314,11 +1331,19 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       });
       $scope.pollForRRPairs();
     }])
-  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location,modalService) {
+  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
       
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+      mqInfoFactory.getMQInfo()
+        .then(function(response) {
+          $scope.mqServers = response.data.servers;
+        })
+
+        .catch(function(err) {
+          console.log(err);
+        });
 
       this.getService = function () {
         apiHistoryService.getServiceById($routeParams.id)
@@ -1418,6 +1443,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             }
             if (service.updatedAt) {
               $scope.servicevo.updatedAt = service.updatedAt;
+            }
+            if (service.mqInfo) {
+              $scope.servicevo.mqInfo = service.mqInfo;
             }
 
             $scope.servicevo.matchTemplates = [];
