@@ -22,12 +22,17 @@ function getMQInfo(req, res) {
   });
 }
 
-function parseInfo(body) {
-  let obj  = JSON.parse(body);
-  let info  = unflattenObject(obj['applicationConfig: [classpath:/application.yml]']);
+function parseInfo(body) {  
+  let obj   = JSON.parse(body);
+  let query = process.env.MOCKIATO_JMS_QUERY;
+  let info  = unflattenObject(obj[query]);
+
+  if (!info || !info.mockiato) {
+    return { msg: 'Could not retrieve MQ info' };
+  }
   let final = info.mockiato.mq;
 
-  final.labels.default = {
+  final.defaults = {
     manager: process.env.DEFAULT_QUEUE_MANAGER,
     reqQueue: process.env.DEFAULT_REQUEST_QUEUE
   };

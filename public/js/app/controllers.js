@@ -31,6 +31,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
     function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants, modalService, mqInfoFactory) {
       $scope.myUser = authService.getUserInfo().username;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+      $scope.mqLabelsOriginal = [];
       $scope.servicevo = {};
       $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
       $scope.servicevo.failStatuses = [{ id: 0, val: '' }];
@@ -50,30 +51,22 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
-      
+
       mqInfoFactory.getMQInfo()
         .then(function(response) {
-          var mqServers = [];
-          var servers = response.data.servers;
-
-          var c = 0;
-          servers.forEach(function(server) {
-            server.queues.forEach(function(queuePair) {
-              mqServers.push({
-                id: c++,
-                manager: server.manager,
-                reqQueue: queuePair.reqQueue
-              });
-            });
-          });
-
-          console.log(mqServers);
-          $scope.mqServers = mqServers;
+          $scope.mqLabelsOriginal = response.data.labels;
         })
 
         .catch(function(err) {
           console.log(err);
         });
+
+      $scope.$watch('servicevo.sut', function(newSut, oldSut) {
+        $scope.mqLabels = $scope.mqLabelsOriginal.filter(function(label) {
+          return label.group === newSut.name;
+        });
+        console.log($scope.mqLabels);
+      });
 
       $scope.addFailStatus = function () {
         $scope.servicevo.failStatuses.push({ val: '' });
