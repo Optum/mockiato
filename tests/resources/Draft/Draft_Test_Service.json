@@ -5,15 +5,15 @@
 		 "name": "DraftTest",
 		 "__v": 0,
 		 "members": [
-			"jlegeyt"
+			"jsmith"
 		]
 	},
 	 "name": "Draft Test",
 	 "type": "REST",
 	 "basePath": "/draftme",
 	 "lastUpdateUser": {
-		 "uid": "jlegeyt",
-		 "mail": "john_legeyt@optum.com",
+		 "uid": "jsmith",
+		 "mail": "john_smith@asd.com",
 		 "_id": "5c6599a5b75e2abea8145734"
 	},
 	 "liveInvocation": {

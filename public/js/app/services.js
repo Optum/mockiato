@@ -290,7 +290,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       }
                       catch(e) {
                         console.log(e);
-                        throw 'RR pair is malformed';
+                        throw 'JSON in an RR pair is malformed.';
                       }
                     }
                     // verify that XML is well formed
@@ -306,7 +306,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                         resPayload = rr.responsepayload;
                       }
                       else {
-                        throw 'RR pair is malformed';
+                        throw 'XML in an RR Pair is malformed.';
                       }
                     }
                     else {
@@ -317,6 +317,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // convert array of queries to object literal
                     var queries = {};
                     rr.queriesArr.forEach(function(q){
+                      if(queries[q.k])
+                        throw 'Duplicate Query Exists in an RR pair.';
                       queries[q.k] = q.v;
                     });
 
@@ -347,8 +349,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       rr.reqHeaders = reqHeaders;
                     }
 
-                    // only save request data for non-GETs
-                    if (rr.method !== 'GET') {
+                    // adding reqpayload to GET also
+                    if (reqPayload) {
+                      rr.reqData = reqPayload;
+                    }
+                    else if(isUpdate) //to save blank request also in case we are trying to update an existing request
+                    {
                       rr.reqData = reqPayload;
                     }
                     rr.resData = resPayload;
@@ -574,8 +580,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rr.reqHeaders = reqHeaders;
                   }
 
-                  // only save request data for non-GETs
-                  if (rr.method !== 'GET') {
+                  // save requestpayload for GET also
+                  if (reqPayload) {
+                    rr.reqData = reqPayload;
+                  }
+                  else if(isUpdate)  //to save blank request also in case we are trying to update an existing request
+                  {
                     rr.reqData = reqPayload;
                   }
                   rr.resData = resPayload;

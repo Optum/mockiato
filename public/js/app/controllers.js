@@ -160,7 +160,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
           $('#modal-btn-yes').on("click", function () {
@@ -476,7 +476,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         catch (e) {
           console.log(e);
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
         }
@@ -651,8 +651,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       this.getService();
     }])
 
-  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {
+  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', 'modalService',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, modalService) {
 
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -941,7 +941,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
           $('#modal-btn-yes').on("click", function () {
@@ -1018,6 +1018,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.totalDisplayed += 10;
       };
 
+      $scope.showTemplateHelp = function(){
+        modalService.showTemplateHelp();
+      
+    }
     }])
 
   .controller("mergeRecordedController", ['$scope', '$routeParams', 'apiHistoryService', 'authService', '$http', '$timeout', 'ctrlConstants',
@@ -1612,7 +1616,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
         }
