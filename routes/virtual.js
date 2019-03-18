@@ -4,7 +4,6 @@ const xml2js = require('xml2js');
 const debug = require('debug')('default');
 const Service = require('../models/http/Service');
 const MQService = require('../models/mq/MQService');
-const System = require('../models/common/System');
 const removeRoute = require('../lib/remove-route');
 const invoke = require('./invoke');
 const matchTemplateController = require('../controllers/matchTemplateController');
