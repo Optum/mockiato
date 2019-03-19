@@ -37,7 +37,7 @@
   <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
       <label for="queue_manager" class="col-xs-2 col-form-label">Request Queue:</label>
       <div class="col-xs-3">
-        <input required type="text" id="queue_manager" class="form-control" ng-model="servicevo.mqInfo.reqQueue" ng-disabled="true">
+        <input ng-required="servicevo.type == 'MQ'" type="text" id="queue_manager" class="form-control" ng-model="servicevo.mqInfo.reqQueue" ng-disabled="true">
       </div>
   </div>
 
