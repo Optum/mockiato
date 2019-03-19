@@ -348,15 +348,21 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     if (Object.keys(reqHeaders).length > 0) {
                       rr.reqHeaders = reqHeaders;
                     }
-
-                    // adding reqpayload to GET also
-                    if (reqPayload) {
+                    console.log(rr.getPayloadRequired);
+                     // only save request data for non-GETs
+                    if (rr.method !== 'GET') {
                       rr.reqData = reqPayload;
                     }
-                    else if(isUpdate) //to save blank request also in case we are trying to update an existing request
+                    // save request data for get when Checkbox selected
+                    else{
+                    if(rr.getPayloadRequired=== true) 
                     {
                       rr.reqData = reqPayload;
                     }
+                    else{
+                      console.log("In here");
+                      rr.reqData= "";
+                    }}
                     rr.resData = resPayload;
 
                     // remove unneccessary properties
@@ -378,6 +384,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rrpair.resHeaders = rr.resHeaders;
                     rrpair.resData = rr.resData;
                     rrpair.label = rr.label;
+                    rrpair.getPayloadRequired = rr.getPayloadRequired;
 
                     rrpairs.push(rrpair);
                 });
@@ -580,15 +587,20 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if (Object.keys(reqHeaders).length > 0) {
                     rr.reqHeaders = reqHeaders;
                   }
-
-                  // save requestpayload for GET also
-                  if (reqPayload) {
+                    // only save request data for non-GETs
+                  if (rr.method !== 'GET') {
                     rr.reqData = reqPayload;
                   }
-                  else if(isUpdate)  //to save blank request also in case we are trying to update an existing request
+                  // save request data for get when Checkbox selected
+                  else{
+                  if(rr.getPayloadRequired=== true) 
                   {
                     rr.reqData = reqPayload;
                   }
+                  else{
+                    console.log("In here");
+                    rr.reqData= "";
+                  }}
                   rr.resData = resPayload;
 
                   // remove unneccessary properties
