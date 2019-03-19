@@ -28,8 +28,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
     }])
 
   .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService', 'mqInfoFactory',
+    
     function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants, modalService, mqInfoFactory) {
+      $scope.canEdit = function(){ return true; }
       $scope.myUser = authService.getUserInfo().username;
+      $scope.canChangeType = true;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.mqLabelsOriginal = [];
       $scope.servicevo = {};
@@ -380,7 +383,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("showArchiveController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {
-
+      $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -545,7 +548,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', 'modalService',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, modalService) {
-
+      $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -1109,7 +1112,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
     }])
   .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
-      
+      $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
       mqInfoFactory.getMQInfo()
@@ -1325,25 +1328,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
       this.getService();
 
-      $scope.addFailStatus = function () {
-        $scope.servicevo.failStatuses.push({ val: '' });
-      }
-      $scope.removeFailStatus = function (index) {
-        $scope.servicevo.failStatuses.splice(index, 1);
-      }
-      $scope.addFailString = function () {
-        $scope.servicevo.failStrings.push({ val: '' });
-      }
-      $scope.removeFailString = function (index) {
-        $scope.servicevo.failStrings.splice(index, 1);
-      }
-      $scope.addTemplate = function () {
-        $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
-      };
-
-      $scope.removeTemplate = function (index) {
-        $scope.servicevo.matchTemplates.splice(index, 1);
-      };
+      
 
      
 
@@ -2057,6 +2042,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("deletedServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+      
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
@@ -2294,6 +2280,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("draftServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+      
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
