@@ -71,21 +71,6 @@ function createService(serv,req){
 
     function performCreate(){
       if (serv.type === 'MQ'){
-        let templates = serv.matchTemplates;
-
-        if (templates && templates.length && templates[0]) {
-          for (let rrpair of serv.rrpairs) {
-            rrpair.templatedRequests = [];
-            for (let template of templates) {
-              if (!template) {
-                break;
-              }
-
-              rrpair.templatedRequests.push(rrpairController.trimRequestData(template, rrpair));
-            }
-          }
-        }
-
         MQService.create(serv, function(err, service){
           if(err)
             reject(err);
@@ -940,28 +925,7 @@ function updateService(req, res) {
           service.delayMax = req.body.delayMax;
         }
       }
-      else {
-        let templatedRequests = [];
-        let templates = service.matchTemplates;
-
-        if (templates && templates.length && templates[0]) {
-          for (let rrpair of service.rrpairs) {
-            for (let template of templates) {
-              if (!template) {
-                break;
-              }
-
-              templatedRequests.push(rrpairController.trimRequestData(template, rrpair));
-            }
-            rrpair.templatedRequests = templatedRequests;
-          }
-        }
-
-        if (req.body.mqInfo) {
-          service.mqInfo = req.body.mqInfo;
-        }
-      }
-
+     
       // save updated service in DB
       service.save(function (err, newService) {
         if (err) {
