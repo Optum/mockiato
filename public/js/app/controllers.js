@@ -88,82 +88,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.servicevo.matchTemplates.splice(index, 1);
       };
 
-      $scope.addNewRRPair = function () {
-        var newItemNo = $scope.servicevo.rawpairs.length;
-        $scope.servicevo.rawpairs.push({
-          id: newItemNo,
-          queriesArr: [{
-            id: 0
-          }],
-          reqHeadersArr: [{
-            id: 0
-          }],
-          resHeadersArr: [{
-            id: 0
-          }]
-        });
-      };
 
-      $scope.removeRRPair = function (index) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $scope.rrPairNo = index;
-        $('#modal-btn-yes').on("click", function () {
-          $scope.servicevo.rawpairs.splice($scope.rrPairNo, 1);
-          $scope.$apply();
-        });
-      };
-
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {       
-        rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {
-        rr.queriesArr.splice(index, 1);
-      };
-
-      $scope.setContentType = function (rr, type) {
-        if (!rr)
-          rr = $scope.servicevo.rawpairs[0];
-
-        if (rr.reqHeadersArr.length < 2)
-          $scope.addNewReqHeader(rr);
-
-        if (rr.resHeadersArr.length < 2)
-          $scope.addNewResHeader(rr);
-
-        // set values
-        rr.reqHeadersArr[0].v = type;
-        rr.resHeadersArr[0].v = type;
-
-        rr.reqHeadersArr[0].k = 'Content-Type';
-        rr.resHeadersArr[0].k = 'Content-Type';
-
-        $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
-        $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
-      };
-
+      
       $scope.publishservice = function (servicevo) {
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
@@ -362,17 +288,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       }
 
-      $scope.removeRRPair = function (index) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $scope.rrPairNo = index;
-        $('#modal-btn-yes').on("click", function () {
-          $scope.servicevo.rawpairs.splice($scope.rrPairNo, 1);
-          $scope.$apply();
-        });
-      };
+      
 
       $scope.addTemplate = function () {
         $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
@@ -382,48 +298,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.servicevo.matchTemplates.splice(index, 1);
       };
 
-      $scope.addNewRRPair = function () {
-        var newItemNo = $scope.servicevo.rawpairs.length;
-        $scope.servicevo.rawpairs.push({
-          id: newItemNo,
-          queriesArr: [{
-            id: 0
-          }],
-          reqHeadersArr: [{
-            id: 0
-          }],
-          resHeadersArr: [{
-            id: 0
-          }]
-        });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {
-        rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {
-        rr.queriesArr.splice(index, 1);
-      };
+     
       //Get this recorder's data
       apiHistoryService.getRecordingById($routeParams.id)
         .then(function (response) {
@@ -890,61 +765,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.servicevo.matchTemplates.splice(index, 1);
       };
 
-      $scope.addNewRRPair = function () {
-        var newItemNo = $scope.servicevo.rawpairs.length;
-        $scope.servicevo.rawpairs.push({
-          id: newItemNo,
-          queriesArr: [{
-            id: 0
-          }],
-          reqHeadersArr: [{
-            id: 0
-          }],
-          resHeadersArr: [{
-            id: 0
-          }]
-        });
-      };
-
-      $scope.removeRRPair = function (index) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $scope.rrPairNo = index;
-        $('#modal-btn-yes').on("click", function () {
-          $scope.servicevo.rawpairs.splice($scope.rrPairNo, 1);
-          $scope.$apply();
-        });
-      };
-
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {      
-        rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {
-         rr.queriesArr.splice(index, 1);
-      };
-
+      
       $scope.updateService = function (servicevo) {
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
@@ -1011,29 +832,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
 
-      $scope.setContentType = function (rr, type) {
-        if (rr.reqHeadersArr.length < 2)
-          $scope.addNewReqHeader(rr);
+      
 
-        if (rr.resHeadersArr.length < 2)
-          $scope.addNewResHeader(rr);
-
-        // set values
-        rr.reqHeadersArr[0].v = type;
-        rr.resHeadersArr[0].v = type;
-
-        rr.reqHeadersArr[0].k = 'Content-Type';
-        rr.resHeadersArr[0].k = 'Content-Type';
-
-        $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
-        $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
-      };
-
-      $scope.totalDisplayed = 10;
-
-      $scope.loadMore = function () {
-        $scope.totalDisplayed += 10;
-      };
+     
 
       $scope.showTemplateHelp = function(){
         modalService.showTemplateHelp();
@@ -1272,32 +1073,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         });
       }
 
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {
-       rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {        
-        rr.queriesArr.splice(index, 1);
-      };
+     
       var timeoutPromise;
       $scope.pollForRRPairs = function () {
         timeoutPromise = $timeout(function () {
@@ -1569,67 +1345,13 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.servicevo.matchTemplates.splice(index, 1);
       };
 
-      $scope.addNewRRPair = function () {
-        var newItemNo = $scope.servicevo.rawpairs.length;
-        $scope.servicevo.rawpairs.push({
-          id: newItemNo,
-          queriesArr: [{
-            id: 0
-          }],
-          reqHeadersArr: [{
-            id: 0
-          }],
-          resHeadersArr: [{
-            id: 0
-          }]
-        });
-      };
+     
 
       $scope.viewRecorded = function () {
         $location.path("/update/" + $scope.servicevo.id + "/recorded")
       }
-      $scope.removeRRPair = function (index) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $scope.rrPairNo = index;
-        $('#modal-btn-yes').on("click", function () {
-          $scope.servicevo.rawpairs.splice($scope.rrPairNo, 1);
-          $scope.$apply();
-        });
-      };
-
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {
-        rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {
-        rr.queriesArr.splice(index, 1);
-      };
-
-      $scope.removeQuery = function (rr, index) {
-        rr.queriesArr.splice(index, 1);
-      };
+     
+      
 
       $scope.updateService = function (servicevo) {
         try {
@@ -1650,23 +1372,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
       };
 
-      $scope.setContentType = function (rr, type) {
-        if (rr.reqHeadersArr.length < 2)
-          $scope.addNewReqHeader(rr);
-
-        if (rr.resHeadersArr.length < 2)
-          $scope.addNewResHeader(rr);
-
-        // set values
-        rr.reqHeadersArr[0].v = type;
-        rr.resHeadersArr[0].v = type;
-
-        rr.reqHeadersArr[0].k = 'Content-Type';
-        rr.resHeadersArr[0].k = 'Content-Type';
-
-        $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
-        $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
-      };
+     
 
       $scope.serviceInfo = function () {
         console.log($routeParams.id);
@@ -1688,16 +1394,14 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
 
-      $scope.totalDisplayed = 10;
+      
 
-      $scope.loadMore = function () {
-        $scope.totalDisplayed += 10;
-      };
+     
 
-          $scope.showTemplateHelp = function(){
-              modalService.showTemplateHelp();
-            
-          }
+      $scope.showTemplateHelp = function(){
+          modalService.showTemplateHelp();
+        
+      }
       //To Show Service Success Modal when a new service is created.
       if ($routeParams.frmWher == 'frmServCreate') {
         $http.get('/api/services/' + $routeParams.id)
