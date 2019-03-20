@@ -44,8 +44,7 @@ const pairSchema = new mongoose.Schema({
       message: constants.MQ_VALID_XML_RES_ERR
     },
     required: [true, constants.REQUIRED_RESPONSE_PAYLOAD_ERR]
-  },
-  templatedRequests: [String]
+  }
 });
 
 module.exports = mongoose.model('MQPair', pairSchema);
