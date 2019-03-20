@@ -5,15 +5,15 @@
     "name": "RecordTest",
     "__v": 0,
     "members": [
-      "jlegeyt"
+      "jsmith"
     ]
   },
   "name": "Record Test Base",
   "type": "REST",
   "basePath": "/recordme",
   "lastUpdateUser": {
-    "uid": "jlegeyt",
-    "mail": "john_legeyt@optum.com",
+    "uid": "jsmith",
+    "mail": "john_smith@asd.com",
     "_id": "5c6599a5b75e2abea8145734"
   },
   "liveInvocation": {
@@ -29,8 +29,8 @@
   },
   "running": true,
   "txnCount": 0,
-  "delayMax": 0,
-  "delay": 0,
+  "delayMax": 200,
+  "delay": 100,
   "rrpairs": [
     {
       "verb": "POST",

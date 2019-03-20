@@ -8,15 +8,15 @@
     <div class="col-xs-8">
       <div class="radio">
         <label class="move-radios">
-            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-disabled="true">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-disabled="!canChangeType">
               SOAP
         </label>
         <label class="move-radios">
-            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-disabled="true">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-disabled="!canChangeType">
               REST
         </label>
         <label class="move-radios">
-          <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-disabled="true">
+          <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-disabled="!canChangeType">
             MQ
         </label>
       </div>
@@ -219,7 +219,7 @@
   </div>
 </fieldset>
   <!--begin RR pairs-->
-    <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs">
+    <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs" ng-controller="rrPairController">
     <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
       <div class="form-group row">
         <div class="col-xs-9">

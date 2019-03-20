@@ -290,7 +290,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       }
                       catch(e) {
                         console.log(e);
-                        throw 'RR pair is malformed';
+                        throw 'JSON in an RR pair is malformed.';
                       }
                     }
                     // verify that XML is well formed
@@ -306,7 +306,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                         resPayload = rr.responsepayload;
                       }
                       else {
-                        throw 'RR pair is malformed';
+                        throw 'XML in an RR Pair is malformed.';
                       }
                     }
                     else {
@@ -317,6 +317,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // convert array of queries to object literal
                     var queries = {};
                     rr.queriesArr.forEach(function(q){
+                      if(queries[q.k])
+                        throw 'Duplicate Query Exists in an RR pair.';
                       queries[q.k] = q.v;
                     });
 
@@ -346,11 +348,21 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     if (Object.keys(reqHeaders).length > 0) {
                       rr.reqHeaders = reqHeaders;
                     }
-
-                    // only save request data for non-GETs
+                    console.log(rr.getPayloadRequired);
+                     // only save request data for non-GETs
                     if (rr.method !== 'GET') {
                       rr.reqData = reqPayload;
                     }
+                    // save request data for get when Checkbox selected
+                    else{
+                    if(rr.getPayloadRequired=== true) 
+                    {
+                      rr.reqData = reqPayload;
+                    }
+                    else{
+                      console.log("In here");
+                      rr.reqData= "";
+                    }}
                     rr.resData = resPayload;
 
                     // remove unneccessary properties
@@ -372,6 +384,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rrpair.resHeaders = rr.resHeaders;
                     rrpair.resData = rr.resData;
                     rrpair.label = rr.label;
+                    rrpair.getPayloadRequired = rr.getPayloadRequired;
 
                     rrpairs.push(rrpair);
                 });
@@ -383,6 +396,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 var servData = {
                     sut: { name: servicevo.sut.name },
+                    mqInfo: servicevo.mqInfo,
                     name: servicevo.name,
                     basePath: '/' + servicevo.basePath,
                     type: servicevo.type,
@@ -573,11 +587,20 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if (Object.keys(reqHeaders).length > 0) {
                     rr.reqHeaders = reqHeaders;
                   }
-
-                  // only save request data for non-GETs
+                    // only save request data for non-GETs
                   if (rr.method !== 'GET') {
                     rr.reqData = reqPayload;
                   }
+                  // save request data for get when Checkbox selected
+                  else{
+                  if(rr.getPayloadRequired=== true) 
+                  {
+                    rr.reqData = reqPayload;
+                  }
+                  else{
+                    console.log("In here");
+                    rr.reqData= "";
+                  }}
                   rr.resData = resPayload;
 
                   // remove unneccessary properties

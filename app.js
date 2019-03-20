@@ -137,9 +137,11 @@ function init() {
 
   // register SOAP / REST virts from DB
   virtual.registerAllRRPairsForAllServices();
+  virtual.registerAllMQServices();
+
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
-  app.use('/virtual',invoke.router);
+  app.use('/virtual', invoke.router);
 
   // initialize recording routers
   const recorder = require('./routes/recording');
@@ -157,19 +159,27 @@ function init() {
         const action  = msg.action;
         debug(action);
 
-        virtual.deregisterService(service);
-        invoke.deregisterServiceInvoke(service);
-        if (action === 'register') {
-          virtual.registerService(service);
-          
-          if(service.liveInvocation && service.liveInvocation.enabled){
-            invoke.registerServiceInvoke(service);
+        if (service.type !== 'MQ') {
+          virtual.deregisterService(service);
+          invoke.deregisterServiceInvoke(service);
+          if (action === 'register') {
+            virtual.registerService(service);
+            
+            if(service.liveInvocation && service.liveInvocation.enabled){
+              invoke.registerServiceInvoke(service);
+            }
+          }
+        }
+        else {
+          virtual.deregisterMQService(service);
+          if (action === 'register') {
+            virtual.registerMQService(service);
           }
         }
       }else if(msg.recorder){
         const rec = msg.recorder;
         const action  = msg.action;
-        console.log("msg: " + JSON.stringify(msg));
+        //console.log("msg: " + JSON.stringify(msg));
         if(action === 'register'){
           recorderController.registerRecorder(rec);
         }else if(action === 'deregister'){
@@ -202,6 +212,9 @@ function init() {
 
   const users = require('./routes/users');
   app.use('/api/users', users);
+
+  const mqinfo = require('./routes/mqInfo');
+  app.use('/api/mqinfo', mqinfo);
 
   // handle no match responses
   app.use(/\/((?!recording).)*/,function(req, res, next) {

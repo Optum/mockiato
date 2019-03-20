@@ -5,7 +5,7 @@
     "name": "JohnTestGroup",
     "__v": 0,
     "members": [
-      "jlegeyt",
+      "jsmith",
       ""
     ]
   },
@@ -13,8 +13,8 @@
   "type": "REST",
   "basePath": "/match",
   "lastUpdateUser": {
-    "mail": "john_legeyt@optum.com",
-    "uid": "jlegeyt",
+    "mail": "john_smith@asd.com",
+    "uid": "jsmith",
     "_id": "5c6da44d9bf6263544bd5938"
   },
   "liveInvocation": {
