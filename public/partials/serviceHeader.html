@@ -29,6 +29,7 @@
       <input required type="text" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter new group" ng-disabled="!canChangeType">
     </div>
   </div>
+
   <div class="form-group req row" ng-show="canChangeType">
       <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
   
@@ -37,13 +38,20 @@
             <option selected="selected" disabled="true">Select SUT</option>
         </select>
       </div>
-     
-    </div>
+  </div>
 
-  <div class="form-group req row" ng-show="servicevo.type === 'MQ'">
+  <div class="form-group req row" ng-show="servicevo.type === 'MQ' && !canChangeType">
       <label for="queue_manager" class="col-xs-2 col-form-label">Request Queue:</label>
       <div class="col-xs-3">
         <input type="text" id="queue_manager" class="form-control" ng-model="servicevo.mqInfo.reqQueue" ng-disabled="!canChangeType">
+      </div>
+  </div>
+  <div class="form-group req row" ng-show="servicevo.type === 'MQ' && canChangeType">
+      <label for="queue_manager" class="col-xs-2 col-form-label">Request Queue:</label>
+      <div class="col-xs-3">
+        <select ng-disabled="!servicevo.sut" class="form-control" id="queue_manager" ng-model="servicevo.mqInfo" ng-options="label.reqQueue group by label.manager for label in mqLabels">
+            <option selected="selected" disabled="true"></option>
+        </select>
       </div>
   </div>
 
