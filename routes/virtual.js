@@ -236,8 +236,8 @@ function registerRRPair(service, rrpair) {
       }
 
       // request was not matched
-      logEvent(path, label, "expected payload: " + JSON.stringify(reqData, null, 2));
-      logEvent(path, label, "received payload: " + JSON.stringify(payload, null, 2));
+      //logEvent(path, label, "expected payload: " + JSON.stringify(reqData, null, 2));
+      //logEvent(path, label, "received payload: " + JSON.stringify(payload, null, 2));
 
       return false;
     }
