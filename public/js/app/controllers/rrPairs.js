@@ -18,7 +18,7 @@ var ctrl = angular.module("mockapp.controllers")
                 if (newItemNo > 10){
                   console.log("hitting new if");
                   $scope.loadMore();
-
+                  window.scrollTo(0, document.body.scrollHeight);
                 }
               };
 
