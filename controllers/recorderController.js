@@ -188,11 +188,15 @@ function stripRRPairForReq(rrpair) {
    
     if(myRRPair.payloadType == "JSON"){
         //Even if its supposed to be JSON, and it fails parsing- record it! This may be intentional from the user
-        try{
-            myRRPair.reqData = JSON.parse(req.body);
-        }catch(err){
+        if(typeof req.body == "string"){
+            try{
+                myRRPair.reqData = JSON.parse(req.body);
+            }catch(err){
+                myRRPair.reqData = req.body;
+                myRRPair.payloadType = "PLAIN";
+            }
+        }else{
             myRRPair.reqData = req.body;
-            myRRPair.payloadType = "PLAIN";
         }
     }
     else
