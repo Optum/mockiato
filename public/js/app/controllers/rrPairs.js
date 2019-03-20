@@ -15,6 +15,11 @@ var ctrl = angular.module("mockapp.controllers")
                     id: 0
                   }]
                 });
+                if (newItemNo > 10){
+                  console.log("hitting new if");
+                  $scope.loadMore();
+
+                }
               };
 
               $scope.removeRRPair = function (index) {
