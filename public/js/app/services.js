@@ -359,10 +359,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     {
                       rr.reqData = reqPayload;
                     }
-                    else{
-                      console.log("In here");
-                      rr.reqData= "";
-                    }}
+                   }
                     rr.resData = resPayload;
 
                     // remove unneccessary properties
@@ -597,10 +594,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   {
                     rr.reqData = reqPayload;
                   }
-                  else{
-                    console.log("In here");
-                    rr.reqData= "";
-                  }}
+                  }
                   rr.resData = resPayload;
 
                   // remove unneccessary properties
@@ -622,6 +616,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   rrpair.resHeaders = rr.resHeaders;
                   rrpair.resData = rr.resData;
                   rrpair.label = rr.label;
+                  rrpair.getPayloadRequired = rr.getPayloadRequired;
 
                   rrpairs.push(rrpair);
               });
