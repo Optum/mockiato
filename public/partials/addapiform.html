@@ -2,14 +2,14 @@
 <form name="form" class="well col-xs-12">
   <div ng-include="'/partials/serviceHeader.html'" ng-controller="serviceHeaderController"></div>
 
-    <div ng-include="'/partials/rrPairs.html'" ng-controller="rrPairController"></div>
-
+    <!-- @depends /includes/rrPairs.html -->
+   
   <div class="form-group row">
     <div class="col-sm-12">
       <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishservice(servicevo)">Publish</button>
     </div>
   </div>
 </form>
-
+ 
 <!-- Uncomment below to output service model in realtime (useful for debugging) -->
 <!-- {{ servicevo }} -->
