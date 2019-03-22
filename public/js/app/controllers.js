@@ -2231,6 +2231,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             })
             .catch(function (err) {
               console.log(err);
+              $('#Modal-after-ajaxCall').find('.modal-title').text(ctrlConstants.SERVICE_RESTORE_FAIL_TITLE);
+              $('#Modal-after-ajaxCall').find('.modal-body').text(err.data.error);
+              $('#Modal-after-ajaxCall').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
+              $('#Modal-after-ajaxCall').modal('toggle');
             });
         });
       };
@@ -2495,5 +2499,6 @@ ctrl.constant("ctrlConstants", {
   "BACK_DANGER_BTN_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
   "MRG_CONFIRM_TITLE": "Merge Confirmation",
   "MRG_CONFIRM_BODY": "Do you want to merge this RRPair into the service?",
-  "MRG_CONFIRM_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>'
+  "MRG_CONFIRM_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
+  "SERVICE_RESTORE_FAIL_TITLE" : "Restore Fail"
 });
