@@ -19,6 +19,7 @@ const actuator = require('express-actuator');
 const schedule = require('node-schedule');
 const Archive  = require('./models/common/Archive');
 const constants = require('./lib/util/constants');
+const fuseHelper = require('./lib/util/fuse');
 
 // connect to database
 const db = require('./models/db');
@@ -234,6 +235,7 @@ function init() {
   });
 
   // ready for testing (see test/test.js)
+  fuseHelper.fuseAllFiles();
   app.emit('started');
 }
 
