@@ -4,7 +4,7 @@ const User = require('../common/User');
 const System = require('../common/System');
 
 const MQPair = require('./MQPair');
-const MQInfo = require('./MQInfo');
+//const MQInfo = require('./MQInfo');
 const constants = require('../../lib/util/constants');
 
 const mqSchema = new mongoose.Schema({
@@ -22,7 +22,7 @@ const mqSchema = new mongoose.Schema({
     type: String,
     required: [true, constants.REQUIRED_SERVICE_TYPE_ERR]
   },
-  mqInfo: MQInfo.schema,
+  //mqInfo: MQInfo.schema,
   matchTemplates: [mongoose.Schema.Types.Mixed],
   rrpairs: {
     type: [MQPair.schema],
