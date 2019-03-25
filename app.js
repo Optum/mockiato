@@ -45,8 +45,8 @@ db.once('open', function() {
       if (err) return;
 
       systems.forEach(function(system) {
-        system.mqInfo = mqInfo;
-        system.save(function(err, newService) {
+        if (!system.mqInfo) system.mqInfo = mqInfo;
+        system.save(function(err, newSystem) {
           if (err) debug(err);
         });
       });
