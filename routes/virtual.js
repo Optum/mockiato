@@ -390,6 +390,8 @@ function registerMQService(mqserv) {
 
     let mqinfo = sut.mqInfo;
 
+    if (!mqInfo) return;
+
     MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
       if (err) {
         debug('Error registering services: ' + err);
@@ -417,6 +419,8 @@ function deregisterMQService(mqserv) {
     }
   
     let mqinfo = sut.mqInfo;
+
+    if (!mqInfo) return;
 
     MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
       if (err) {
