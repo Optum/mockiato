@@ -1,9 +1,7 @@
 <h2>Mock a REST, SOAP or MQ Service</h2>
 <form name="form" class="well col-xs-12">
-  <div ng-include="'/partials/serviceHeader.html'" ng-controller="serviceHeaderController"></div>
-
-    <!-- @depends /includes/rrPairs.html -->
-   
+  <!-- @depends /includes/serviceHeader.html  -->
+  <!-- @depends /includes/rrPairs.html -->
   <div class="form-group row">
     <div class="col-sm-12">
       <button ng-disabled="form.$invalid" type="button" class="btn btn-xl btn-primary center-block" ng-click="publishservice(servicevo)">Publish</button>

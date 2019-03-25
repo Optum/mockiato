@@ -2,9 +2,7 @@
 <h4 ng-show="!canEdit() && !isFrmArchive" class="text-info">You are unable to edit this service because you aren't part of the group "{{servicevo.sut.name}}". You can request access from the user: {{servicevo.lastUpdateUser}}.</h4>
 <fieldset ng-disabled="!canEdit()">
 <form name="form" ng-disabled="!canEdit()" class="well col-xs-12">
-  <div ng-include="'/partials/serviceHeader.html'" ng-controller="serviceHeaderController"></div>
-
-  <!--begin RR pairs-->
+  <!-- @depends /includes/serviceHeader.html  -->
   <!-- @depends /includes/rrPairs.html -->
 
   <div class="form-group row">
