@@ -24,6 +24,7 @@
     "dotenv": "^5.0.1",
     "express": "4.16.4",
     "express-actuator": "^1.1.0",
+    "fuse": "^0.4.0",
     "helmet": "^3.12.1",
     "http-string-parser": "0.0.6",
     "jsonwebtoken": "^8.4.0",

@@ -381,61 +381,50 @@ function registerAllMQServices() {
 }
 
 function registerMQService(mqserv) {
-  let mqinfo = mqserv.mqInfo;
+  let mqinfo = mqserv.sut.mqInfo;
 
   if (!mqinfo) {
     debug('Service does not have MQ info: ' + mqserv.name);
-    
-    const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
-    const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
+    return;
+  }
 
-    if (!defaultManager || ! defaultQueue) {
-      debug('No default queue manager / request queue is configured');
+  MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
+    if (err) {
+      debug('Error registering services: ' + err);
       return;
     }
 
-    debug('Setting queue manager / request queue to default values: ' + defaultManager + '/' + defaultQueue);
-
-    mqinfo = {
-      manager: defaultManager,
-      reqQueue: defaultQueue
-    };
-  }
-
-  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
-
-  mqserv.rrpairs.forEach(function(rrpair){
-    rrpair.verb = 'POST';
-    rrpair.payloadType = 'XML';
-    registerRRPair(mqserv, rrpair);
+    mqservices.forEach(function(mqservice) {
+      mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+      
+      mqservice.rrpairs.forEach(function(rrpair){
+        rrpair.verb = 'POST';
+        if (!rrpair.payloadType) rrpair.payloadType = 'XML';
+        registerRRPair(mqserv, rrpair);
+      });
+    });
   });
 }
 
 function deregisterMQService(mqserv) {
-  let mqinfo = mqserv.mqInfo;
+  let mqinfo = mqserv.sut.mqInfo;
 
   if (!mqinfo) {
     debug('Service does not have MQ info: ' + mqserv.name);
+    return;
+  }
 
-    const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
-    const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
-    
-    if (!defaultManager || ! defaultQueue) {
-      debug('No default queue manager / request queue is configured');
+  MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
+    if (err) {
+      debug('Error registering services: ' + err);
       return;
     }
 
-    debug('Setting queue manager / request queue to default values: ' + defaultManager + '/' + defaultQueue);
-
-    mqinfo = {
-      manager: defaultManager,
-      reqQueue: defaultQueue
-    };
-  }
-
-  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
-
-  deregisterService(mqserv);
+    mqservices.forEach(function(mqservice) {
+      mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+      deregisterService(mqservice);
+    });
+  });
 }
 
 module.exports = {
