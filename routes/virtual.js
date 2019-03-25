@@ -3,6 +3,7 @@ const router = express.Router();
 const xml2js = require('xml2js');
 const debug = require('debug')('default');
 const Service = require('../models/http/Service');
+const System  = require('../models/common/System');
 const MQService = require('../models/mq/MQService');
 const removeRoute = require('../lib/remove-route');
 const invoke = require('./invoke');
@@ -381,48 +382,52 @@ function registerAllMQServices() {
 }
 
 function registerMQService(mqserv) {
-  let mqinfo = mqserv.sut.mqInfo;
-
-  if (!mqinfo) {
-    debug('Service does not have MQ info: ' + mqserv.name);
-    return;
-  }
-
-  MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
+  System.findOne({ name: mqserv.sut.name }, function(err, sut) {
     if (err) {
-      debug('Error registering services: ' + err);
+      debug(err);
       return;
     }
 
-    mqservices.forEach(function(mqservice) {
-      mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
-      
-      mqservice.rrpairs.forEach(function(rrpair){
-        rrpair.verb = 'POST';
-        if (!rrpair.payloadType) rrpair.payloadType = 'XML';
-        registerRRPair(mqserv, rrpair);
+    let mqinfo = sut.mqInfo;
+
+    MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
+      if (err) {
+        debug('Error registering services: ' + err);
+        return;
+      }
+
+      mqservices.forEach(function(mqservice) {
+        mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+        
+        mqservice.rrpairs.forEach(function(rrpair){
+          rrpair.verb = 'POST';
+          if (!rrpair.payloadType) rrpair.payloadType = 'XML';
+          registerRRPair(mqserv, rrpair);
+        });
       });
     });
   });
 }
 
 function deregisterMQService(mqserv) {
-  let mqinfo = mqserv.sut.mqInfo;
-
-  if (!mqinfo) {
-    debug('Service does not have MQ info: ' + mqserv.name);
-    return;
-  }
-
-  MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
+  System.findOne({ name: mqserv.sut.name }, function(err, sut) {
     if (err) {
-      debug('Error registering services: ' + err);
+      debug(err);
       return;
     }
+  
+    let mqinfo = sut.mqInfo;
 
-    mqservices.forEach(function(mqservice) {
-      mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
-      deregisterService(mqservice);
+    MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
+      if (err) {
+        debug('Error registering services: ' + err);
+        return;
+      }
+
+      mqservices.forEach(function(mqservice) {
+        mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+        deregisterService(mqservice);
+      });
     });
   });
 }
