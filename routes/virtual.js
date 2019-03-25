@@ -3,6 +3,7 @@ const router = express.Router();
 const xml2js = require('xml2js');
 const debug = require('debug')('default');
 const Service = require('../models/http/Service');
+const System  = require('../models/common/System');
 const MQService = require('../models/mq/MQService');
 const removeRoute = require('../lib/remove-route');
 const invoke = require('./invoke');
@@ -381,61 +382,51 @@ function registerAllMQServices() {
 }
 
 function registerMQService(mqserv) {
-  let mqinfo = mqserv.mqInfo;
-
-  if (!mqinfo) {
-    debug('Service does not have MQ info: ' + mqserv.name);
-    
-    const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
-    const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
-
-    if (!defaultManager || ! defaultQueue) {
-      debug('No default queue manager / request queue is configured');
+  System.findOne({ name: mqserv.sut.name }, function(err, sut) {
+    if (err) {
+      debug(err);
       return;
     }
 
-    debug('Setting queue manager / request queue to default values: ' + defaultManager + '/' + defaultQueue);
+    let mqinfo = sut.mqInfo;
+    if (!mqinfo) {
+      return;
+    }
 
-    mqinfo = {
-      manager: defaultManager,
-      reqQueue: defaultQueue
-    };
-  }
+    MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
+      if (err) {
+        debug('Error registering services: ' + err);
+        return;
+      }
 
-  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+      debug(mqservices.length);
 
-  mqserv.rrpairs.forEach(function(rrpair){
-    rrpair.verb = 'POST';
-    rrpair.payloadType = 'XML';
-    registerRRPair(mqserv, rrpair);
+      mqservices.forEach(function(mqservice) {
+        mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+        
+        mqservice.rrpairs.forEach(function(rrpair){
+          rrpair.verb = 'POST';
+          if (!rrpair.payloadType) rrpair.payloadType = 'XML';
+          registerRRPair(mqservice, rrpair);
+        });
+      });
+    });
   });
 }
 
 function deregisterMQService(mqserv) {
-  let mqinfo = mqserv.mqInfo;
-
-  if (!mqinfo) {
-    debug('Service does not have MQ info: ' + mqserv.name);
-
-    const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
-    const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
-    
-    if (!defaultManager || ! defaultQueue) {
-      debug('No default queue manager / request queue is configured');
+  System.findOne({ name: mqserv.sut.name }, function(err, sut) {
+    if (err) {
+      debug(err);
       return;
     }
+  
+    let mqinfo = sut.mqInfo;
+    if (!mqinfo) return;
 
-    debug('Setting queue manager / request queue to default values: ' + defaultManager + '/' + defaultQueue);
-
-    mqinfo = {
-      manager: defaultManager,
-      reqQueue: defaultQueue
-    };
-  }
-
-  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
-
-  deregisterService(mqserv);
+    mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+    deregisterService(mqserv);
+  });
 }
 
 module.exports = {

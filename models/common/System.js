@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const constants = require('../../lib/util/constants');
+const MQInfo = require('../mq/MQInfo');
 
 const sutSchema = new mongoose.Schema({
   name: {
@@ -9,7 +10,8 @@ const sutSchema = new mongoose.Schema({
   members: {
     type : Array, 
     default : []
-  }
+  },
+  mqInfo: MQInfo.schema
 });
 
 module.exports = mongoose.model('SUT', sutSchema);

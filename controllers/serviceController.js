@@ -16,7 +16,6 @@ const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
 const systemController = require('./systemController');
-const rrpairController = require('./rrpairController');
 const constants = require('../lib/util/constants');
 
 /**
@@ -640,9 +639,14 @@ function syncWorkers(service, action) {
   };
 
   manager.messageAll(msg)
-    .then(function(workerIds) {
-      virtual.deregisterService(service);
-      invoke.deregisterServiceInvoke(service);
+    .then(function() {
+      if (service.type === 'MQ') {
+        virtual.deregisterMQService(service);
+      }
+      else {
+        virtual.deregisterService(service);
+        invoke.deregisterServiceInvoke(service);
+      }
 
       if (action === 'register') {
         if (service.type !== 'MQ') {
@@ -654,12 +658,6 @@ function syncWorkers(service, action) {
         else {
           virtual.registerMQService(service);
         }
-      }
-      else {
-        Service.findOneAndRemove({_id : service._id }, function(err)	{
-          if (err) debug(err);
-          //debug(service);
-        });
       }
     })
     .catch(function (err) {
@@ -1067,7 +1065,9 @@ function toggleService(req, res) {
             syncWorkers(mqService, 'register');
          });
         }
-        handleError("Service not Found",res,404);
+        else {
+          handleError("Service not Found",res,404);
+        }
       });
     }
   });
@@ -1607,7 +1607,6 @@ function addRRPair(req,res){
       handleError(err,res,401);
   });
 }
-
 
 module.exports = {
   getServiceById: getServiceById,

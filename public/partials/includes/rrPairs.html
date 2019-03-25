@@ -1,3 +1,4 @@
+<div ng-controller="rrPairController">
 <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs | limitTo:totalDisplayed">
     <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
       <div class="form-group row">
@@ -8,7 +9,7 @@
         <div class="col-xs-1" ng-if="servicevo.rawpairs.length > 1">
           <button type="button" class="btn btn-danger" ng-click="removeRRPair($index)">
             Delete
-          </button>
+          </button> 
         </div>
 
         <div class="col-xs-1">
@@ -147,7 +148,14 @@
         </div>
       </div>
 
-      <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show=" servicevo.type === 'SOAP' || servicevo.type === 'REST' || servicevo.type === 'MQ'">
+      <div class="form-group row" ng-show=" servicevo.type == 'REST' && rr.method == 'GET'">
+          <label for="service_GET_request_payload" class="col-xs-2 col-form-label">Add Request Payload For GET:</label>
+          <div class="col-xs-9">
+              <input type="checkbox" id="service_getPayloadRequired" ng-model="rr.getPayloadRequired" ng-click="">
+          </div>
+        </div>
+
+      <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show=" servicevo.type === 'SOAP' || rr.method!== 'GET' || servicevo.type === 'MQ'|| rr.getPayloadRequired">
         <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
         <div class="col-xs-9">
           <textarea ng-required="servicevo.type !== 'REST'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
@@ -232,3 +240,5 @@
         Show more pairs <span class="glyphicon glyphicon-chevron-down"></span>
       </btn>
     </div>
+
+  </div>

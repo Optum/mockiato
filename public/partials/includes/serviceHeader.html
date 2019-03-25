@@ -1,4 +1,4 @@
-<div class="form-group row">
+<div class="form-group row" ng-controller="serviceHeaderController">
     <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
     <div class="col-xs-8">
       <div class="radio">
@@ -40,7 +40,7 @@
       </div>
   </div>
 
-  <div class="form-group req row" ng-show="servicevo.type === 'MQ' && !canChangeType">
+  <!-- <div class="form-group req row" ng-show="servicevo.type === 'MQ' && !canChangeType">
       <label for="queue_manager" class="col-xs-2 col-form-label">Request Queue:</label>
       <div class="col-xs-3">
         <input type="text" id="queue_manager" class="form-control" ng-model="servicevo.mqInfo.reqQueue" ng-disabled="!canChangeType">
@@ -53,7 +53,7 @@
             <option selected="selected" disabled="true"></option>
         </select>
       </div>
-  </div>
+  </div> -->
 
   <div class="form-group row">
     <label for="service_name" class="col-xs-2 col-form-label">Name:</label>
