@@ -18,6 +18,7 @@ const helmet = require('helmet');
 const actuator = require('express-actuator');
 const schedule = require('node-schedule');
 const Archive  = require('./models/common/Archive');
+const System = require('./models/common/System');
 const MQService = require('./models/mq/MQService');
 const constants = require('./lib/util/constants');
 
@@ -26,6 +27,31 @@ const db = require('./models/db');
 db.on('error', function(err)  { throw err; });
 db.once('open', function() {
   debug(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
+
+  // retroactively assign queue manager / request queue to groups
+  const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
+  const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
+
+  if (!defaultManager || !defaultQueue) {
+    debug('No default queue manager / request queue is configured');
+  }
+  else {
+    mqInfo = {
+      manager: defaultManager,
+      reqQueue: defaultQueue
+    };
+
+    System.find({}, function(err, systems) {
+      if (err) return;
+
+      systems.forEach(function(system) {
+        system.mqInfo = mqInfo;
+        system.save(function(err, newService) {
+          if (err) debug(err);
+        });
+      });
+    });
+  }
 
   // retroactively assign payload type to MQ services
   MQService.find({}, function(err, services) {
