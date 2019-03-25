@@ -20,6 +20,7 @@ const schedule = require('node-schedule');
 const Archive  = require('./models/common/Archive');
 const constants = require('./lib/util/constants');
 const fuseHelper = require('./lib/util/fuse');
+global.__basedir = __dirname;
 
 // connect to database
 const db = require('./models/db');
@@ -39,7 +40,7 @@ function init() {
   app.use(morgan('dev'));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
-
+  
   // parse request body as plaintext if no content-type is set
   app.use(function(req, res, next) {
     if (!req.get('content-type')) {
