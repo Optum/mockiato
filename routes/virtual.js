@@ -389,8 +389,7 @@ function registerMQService(mqserv) {
     }
 
     let mqinfo = sut.mqInfo;
-
-    if (!mqInfo) return;
+    if (!mqinfo) return;
 
     MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
       if (err) {
@@ -404,7 +403,7 @@ function registerMQService(mqserv) {
         mqservice.rrpairs.forEach(function(rrpair){
           rrpair.verb = 'POST';
           if (!rrpair.payloadType) rrpair.payloadType = 'XML';
-          registerRRPair(mqserv, rrpair);
+          registerRRPair(mqservice, rrpair);
         });
       });
     });
@@ -419,20 +418,10 @@ function deregisterMQService(mqserv) {
     }
   
     let mqinfo = sut.mqInfo;
+    if (!mqinfo) return;
 
-    if (!mqInfo) return;
-
-    MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
-      if (err) {
-        debug('Error registering services: ' + err);
-        return;
-      }
-
-      mqservices.forEach(function(mqservice) {
-        mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
-        deregisterService(mqservice);
-      });
-    });
+    mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+    deregisterService(mqserv);
   });
 }
 
