@@ -18,15 +18,33 @@ const helmet = require('helmet');
 const actuator = require('express-actuator');
 const schedule = require('node-schedule');
 const Archive  = require('./models/common/Archive');
+const MQService = require('./models/mq/MQService');
 const constants = require('./lib/util/constants');
 const fuseHelper = require('./lib/util/fuse');
 global.__basedir = __dirname;
 
 // connect to database
 const db = require('./models/db');
-db.on('error', function(err)  {throw err; });
+db.on('error', function(err)  { throw err; });
 db.once('open', function() {
   debug(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
+
+  // retroactively assign payload type to MQ services
+  MQService.find({}, function(err, services) {
+    if (err) {
+      debug(err);
+      return;
+    }
+
+    services.forEach(function(service) {
+      service.rrpairs.forEach(function(rrpair) {
+        if (!rrpair.payloadType) rrpair.payloadType = 'XML';
+      });
+      service.save(function(err, newService) {
+        if (err) debug(err);
+      });
+    });
+  });
 
   // ready to start
   app.emit('ready');
