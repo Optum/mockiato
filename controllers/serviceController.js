@@ -639,9 +639,14 @@ function syncWorkers(service, action) {
   };
 
   manager.messageAll(msg)
-    .then(function(workerIds) {
-      virtual.deregisterService(service);
-      invoke.deregisterServiceInvoke(service);
+    .then(function() {
+      if (service.type === 'MQ') {
+        virtual.deregisterMQService(service);
+      }
+      else {
+        virtual.deregisterService(service);
+        invoke.deregisterServiceInvoke(service);
+      }
 
       if (action === 'register') {
         if (service.type !== 'MQ') {
@@ -651,7 +656,6 @@ function syncWorkers(service, action) {
           }
         }
         else {
-          virtual.deregisterMQService(service);
           virtual.registerMQService(service);
         }
       }

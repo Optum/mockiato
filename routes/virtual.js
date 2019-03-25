@@ -389,13 +389,17 @@ function registerMQService(mqserv) {
     }
 
     let mqinfo = sut.mqInfo;
-    if (!mqinfo) return;
+    if (!mqinfo) {
+      return;
+    }
 
     MQService.find({ 'sut.name' : mqserv.sut.name }, function(err, mqservices) {
       if (err) {
         debug('Error registering services: ' + err);
         return;
       }
+
+      debug(mqservices.length);
 
       mqservices.forEach(function(mqservice) {
         mqservice.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
