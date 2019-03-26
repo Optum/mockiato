@@ -1,6 +1,7 @@
 const System  = require('../models/common/System');
 const MQService = require('../models/mq/MQService');
 const virtual = require('../routes/virtual');
+const debug = require('debug')('default');
 
 function registerAllMQServices() {
   System.find({}, function(err, systems) {
@@ -22,18 +23,29 @@ function registerMQServicesInSystem(sut) {
       return;
     }
 
-    mqservices.forEach(registerMQService);
+    mqservices.forEach(function(mqservice) {
+      registerMQService(mqservice, sut);
+    });
   });
 }
 
-function registerMQService(mqservice) {
-  System.findOne({ 'sut.name': mqservice.sut.name }, function(err, system) {
-    if (err) {
-      debug('Error registering MQ services: ' + err);
-      return;
-    }
+function registerMQService(mqserv, sut) {
+  if (!sut) {
+    System.findOne({ 'sut.name' : mqserv.sut.name }, function(err, system) {
+      if (err) {
+        debug('Error registering MQ service: ' + err);
+        return;
+      }
 
-    if (!mqservice.running || !system.mqInfo) {
+      register(mqserv, system);
+    });
+  }
+  else {
+    register(mqserv, sut);
+  }
+
+  function register(mqservice, system) {
+    if (!mqservice.running || !system || !system.mqInfo) {
       return;
     }
 
@@ -44,18 +56,22 @@ function registerMQService(mqservice) {
       if (!rrpair.payloadType) rrpair.payloadType = 'XML';
       virtual.registerRRPair(mqservice, rrpair);
     });
-  });
+  }
 }
 
 function deregisterMQService(mqserv) {
-  System.findOne({ 'sut.name': mqserv.sut.name }, function(err, sut) {
+  System.findOne({ name: mqserv.sut.name }, function(err, sut) {
     if (err) {
       debug('Error deregistering MQ services: ' + err);
       return;
     }
 
+    if (!sut) {
+      return;
+    }
+
     let toReregister = [];
-    System.find({ 'mqInfo' : sut.mqInfo }, function(err, systems) {
+    System.find({ mqInfo : sut.mqInfo }, function(err, systems) {
       systems.forEach(function(system) {
         MQService.find({ 'sut.name': system.name }, function(err, mqservices) {
           mqservices.forEach(function(mqservice) {
@@ -67,7 +83,7 @@ function deregisterMQService(mqserv) {
       });
     });
 
-    deregisterMQServicesByInfo(system.mqInfo);
+    deregisterMQServicesByInfo(sut.mqInfo);
     toReregister.forEach(registerMQService);
   });
 }
@@ -77,6 +93,7 @@ function deregisterMQServicesByInfo(mqinfo) {
     return;
   }
 
+  let mqserv = {};
   mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
   virtual.deregisterService(mqserv);
 }

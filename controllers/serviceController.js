@@ -708,11 +708,7 @@ function addService(req, res) {
     serv.liveInvocation = req.body.liveInvocation;
   }
 
-  if (type === 'MQ') {
-    if (req.body.mqInfo) {
-      serv.mqInfo = req.body.mqInfo;
-    }
-    
+  if (type === 'MQ') {    
     createService(serv,req).then(
       function(service){
         res.json(service);
@@ -849,7 +845,6 @@ function addServiceAsDraft(req, res) {
   }
 
   if (type === 'MQ') {
-    serv.mqInfo = req.body.mqInfo;
     let draftservice = {mqservice:serv};
     DraftService.create(draftservice, function(err, service) {
         if (err) {
@@ -1192,8 +1187,7 @@ function restoreService(req, res) {
               type: archive.mqservice.type,
               running: false,
               matchTemplates: archive.mqservice.matchTemplates,
-              rrpairs: archive.mqservice.rrpairs,
-              mqInfo: archive.mqservice.mqInfo
+              rrpairs: archive.mqservice.rrpairs
             };
             createService(newMQService,req).then( function(serv) {
               res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });

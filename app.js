@@ -183,7 +183,6 @@ function init() {
 
   // register SOAP / REST virts from DB
   virtual.registerAllRRPairsForAllServices();
-  virtual.registerAllMQServices();
 
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
@@ -196,6 +195,7 @@ function init() {
   app.use('/api/recording',recorder.apiRouter);
 
   const mqController = require('./controllers/mqController');
+  mqController.registerAllMQServices();
 
   // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
@@ -227,7 +227,7 @@ function init() {
       }else if(msg.recorder){
         const rec = msg.recorder;
         const action  = msg.action;
-        //console.log("msg: " + JSON.stringify(msg));
+
         if(action === 'register'){
           recorderController.registerRecorder(rec);
         }else if(action === 'deregister'){
