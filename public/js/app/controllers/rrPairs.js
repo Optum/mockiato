@@ -1,6 +1,6 @@
 var ctrl = angular.module("mockapp.controllers")
-    .controller("rrPairController",['suggestionsService','$scope',
-        function(suggestionsService,$scope){
+  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants',
+    function (suggestionsService, $scope, ctrlConstants){
             $scope.addNewRRPair = function () {
                 var newItemNo = $scope.servicevo.rawpairs.length;
                 $scope.servicevo.rawpairs.push({
@@ -15,6 +15,10 @@ var ctrl = angular.module("mockapp.controllers")
                     id: 0
                   }]
                 });
+                if (newItemNo > 10){
+                  $scope.loadMore();
+                  window.scrollTo(0, document.body.scrollHeight);
+                }
               };
 
               $scope.removeRRPair = function (index) {
@@ -84,3 +88,4 @@ var ctrl = angular.module("mockapp.controllers")
               };
         
         }]);
+    
