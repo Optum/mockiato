@@ -41,6 +41,7 @@ function updateGroup(req, res){
       return;
     }
 
+    if (req.body.mqInfo) system.mqInfo = req.body.mqInfo;
     system.members = _.union(system.members, req.body.members);
 
     system.save(function (err, newSystem) {
@@ -83,6 +84,8 @@ function addSystem(req, res) {
     members: req.body.members
   };
 
+  if (req.body.mqInfo) sut.mqInfo = req.body.mqInfo;
+
   System.findOne({ name: sut.name }, function(err, foundSUT) {
     if (err) {
       debug(err);
@@ -101,6 +104,8 @@ function addSystem(req, res) {
       });
     }
     else {
+      if (!foundSUT.mqInfo && sut.mqInfo) foundSUT.mqInfo = sut.mqInfo;
+
       // update members
       foundSUT.members = _.union(foundSUT.members, sut.members);
       foundSUT.save(function(err) {
