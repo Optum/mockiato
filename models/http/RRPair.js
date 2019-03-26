@@ -79,7 +79,7 @@ const rrSchema = new mongoose.Schema({
   },
   getPayloadRequired: {
     type: Boolean,
-    default: true
+    default: false
   },
   reqDataString: String,
   resStatus: {

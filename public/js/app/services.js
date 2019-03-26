@@ -274,8 +274,19 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       rr.payloadType = 'XML';
                     }
 
+                    
+                  if(rr.method!== 'GET')
+                  {
+                    rr.getPayloadRequired = false;
+                  }
+
+                  if(rr.method === 'GET'&& rr.getPayloadRequired === false){
+                    rr.requestpayload = undefined;
+                  }
+                  console.log("this is req",rr.requestpayload);
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
+                      
                       try {
                         //Handle empty json object payload
                         if (rr.responsepayload)  {
@@ -286,6 +297,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                             resPayload = JSON.parse(rr.responsepayload);
                           }
                         }
+                       ;
                         if (rr.requestpayload) reqPayload = JSON.parse(rr.requestpayload);
                       }
                       catch(e) {
@@ -348,17 +360,20 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     if (Object.keys(reqHeaders).length > 0) {
                       rr.reqHeaders = reqHeaders;
                     }
-                    console.log(rr.getPayloadRequired);
                      // only save request data for non-GETs
                     if (rr.method !== 'GET') {
                       rr.reqData = reqPayload;
                     }
                     // save request data for get when Checkbox selected
                     else{
+                    console.log("This is GET");
                     if(rr.getPayloadRequired=== true) 
                     {
                       rr.reqData = reqPayload;
                     }
+                    else{ if(rr.getPayloadRequired=== false){
+                      rr.reqData = undefined;
+                    }}
                    }
                     rr.resData = resPayload;
 
@@ -527,6 +542,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rr.payloadType = 'XML';
                   }
 
+                  if(rr.method!== 'GET')
+                  {
+                    rr.getPayloadRequired = false;
+                  }
+                  
+                  if(rr.method === 'GET'&& rr.getPayloadRequired === false){
+                    rr.requestpayload = undefined;
+                  }
                   // parse and display error if JSON is malformed
                   if (rr.payloadType === 'JSON') {
                     try {
@@ -584,16 +607,21 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if (Object.keys(reqHeaders).length > 0) {
                     rr.reqHeaders = reqHeaders;
                   }
+                 
                     // only save request data for non-GETs
                   if (rr.method !== 'GET') {
                     rr.reqData = reqPayload;
                   }
                   // save request data for get when Checkbox selected
                   else{
+                      console.log("This is GET");
                   if(rr.getPayloadRequired=== true) 
                   {
                     rr.reqData = reqPayload;
                   }
+                  else{ if(rr.getPayloadRequired=== false){
+                    rr.reqData = undefined;
+                  }}
                   }
                   rr.resData = resPayload;
 
