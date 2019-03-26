@@ -701,6 +701,8 @@ function addService(req, res) {
         rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
       if(rrpair.resData)
         rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+      rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
     });
   }
 
@@ -837,6 +839,8 @@ function addServiceAsDraft(req, res) {
         rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
       if(rrpair.resData)
         rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+        rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
     });
   }
 
@@ -896,6 +900,8 @@ function updateService(req, res) {
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
           if(rrpair.resData)
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
         });
       }
       if(req.body.liveInvocation){
@@ -970,6 +976,8 @@ function updateServiceAsDraft(req, res) {
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
           if(rrpair.resData)
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
         });
       }
       if(req.body.liveInvocation){
@@ -1000,6 +1008,8 @@ function updateServiceAsDraft(req, res) {
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
           if(rrpair.resData)
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
         });
       }
       if(req.body.liveInvocation){

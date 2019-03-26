@@ -6,7 +6,7 @@ const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
 const invoke = require('./invoke');
 const matchTemplateController = require('../controllers/matchTemplateController');
-
+const randomController = require("../controllers/randomController");
   
 // function to simulate latency
 function delay(ms,msMax) {
@@ -208,7 +208,14 @@ function registerRRPair(service, rrpair) {
             resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
           }
 
-
+          //If rrpair has random tags, perform random insertion
+          if(rrpair.hasRandomTags){
+            let reqBodyString = payload;
+            if(typeof payload != "string"){
+              reqBodyString = JSON.stringify(reqBodyString);
+            }
+            resString = randomController.performRandomInsertion(resString,reqBodyString,req.query,req.path);
+          }
           resp.send(new Buffer(resString));
         }
         else if (!rrpair.resStatus && rrpair.resData) {
@@ -219,7 +226,14 @@ function registerRRPair(service, rrpair) {
           if(templateOptions){
             resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
           }
-
+           //If rrpair has random tags, perform random insertion
+           if(rrpair.hasRandomTags){
+            let reqBodyString = payload;
+            if(typeof payload != "string"){
+              reqBodyString = JSON.stringify(reqBodyString);
+            }
+            resString = randomController.performRandomInsertion(resString,reqBodyString,req.query,req.path);
+          }
           resp.send(new Buffer(resString));
         }
         else if (rrpair.resStatus && !rrpair.resData) {
