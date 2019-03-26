@@ -14,6 +14,7 @@ WORKDIR /app
 
 # install app dependencies
 RUN npm install
+RUN npm install -g bower
 RUN bower install --allow-root
 
 # fix for k8s permission problems
