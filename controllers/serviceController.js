@@ -16,6 +16,7 @@ const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
 const systemController = require('./systemController');
+const mqController = require('./mqController');
 const constants = require('../lib/util/constants');
 
 /**
@@ -641,7 +642,7 @@ function syncWorkers(service, action) {
   manager.messageAll(msg)
     .then(function() {
       if (service.type === 'MQ') {
-        virtual.deregisterMQService(service);
+        mqController.deregisterMQService(service);
       }
       else {
         virtual.deregisterService(service);
@@ -656,7 +657,7 @@ function syncWorkers(service, action) {
           }
         }
         else {
-          virtual.registerMQService(service);
+          mqController.registerMQService(service);
         }
       }
     })

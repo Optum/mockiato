@@ -195,6 +195,8 @@ function init() {
   app.use('/recording',recorder.recordingRouter);
   app.use('/api/recording',recorder.apiRouter);
 
+  const mqController = require('./controllers/mqController');
+
   // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
     process.on('message', function(message) {
@@ -217,9 +219,9 @@ function init() {
           }
         }
         else {
-          virtual.deregisterMQService(service);
+          mqController.deregisterMQService(service);
           if (action === 'register') {
-            virtual.registerMQService(service);
+            mqController.registerMQService(service);
           }
         }
       }else if(msg.recorder){
