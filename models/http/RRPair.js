@@ -131,6 +131,6 @@ const rrSchema = new mongoose.Schema({
     type:Boolean,
     default:false
   }
-});
+},{minimize:false});
 
 module.exports = mongoose.model('RRPair', rrSchema);
