@@ -43,11 +43,15 @@ function registerRRPair(service, rrpair) {
   if (rrpair.label) label = rrpair.label;
 
   router.all(path, delay(service.delay, service.delayMax), function(req, resp, next) {
+    if(req._Mockiato_Last_Service_Id && req._Mockiato_Last_Service_Id != service.id){
+      delete req._Mockiato_Flat_Templates;
+    }
+    req._Mockiato_Last_Service_Id = service.id;
+
     //Function for handling incoming req against this RR pair
     var processRRPair = function(){
       req.msgContainer = req.msgContainer || {};
       req.msgContainer.reqMatched = false;
-      delete req._Mockiato_Flat_ReqData;
       if (req.method === rrpair.verb) {
         // convert xml to js object
         if (rrpair.payloadType === 'XML') {
@@ -108,16 +112,12 @@ function registerRRPair(service, rrpair) {
           flatPayload = flattenObject(payload);
           req._Mockiato_Flat_Payload = flatPayload;
         }
-        if(req._Mockiato_Flat_ReqData)
-          flatReqData = req._Mockiato_Flat_Payload;
-        else{
-          flatReqData = flattenObject(reqData);
-          req._Mockiato_Flat_ReqData = flatReqData;
-        }
+        
         if(!(req._Mockiato_Flat_Templates)){
           req._Mockiato_Flat_Templates = [];
         }
 
+        flatReqData = flattenObject(reqData);
         for (let i = 0; i < templates.length; i++) {
           let template = templates[i];
           
