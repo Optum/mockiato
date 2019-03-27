@@ -126,7 +126,11 @@ const rrSchema = new mongoose.Schema({
     ]
   },
   resDataString: String,
-  label: String
+  label: String,
+  hasRandomTags : {
+    type:Boolean,
+    default:false
+  }
 });
 
 module.exports = mongoose.model('RRPair', rrSchema);

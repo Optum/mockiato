@@ -2,7 +2,7 @@
 FROM node:8-alpine
 
 # expose HTTP
-EXPOSE 8080 9209
+EXPOSE 8080
 
 # install system dependencies
 RUN apk update && apk add --no-cache git python py-pip make g++
@@ -14,9 +14,8 @@ WORKDIR /app
 
 # install app dependencies
 RUN npm install
-RUN npm install -g pm2@3.2.9 bower
+RUN npm install -g bower
 RUN bower install --allow-root
-RUN pm2 install pm2-prometheus-exporter
 
 # fix for k8s permission problems
 RUN mkdir /.pm2 && chmod 777 /.pm2 && chmod 777 /app

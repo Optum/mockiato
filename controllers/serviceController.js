@@ -16,6 +16,7 @@ const YAML = require('yamljs');
 const invoke = require('../routes/invoke'); 
 const System = require('../models/common/System');
 const systemController = require('./systemController');
+const mqController = require('./mqController');
 const constants = require('../lib/util/constants');
 
 /**
@@ -641,7 +642,7 @@ function syncWorkers(service, action) {
   manager.messageAll(msg)
     .then(function() {
       if (service.type === 'MQ') {
-        virtual.deregisterMQService(service);
+        mqController.deregisterMQService(service);
       }
       else {
         virtual.deregisterService(service);
@@ -656,7 +657,7 @@ function syncWorkers(service, action) {
           }
         }
         else {
-          virtual.registerMQService(service);
+          mqController.registerMQService(service);
         }
       }
     })
@@ -700,6 +701,8 @@ function addService(req, res) {
         rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
       if(rrpair.resData)
         rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+      rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
     });
   }
 
@@ -707,11 +710,7 @@ function addService(req, res) {
     serv.liveInvocation = req.body.liveInvocation;
   }
 
-  if (type === 'MQ') {
-    if (req.body.mqInfo) {
-      serv.mqInfo = req.body.mqInfo;
-    }
-    
+  if (type === 'MQ') {    
     createService(serv,req).then(
       function(service){
         res.json(service);
@@ -840,6 +839,8 @@ function addServiceAsDraft(req, res) {
         rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
       if(rrpair.resData)
         rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+        rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
     });
   }
 
@@ -848,7 +849,6 @@ function addServiceAsDraft(req, res) {
   }
 
   if (type === 'MQ') {
-    serv.mqInfo = req.body.mqInfo;
     let draftservice = {mqservice:serv};
     DraftService.create(draftservice, function(err, service) {
         if (err) {
@@ -900,6 +900,8 @@ function updateService(req, res) {
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
           if(rrpair.resData)
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
         });
       }
       if(req.body.liveInvocation){
@@ -974,6 +976,8 @@ function updateServiceAsDraft(req, res) {
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
           if(rrpair.resData)
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
         });
       }
       if(req.body.liveInvocation){
@@ -1004,6 +1008,8 @@ function updateServiceAsDraft(req, res) {
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
           if(rrpair.resData)
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
+
+          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
         });
       }
       if(req.body.liveInvocation){
@@ -1191,8 +1197,7 @@ function restoreService(req, res) {
               type: archive.mqservice.type,
               running: false,
               matchTemplates: archive.mqservice.matchTemplates,
-              rrpairs: archive.mqservice.rrpairs,
-              mqInfo: archive.mqservice.mqInfo
+              rrpairs: archive.mqservice.rrpairs
             };
             createService(newMQService,req).then( function(serv) {
               res.json({ 'message' : 'restored', 'id' : archive.mqservice._id });

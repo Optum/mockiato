@@ -38,7 +38,11 @@ const mockUser = {
 }
 
 const mockGroup = {
-    name: getRandomString()
+    name: getRandomString(),
+    mqInfo: {
+        manager: getRandomString(),
+        reqQueue: getRandomString()
+    }
 };
 
 function getRandomString() {
