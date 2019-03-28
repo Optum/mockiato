@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const xml2js = require('xml2js');
-const debug = require('debug')('matching');
+const debug = require('debug')('default');
 const Service = require('../models/http/Service');
 const removeRoute = require('../lib/remove-route');
 const invoke = require('./invoke');
 const matchTemplateController = require('../controllers/matchTemplateController');
-
+const randomController = require("../controllers/randomController");
   
 // function to simulate latency
 function delay(ms,msMax) {
@@ -43,11 +43,15 @@ function registerRRPair(service, rrpair) {
   if (rrpair.label) label = rrpair.label;
 
   router.all(path, delay(service.delay, service.delayMax), function(req, resp, next) {
+    if(req._Mockiato_Last_Service_Id && req._Mockiato_Last_Service_Id != service.id){
+      delete req._Mockiato_Flat_Templates;
+    }
+    req._Mockiato_Last_Service_Id = service.id;
+
     //Function for handling incoming req against this RR pair
     var processRRPair = function(){
       req.msgContainer = req.msgContainer || {};
       req.msgContainer.reqMatched = false;
-      delete req._Mockiato_Flat_ReqData;
       if (req.method === rrpair.verb) {
         // convert xml to js object
         if (rrpair.payloadType === 'XML') {
@@ -108,16 +112,12 @@ function registerRRPair(service, rrpair) {
           flatPayload = flattenObject(payload);
           req._Mockiato_Flat_Payload = flatPayload;
         }
-        if(req._Mockiato_Flat_ReqData)
-          flatReqData = req._Mockiato_Flat_Payload;
-        else{
-          flatReqData = flattenObject(reqData);
-          req._Mockiato_Flat_ReqData = flatReqData;
-        }
+        
         if(!(req._Mockiato_Flat_Templates)){
           req._Mockiato_Flat_Templates = [];
         }
 
+        flatReqData = flattenObject(reqData);
         for (let i = 0; i < templates.length; i++) {
           let template = templates[i];
           
@@ -154,7 +154,7 @@ function registerRRPair(service, rrpair) {
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
           if (!req.query) {
-            debug("expected queries in request");
+            logEvent(path, label, "expected queries in request");
             return false;
           }
           let matchedQueries = true;
@@ -208,7 +208,14 @@ function registerRRPair(service, rrpair) {
             resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
           }
 
-
+          //If rrpair has random tags, perform random insertion
+          if(rrpair.hasRandomTags){
+            let reqBodyString = payload;
+            if(typeof payload != "string"){
+              reqBodyString = JSON.stringify(reqBodyString);
+            }
+            resString = randomController.performRandomInsertion(resString,reqBodyString,req.query,req.path);
+          }
           resp.send(new Buffer(resString));
         }
         else if (!rrpair.resStatus && rrpair.resData) {
@@ -219,8 +226,14 @@ function registerRRPair(service, rrpair) {
           if(templateOptions){
             resString = matchTemplateController.applyTemplateOptionsToResponse(resString,templateOptions);
           }
-
-
+           //If rrpair has random tags, perform random insertion
+           if(rrpair.hasRandomTags){
+            let reqBodyString = payload;
+            if(typeof payload != "string"){
+              reqBodyString = JSON.stringify(reqBodyString);
+            }
+            resString = randomController.performRandomInsertion(resString,reqBodyString,req.query,req.path);
+          }
           resp.send(new Buffer(resString));
         }
         else if (rrpair.resStatus && !rrpair.resData) {
@@ -236,8 +249,8 @@ function registerRRPair(service, rrpair) {
       }
 
       // request was not matched
-      logEvent(path, label, "expected payload: " + JSON.stringify(reqData, null, 2));
-      logEvent(path, label, "received payload: " + JSON.stringify(payload, null, 2));
+      //logEvent(path, label, "expected payload: " + JSON.stringify(reqData, null, 2));
+      //logEvent(path, label, "received payload: " + JSON.stringify(payload, null, 2));
 
       return false;
     }
@@ -313,7 +326,7 @@ function registerRRPair(service, rrpair) {
 
 // register all RR pairs for all SOAP / REST services from db
 function registerAllRRPairsForAllServices() {
-  Service.find({ $or: [{ type:'SOAP' }, { type:'REST' }] }, function(err, services) {
+  Service.find({}, function(err, services) {
     if (err) {
       debug('Error registering services: ' + err);
       return;
@@ -322,9 +335,8 @@ function registerAllRRPairsForAllServices() {
     try {
       services.forEach(function(service){
         if (service.running) {
-          service.rrpairs.forEach(function(rrpair){
-            registerRRPair(service, rrpair);
-          });
+          registerService(service);
+
           if(service.liveInvocation && service.liveInvocation.enabled){
             invoke.registerServiceInvoke(service);
           }
@@ -365,8 +377,6 @@ function deregisterService(service) {
     deregisterRRPair(service, rrpair);
   });
 }
-
-
 
 module.exports = {
   router: router,

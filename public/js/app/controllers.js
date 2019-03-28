@@ -27,10 +27,14 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
     }])
 
-  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService',
-    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants,modalService) {
+  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService', 'mqInfoFactory',
+    
+    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants, modalService, mqInfoFactory) {
+      $scope.canEdit = function(){ return true; }
       $scope.myUser = authService.getUserInfo().username;
+      $scope.canChangeType = true;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+      $scope.mqLabelsOriginal = [];
       $scope.servicevo = {};
       $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
       $scope.servicevo.failStatuses = [{ id: 0, val: '' }];
@@ -51,102 +55,25 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
-      $scope.addFailStatus = function () {
-        $scope.servicevo.failStatuses.push({ val: '' });
-      }
-      $scope.removeFailStatus = function (index) {
-        $scope.servicevo.failStatuses.splice(index, 1);
-      }
-      $scope.addFailString = function () {
-        $scope.servicevo.failStrings.push({ val: '' });
-      }
-      $scope.removeFailString = function (index) {
-        $scope.servicevo.failStrings.splice(index, 1);
-      }
-      $scope.addTemplate = function () {
-        $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
-      };
+      mqInfoFactory.getMQInfo()
+        .then(function(response) {
+          $scope.mqLabelsOriginal = response.data.labels;
+        })
 
-      $scope.removeTemplate = function (index) {
-        $scope.servicevo.matchTemplates.splice(index, 1);
-      };
-
-      $scope.addNewRRPair = function () {
-        var newItemNo = $scope.servicevo.rawpairs.length;
-        $scope.servicevo.rawpairs.push({
-          id: newItemNo,
-          queriesArr: [{
-            id: 0
-          }],
-          reqHeadersArr: [{
-            id: 0
-          }],
-          resHeadersArr: [{
-            id: 0
-          }]
+        .catch(function(err) {
+          console.log(err);
         });
-      };
 
-      $scope.removeRRPair = function (index) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $scope.rrPairNo = index;
-        $('#modal-btn-yes').on("click", function () {
-          $scope.servicevo.rawpairs.splice($scope.rrPairNo, 1);
-          $scope.$apply();
+      $scope.$watch('servicevo.sut', function(newSut, oldSut) {
+        $scope.mqLabels = $scope.mqLabelsOriginal.filter(function(label) {
+          return label.group === newSut.name;
         });
-      };
+        console.log($scope.mqLabels);
+      });
 
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
+      
 
-      $scope.removeReqHeader = function (rr, index) {       
-        rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {
-        rr.queriesArr.splice(index, 1);
-      };
-
-      $scope.setContentType = function (rr, type) {
-        if (!rr)
-          rr = $scope.servicevo.rawpairs[0];
-
-        if (rr.reqHeadersArr.length < 2)
-          $scope.addNewReqHeader(rr);
-
-        if (rr.resHeadersArr.length < 2)
-          $scope.addNewResHeader(rr);
-
-        // set values
-        rr.reqHeadersArr[0].v = type;
-        rr.resHeadersArr[0].v = type;
-
-        rr.reqHeadersArr[0].k = 'Content-Type';
-        rr.resHeadersArr[0].k = 'Content-Type';
-
-        $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
-        $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
-      };
-
+      
       $scope.publishservice = function (servicevo) {
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
@@ -160,7 +87,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
           $('#modal-btn-yes').on("click", function () {
@@ -174,8 +101,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
     }])
 
-  .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants',
-    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants) {
+  .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'modalService', 'ctrlConstants',
+    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, modalService, ctrlConstants) {
       $scope.orderByField = 'name';
       $scope.reverseSort = false;
       $scope.myUser = authService.getUserInfo().username;
@@ -189,8 +116,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.servicevo.filterHeaders = [{ id: 0, k: '', v: '' }];
       $scope.servicevo.currentUser = authService.getUserInfo().username;
 
-      $scope.showRecorderHelp = function () {
-        $('#recordingHelp-modal').modal('toggle');
+      $scope.showRecorderHelp = function(){
+        modalService.showRecorderHelp();
       }
       $scope.addNewReqHeader = function (service) {
         var newItemNo = service.reqHeadersArr.length;
@@ -345,17 +272,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       }
 
-      $scope.removeRRPair = function (index) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $scope.rrPairNo = index;
-        $('#modal-btn-yes').on("click", function () {
-          $scope.servicevo.rawpairs.splice($scope.rrPairNo, 1);
-          $scope.$apply();
-        });
-      };
+      
 
       $scope.addTemplate = function () {
         $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
@@ -365,48 +282,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.servicevo.matchTemplates.splice(index, 1);
       };
 
-      $scope.addNewRRPair = function () {
-        var newItemNo = $scope.servicevo.rawpairs.length;
-        $scope.servicevo.rawpairs.push({
-          id: newItemNo,
-          queriesArr: [{
-            id: 0
-          }],
-          reqHeadersArr: [{
-            id: 0
-          }],
-          resHeadersArr: [{
-            id: 0
-          }]
-        });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {
-        rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {
-        rr.queriesArr.splice(index, 1);
-      };
+     
       //Get this recorder's data
       apiHistoryService.getRecordingById($routeParams.id)
         .then(function (response) {
@@ -476,7 +352,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         catch (e) {
           console.log(e);
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
         }
@@ -488,7 +364,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("showArchiveController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {
-
+      $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -651,9 +527,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       this.getService();
     }])
 
-  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService) {
-
+  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', 'modalService',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, modalService) {
+      $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
 
@@ -873,61 +749,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.servicevo.matchTemplates.splice(index, 1);
       };
 
-      $scope.addNewRRPair = function () {
-        var newItemNo = $scope.servicevo.rawpairs.length;
-        $scope.servicevo.rawpairs.push({
-          id: newItemNo,
-          queriesArr: [{
-            id: 0
-          }],
-          reqHeadersArr: [{
-            id: 0
-          }],
-          resHeadersArr: [{
-            id: 0
-          }]
-        });
-      };
-
-      $scope.removeRRPair = function (index) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $scope.rrPairNo = index;
-        $('#modal-btn-yes').on("click", function () {
-          $scope.servicevo.rawpairs.splice($scope.rrPairNo, 1);
-          $scope.$apply();
-        });
-      };
-
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {      
-        rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {
-         rr.queriesArr.splice(index, 1);
-      };
-
+      
       $scope.updateService = function (servicevo) {
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
@@ -941,7 +763,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_SERV_SAVE_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.PUB_FAIL_SERV_SAVE_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
           $('#modal-btn-yes').on("click", function () {
@@ -994,30 +816,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
 
-      $scope.setContentType = function (rr, type) {
-        if (rr.reqHeadersArr.length < 2)
-          $scope.addNewReqHeader(rr);
-
-        if (rr.resHeadersArr.length < 2)
-          $scope.addNewResHeader(rr);
-
-        // set values
-        rr.reqHeadersArr[0].v = type;
-        rr.resHeadersArr[0].v = type;
-
-        rr.reqHeadersArr[0].k = 'Content-Type';
-        rr.resHeadersArr[0].k = 'Content-Type';
-
-        $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
-        $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
-      };
-
-      $scope.totalDisplayed = 10;
-
-      $scope.loadMore = function () {
-        $scope.totalDisplayed += 10;
-      };
-
+      $scope.showTemplateHelp = function(){
+        modalService.showTemplateHelp();
+    }
     }])
 
   .controller("mergeRecordedController", ['$scope', '$routeParams', 'apiHistoryService', 'authService', '$http', '$timeout', 'ctrlConstants',
@@ -1251,32 +1052,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         });
       }
 
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {
-       rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {        
-        rr.queriesArr.splice(index, 1);
-      };
+     
       var timeoutPromise;
       $scope.pollForRRPairs = function () {
         timeoutPromise = $timeout(function () {
@@ -1310,11 +1086,19 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       });
       $scope.pollForRRPairs();
     }])
-  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location,modalService) {
-      
+  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
+      $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+      mqInfoFactory.getMQInfo()
+        .then(function(response) {
+          $scope.mqServers = response.data.servers;
+        })
+
+        .catch(function(err) {
+          console.log(err);
+        });
 
       this.getService = function () {
         apiHistoryService.getServiceById($routeParams.id)
@@ -1415,6 +1199,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             if (service.updatedAt) {
               $scope.servicevo.updatedAt = service.updatedAt;
             }
+            if (service.mqInfo) {
+              $scope.servicevo.mqInfo = service.mqInfo;
+            }
 
             $scope.servicevo.matchTemplates = [];
             $scope.servicevo.rawpairs = [];
@@ -1437,6 +1224,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               rr.resHeadersArr = [];
               rr.method = rr.verb;
 
+            
               if (rr.payloadType === 'JSON') {
                 rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
                 rr.responsepayload = JSON.stringify(rr.resData, null, 4);
@@ -1517,87 +1305,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
       this.getService();
 
-      $scope.addFailStatus = function () {
-        $scope.servicevo.failStatuses.push({ val: '' });
-      }
-      $scope.removeFailStatus = function (index) {
-        $scope.servicevo.failStatuses.splice(index, 1);
-      }
-      $scope.addFailString = function () {
-        $scope.servicevo.failStrings.push({ val: '' });
-      }
-      $scope.removeFailString = function (index) {
-        $scope.servicevo.failStrings.splice(index, 1);
-      }
-      $scope.addTemplate = function () {
-        $scope.servicevo.matchTemplates.push({ id: 0, val: '' });
-      };
+      
 
-      $scope.removeTemplate = function (index) {
-        $scope.servicevo.matchTemplates.splice(index, 1);
-      };
-
-      $scope.addNewRRPair = function () {
-        var newItemNo = $scope.servicevo.rawpairs.length;
-        $scope.servicevo.rawpairs.push({
-          id: newItemNo,
-          queriesArr: [{
-            id: 0
-          }],
-          reqHeadersArr: [{
-            id: 0
-          }],
-          resHeadersArr: [{
-            id: 0
-          }]
-        });
-      };
+     
 
       $scope.viewRecorded = function () {
         $location.path("/update/" + $scope.servicevo.id + "/recorded")
       }
-      $scope.removeRRPair = function (index) {
-        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
-        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_RRPAIR_BODY);
-        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
-        $('#genricMsg-dialog').modal('toggle');
-        $scope.rrPairNo = index;
-        $('#modal-btn-yes').on("click", function () {
-          $scope.servicevo.rawpairs.splice($scope.rrPairNo, 1);
-          $scope.$apply();
-        });
-      };
-
-      $scope.addNewReqHeader = function (rr) {
-        var newItemNo = rr.reqHeadersArr.length;
-        rr.reqHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeReqHeader = function (rr, index) {
-        rr.reqHeadersArr.splice(index, 1);
-      };
-
-      $scope.addNewResHeader = function (rr) {
-        var newItemNo = rr.resHeadersArr.length;
-        rr.resHeadersArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeResHeader = function (rr, index) {
-        rr.resHeadersArr.splice(index, 1);
-      };
-
-      $scope.addQuery = function (rr) {
-        var newItemNo = rr.queriesArr.length;
-        rr.queriesArr.push({ 'id': newItemNo });
-      };
-
-      $scope.removeQuery = function (rr, index) {
-        rr.queriesArr.splice(index, 1);
-      };
-
-      $scope.removeQuery = function (rr, index) {
-        rr.queriesArr.splice(index, 1);
-      };
+     
+      
 
       $scope.updateService = function (servicevo) {
         try {
@@ -1612,29 +1328,13 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         catch (e) {
           $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
-          $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+          $('#genricMsg-dialog').find('.modal-body').text(e);
           $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
           $('#genricMsg-dialog').modal('toggle');
         }
       };
 
-      $scope.setContentType = function (rr, type) {
-        if (rr.reqHeadersArr.length < 2)
-          $scope.addNewReqHeader(rr);
-
-        if (rr.resHeadersArr.length < 2)
-          $scope.addNewResHeader(rr);
-
-        // set values
-        rr.reqHeadersArr[0].v = type;
-        rr.resHeadersArr[0].v = type;
-
-        rr.reqHeadersArr[0].k = 'Content-Type';
-        rr.resHeadersArr[0].k = 'Content-Type';
-
-        $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
-        $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
-      };
+     
 
       $scope.serviceInfo = function () {
         console.log($routeParams.id);
@@ -1656,16 +1356,14 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
 
-      $scope.totalDisplayed = 10;
+      
 
-      $scope.loadMore = function () {
-        $scope.totalDisplayed += 10;
-      };
+     
 
-          $scope.showTemplateHelp = function(){
-              modalService.showTemplateHelp();
-            
-          }
+      $scope.showTemplateHelp = function(){
+          modalService.showTemplateHelp();
+        
+      }
       //To Show Service Success Modal when a new service is created.
       if ($routeParams.frmWher == 'frmServCreate') {
         $http.get('/api/services/' + $routeParams.id)
@@ -2321,6 +2019,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("deletedServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+      
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
@@ -2508,6 +2207,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             })
             .catch(function (err) {
               console.log(err);
+              $('#Modal-after-ajaxCall').find('.modal-title').text(ctrlConstants.SERVICE_RESTORE_FAIL_TITLE);
+              $('#Modal-after-ajaxCall').find('.modal-body').text(err.data.error);
+              $('#Modal-after-ajaxCall').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
+              $('#Modal-after-ajaxCall').modal('toggle');
             });
         });
       };
@@ -2558,6 +2261,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller("draftServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+      
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
         $scope.sutlist = values[0];
         $scope.userlist = values[1];
@@ -2771,5 +2475,6 @@ ctrl.constant("ctrlConstants", {
   "BACK_DANGER_BTN_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
   "MRG_CONFIRM_TITLE": "Merge Confirmation",
   "MRG_CONFIRM_BODY": "Do you want to merge this RRPair into the service?",
-  "MRG_CONFIRM_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>'
+  "MRG_CONFIRM_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
+  "SERVICE_RESTORE_FAIL_TITLE" : "Restore Fail"
 });

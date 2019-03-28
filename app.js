@@ -18,13 +18,59 @@ const helmet = require('helmet');
 const actuator = require('express-actuator');
 const schedule = require('node-schedule');
 const Archive  = require('./models/common/Archive');
+const System = require('./models/common/System');
+const MQService = require('./models/mq/MQService');
 const constants = require('./lib/util/constants');
+const fuseHelper = require('./lib/util/fuse');
+global.__basedir = __dirname;
 
 // connect to database
 const db = require('./models/db');
-db.on('error', function(err)  {throw err; });
+db.on('error', function(err)  { throw err; });
 db.once('open', function() {
   debug(`Successfully connected to Mongo (${process.env.MONGODB_HOST})`);
+
+  // retroactively assign queue manager / request queue to groups
+  const defaultManager = process.env.DEFAULT_QUEUE_MANAGER;
+  const defaultQueue   = process.env.DEFAULT_REQUEST_QUEUE;
+
+  if (!defaultManager || !defaultQueue) {
+    debug('No default queue manager / request queue is configured');
+  }
+  else {
+    mqInfo = {
+      manager: defaultManager,
+      reqQueue: defaultQueue
+    };
+
+    System.find({}, function(err, systems) {
+      if (err) return;
+
+      systems.forEach(function(system) {
+        if (!system.mqInfo) system.mqInfo = mqInfo;
+        system.save(function(err, newSystem) {
+          if (err) debug(err);
+        });
+      });
+    });
+  }
+
+  // retroactively assign payload type to MQ services
+  MQService.find({}, function(err, services) {
+    if (err) {
+      debug(err);
+      return;
+    }
+
+    services.forEach(function(service) {
+      service.rrpairs.forEach(function(rrpair) {
+        if (!rrpair.payloadType) rrpair.payloadType = 'XML';
+      });
+      service.save(function(err, newService) {
+        if (err) debug(err);
+      });
+    });
+  });
 
   // ready to start
   app.emit('ready');
@@ -38,7 +84,7 @@ function init() {
   app.use(morgan('dev'));
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
-
+  
   // parse request body as plaintext if no content-type is set
   app.use(function(req, res, next) {
     if (!req.get('content-type')) {
@@ -137,15 +183,19 @@ function init() {
 
   // register SOAP / REST virts from DB
   virtual.registerAllRRPairsForAllServices();
+
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
-  app.use('/virtual',invoke.router);
+  app.use('/virtual', invoke.router);
 
   // initialize recording routers
   const recorder = require('./routes/recording');
   const recorderController = require('./controllers/recorderController');
   app.use('/recording',recorder.recordingRouter);
   app.use('/api/recording',recorder.apiRouter);
+
+  const mqController = require('./controllers/mqController');
+  mqController.registerAllMQServices();
 
   // register new virts on all threads
   if (process.env.MOCKIATO_MODE !== 'single') {
@@ -157,19 +207,27 @@ function init() {
         const action  = msg.action;
         debug(action);
 
-        virtual.deregisterService(service);
-        invoke.deregisterServiceInvoke(service);
-        if (action === 'register') {
-          virtual.registerService(service);
-          
-          if(service.liveInvocation && service.liveInvocation.enabled){
-            invoke.registerServiceInvoke(service);
+        if (service.type !== 'MQ') {
+          virtual.deregisterService(service);
+          invoke.deregisterServiceInvoke(service);
+          if (action === 'register') {
+            virtual.registerService(service);
+            
+            if(service.liveInvocation && service.liveInvocation.enabled){
+              invoke.registerServiceInvoke(service);
+            }
+          }
+        }
+        else {
+          mqController.deregisterMQService(service);
+          if (action === 'register') {
+            mqController.registerMQService(service);
           }
         }
       }else if(msg.recorder){
         const rec = msg.recorder;
         const action  = msg.action;
-        console.log("msg: " + JSON.stringify(msg));
+
         if(action === 'register'){
           recorderController.registerRecorder(rec);
         }else if(action === 'deregister'){
@@ -203,6 +261,9 @@ function init() {
   const users = require('./routes/users');
   app.use('/api/users', users);
 
+  const mqinfo = require('./routes/mqInfo');
+  app.use('/api/mqinfo', mqinfo);
+
   // handle no match responses
   app.use(/\/((?!recording).)*/,function(req, res, next) {
     if (!req.msgContainer) {
@@ -221,6 +282,7 @@ function init() {
   });
 
   // ready for testing (see test/test.js)
+  fuseHelper.fuseAllFiles();
   app.emit('started');
 }
 

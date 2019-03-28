@@ -3,6 +3,7 @@ const router = express.Router();
 const removeRoute = require('../lib/remove-route');
 const requestNode = require('request');
 const Service = require('../models/http/Service');
+const MQService = require('../models/mq/MQService');
 const timeBetweenTransactionUpdates = process.env.MOCKIATO_TRANSACTON_UPDATE_TIME || 5000;
 const xml2js = require("xml2js");
 
@@ -27,7 +28,12 @@ function saveTransactonCounts(){
     var myTransactions = transactions;
     transactions = {};
     for(let id in myTransactions){
-        Service.findByIdAndUpdate(id,{$inc:{txnCount:myTransactions[id]}}).exec();
+        let q = {$inc:{txnCount:myTransactions[id]}};
+        Service.findByIdAndUpdate(id, q, function(err, serv) {
+            if (!serv) {
+                MQService.findByIdAndUpdate(id,q).exec();
+            }
+        });
     }
     setTimeout(saveTransactonCounts,timeBetweenTransactionUpdates);
 }

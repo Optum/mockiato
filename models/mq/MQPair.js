@@ -4,6 +4,7 @@ const constants = require('../../lib/util/constants');
 
 const pairSchema = new mongoose.Schema({
   label: String,
+  payloadType: String,
   reqData: {
     type: mongoose.Schema.Types.Mixed,
     validate: {
@@ -43,7 +44,7 @@ const pairSchema = new mongoose.Schema({
       message: constants.MQ_VALID_XML_RES_ERR
     },
     required: [true, constants.REQUIRED_RESPONSE_PAYLOAD_ERR]
-  },
+  }
 });
 
 module.exports = mongoose.model('MQPair', pairSchema);

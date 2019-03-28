@@ -77,6 +77,10 @@ const rrSchema = new mongoose.Schema({
     constants.REQUIRED_REQUEST_PAYLOAD_ERR
     ]
   },
+  getPayloadRequired: {
+    type: Boolean,
+    default: false
+  },
   reqDataString: String,
   resStatus: {
     // force integer only
@@ -122,7 +126,11 @@ const rrSchema = new mongoose.Schema({
     ]
   },
   resDataString: String,
-  label: String
-});
+  label: String,
+  hasRandomTags : {
+    type:Boolean,
+    default:false
+  }
+},{minimize:false});
 
 module.exports = mongoose.model('RRPair', rrSchema);

@@ -13,6 +13,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
       this.showTemplateHelp = function(){
         setRemoteModal(servConstants.MCH_HELP_TITLE,"/partials/modals/templateHelpModal.html","");
       }
+      this.showRecorderHelp = function(){
+        setRemoteModal(servConstants.RECORD_HELP_TITLE,"/partials/modals/recorderHelpModal.html","");
+      }
     }])
     .service('authService', ['$http', '$window', '$location', '$rootScope', 'servConstants', 
         function($http, $window, $location, $rootScope, servConstants) {
@@ -274,8 +277,19 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       rr.payloadType = 'XML';
                     }
 
+                    
+                  if(rr.method!== 'GET')
+                  {
+                    rr.getPayloadRequired = false;
+                  }
+
+                  if(rr.method === 'GET'&& rr.getPayloadRequired === false){
+                    rr.requestpayload = undefined;
+                  }
+                  console.log("this is req",rr.requestpayload);
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
+                      
                       try {
                         //Handle empty json object payload
                         if (rr.responsepayload)  {
@@ -286,11 +300,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                             resPayload = JSON.parse(rr.responsepayload);
                           }
                         }
+                       ;
                         if (rr.requestpayload) reqPayload = JSON.parse(rr.requestpayload);
                       }
                       catch(e) {
                         console.log(e);
-                        throw 'RR pair is malformed';
+                        throw 'JSON in an RR pair is malformed.';
                       }
                     }
                     // verify that XML is well formed
@@ -306,7 +321,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                         resPayload = rr.responsepayload;
                       }
                       else {
-                        throw 'RR pair is malformed';
+                        throw 'XML in an RR Pair is malformed.';
                       }
                     }
                     else {
@@ -317,6 +332,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // convert array of queries to object literal
                     var queries = {};
                     rr.queriesArr.forEach(function(q){
+                      if(queries[q.k])
+                        throw 'Duplicate Query Exists in an RR pair.';
                       queries[q.k] = q.v;
                     });
 
@@ -346,11 +363,21 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     if (Object.keys(reqHeaders).length > 0) {
                       rr.reqHeaders = reqHeaders;
                     }
-
-                    // only save request data for non-GETs
+                     // only save request data for non-GETs
                     if (rr.method !== 'GET') {
                       rr.reqData = reqPayload;
                     }
+                    // save request data for get when Checkbox selected
+                    else{
+                    console.log("This is GET");
+                    if(rr.getPayloadRequired=== true) 
+                    {
+                      rr.reqData = reqPayload;
+                    }
+                    else{ if(rr.getPayloadRequired=== false){
+                      rr.reqData = undefined;
+                    }}
+                   }
                     rr.resData = resPayload;
 
                     // remove unneccessary properties
@@ -372,6 +399,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rrpair.resHeaders = rr.resHeaders;
                     rrpair.resData = rr.resData;
                     rrpair.label = rr.label;
+                    rrpair.getPayloadRequired = rr.getPayloadRequired;
 
                     rrpairs.push(rrpair);
                 });
@@ -383,6 +411,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
                 var servData = {
                     sut: { name: servicevo.sut.name },
+                    mqInfo: servicevo.mqInfo,
                     name: servicevo.name,
                     basePath: '/' + servicevo.basePath,
                     type: servicevo.type,
@@ -516,6 +545,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rr.payloadType = 'XML';
                   }
 
+                  if(rr.method!== 'GET')
+                  {
+                    rr.getPayloadRequired = false;
+                  }
+                  
+                  if(rr.method === 'GET'&& rr.getPayloadRequired === false){
+                    rr.requestpayload = undefined;
+                  }
                   // parse and display error if JSON is malformed
                   if (rr.payloadType === 'JSON') {
                     try {
@@ -573,10 +610,21 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if (Object.keys(reqHeaders).length > 0) {
                     rr.reqHeaders = reqHeaders;
                   }
-
-                  // only save request data for non-GETs
+                 
+                    // only save request data for non-GETs
                   if (rr.method !== 'GET') {
                     rr.reqData = reqPayload;
+                  }
+                  // save request data for get when Checkbox selected
+                  else{
+                      console.log("This is GET");
+                  if(rr.getPayloadRequired=== true) 
+                  {
+                    rr.reqData = reqPayload;
+                  }
+                  else{ if(rr.getPayloadRequired=== false){
+                    rr.reqData = undefined;
+                  }}
                   }
                   rr.resData = resPayload;
 
@@ -599,6 +647,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   rrpair.resHeaders = rr.resHeaders;
                   rrpair.resData = rr.resData;
                   rrpair.label = rr.label;
+                  rrpair.getPayloadRequired = rr.getPayloadRequired;
 
                   rrpairs.push(rrpair);
               });
@@ -1238,5 +1287,6 @@ serv.constant("servConstants", {
         "SERVICE_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
         "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed",
         "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
-        "MCH_HELP_TITLE" : "Match Templates Help"
+        "MCH_HELP_TITLE" : "Match Templates Help",
+        "RECORD_HELP_TITLE" : "Using Live Recording"
       });

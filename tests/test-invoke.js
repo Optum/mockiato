@@ -96,6 +96,17 @@ describe('Live Invocation Tests', function() {
                 .end(done);
 
         });
+        it('Tests header forcing no-invoke',function(done){
+            request
+                .post('/virtual/' + mockGroup.name + service.basePath)
+                .set('content-type','application/json')
+                .set('_mockiato-use-live','false')
+                .send(requests[0])
+                .expect(200)
+                .expect('_mockiato-is-live-backend','false')
+                .end(done);
+
+        });
         it('Tests failover on status code',function(done){
             request
                 .post('/virtual/' + mockGroup.name + service.basePath)

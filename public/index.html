@@ -22,10 +22,13 @@
 				<script src="js/bower_components/angucomplete-alt/dist/angucomplete-alt.min.js"></script>
 				<script src="js/bower_components/chance/dist/chance.min.js"></script>
 
+				<script src="partials/includes/constants.js"></script>
         <script src="js/app/factories.js"></script>
         <script src="js/app/services.js"></script>
         <script src="js/app/controllers.js"></script>
 				<script src="js/app/app.js"></script>
+				<script src="js/app/controllers/rrPairs.js"></script>
+				<script src="js/app/controllers/serviceHeader.js"></script>
 
 				<!-- Global site tag (gtag.js) - Google Analytics -->
 				<script async src="https://www.googletagmanager.com/gtag/js?id=UA-116938470-1"></script>
@@ -91,6 +94,20 @@
 							</div>
 						</div>
 
+						<!-- After Ajax call, if there an error then existing GenricMsg Dialog make screen freeze so needs this one. -->
+					<div id="Modal-after-ajaxCall" role="dialog" class="modal fade">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" data-dismiss="modal" class="close">&times;</button>
+									<h4 class="modal-title">*************</h4>
+								</div>
+								<div class="modal-body">*************</div>
+								<div class="modal-footer">*************</div>
+							</div>
+						</div>
+					</div>
+					
 						<!-- Below 2 modals are more logical than genric modals . These contain angular UI code. 
 						So these are not genric. -->
           <div id="success-modal" role="dialog" class="modal fade">
@@ -168,36 +185,6 @@
 								<div class="modal-footer">
 									<button type="button" data-dismiss="modal" class="btn btn-success">OK</button>
 								</div>
-							</div>
-						</div>
-					</div>
-
-					<div id="recordingHelp-modal" role="dialog" class="modal fade">
-						<div class="modal-dialog">
-							<div class="modal-content">
-								<div class="modal-header">
-									<button type="button" data-dismiss="modal" class="close">&times;</button>
-									<h4 class="modal-title">Using Live Recording</h4>
-								</div>
-								<div class="modal-body">
-									<div>
-										<p class="wordwrap">Using this feature, the user can create service virtualizations by recording live HTTP traffic. Mockiato accomplishes this by acting as a proxy recorder- the user configures Mockiato to accept incoming requests on a particular path, and Mockiato redirects those requests to a live backend system. </p>
-										<p class="wordwrap">Once configured, Mockiato will for all HTTP requests on, or below, the path: <b>{{mockiatoHost}}/recording/live/GROUP/base/Path</b> where GROUP is the chosen group for the recorder and /base/Path is the configured base path for the recorder.</p>
-										<p class="wordwrap">These requests will be forwarded to the remote host and port configured by the user, on a path equivalent to the one sent to Mockiato, WITHOUT the /recording/live/GROUP prefix. E.g, if mockiato is configured with group exampleGroup to listen on /example/Path and send to the remote host at  examplehost.com on port 5000, a request coming in on:</p>
-										<p><span class="blueText">{{mockiatoHost}}/recording/live/exampleGroup</span><span class="greenText">/example/Path</span></p>
-										<p>Would be mapped to:</p>
-										<p><span class="blueText">http://examplehost.com:5000</span><span class="greenText">/example/Path</span></p>
-										<p>Sub paths underneath this are also included. E.g:</p>
-										<p><span class="blueText">{{mockiatoHost}}/recording/live/exampleGroup</span><span class="greenText">/example/Path/sub/Path/1</span></p>
-										<p>Would be mapped to:</p>
-										<p><span class="blueText">http://examplehost.com:5000</span><span class="greenText">/example/Path/sub/Path/1</span></p>
-										<p class="wordwrap">Any requests passed into Mockiato will be mapped as such to the configured remote backend, and any responses from the remote backend will be passed back to the client application. These requests and responses will be recorded for virtualization.</p>
-										<p class="wordwrap">Note: No virtualization will actually be created until the user finalizes the recording in the next step.</p>
-									</div>
-								</div>
-								<!--<div class="modal-footer">
-									<button type="button" data-dismiss="modal" class="btn btn-success">OK</button>
-								</div>-->
 							</div>
 						</div>
 					</div>

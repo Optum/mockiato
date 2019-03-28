@@ -19,7 +19,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
 
         $routeProvider
             .when("/addservice", {
-                templateUrl: "partials/addapiform.html",
+                templateUrl: "fusepartials/addapiform.html",
                 controller: "myMenuAppController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
@@ -34,7 +34,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
             .when("/update/:id/recorded", {
-                templateUrl: "partials/recordedInvokePairs.html",
+                templateUrl: "fusepartials/recordedInvokePairs.html",
                 controller: "mergeRecordedController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
@@ -49,7 +49,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
             .when("/update/:id/:frmWher", {
-                templateUrl: "partials/updateForm.html",
+                templateUrl: "fusepartials/updateForm.html",
                 controller: "updateController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
@@ -65,7 +65,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
             
             .when("/showArchiveService/:id/:frmWher", {
-                templateUrl: "partials/updateForm.html",
+                templateUrl: "fusepartials/updateForm.html",
                 controller: "showArchiveController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
@@ -81,7 +81,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/showDraftService/:id/:frmWher", {
-                templateUrl: "partials/updateForm.html",
+                templateUrl: "fusepartials/updateForm.html",
                 controller: "showDraftController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
@@ -97,7 +97,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/addTemplate", {
-                templateUrl: "partials/templateForm.html",
+                templateUrl: "fusepartials/templateForm.html",
                 controller: "templateController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
@@ -113,7 +113,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/fetchservices/:sut?/:user?", {
-                templateUrl: "partials/servicehistory.html",
+                templateUrl: "fusepartials/servicehistory.html",
                 controller: "serviceHistoryController",
                 reloadOnUrl: false,
                 resolve: {
@@ -130,7 +130,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/fetchDeletedServices/:sut?/:user?", {
-                templateUrl: "partials/deletedServices.html",
+                templateUrl: "fusepartials/deletedServices.html",
                 controller: "deletedServiceController",
                 reloadOnUrl: false,
                 resolve: {
@@ -147,7 +147,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/fetchDraftServices/:sut?/:user?", {
-                templateUrl: "partials/draftServices.html",
+                templateUrl: "fusepartials/draftServices.html",
                 controller: "draftServiceController",
                 reloadOnUrl: false,
                 resolve: {
@@ -164,7 +164,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/selectService/:id", {
-                templateUrl: "partials/selectService.html",
+                templateUrl: "fusepartials/selectService.html",
                 controller: "selectServiceController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
@@ -180,7 +180,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
             
             .when("/spec/:specType", {
-                templateUrl: "partials/spec.html",
+                templateUrl: "fusepartials/spec.html",
                 controller: "specController",
                 resolve: {
                     auth: ['$q', 'authService', function ($q, authService) {
@@ -196,7 +196,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/admin", {
-                templateUrl: "partials/admin.html",
+                templateUrl: "fusepartials/admin.html",
                 controller: "adminController",
                 resolve: {
                     auth: ['$q', 'authService', function ($q, authService) {
@@ -212,7 +212,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/bulkUpload", {
-                templateUrl: "partials/bulkUpload.html",
+                templateUrl: "fusepartials/bulkUpload.html",
                 controller: "bulkUploadController",
                 resolve: {
                     auth: ['$q', 'authService', function ($q, authService) {
@@ -228,28 +228,28 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
             })
 
             .when("/helppage", {
-                templateUrl: "partials/help.html",
+                templateUrl: "fusepartials/help.html",
                 controller: "ContactFormController"
 
             })
 
             .when("/datagen", {
-                templateUrl: "partials/datagen.html",
+                templateUrl: "fusepartials/datagen.html",
                 controller: "dataGenController"
 
             })
 
             .when('/login', {
-                templateUrl: 'partials/login.html',
+                templateUrl: 'fusepartials/login.html',
                 controller: 'authController'
             })
             
             .when('/createRecorder', {
-                templateUrl: 'partials/createRecorderForm.html',
+                templateUrl: 'fusepartials/createRecorderForm.html',
                 controller: 'createRecorderController'
             })
             .when("/fetchrecorders", {
-                templateUrl: "partials/recorderList.html",
+                templateUrl: "fusepartials/recorderList.html",
                 controller: "recorderListController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
@@ -264,7 +264,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             }) 
             .when("/viewRecorder/:id", {
-                templateUrl: "partials/viewRecorder.html",
+                templateUrl: "fusepartials/viewRecorder.html",
                 controller: "viewRecorderController",
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {

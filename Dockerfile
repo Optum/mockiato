@@ -12,14 +12,12 @@ RUN mkdir -p /app
 COPY . /app
 WORKDIR /app
 
-# install app dependencies (backend)
+# install app dependencies
 RUN npm install
-
-# install app depedencies (frontend)
 RUN npm install -g bower
 RUN bower install --allow-root
 
-# fix for openshift permission problems
+# fix for k8s permission problems
 RUN mkdir /.pm2 && chmod 777 /.pm2 && chmod 777 /app
 
 # start app

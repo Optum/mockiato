@@ -1,0 +1,251 @@
+<div ng-controller="serviceHeaderController">
+<div class="form-group row">
+    <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
+    <div class="col-xs-8">
+      <div class="radio">
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-disabled="!canChangeType">
+              SOAP
+        </label>
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-disabled="!canChangeType">
+              REST
+        </label>
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-disabled="!canChangeType">
+              MQ
+        </label>
+      </div>
+    </div>
+    <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
+      <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)">
+        <i class="glyphicon glyphicon-info-sign"></i>  View Endpoints
+      </button>
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="!canChangeType">
+    <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
+    <div class="col-xs-2">
+      <input required type="text" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter new group" ng-disabled="!canChangeType">
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="canChangeType">
+      <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
+  
+      <div class="col-xs-3">
+        <select required class="form-control" id="system_under_test" ng-model="servicevo.sut" ng-options="sut.name for sut in sutlist | orderBy:'name'">
+            <option selected="selected" disabled="true">Select SUT</option>
+        </select>
+      </div>
+  </div>
+
+  <!-- <div class="form-group req row" ng-show="servicevo.type === 'MQ' && !canChangeType">
+      <label for="queue_manager" class="col-xs-2 col-form-label">Request Queue:</label>
+      <div class="col-xs-3">
+        <input type="text" id="queue_manager" class="form-control" ng-model="servicevo.mqInfo.reqQueue" ng-disabled="!canChangeType">
+      </div>
+  </div>
+  <div class="form-group req row" ng-show="servicevo.type === 'MQ' && canChangeType">
+      <label for="queue_manager" class="col-xs-2 col-form-label">Request Queue:</label>
+      <div class="col-xs-3">
+        <select ng-disabled="!servicevo.sut" class="form-control" id="queue_manager" ng-model="servicevo.mqInfo" ng-options="label.reqQueue group by label.manager for label in mqLabels">
+            <option selected="selected" disabled="true"></option>
+        </select>
+      </div>
+  </div> -->
+
+  <div class="form-group row">
+    <label for="service_name" class="col-xs-2 col-form-label">Name:</label>
+    <div class="col-xs-9">
+      <input required type="text" id="service_name" class="form-control" ng-model="servicevo.name" placeholder="Enter Service Name" ng-disabled="!canChangeType">
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="servicevo.type !== 'MQ'">
+    <label for="service_base_path" class="col-xs-2 col-form-label">Base Path:</label>
+    <div class="col-xs-9">
+      <div class="input-group">
+        <div class="input-group-addon">/virtual</div>
+        <input ng-required="servicevo.type !== 'MQ'" type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path" ng-disabled="!canChangeType">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label for="service_delay" class="col-xs-2 col-form-label">Response Delay (ms):</label>
+    <div class="col-xs-2">
+      <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
+    </div>
+    <div class="col-xs-1 conjunction">to</div>
+    <div class="col-xs-2">
+        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" />
+      </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-xs-2 col-form-label">Match Templates:</label>
+    <div class="col-xs-9">
+      <fieldset data-ng-repeat="template in servicevo.matchTemplates">
+        <div class="row">
+          <div class="col-xs-9">
+            <textarea class="form-control vertResize" ng-model="template.val" placeholder="Define a template for request matching"></textarea><br>
+          </div>
+
+          <div class="col-xs-1"  ng-if="servicevo.matchTemplates.length >1">
+            <button type="button" class="btn btn-warning" ng-click="removeTemplate($index)">
+              <span class="glyphicon glyphicon-minus"></span>
+            </button>
+          </div>
+
+          <div class="col-xs-1">
+            <button type="button" class="btn btn-success" ng-show="$last" ng-click="addTemplate()">
+              <span class="glyphicon glyphicon-plus"></span>
+            </button>
+          </div>
+
+          <div class="col-xs-2">
+            <button class="btn btn-info" title="Help" ng-click="showTemplateHelp()" ng-show="$first" formnovalidate>
+              <i class="glyphicon glyphicon-question-sign"></i> 
+            </button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+    <label for="live_invocation_enable" class="col-xs-2 col-form-label">Perform Live Invocation:</label>
+
+    
+    <div class="col-xs-1">
+      <input type="checkbox" id="livecheck" ng-model="servicevo.liveInvocationCheck" ng-click="">
+    </div>
+  </div>
+  
+  <div id="live_invocation_fields"  ng-show="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'">
+    
+  <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+    <div class="form-group req row">
+      <label for="service_preorpost" class="col-xs-2 col-form-label">Invoke Pre or Post Virtual:</label>
+      <div class="col-xs-8">
+        <div class="radio">
+          <label class="move-radios">
+              <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'PRE'" ng-required="servicevo.liveInvocationCheck">
+                Use Live Service First
+          </label>
+          <label class="move-radios">
+              <input ng-model="servicevo.liveInvokePrePost" id="liveInvoke_prePost" type="radio" ng-value="'POST'" ng-required="servicevo.liveInvocationCheck">
+                Use Virtual Service First
+          </label>
+        </div>
+      </div>
+      
+    </div>
+
+    <div class="form-group req row">
+      <label for="remote_host" class="col-xs-2 col-form-label">Remote Host:</label>
+      <div class="col-xs-3">
+        <input ng-required="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'" type="text" id="service_name" class="form-control" ng-model="servicevo.remoteHost" placeholder="Enter Remote Hostname">
+      </div>
+  
+    </div>
+    <div class="form-group req row">
+      <label for="remote_port" class="col-xs-2 col-form-label">Remote Port:</label>
+      <div class="col-xs-3">
+        <input ng-required="servicevo.liveInvocationCheck && servicevo.type !== 'MQ'" type="text" id="service_name" class="form-control" ng-model="servicevo.remotePort" placeholder="Enter Remote Host Port">
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <label for="remote_port" class="col-xs-2 col-form-label">Remote Base Path:</label>
+      <div class="col-xs-5">
+        <input type="text" id="service_name" class="form-control" ng-model="servicevo.remotePath" placeholder="Enter Remote Base Path">
+      </div>
+    </div>
+
+    <div class="form-group row" ng-show="servicevo.liveInvokePrePost == 'PRE'">
+      <label for="fail_status" class="col-xs-2 col-form-label">Failover on Status Codes:</label>
+      <div class="col-xs-9">
+        <fieldset data-ng-repeat="status in servicevo.failStatuses">
+          <div class="row">
+            <div class="col-xs-3"><input type="text" class="form-control" id="status-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. 404"></div>
+            <div class="col-xs-1" ng-if="servicevo.failStatuses.length >1">
+              <button type="button" class="btn btn-warning" ng-click="removeFailStatus($index)">
+                <span class="glyphicon glyphicon-minus"></span>
+              </button>
+            </div>
+
+            <div class="col-xs-1">
+              <button type="button" class="btn btn-success" ng-show="$last" ng-click="addFailStatus()">
+                <span class="glyphicon glyphicon-plus"></span>
+              </button>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="form-group row" ng-show="servicevo.liveInvokePrePost == 'PRE'">
+        <label for="fail_status" class="col-xs-2 col-form-label">Fail if body contains string:</label>
+        <div class="col-xs-9">
+          <fieldset data-ng-repeat="status in servicevo.failStrings">
+            <div class="row">
+              <div class="col-xs-6"><input type="text" class="form-control" id="string-val-{{ status.id }}" ng-model="status.val" placeholder="e.g. error"></div>
+              <div class="col-xs-1" ng-if="servicevo.failStrings.length >1">
+                <button type="button" class="btn btn-warning" ng-click="removeFailString($index)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+  
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addFailString()">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="system_under_test" class="col-xs-2 col-form-label">Use HTTPS:</label>
+        <div class="col-xs-3">
+          <input type="checkbox" id="sutcheck" ng-model="servicevo.invokeSSL">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="live_record_enable" class="col-xs-2 col-form-label">Record Live Transactions:</label>
+      
+          
+        <div class="col-xs-1">
+          <input type="checkbox" id="recordcheck" ng-model="servicevo.liveRecordCheck" ng-click="">
+        </div>
+        <div class="col-xs-2">
+          <button type="button" id="viewRecorded" ng-click="viewRecorded()" class="btn btn-danger">View Recorded Transactions</button>
+        </div>
+      </div>
+    <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+  </div>
+    <div ng-show="showDates">
+        <div class="form-group row">
+            <label class="col-xs-2 col-form-label">Created At:</label>
+            <div class="col-xs-3"><input id="created_datetime" class="form-control" ng-model="servicevo.createdAt" ng-disabled="true"></div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-xs-2 col-form-label">Updated At:</label>
+            <div class="col-xs-3"><input id="updated_datetime" class="form-control" ng-model="servicevo.updatedAt" ng-disabled="true"></div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-xs-2 col-form-label">Updated By:</label>
+            <div class="col-xs-3"><input id="updated_user" class="form-control" ng-model="servicevo.lastUpdateUser" ng-disabled="true"></div>
+        </div>
+    </div>
+  </div>
