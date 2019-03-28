@@ -16,7 +16,7 @@ function registerAllMQServices() {
   });
 }
 
-function registerMQServicesInSystem(sut) {
+function registerMQServicesInSystem(sut, exclude) {
   MQService.find({ 'sut.name' : sut.name }, function(err, mqservices) {
     if (err) {
       debug('Error registering MQ services: ' + err);
@@ -24,14 +24,15 @@ function registerMQServicesInSystem(sut) {
     }
 
     mqservices.forEach(function(mqservice) {
-      registerMQService(mqservice, sut);
+      if (!deepEquals(mqservice, exclude))
+        registerMQService(mqservice, sut);
     });
   });
 }
 
 function registerMQService(mqserv, sut) {
   if (!sut) {
-    System.findOne({ 'sut.name' : mqserv.sut.name }, function(err, system) {
+    System.findOne({ 'name' : mqserv.sut.name }, function(err, system) {
       if (err) {
         debug('Error registering MQ service: ' + err);
         return;
@@ -54,6 +55,7 @@ function registerMQService(mqserv, sut) {
     mqservice.rrpairs.forEach(function(rrpair){
       rrpair.verb = 'POST';
       if (!rrpair.payloadType) rrpair.payloadType = 'XML';
+
       virtual.registerRRPair(mqservice, rrpair);
     });
   }
@@ -70,32 +72,45 @@ function deregisterMQService(mqserv) {
       return;
     }
 
-    let toReregister = [];
-    System.find({ mqInfo : sut.mqInfo }, function(err, systems) {
-      systems.forEach(function(system) {
-        MQService.find({ 'sut.name': system.name }, function(err, mqservices) {
-          mqservices.forEach(function(mqservice) {
-            if (!deepEquals(mqserv, mqservice)) {
-              toReregister.push(mqservice);
-            }
-          });
+    deregisterMQServicesByInfo(sut.mqInfo, reregister);
+
+    function reregister(mqinfo) {
+      let q = { 
+        '$and': [{
+          'mqInfo.manager': mqinfo.manager
+        }, {
+          'mqInfo.reqQueue': mqinfo.reqQueue
+        }]
+      }
+
+      System.find(q, function(err, systems) {
+        if (err) {
+          debug('Error reregistering MQ services: ' + err);
+          return;
+        }
+
+        systems.forEach(function(system) {
+          registerMQServicesInSystem(system, mqserv);
         });
       });
-    });
-
-    deregisterMQServicesByInfo(sut.mqInfo);
-    toReregister.forEach(registerMQService);
+    }
   });
 }
 
-function deregisterMQServicesByInfo(mqinfo) {
+function deregisterMQServicesByInfo(mqinfo, cb) {
   if (!mqinfo) {
     return;
   }
 
-  let mqserv = {};
-  mqserv.basePath = `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`;
+  let mqserv = {
+    basePath: `/mq/${mqinfo.manager}/${mqinfo.reqQueue}`,
+    rrpairs: [{}]
+  };
   virtual.deregisterService(mqserv);
+
+  setTimeout(function() {
+    cb(mqinfo);
+  }, 300);
 }
 
 module.exports = {
