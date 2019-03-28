@@ -913,21 +913,9 @@ function updateService(req, res) {
       if (req.body.matchTemplates) {
         service.matchTemplates = req.body.matchTemplates;
       }
-      
-      if (service.type !== 'MQ') {
-        const delay = req.body.delay;
-        if (delay || delay === 0) {
-          service.delay = req.body.delay;
-        }
-
-        const delayMax = req.body.delayMax;
-        if (delayMax || delayMax === 0) {
-          service.delayMax = req.body.delayMax;
-        }
-      }
-     
+       
       // save updated service in DB
-      service.save(function (err, newService) {
+      service.save(function(err, newService) {
         if (err) {
           handleBackEndValidationsAndErrors(err, res);
           return;
