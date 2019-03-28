@@ -101,8 +101,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
     }])
 
-  .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants',
-    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants) {
+  .controller("createRecorderController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'modalService', 'ctrlConstants',
+    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, modalService, ctrlConstants) {
       $scope.orderByField = 'name';
       $scope.reverseSort = false;
       $scope.myUser = authService.getUserInfo().username;
@@ -116,8 +116,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.servicevo.filterHeaders = [{ id: 0, k: '', v: '' }];
       $scope.servicevo.currentUser = authService.getUserInfo().username;
 
-      $scope.showRecorderHelp = function () {
-        $('#recordingHelp-modal').modal('toggle');
+      $scope.showRecorderHelp = function(){
+        modalService.showRecorderHelp();
       }
       $scope.addNewReqHeader = function (service) {
         var newItemNo = service.reqHeadersArr.length;
@@ -816,13 +816,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
 
-      
-
-     
-
       $scope.showTemplateHelp = function(){
         modalService.showTemplateHelp();
-      
     }
     }])
 
