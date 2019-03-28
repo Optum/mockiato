@@ -24,7 +24,7 @@
     </div>
   </div>
 
-  <div class="form-group row" ng-show="!canChangeType">
+  <div class="form-group req row" ng-show="!canChangeType">
     <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
     <div class="col-xs-2">
       <input required type="text" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter new group" ng-disabled="!canChangeType">
