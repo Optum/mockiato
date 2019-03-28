@@ -1,6 +1,6 @@
 var ctrl = angular.module("mockapp.controllers")
-  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants',
-    function (suggestionsService, $scope, ctrlConstants){
+  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants','domManipulationService',
+    function (suggestionsService, $scope, ctrlConstants,domManipulationService){
             $scope.addNewRRPair = function () {
                 var newItemNo = $scope.servicevo.rawpairs.length;
                 $scope.servicevo.rawpairs.push({
