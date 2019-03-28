@@ -68,7 +68,7 @@
     <div class="col-xs-9">
       <div class="input-group">
         <div class="input-group-addon">/virtual<span ng-show="canChangeType">/{{servicevo.sut.name}}/</span></div>
-        <input ng-required="servicevo.type !== 'MQ'" type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path" ng-disabled="!canChangeType" ng-pattern="/^[A-z0-9-._~!&'()*+,;=:@%]+(\/*[A-z0-9-._~!&'()*+,;=:@%]+)*$/">
+        <input ng-required="servicevo.type !== 'MQ' && canChangeType" type="text" id="service_endpoint" class="form-control" ng-model="servicevo.basePath" placeholder="Enter Base Path" ng-disabled="!canChangeType" ng-pattern="canChangeType ? '[A-z0-9-._~!&()*+,;=:@%]+(\/*[A-z0-9-._~!&()*+,;=:@%]+)*' : ''">
       </div>
     </div>
   </div>
