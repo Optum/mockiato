@@ -86,6 +86,27 @@ var ctrl = angular.module("mockapp.controllers")
                 $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
                 $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
               };
+
+              $scope.expandResponse = function($index,rr){
+                var ele = document.getElementsByClassName("responsePayload")[$index];
+                rr.resExpanded = true;
+                domManipulationService.expandTextarea(ele);        
+              }
+              $scope.collapseResponse = function($index,rr){
+                var ele = document.getElementsByClassName("responsePayload")[$index];
+                rr.resExpanded = false;
+                domManipulationService.collapseTextarea(ele);
+              }
+              $scope.expandRequest = function($index,rr){
+                var ele = document.getElementsByClassName("requestPayload")[$index];
+                rr.reqExpanded = true;
+                domManipulationService.expandTextarea(ele);        
+              }
+              $scope.collapseRequest = function($index,rr){
+                var ele = document.getElementsByClassName("requestPayload")[$index];
+                rr.reqExpanded = false;
+                domManipulationService.collapseTextarea(ele);
+              }
         
         }]);
     
