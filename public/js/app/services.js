@@ -13,6 +13,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
       this.showTemplateHelp = function(){
         setRemoteModal(servConstants.MCH_HELP_TITLE,"/partials/modals/templateHelpModal.html","");
       }
+      this.showRecorderHelp = function(){
+        setRemoteModal(servConstants.RECORD_HELP_TITLE,"/partials/modals/recorderHelpModal.html","");
+      }
     }])
     .service('authService', ['$http', '$window', '$location', '$rootScope', 'servConstants', 
         function($http, $window, $location, $rootScope, servConstants) {
@@ -1284,5 +1287,6 @@ serv.constant("servConstants", {
         "SERVICE_SAVE_FAIL_ERR_TITLE" : "Service Info Failure",
         "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed",
         "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
-        "MCH_HELP_TITLE" : "Match Templates Help"
+        "MCH_HELP_TITLE" : "Match Templates Help",
+        "RECORD_HELP_TITLE" : "Using Live Recording"
       });
