@@ -70,11 +70,17 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         });
         console.log($scope.mqLabels);
       });
-
-      
-
       
       $scope.publishservice = function (servicevo) {
+        //handle blank query params in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.queriesArr.length;
+          while(i--){
+            if( rrpair.queriesArr[i].k == '' ){
+              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
+            }
+          }
+        });
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
@@ -751,6 +757,14 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       
       $scope.updateService = function (servicevo) {
+        /* handle blank request payload - when you edit and make request payload empty
+        then request payload becomes empty string so duplicate request check wil not worker. */
+        var i = servicevo.rawpairs.length;
+        while(i--){
+          if( servicevo.rawpairs[i].requestpayload == '' ){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+        }
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
