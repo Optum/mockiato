@@ -360,6 +360,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rr.queriesArr.forEach(function(q){
                       if(queries[q.k])
                         throw 'Duplicate Query Exists in an RR pair.';
+                      if(q.k)//for update service blank query key fix
                       queries[q.k] = q.v;
                     });
 
