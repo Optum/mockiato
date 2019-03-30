@@ -158,7 +158,15 @@
       <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show=" servicevo.type === 'SOAP' || rr.method!== 'GET' || servicevo.type === 'MQ'|| rr.getPayloadRequired">
         <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
         <div class="col-xs-9">
-          <textarea ng-required="servicevo.type !== 'REST'" id="service_request_payload" class="form-control vertResize" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
+          <textarea ng-required="servicevo.type !== 'REST'" id="service_request_payload" class="form-control vertResize requestPayload" ng-model="rr.requestpayload" placeholder="Insert Request Payload"></textarea>
+        </div>
+        <div class="col-xs-1 h-100">
+          <button type="button" class="btn btn-success align-bottom" ng-click="expandRequest($index,rr)" ng-show="!rr.reqExpanded">
+            <span class="glyphicon glyphicon-resize-full"></span>
+          </button>
+          <button type="button" class="btn btn-success align-bottom" ng-click="collapseRequest($index,rr)" ng-show="rr.reqExpanded">
+            <span class="glyphicon glyphicon-resize-small"></span>
+          </button>
         </div>
       </div>
 
@@ -229,7 +237,15 @@
       <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'">
         <label for="service_response_payload" class="col-xs-2 col-form-label">Response Payload:</label>
         <div class="col-xs-9">
-          <textarea ng-required="servicevo.type !== 'REST'" id="service_response_payload" class="form-control vertResize" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
+          <textarea ng-required="servicevo.type !== 'REST'" id="service_response_payload" class="form-control vertResize responsePayload" ng-model="rr.responsepayload" placeholder="Insert Response Payload"></textarea>
+        </div>
+        <div class="col-xs-1 h-100">
+          <button type="button" class="btn btn-success align-bottom" ng-click="expandResponse($index,rr)" ng-show="!rr.resExpanded">
+            <span class="glyphicon glyphicon-resize-full"></span>
+          </button>
+          <button type="button" class="btn btn-success align-bottom" ng-click="collapseResponse($index,rr)" ng-show="rr.resExpanded">
+            <span class="glyphicon glyphicon-resize-small"></span>
+          </button>
         </div>
       </div>
     </fieldset>

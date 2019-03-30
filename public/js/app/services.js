@@ -17,6 +17,32 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         setRemoteModal(servConstants.RECORD_HELP_TITLE,"/partials/modals/recorderHelpModal.html","");
       }
     }])
+    .service('domManipulationService',[function(){
+      this.expandTextarea = function(ele){
+        if(!ele._oldTransition)
+          ele._oldTransition = ele.style.transition;
+        ele.style.transition = "height 1s ease";
+        ele._mockiatoOldHeight = ele.offsetHeight;
+        ele.style.height = ele._mockiatoOldHeight + "px";
+        ele.style.height = ele.scrollHeight + "px";
+        
+        setTimeout(function(){
+          ele.style.transition = ele._oldTransition;
+          delete ele._oldTransition;
+        },1000);
+      }
+      this.collapseTextarea = function(ele){
+        if(!ele._oldTransition)
+          ele._oldTransition = ele.style.transition;
+        ele.style.transition = "height 1s ease";
+        ele.style.height = ele._mockiatoOldHeight + "px";
+        
+        setTimeout(function(){
+          ele.style.transition = ele._oldTransition;
+          delete ele._oldTransition;
+        },1000);
+      }
+    }])
     .service('authService', ['$http', '$window', '$location', '$rootScope', 'servConstants', 
         function($http, $window, $location, $rootScope, servConstants) {
             var userInfo;
