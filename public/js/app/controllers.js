@@ -72,6 +72,24 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       });
       
       $scope.publishservice = function (servicevo) {
+
+        var i = servicevo.rawpairs.length;
+        while(i--){
+           /* handle blank request payload - when you edit and make request payload empty
+        then request payload becomes empty string so duplicate request check wil not work. */
+          if( servicevo.rawpairs[i].requestpayload == '' ){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          // handeling GET method without requestpayload 
+          if(servicevo.rawpairs[i].method!== 'GET')
+          {
+            servicevo.rawpairs[i].getPayloadRequired = false;
+          }
+          
+          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          }
         //handle blank query params in rrpairs
         servicevo.rawpairs.forEach(function(rrpair){  
           var i = rrpair.queriesArr.length;
@@ -661,6 +679,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               rr.resHeadersArr = [];
               rr.method = rr.verb;
 
+             
               //Handle empty JSON object- stringify surrounds in "" 
               if (rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\"") {
                 rr.responsepayload = rr.responsepayload.substring(1, 3);
@@ -764,10 +783,19 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           if( servicevo.rawpairs[i].requestpayload == '' ){
             servicevo.rawpairs[i].requestpayload = undefined;
           }
-        }
+         // handeling GET method without requestpayload 
+          if(servicevo.rawpairs[i].method!== 'GET')
+          {
+            servicevo.rawpairs[i].getPayloadRequired = false;
+          }
+          
+          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          }
 
         //handle blank query params in rrpairs. if you provide query param and then make it blank.
-        servicevo.rawpairs.forEach(function(rrpair){  
+        servicevo.rawpairs.forEach(function(rrpair){ 
           var i = rrpair.queriesArr.length;
           while(i--){
             if( rrpair.queriesArr[i].k == '' ){
@@ -1249,7 +1277,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               rr.resHeadersArr = [];
               rr.method = rr.verb;
 
-            
               if (rr.payloadType === 'JSON') {
                 rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
                 rr.responsepayload = JSON.stringify(rr.resData, null, 4);
@@ -1357,7 +1384,16 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           if( servicevo.rawpairs[i].requestpayload == '' ){
             servicevo.rawpairs[i].requestpayload = undefined;
           }
-        }
+          // handeling GET method without requestpayload 
+          if(servicevo.rawpairs[i].method!== 'GET')
+          {
+            servicevo.rawpairs[i].getPayloadRequired = false;
+          }
+          
+          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          }
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
