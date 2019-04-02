@@ -303,16 +303,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       rr.payloadType = 'XML';
                     }
 
-                    
-                  if(rr.method!== 'GET')
-                  {
-                    rr.getPayloadRequired = false;
-                  }
-
-                  if(rr.method === 'GET'&& rr.getPayloadRequired === false){
-                    rr.requestpayload = undefined;
-                  }
-                  console.log("this is req",rr.requestpayload);
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
                       
@@ -396,7 +386,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     }
                     // save request data for get when Checkbox selected
                     else{
-                    console.log("This is GET");
                     if(rr.getPayloadRequired=== true) 
                     {
                       rr.reqData = reqPayload;
@@ -572,14 +561,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rr.payloadType = 'XML';
                   }
 
-                  if(rr.method!== 'GET')
-                  {
-                    rr.getPayloadRequired = false;
-                  }
-                  
-                  if(rr.method === 'GET'&& rr.getPayloadRequired === false){
-                    rr.requestpayload = undefined;
-                  }
                   // parse and display error if JSON is malformed
                   if (rr.payloadType === 'JSON') {
                     try {
@@ -644,7 +625,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   }
                   // save request data for get when Checkbox selected
                   else{
-                      console.log("This is GET");
                   if(rr.getPayloadRequired=== true) 
                   {
                     rr.reqData = reqPayload;
