@@ -15,6 +15,8 @@ function getRandomStringFromTag(tag,myChance){
 
     //Method name is first bit
     var methodName = split[1];
+    if(methodName.slice(-2) == "}}")
+        methodName = methodName.slice(0,-2);
     var args = {};
     var hasArgs = false;
 
