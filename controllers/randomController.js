@@ -31,10 +31,14 @@ function getRandomStringFromTag(tag,myChance){
             }
         }
         //Pass given method name the args we collected, return result
-        if(hasArgs)
-            return myChance[methodName](args);
-        else
-            return myChance[methodName]();
+        try{
+            if(hasArgs)
+                return myChance[methodName](args);
+            else
+                return myChance[methodName]();
+        }catch(e){
+            return "Error in Random Syntax";
+        }
     }else{
         return "";
     }
