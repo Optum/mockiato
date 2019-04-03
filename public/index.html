@@ -2,7 +2,7 @@
 <html ng-app="mockapp">
 	<head>
         <title>Mockiato ☕</title>
-
+			
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="js/bower_components/bootstrap/dist/css/bootstrap.min.css">
 				<link rel="stylesheet" href="css/angucomplete-alt.css">
@@ -206,6 +206,23 @@
             </div>
 					</div> 
 					
-        </div> <!-- end container -->
+				</div> <!-- end container -->
+				<script>
+						function msieversion() 
+						{
+								var ua = window.navigator.userAgent.toLowerCase();
+								console.log(ua);
+								console.log(ua.indexOf("msie") > -1 || ua.indexOf("trident") > -1);
+								return ua.indexOf("msie") > -1 || ua.indexOf("trident") > -1;
+						}
+		
+						if(msieversion()){
+							console.log("Is IE");
+							$('#genricMsg-dialog').find('.modal-title').text("Unsupported Browser");
+							$('#genricMsg-dialog').find('.modal-body').text("Mockiato does not support Internet Explorer. Please use a different browser, like Google Chrome or Mozilla Firefox.");
+							$('#genricMsg-dialog').find('.modal-footer').html("");
+							$('#genricMsg-dialog').modal('toggle');
+						}
+				</script>
 	</body>
 </html>
