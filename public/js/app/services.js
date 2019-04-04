@@ -16,6 +16,9 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
       this.showRecorderHelp = function(){
         setRemoteModal(servConstants.RECORD_HELP_TITLE,"/partials/modals/recorderHelpModal.html","");
       }
+      this.showLiveInvocationHelp = function(){
+        setRemoteModal(servConstants.INVOKE_HELP_TITLE,"/partials/modals/liveInvocationHelpModal.html","");
+      }
     }])
     .service('domManipulationService',[function(){
       this.expandTextarea = function(ele){
@@ -1294,5 +1297,6 @@ serv.constant("servConstants", {
         "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed",
         "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
         "MCH_HELP_TITLE" : "Match Templates Help",
-        "RECORD_HELP_TITLE" : "Using Live Recording"
+        "RECORD_HELP_TITLE" : "Using Live Recording",
+        "INVOKE_HELP_TITLE" : "Using Live Invocation"
       });
