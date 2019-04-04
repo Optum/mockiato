@@ -1,6 +1,6 @@
 var ctrl = angular.module("mockapp.controllers")
-.controller("serviceHeaderController",['suggestionsService','$scope',
-    function(suggestionsService,$scope){
+.controller("serviceHeaderController",['suggestionsService','$scope','modalService',
+    function(suggestionsService,$scope,modalService){
         $scope.addFailStatus = function () {
             $scope.servicevo.failStatuses.push({ val: '' });
           }
@@ -20,5 +20,9 @@ var ctrl = angular.module("mockapp.controllers")
           $scope.removeTemplate = function (index) {
             $scope.servicevo.matchTemplates.splice(index, 1);
           };
+          $scope.showLiveInvocationHelp = function(){
+            modalService.showLiveInvocationHelp();
+          };
+          
     
     }]);

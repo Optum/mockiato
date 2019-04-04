@@ -1,0 +1,37 @@
+<div>
+    <h1>Live Invocation</h1>
+    <p class="wordwrap">Mockiato offers the ability to act as a proxy to a live service/endpoint in order to deliver real data to the user in some situations, while still providing virtualized responses in other situations in order provide both the robustness of real testing and the control over your own data of service virtualization. This process is called "Live Invocation"</p>
+    <p class="wordwrap">When live invocation is enabled, Mockiato will make a decision to either return a response from the virtual service, or return a response by acting as a proxy to a live backend, forwarding the client's request to the backend, and forwarding the backend's response to the client. In the case that Mockiato fetches a response from the live service, the service diagram looks like this:</p>
+    <div class="text-center"><img src="/images/mockiato_live_invo_flow.png"> </div>  
+    <p class="wordwrap">The decision process Mockiato uses to determine if a virtual or a live response should be sent to the client follows one of two patterns: <b>Live Service First</b> or <b>Virtual Service First</b></p>
+    <h2>Live Service First</h2>
+    <p class="wordwrap">If 'Live Service First' is selected, the virtual service will attempt to fetch a response from the remote live service first. If this call passes a few conditions specified by the user, then it is forwarded back as the response to the client. If it does not pass these conditions, or the call fails entirely, Mockiato will check the virtual service for a matching request/response pair. If found, this virtual response will be sent to the user. If no match is found at this point, error handling proceeds as normal.</p>
+    <h3>Live-First Failure Conditions</h3>
+    <p class="wordwrap">By default, Mockiato will return <b>any</b> response returned from the live service to the client. However, in many cases, this is undesirable (e.g. a 404, or any number of error messages). For these cases, the user may specify failure conditions, in which case Mockiato will discard the response from the remote host, and return a virtualized response instead.</p>
+    <p class="wordwrap">There are thtworee categories of failure conditions: <b>Status Codes</b> and <b>Body Strings</b>. Status Codes are HTTP status codes (e.g. 200 for OK, 404 for not found) that should be considered as a failed response. Any response that has one of the specified codes will fail over to virtual responses. Similarly, if mockiato finds any of the <b>body strings</b> present in the response body (e.g. 'error' or 'DataFault') Mockiato will fail over to virtual responses.</p>
+    <h3>Suggested Use Case</h3>
+    <p class="wordwrap">Live Service First mode allows Mockiato to act as a fail-over backup for testing in cases where the live backend becomes unavailable, allowing work to continue with virtual data. However, Mockiato <b>should never</b> be used as a backup/fail-over for a production environment.</p>
+    <h2>Virtual Service First</h2>
+    <p class="wordwrap">In Virtual Service First mode, the Mockiato service will first attempt to match a virtual service. If this matching fails, Mockiato attempts to fetch a response from the remote live service. <b>All</b> responses from the live service will be forwarded to the user. In the case that this call fails, error handling proceeds as normal for a no-match case.</p>
+    <h3>Suggested Use Case</h3>
+    <p class="wordwrap">Virtual Service First mode enables Mockiato to deliver robust testing by proxying an available live service, but allows the user to configure certain specific test cases that will be intercepted/overriden by Mockiato. This allows the user to specify certain test cases to test hard to reproduce errors, timeouts (using large delay values), and rare edge cases.</p>
+    <h2>Configuration Parameters</h2>
+    <p class="wordwrap">Mockiato needs a few pieces of information to know where to forward live requests.</p>
+    <ul>
+        <li>
+            <b>Remote Host</b> - The hostname of the remote server. This should be <b>just</b> the hostname- e.g. 'example.com', not 'http://example.com'
+        </li>
+        <li>
+            <b>Remote Port</b> - The port the remote host is listening on. 
+        </li>
+        <li>
+            <b>Remote Base Path</b> - The path for the remote endpoint- e.g. if your remote endpoint is 'http://example.com/this/is/the/path', you would enter '/this/is/the/path'. NOTE: This is optional, and will default to whatever the base path of the virtual service is set to.
+        </li>
+        <li>
+            <b>Use HTTPS</b> - If enabled, this will use HTTPS instead of HTTP to make the call to the remote backend. 
+        </li>
+        <li>
+            <b>Record Live Transactions</b> - If enabled, any live transactions to the remote backend will be recorded and saved. These will not be automatically added to the virtual service, but the user may click 'View Recorded Transactions' to view the recorded request/response pairs and merge them into the service (or delete them) at any time. 
+        </li>
+    </ul>
+</div>
