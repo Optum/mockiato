@@ -20,6 +20,47 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         setRemoteModal(servConstants.INVOKE_HELP_TITLE,"/partials/modals/liveInvocationHelpModal.html","");
       }
     }])
+    .service('utilityService',[function(){
+      this.emptyOutJSON = function(jsonObject){
+        var jsonObject2 = jsonObject;
+        for (var key in jsonObject2){
+          if(jsonObject.hasOwnProperty(key)){
+            if(typeof jsonObject2[key] == "object")
+              if(Array.isArray(jsonObject[key]))
+                jsonObject2[key] = "";
+              else
+                jsonObject2[key] = this.emptyOutJSON(jsonObject2[key]);
+            else
+              jsonObject2[key] = "";
+          }
+        }
+        return jsonObject2;
+      };
+
+      this.prettifyXml = function(sourceXml)
+      {
+          var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');
+          var xsltDoc = new DOMParser().parseFromString([
+              // describes how we want to modify the XML - indent everything
+              '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
+              '  <xsl:strip-space elements="*"/>',
+              '  <xsl:template match="para[content-style][not(text())]">', // change to just text() to strip space in text nodes
+              '    <xsl:value-of select="normalize-space(.)"/>',
+              '  </xsl:template>',
+              '  <xsl:template match="node()|@*">',
+              '    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
+              '  </xsl:template>',
+              '  <xsl:output indent="yes"/>',
+              '</xsl:stylesheet>',
+          ].join('\n'), 'application/xml');
+      
+          var xsltProcessor = new XSLTProcessor();    
+          xsltProcessor.importStylesheet(xsltDoc);
+          var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
+          var resultXml = new XMLSerializer().serializeToString(resultDoc);
+          return resultXml;
+      };
+    }])
     .service('domManipulationService',[function(){
       this.expandTextarea = function(ele){
         if(!ele._oldTransition)

@@ -169,6 +169,14 @@
           </button>
         </div>
       </div>
+      <div class="form-group row" ng-show=" servicevo.type === 'SOAP' || rr.method!== 'GET' || servicevo.type === 'MQ'|| rr.getPayloadRequired">
+        <div class="col-xs-2"></div>
+        <div class=" col-xs-4">
+          <button type="button" class="btn btn-success" ng-click="makeTemplateFromRequest(rr)">
+            Create Matching Template from this Request
+          </button>
+        </div>
+      </div>
 
 
       <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
