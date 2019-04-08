@@ -1,6 +1,6 @@
 var ctrl = angular.module("mockapp.controllers")
-  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants','domManipulationService',
-    function (suggestionsService, $scope, ctrlConstants,domManipulationService){
+  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants','domManipulationService','utilityService',
+    function (suggestionsService, $scope, ctrlConstants,domManipulationService,utilityService){
             $scope.addNewRRPair = function () {
                 var newItemNo = $scope.servicevo.rawpairs.length;
                 $scope.servicevo.rawpairs.push({
@@ -32,6 +32,27 @@ var ctrl = angular.module("mockapp.controllers")
                   $scope.$apply();
                 });
               };
+
+              /**
+               * Creates a template from a given RR pair's request
+               */
+              $scope.makeTemplateFromRequest = function(rr){
+                if(rr.payloadType == "JSON"){
+                  console.log("doing it");
+                  let req = JSON.parse(rr.requestpayload);
+                  req = utilityService.emptyOutJSON(req);
+                  $scope.servicevo.matchTemplates.push({id:0,val:JSON.stringify(req,null,2)})
+                }else if(rr.payloadType == "XML"){
+                  let xml = rr.requestpayload;
+                  xml = xml.replace(/>[^<]+<\//g,"></");
+                  xml = utilityService.prettifyXml(xml);
+                  $scope.servicevo.matchTemplates.push({id:0,val:xml});
+
+                }else{
+                  console.log("not doig it");
+                  console.log(rr);
+                }
+              }
 
               $scope.addNewReqHeader = function (rr) {
                 var newItemNo = rr.reqHeadersArr.length;
