@@ -39,7 +39,6 @@ var ctrl = angular.module("mockapp.controllers")
               $scope.makeTemplateFromRequest = function(rr){
                 try{
                   if(rr.payloadType == "JSON"){
-                    console.log("doing it");
                     let req = JSON.parse(rr.requestpayload);
                     req = utilityService.emptyOutJSON(req);
                     $scope.servicevo.matchTemplates.push({id:0,val:JSON.stringify(req,null,2)})
@@ -50,7 +49,6 @@ var ctrl = angular.module("mockapp.controllers")
                     $scope.servicevo.matchTemplates.push({id:0,val:xml});
 
                   }else{
-                    console.log("not doig it");
                     console.log(rr);
                   }
                 }catch(e){
