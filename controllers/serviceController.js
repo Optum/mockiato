@@ -962,10 +962,10 @@ function updateServiceAsDraft(req, res) {
         draftservice.service.rrpairs.forEach(function(rrpair){
           if(rrpair.reqData)
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-          if(rrpair.resData)
+          if(rrpair.resData){
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
-
-          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+            rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+          }
         });
       }
       if(req.body.liveInvocation){
