@@ -99,6 +99,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             }
           }
         });
+        //handle blank Request Headers in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.reqHeadersArr.length;
+          while(i--){
+            if(rrpair.reqHeadersArr[i].k instanceof Object || rrpair.reqHeadersArr[i].k == ''){
+              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
+            }
+          }
+        });
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
@@ -803,7 +812,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             }
           }
         });
-
+        //handle blank Request Headers in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.reqHeadersArr.length;
+          while(i--){
+            if(rrpair.reqHeadersArr[i].k instanceof Object || rrpair.reqHeadersArr[i].k == ''){
+              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
+            }
+          }
+        });
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
@@ -1394,6 +1411,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             servicevo.rawpairs[i].requestpayload = undefined;
           }
           }
+          //handle blank Request Headers in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.reqHeadersArr.length;
+          while(i--){
+            if(rrpair.reqHeadersArr[i].k instanceof Object || rrpair.reqHeadersArr[i].k == ''){
+              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
+            }
+          }
+        });
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
