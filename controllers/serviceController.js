@@ -892,6 +892,8 @@ function updateService(req, res) {
       service.rrpairs = req.body.rrpairs;
       service.matchTemplates = req.body.matchTemplates;
       service.lastUpdateUser = req.decoded;
+      service.delay = req.body.delay;
+      service.delayMax = req.body.delayMax;
 
       //Cache string of reqData + rspData
       if(service.rrpairs){
