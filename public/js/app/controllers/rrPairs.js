@@ -38,18 +38,30 @@ var ctrl = angular.module("mockapp.controllers")
                */
               $scope.makeTemplateFromRequest = function(rr){
                 try{
+                  let newTemplate = null;
                   if(rr.payloadType == "JSON"){
                     let req = JSON.parse(rr.requestpayload);
                     req = utilityService.emptyOutJSON(req);
-                    $scope.servicevo.matchTemplates.push({id:0,val:JSON.stringify(req,null,2)})
+                    newTemplate = JSON.stringify(req,null,2);
                   }else if(rr.payloadType == "XML"){
                     let xml = rr.requestpayload;
                     xml = xml.replace(/>[^<]+<\//g,"></");
                     xml = utilityService.prettifyXml(xml);
-                    $scope.servicevo.matchTemplates.push({id:0,val:xml});
+                    newTemplate = xml;
+                  }
 
-                  }else{
-                    console.log(rr);
+                  if(newTemplate){
+                    let addNewTemplate = true;
+                    $scope.servicevo.matchTemplates.forEach(function(temp){
+                      if(temp.val == newTemplate){
+                        addNewTemplate = false;
+                        return;
+                      }
+                      
+                    });
+                    if(addNewTemplate){
+                      $scope.servicevo.matchTemplates.push({id:0,val:newTemplate});
+                    }
                   }
                 }catch(e){
                   $('#genricMsg-dialog').find('.modal-title').text("Error creating matching template");
