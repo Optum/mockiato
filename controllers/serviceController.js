@@ -743,7 +743,7 @@ function addService(req, res) {
             return;
           }
           // merge services
-          mergeRRPairs(duplicate, serv);
+          mergeRRPairs(duplicate, serv); 
 
           //merge templates
           duplicate.matchTemplates = uniq(duplicate.matchTemplates.concat(serv.matchTemplates));
