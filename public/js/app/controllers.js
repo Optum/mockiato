@@ -77,7 +77,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         while(i--){
            /* handle blank request payload - when you edit and make request payload empty
         then request payload becomes empty string so duplicate request check wil not work. */
-          if( servicevo.rawpairs[i].requestpayload == '' ){
+          if( servicevo.rawpairs[i].requestpayload == '' || servicevo.rawpairs[i].requestpayload === null){
             servicevo.rawpairs[i].requestpayload = undefined;
           }
           // handeling GET method without requestpayload 
