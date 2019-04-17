@@ -43,7 +43,7 @@ var ctrl = angular.module("mockapp.controllers")
                     let req = JSON.parse(rr.requestpayload);
                     req = utilityService.emptyOutJSON(req);
                     newTemplate = JSON.stringify(req,null,2);
-                  }else if(rr.payloadType == "XML"){
+                  }else if(rr.payloadType == "XML" || $scope.servicevo.type == "SOAP"){
                     let xml = rr.requestpayload;
                     xml = xml.replace(/>[^<]+<\//g,"></");
                     xml = utilityService.prettifyXml(xml);
