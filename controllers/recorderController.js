@@ -3,7 +3,7 @@ const Recording = require('../models/http/Recording');
 const routing = require('../routes/recording');
 const manager = require('../lib/pm2/manager');
 const constants = require('../lib/util/constants');
-
+const EventEmitter = require('events')
 var activeRecorders = {};
 
 
@@ -19,7 +19,7 @@ var activeRecorders = {};
 var Recorder = function(name,path,sut,remoteHost,remotePort,protocol,headerMask,ssl,filters,creator, rsp){
 
     var rec = this;
-    
+    this.events = new EventEmitter();
     //If passed ID for Recording document...
     if(arguments.length == 1){
         rec.model = new Promise(function(resolve,reject){
@@ -349,6 +349,7 @@ function stripRRPairForReq(rrpair) {
         }else{
             rsp.end();
         }
+        this.events.emit("rrpair",myRRPair);
     }).bind(this));
 
     promise.catch(function(err){
@@ -593,7 +594,20 @@ function startRecorder(req,rsp){
     });
 }
 
-
+function recordingEventStream(req,rsp){
+    rsp.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      });
+      let rec;
+      if(rec = activeRecorders[req.params.id]){
+        var eventHandler = rec.events.on('rrpair',function(myRRPair){
+            rsp.write(JSON.stringify(myRRPair) + "\n");
+        });
+      }
+      
+}
 
  module.exports = {
     Recorder: Recorder,
@@ -606,7 +620,8 @@ function startRecorder(req,rsp){
     deregisterRecorder: deregisterRecorder,
     startRecorder : startRecorder,
     stopRecorder : stopRecorder,
-    getRecordingBySystem : getRecordingBySystem
+    getRecordingBySystem : getRecordingBySystem,
+    recordingEventStream : recordingEventStream
   };
   
 

@@ -46,6 +46,7 @@ module.exports = {
 
 
 const recordController = require('../controllers/recorderController');
+
 //Get list of recordings out in db
 apiRouter.get("/",recordController.getRecordings);
 
@@ -55,7 +56,8 @@ apiRouter.get("/:id",recordController.getRecordingById);
 //Get recorder by ID
 apiRouter.get("/sut/:name",recordController.getRecordingBySystem);
 
-
+//Get event stream for RR pairs being recorded
+apiRouter.get("/:id/stream",recordController.recordingEventStream);
 //Get RR pairs by ID + index to start at
 apiRouter.get("/:id/:index",recordController.getRecorderRRPairsAfter);
 
@@ -69,3 +71,4 @@ apiRouter.delete("/:id",recordController.removeRecorder);
 //Start and stop recorder
 apiRouter.patch("/:id/start",recordController.startRecorder);
 apiRouter.patch("/:id/stop",recordController.stopRecorder);
+
