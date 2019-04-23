@@ -54,11 +54,16 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               '</xsl:stylesheet>',
           ].join('\n'), 'application/xml');
       
-          var xsltProcessor = new XSLTProcessor();    
+          var xsltProcessor = new XSLTProcessor();  
+          
           xsltProcessor.importStylesheet(xsltDoc);
+
           var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
           var resultXml = new XMLSerializer().serializeToString(resultDoc);
+          if(resultXml.includes("<parsererror"))
+            return null;
           return resultXml;
+          
       };
     }])
     .service('domManipulationService',[function(){
