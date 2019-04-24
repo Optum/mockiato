@@ -759,7 +759,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                         data = response.data.service;
                     console.log(data);                   
                
-                    $location.path('/showDraftService/' + data._id + '/frmCreateDraft');
+                    $location.path('/showDraftService/' + data._id + '/frmDraft');
                  
                     $('#service-save-success-modal').modal('toggle');
                 })

@@ -843,7 +843,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
 
       //To Show Service Success Modal when a new service is created as draft
-      if ($routeParams.frmWher == 'frmCreateDraft') {
+      if ($routeParams.frmWher == 'frmDraft') {
         $http.get('/api/services/draft/' + $routeParams.id)
           .then(function (response) {
             var data;
