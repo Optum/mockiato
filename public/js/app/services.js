@@ -54,11 +54,16 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               '</xsl:stylesheet>',
           ].join('\n'), 'application/xml');
       
-          var xsltProcessor = new XSLTProcessor();    
+          var xsltProcessor = new XSLTProcessor();  
+          
           xsltProcessor.importStylesheet(xsltDoc);
+
           var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
           var resultXml = new XMLSerializer().serializeToString(resultDoc);
+          if(resultXml.includes("<parsererror"))
+            return null;
           return resultXml;
+          
       };
     }])
     .service('domManipulationService',[function(){
@@ -401,28 +406,36 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     // only save queries if there are any
                     if (Object.keys(queries).length > 0) {
                       rr.queries = queries;
+                    }else if(Object.keys(queries).length == 0){
+                      rr.queries = undefined;
                     }
 
                     // convert array of response headers to object literal
                     var resHeaders = {};
                     rr.resHeadersArr.forEach(function(headerObj){
+                      if(headerObj.k)
                       resHeaders[headerObj.k] = headerObj.v;
                     });
 
                     // only save headers if there are any
                     if (Object.keys(resHeaders).length > 0) {
                       rr.resHeaders = resHeaders;
+                    }else if(Object.keys(resHeaders).length == 0){
+                      rr.resHeaders = undefined;
                     }
 
                     // convert array of response headers to object literal
                     var reqHeaders = {};
                     rr.reqHeadersArr.forEach(function(headerObj){
+                      if(headerObj.k)
                       reqHeaders[headerObj.k] = headerObj.v;
                     });
 
                     // only save headers if there are any
                     if (Object.keys(reqHeaders).length > 0) {
                       rr.reqHeaders = reqHeaders;
+                    }else if(Object.keys(reqHeaders).length == 0){
+                      rr.reqHeaders = undefined;
                     }
                      // only save request data for non-GETs
                     if (rr.method !== 'GET') {

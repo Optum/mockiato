@@ -103,7 +103,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         servicevo.rawpairs.forEach(function(rrpair){  
           var i = rrpair.reqHeadersArr.length;
           while(i--){
-            if(rrpair.reqHeadersArr[i].k instanceof Object || rrpair.reqHeadersArr[i].k == ''){
+            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
               rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
             }
           }
@@ -816,7 +816,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         servicevo.rawpairs.forEach(function(rrpair){  
           var i = rrpair.reqHeadersArr.length;
           while(i--){
-            if(rrpair.reqHeadersArr[i].k instanceof Object || rrpair.reqHeadersArr[i].k == ''){
+            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
               rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
             }
           }
@@ -1415,7 +1415,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         servicevo.rawpairs.forEach(function(rrpair){  
           var i = rrpair.reqHeadersArr.length;
           while(i--){
-            if(rrpair.reqHeadersArr[i].k instanceof Object || rrpair.reqHeadersArr[i].k == ''){
+            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
               rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
             }
           }
