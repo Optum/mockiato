@@ -7,6 +7,7 @@ require('./lib/util');
 // import dependencies
 const express = require('express');
 const app = express();
+const session = require('express-session'); //secure cookies
 const compression = require('compression');
 const debug = require('debug')('default');
 const path = require('path');
@@ -50,6 +51,19 @@ function init() {
     }
     return next();
   });
+
+
+  //secure cookies
+  app.use(session({
+    cookieName: 'mockiatoSession',
+    secret: process.env.MOCKIATO_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    httpOnly: true,  // dont let browser javascript access cookie ever
+    secure: true, // only use cookie over https
+    ephemeral: true // delete this cookie while browser close
+  }));
+
 
   // parse request body based on content-type
   app.use(bodyParser.text({ limit: '5mb', type: [ 'application/x-www-form-urlencoded', 'application/soap+xml', 'application/xml', 'text/xml', 'text/plain' ]}));
