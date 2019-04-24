@@ -187,7 +187,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               data.rrpairs.forEach(function(rr) {
                 var op = {
                   'verb': rr.verb,
-                  'path': rr.path || '/'
+                  'path': rr.path || ''
                 };
 
                 // append query strings to path
