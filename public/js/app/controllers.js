@@ -1227,10 +1227,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
             }
 
-            if(servicevo.delayMax === null){
+            if($scope.servicevo.delayMax === null){
               $scope.servicevo.delayMax = 0;
             }
-            if(servicevo.delay === null){
+            if($scope.servicevo.delay === null){
               $scope.servicevo.delay = 0;
             }
 
