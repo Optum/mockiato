@@ -187,7 +187,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               data.rrpairs.forEach(function(rr) {
                 var op = {
                   'verb': rr.verb,
-                  'path': rr.path || '/'
+                  'path': rr.path || ''
                 };
 
                 // append query strings to path
@@ -776,7 +776,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                         data = response.data.service;
                     console.log(data);                   
                
-                    $location.path('/showDraftService/' + data._id + '/frmCreateDraft');
+                    $location.path('/showDraftService/' + data._id + '/frmDraft');
                  
                     $('#service-save-success-modal').modal('toggle');
                 })

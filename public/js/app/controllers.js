@@ -789,7 +789,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         then request payload becomes empty string so duplicate request check wil not worker. */
         var i = servicevo.rawpairs.length;
         while(i--){
-          if( servicevo.rawpairs[i].requestpayload == '' ){
+          if( servicevo.rawpairs[i].requestpayload == ''  || servicevo.rawpairs[i].requestpayload === null){
             servicevo.rawpairs[i].requestpayload = undefined;
           }
          // handeling GET method without requestpayload 
@@ -842,8 +842,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
       };
 
-      //To Show Service Success Modal when a new service is created as draft
-      if ($routeParams.frmWher == 'frmCreateDraft') {
+      //To Show Service Success Modal when a new service is created as draft.
+      if ($routeParams.frmWher == 'frmDraft') {
         $http.get('/api/services/draft/' + $routeParams.id)
           .then(function (response) {
             var data;
@@ -1227,6 +1227,13 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
             }
 
+            if($scope.servicevo.delayMax === null){
+              $scope.servicevo.delayMax = 0;
+            }
+            if($scope.servicevo.delay === null){
+              $scope.servicevo.delay = 0;
+            }
+
 
             $scope.myUser = authService.getUserInfo().username;
 
@@ -1398,7 +1405,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         then request payload becomes empty string so duplicate request check wil not work. */
         var i = servicevo.rawpairs.length;
         while(i--){
-          if( servicevo.rawpairs[i].requestpayload == '' ){
+          if( servicevo.rawpairs[i].requestpayload == '' || servicevo.rawpairs[i].requestpayload === null){
             servicevo.rawpairs[i].requestpayload = undefined;
           }
           // handeling GET method without requestpayload 
