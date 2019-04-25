@@ -976,7 +976,7 @@ components:
     JWT:
       type: apiKey
       description: "Access token retrieved by POSTing credentials to /api/login"
-      name: Authorization
+      name: x-access-token
       in: header
 
   requestBodies:
