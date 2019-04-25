@@ -248,9 +248,10 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 templateUrl: 'fusepartials/createRecorderForm.html',
                 controller: 'createRecorderController'
             })
-            .when("/fetchrecorders", {
+            .when("/fetchrecorders/:sut?", {
                 templateUrl: "fusepartials/recorderList.html",
                 controller: "recorderListController",
+                reloadOnUrl: false,
                 resolve: {
                     auth: ['$q', 'authService', function($q, authService) {
                         var userInfo = authService.getUserInfo();
@@ -262,7 +263,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                         }
                     }]
                 }
-            }) 
+            })
             .when("/viewRecorder/:id", {
                 templateUrl: "fusepartials/viewRecorder.html",
                 controller: "viewRecorderController",
