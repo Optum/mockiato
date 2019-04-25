@@ -1520,16 +1520,105 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#success-modal').modal('toggle');
       }
     }])
-  .controller("recorderListController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
-    function ($scope, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
-      $scope.sutlist = sutService.getAllSUT();
-      $scope.userlist = userService.getAllUsers();
+  .controller("recorderListController", ['$scope', '$location', '$routeParams','$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
+    function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+       Promise.all([sutService.getAllSUTPromise()]).then(function (values) {
+        $scope.sutlist = values[0];
+        if ($routeParams.sut)
+          performUpdateOnPathParams();
+           });
+
       $scope.recordingList = [];
+      console.log($routeParams);
+
+      $scope.buttonHit = false;
+
+      $scope.$watchGroup(['selectedSut'], function (newVals) {
+        $scope.filtersSelected(newVals[0]);
+        $scope.buttonHit = true; //bool check so function isnt called twice
+      });
+
+
+      $scope.filtersSelected = function (sut) {
+        $location.path("/fetchrecorders/" + (sut ? sut.name : ''));
+       
+        if (sut) {
+          apiHistoryService.getRecordingBySUT(sut.name) .then(function (response) {
+              var data = response.data;
+              console.log(data);
+              $scope.recordingList = data;
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
+        }
+
+        else if (!sut) {
+          apiHistoryService.getRecordings().then(function (response) {
+            var data = response.data;
+            $scope.recordingList = data;
+          }) .catch(function (err) {
+              console.log(err);
+            });
+        }
+
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
+      };
+
+      function performUpdateOnPathParams() {
+        $scope.filtersSelected($routeParams.sut ? { name: $routeParams.sut } : null);
+        if ($routeParams.sut) {
+          for (let sut of $scope.sutlist) {
+            if (sut.name == $routeParams.sut) {
+              $scope.selectedSut = sut;
+              break;
+            }
+          }
+        } else {
+          $scope.selectedSut = null;
+        }}
+
+      $scope.$on('$routeUpdate', function () {
+        if (!$scope.buttonHit)
+          performUpdateOnPathParams();
+        else
+          $scope.buttonHit = false;
+      });
+      $scope.clearSelected = function () {
+        $scope.selectedSut = null;
+       // $scope.selectedUser = null;
+        $scope.recordingList = [];
+      };
+
+      //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+      $http.get('/api/systems')
+        .then(function (response) {
+          $scope.myUser = authService.getUserInfo().username;
+          $scope.myGroups = [];
+          response.data.forEach(function (sutData) {
+            var sut = {
+              name: sutData.name,
+              members: sutData.members
+            };
+            sut.members.forEach(function (memberlist) {
+              if (memberlist.includes($scope.myUser)) {
+                $scope.myGroups.push(sut.name);
+              }
+            });
+          });
+        }).catch(function (err) {
+          console.log(err);
+        });
+     /** $scope.sutlist = sutService.getAllSUT();
+     // $scope.userlist = userService.getAllUsers();
+      //$scope.recordingList = [];
       apiHistoryService.getRecordings().then(function (response) {
         var data = response.data;
         $scope.recordingList = data;
       });
-
+*/
       $scope.startRecorder = function (recorder) {
         apiHistoryService.startRecorder(recorder)
           .then(function (response) {

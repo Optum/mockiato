@@ -259,6 +259,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               return $http.get('/api/recording/' + id);
             }
 
+            this.getRecordingBySUT = function(name){
+              return $http.get('/api/recording/sut/' + name);
+            }
+
             this.getRecordingRRPairsWithIndex = function(id,index){
               return $http.get('/api/recording/' + id + "/" + index);
             }
