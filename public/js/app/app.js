@@ -210,7 +210,7 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                     }]
                 }
             })
-
+            
             .when("/bulkUpload", {
                 templateUrl: "fusepartials/bulkUpload.html",
                 controller: "bulkUploadController",
