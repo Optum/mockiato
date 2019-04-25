@@ -1418,6 +1418,14 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             servicevo.rawpairs[i].requestpayload = undefined;
           }
           }
+
+          if($scope.servicevo.delayMax === null){
+            $scope.servicevo.delayMax = 0;
+          }
+          if($scope.servicevo.delay === null){
+            $scope.servicevo.delay = 0;
+          }
+          
           //handle blank Request Headers in rrpairs
         servicevo.rawpairs.forEach(function(rrpair){  
           var i = rrpair.reqHeadersArr.length;
