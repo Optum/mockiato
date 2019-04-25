@@ -52,7 +52,7 @@ apiRouter.get("/",recordController.getRecordings);
 //Get recorder by ID
 apiRouter.get("/:id",recordController.getRecordingById);
 
-//Get recorder by ID
+//Get recorder by SUT
 apiRouter.get("/sut/:name",recordController.getRecordingBySystem);
 
 
