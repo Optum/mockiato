@@ -52,7 +52,6 @@ function init() {
     return next();
   });
 
-
   //secure cookies
   app.use(session({
     cookieName: 'mockiatoSession',
@@ -73,11 +72,21 @@ function init() {
   // expose health info
   app.use(actuator('/api/admin'));
 
+  const ProtectedRoutes = express.Router();
+
+  app.use('/api-docs', ProtectedRoutes);
+
+  
+  var jwt2 = require('express-jwt');
   // expose swagger ui for internal api docs
   const YAML = require('yamljs');
   const apiDocs = YAML.load('./api-docs.yml');
   const swaggerUI = require('swagger-ui-express');
-  app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(apiDocs));
+  app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(apiDocs), jwt2({ secret: process.env.MOCKIATO_SECRET }),
+    function (req, res) {
+      if (!req.user.admin) return res.sendStatus(401);
+      res.sendStatus(200);
+    });
 
   // configure auth
   const passport = require('passport');
@@ -134,11 +143,11 @@ function init() {
         expiresIn: '1d'
       });
 
-      // return the token as JSON
       res.json({
         success: true,
         token: token
       });
+      
   });
 
   //When a Ldap user try to register externally. Show message.
