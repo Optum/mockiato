@@ -1049,7 +1049,7 @@ function toggleService(req, res) {
         }
 
         res.json({'message': 'toggled', 'service': newService });
-        syncWorkers(newService, 'register');
+        syncWorkers(newService, service.running ? 'register' : 'deregister');
       });
     }
     else {
@@ -1067,7 +1067,7 @@ function toggleService(req, res) {
             }
 
             res.json({'message': 'toggled', 'service': mqService });
-            syncWorkers(mqService, 'register');
+            syncWorkers(mqService, mqService.running ? 'register' : 'deregister');
          });
         }
         else {
