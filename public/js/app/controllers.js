@@ -70,11 +70,44 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         });
         console.log($scope.mqLabels);
       });
-
-      
-
       
       $scope.publishservice = function (servicevo) {
+
+        var i = servicevo.rawpairs.length;
+        while(i--){
+           /* handle blank request payload - when you edit and make request payload empty
+        then request payload becomes empty string so duplicate request check wil not work. */
+          if( servicevo.rawpairs[i].requestpayload == '' || servicevo.rawpairs[i].requestpayload === null){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          // handeling GET method without requestpayload 
+          if(servicevo.rawpairs[i].method!== 'GET')
+          {
+            servicevo.rawpairs[i].getPayloadRequired = false;
+          }
+          
+          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          }
+        //handle blank query params in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.queriesArr.length;
+          while(i--){
+            if( rrpair.queriesArr[i].k == '' ){
+              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
+            }
+          }
+        });
+        //handle blank Request Headers in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.reqHeadersArr.length;
+          while(i--){
+            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
+              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
+            }
+          }
+        });
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
@@ -655,6 +688,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               rr.resHeadersArr = [];
               rr.method = rr.verb;
 
+             
               //Handle empty JSON object- stringify surrounds in "" 
               if (rr.responsepayload == "\"[]\"" || rr.responsepayload == "\"{}\"") {
                 rr.responsepayload = rr.responsepayload.substring(1, 3);
@@ -751,6 +785,42 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       
       $scope.updateService = function (servicevo) {
+        /* handle blank request payload - when you edit and make request payload empty
+        then request payload becomes empty string so duplicate request check wil not worker. */
+        var i = servicevo.rawpairs.length;
+        while(i--){
+          if( servicevo.rawpairs[i].requestpayload == ''  || servicevo.rawpairs[i].requestpayload === null){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+         // handeling GET method without requestpayload 
+          if(servicevo.rawpairs[i].method!== 'GET')
+          {
+            servicevo.rawpairs[i].getPayloadRequired = false;
+          }
+          
+          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          }
+
+        //handle blank query params in rrpairs. if you provide query param and then make it blank.
+        servicevo.rawpairs.forEach(function(rrpair){ 
+          var i = rrpair.queriesArr.length;
+          while(i--){
+            if( rrpair.queriesArr[i].k == '' ){
+              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
+            }
+          }
+        });
+        //handle blank Request Headers in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.reqHeadersArr.length;
+          while(i--){
+            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
+              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
+            }
+          }
+        });
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
@@ -772,8 +842,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
       };
 
-      //To Show Service Success Modal when a new service is created as draft
-      if ($routeParams.frmWher == 'frmCreateDraft') {
+      //To Show Service Success Modal when a new service is created as draft.
+      if ($routeParams.frmWher == 'frmDraft') {
         $http.get('/api/services/draft/' + $routeParams.id)
           .then(function (response) {
             var data;
@@ -1157,6 +1227,13 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
             }
 
+            if($scope.servicevo.delayMax === null){
+              $scope.servicevo.delayMax = 0;
+            }
+            if($scope.servicevo.delay === null){
+              $scope.servicevo.delay = 0;
+            }
+
 
             $scope.myUser = authService.getUserInfo().username;
 
@@ -1224,7 +1301,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               rr.resHeadersArr = [];
               rr.method = rr.verb;
 
-            
               if (rr.payloadType === 'JSON') {
                 rr.requestpayload = JSON.stringify(rr.reqData, null, 4);
                 rr.responsepayload = JSON.stringify(rr.resData, null, 4);
@@ -1316,6 +1392,49 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       
 
       $scope.updateService = function (servicevo) {
+        //handle blank query params in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.queriesArr.length;
+          while(i--){
+            if( rrpair.queriesArr[i].k == '' ){
+              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
+            }
+          }
+        });
+        /* handle blank request payload - when you edit and make request payload empty
+        then request payload becomes empty string so duplicate request check wil not work. */
+        var i = servicevo.rawpairs.length;
+        while(i--){
+          if( servicevo.rawpairs[i].requestpayload == '' || servicevo.rawpairs[i].requestpayload === null){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          // handeling GET method without requestpayload 
+          if(servicevo.rawpairs[i].method!== 'GET')
+          {
+            servicevo.rawpairs[i].getPayloadRequired = false;
+          }
+          
+          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
+            servicevo.rawpairs[i].requestpayload = undefined;
+          }
+          }
+
+          if($scope.servicevo.delayMax === null){
+            $scope.servicevo.delayMax = 0;
+          }
+          if($scope.servicevo.delay === null){
+            $scope.servicevo.delay = 0;
+          }
+          
+          //handle blank Request Headers in rrpairs
+        servicevo.rawpairs.forEach(function(rrpair){  
+          var i = rrpair.reqHeadersArr.length;
+          while(i--){
+            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
+              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
+            }
+          }
+        });
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
@@ -1409,16 +1528,105 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#success-modal').modal('toggle');
       }
     }])
-  .controller("recorderListController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
-    function ($scope, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
-      $scope.sutlist = sutService.getAllSUT();
-      $scope.userlist = userService.getAllUsers();
+  .controller("recorderListController", ['$scope', '$location', '$routeParams','$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
+    function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+       Promise.all([sutService.getAllSUTPromise()]).then(function (values) {
+        $scope.sutlist = values[0];
+        if ($routeParams.sut)
+          performUpdateOnPathParams();
+           });
+
       $scope.recordingList = [];
+      console.log($routeParams);
+
+      $scope.buttonHit = false;
+
+      $scope.$watchGroup(['selectedSut'], function (newVals) {
+        $scope.filtersSelected(newVals[0]);
+        $scope.buttonHit = true; //bool check so function isnt called twice
+      });
+
+
+      $scope.filtersSelected = function (sut) {
+        $location.path("/fetchrecorders/" + (sut ? sut.name : ''));
+       
+        if (sut) {
+          apiHistoryService.getRecordingBySUT(sut.name) .then(function (response) {
+              var data = response.data;
+              console.log(data);
+              $scope.recordingList = data;
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
+        }
+
+        else if (!sut) {
+          apiHistoryService.getRecordings().then(function (response) {
+            var data = response.data;
+            $scope.recordingList = data;
+          }) .catch(function (err) {
+              console.log(err);
+            });
+        }
+
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
+      };
+
+      function performUpdateOnPathParams() {
+        $scope.filtersSelected($routeParams.sut ? { name: $routeParams.sut } : null);
+        if ($routeParams.sut) {
+          for (let sut of $scope.sutlist) {
+            if (sut.name == $routeParams.sut) {
+              $scope.selectedSut = sut;
+              break;
+            }
+          }
+        } else {
+          $scope.selectedSut = null;
+        }}
+
+      $scope.$on('$routeUpdate', function () {
+        if (!$scope.buttonHit)
+          performUpdateOnPathParams();
+        else
+          $scope.buttonHit = false;
+      });
+      $scope.clearSelected = function () {
+        $scope.selectedSut = null;
+       // $scope.selectedUser = null;
+        $scope.recordingList = [];
+      };
+
+      //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+      $http.get('/api/systems')
+        .then(function (response) {
+          $scope.myUser = authService.getUserInfo().username;
+          $scope.myGroups = [];
+          response.data.forEach(function (sutData) {
+            var sut = {
+              name: sutData.name,
+              members: sutData.members
+            };
+            sut.members.forEach(function (memberlist) {
+              if (memberlist.includes($scope.myUser)) {
+                $scope.myGroups.push(sut.name);
+              }
+            });
+          });
+        }).catch(function (err) {
+          console.log(err);
+        });
+     /** $scope.sutlist = sutService.getAllSUT();
+     // $scope.userlist = userService.getAllUsers();
+      //$scope.recordingList = [];
       apiHistoryService.getRecordings().then(function (response) {
         var data = response.data;
         $scope.recordingList = data;
       });
-
+*/
       $scope.startRecorder = function (recorder) {
         apiHistoryService.startRecorder(recorder)
           .then(function (response) {

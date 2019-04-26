@@ -743,7 +743,16 @@ function addService(req, res) {
             return;
           }
           // merge services
-          mergeRRPairs(duplicate, serv);
+          mergeRRPairs(duplicate, serv); 
+
+          //merge templates
+          duplicate.matchTemplates = uniq(duplicate.matchTemplates.concat(serv.matchTemplates));
+          duplicate.matchTemplates = duplicate.matchTemplates.filter(function(el){
+            return el.trim() != '';
+          });
+          if(duplicate.matchTemplates.length == 0)
+            duplicate.matchTemplates.push("");
+
           // save merged service
           duplicate.save(function(err, newService) {
             if (err) {
@@ -837,10 +846,10 @@ function addServiceAsDraft(req, res) {
     serv.rrpairs.forEach(function(rrpair){
       if(rrpair.reqData)
         rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-      if(rrpair.resData)
+      if(rrpair.resData){
         rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
-
         rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+      }
     });
   }
 
@@ -892,16 +901,18 @@ function updateService(req, res) {
       service.rrpairs = req.body.rrpairs;
       service.matchTemplates = req.body.matchTemplates;
       service.lastUpdateUser = req.decoded;
+      service.delay = req.body.delay;
+      service.delayMax = req.body.delayMax;
 
       //Cache string of reqData + rspData
       if(service.rrpairs){
         service.rrpairs.forEach(function(rrpair){
           if(rrpair.reqData)
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-          if(rrpair.resData)
+          if(rrpair.resData){
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
-
-          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+            rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+          }
         });
       }
       if(req.body.liveInvocation){
@@ -962,10 +973,10 @@ function updateServiceAsDraft(req, res) {
         draftservice.service.rrpairs.forEach(function(rrpair){
           if(rrpair.reqData)
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-          if(rrpair.resData)
+          if(rrpair.resData){
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
-
-          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+            rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+          }
         });
       }
       if(req.body.liveInvocation){
@@ -994,10 +1005,10 @@ function updateServiceAsDraft(req, res) {
         draftservice.mqservice.rrpairs.forEach(function(rrpair){
           if(rrpair.reqData)
             rrpair.reqDataString = typeof rrpair.reqData == "string" ? rrpair.reqData : JSON.stringify(rrpair.reqData);
-          if(rrpair.resData)
+          if(rrpair.resData){
             rrpair.resDataString = typeof rrpair.resData == "string" ? rrpair.resData : JSON.stringify(rrpair.resData);
-
-          rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+            rrpair.hasRandomTags = rrpair.resDataString.includes("{{random");
+          }
         });
       }
       if(req.body.liveInvocation){
@@ -1038,7 +1049,7 @@ function toggleService(req, res) {
         }
 
         res.json({'message': 'toggled', 'service': newService });
-        syncWorkers(newService, 'register');
+        syncWorkers(newService, service.running ? 'register' : 'deregister');
       });
     }
     else {
@@ -1056,7 +1067,7 @@ function toggleService(req, res) {
             }
 
             res.json({'message': 'toggled', 'service': mqService });
-            syncWorkers(mqService, 'register');
+            syncWorkers(mqService, mqService.running ? 'register' : 'deregister');
          });
         }
         else {

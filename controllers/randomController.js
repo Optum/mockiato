@@ -15,6 +15,8 @@ function getRandomStringFromTag(tag,myChance){
 
     //Method name is first bit
     var methodName = split[1];
+    if(methodName.slice(-2) == "}}")
+        methodName = methodName.slice(0,-2);
     var args = {};
     var hasArgs = false;
 
@@ -29,10 +31,14 @@ function getRandomStringFromTag(tag,myChance){
             }
         }
         //Pass given method name the args we collected, return result
-        if(hasArgs)
-            return myChance[methodName](args);
-        else
-            return myChance[methodName]();
+        try{
+            if(hasArgs)
+                return myChance[methodName](args);
+            else
+                return myChance[methodName]();
+        }catch(e){
+            return "Error in Random Syntax";
+        }
     }else{
         return "";
     }

@@ -16,6 +16,81 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
       this.showRecorderHelp = function(){
         setRemoteModal(servConstants.RECORD_HELP_TITLE,"/partials/modals/recorderHelpModal.html","");
       }
+      this.showLiveInvocationHelp = function(){
+        setRemoteModal(servConstants.INVOKE_HELP_TITLE,"/partials/modals/liveInvocationHelpModal.html","");
+      }
+    }])
+    .service('utilityService',[function(){
+      this.emptyOutJSON = function(jsonObject){
+        var jsonObject2 = jsonObject;
+        for (var key in jsonObject2){
+          if(jsonObject.hasOwnProperty(key)){
+            if(typeof jsonObject2[key] == "object")
+              if(Array.isArray(jsonObject[key]))
+                jsonObject2[key] = "";
+              else
+                jsonObject2[key] = this.emptyOutJSON(jsonObject2[key]);
+            else
+              jsonObject2[key] = "";
+          }
+        }
+        return jsonObject2;
+      };
+
+      this.prettifyXml = function(sourceXml)
+      {
+          var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');
+          var xsltDoc = new DOMParser().parseFromString([
+              // describes how we want to modify the XML - indent everything
+              '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
+              '  <xsl:strip-space elements="*"/>',
+              '  <xsl:template match="para[content-style][not(text())]">', // change to just text() to strip space in text nodes
+              '    <xsl:value-of select="normalize-space(.)"/>',
+              '  </xsl:template>',
+              '  <xsl:template match="node()|@*">',
+              '    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
+              '  </xsl:template>',
+              '  <xsl:output indent="yes"/>',
+              '</xsl:stylesheet>',
+          ].join('\n'), 'application/xml');
+      
+          var xsltProcessor = new XSLTProcessor();  
+          
+          xsltProcessor.importStylesheet(xsltDoc);
+
+          var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
+          var resultXml = new XMLSerializer().serializeToString(resultDoc);
+          if(resultXml.includes("<parsererror"))
+            return null;
+          return resultXml;
+          
+      };
+    }])
+    .service('domManipulationService',[function(){
+      this.expandTextarea = function(ele){
+        if(!ele._oldTransition)
+          ele._oldTransition = ele.style.transition;
+        ele.style.transition = "height 1s ease";
+        ele._mockiatoOldHeight = ele.offsetHeight;
+        ele.style.height = ele._mockiatoOldHeight + "px";
+        ele.style.height = ele.scrollHeight + "px";
+        
+        setTimeout(function(){
+          ele.style.transition = ele._oldTransition;
+          delete ele._oldTransition;
+        },1000);
+      }
+      this.collapseTextarea = function(ele){
+        if(!ele._oldTransition)
+          ele._oldTransition = ele.style.transition;
+        ele.style.transition = "height 1s ease";
+        ele.style.height = ele._mockiatoOldHeight + "px";
+        
+        setTimeout(function(){
+          ele.style.transition = ele._oldTransition;
+          delete ele._oldTransition;
+        },1000);
+      }
     }])
     .service('authService', ['$http', '$window', '$location', '$rootScope', 'servConstants', 
         function($http, $window, $location, $rootScope, servConstants) {
@@ -112,7 +187,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
               data.rrpairs.forEach(function(rr) {
                 var op = {
                   'verb': rr.verb,
-                  'path': rr.path || '/'
+                  'path': rr.path || ''
                 };
 
                 // append query strings to path
@@ -182,6 +257,10 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
             this.getRecordingById = function(id){
               return $http.get('/api/recording/' + id);
+            }
+
+            this.getRecordingBySUT = function(name){
+              return $http.get('/api/recording/sut/' + name);
             }
 
             this.getRecordingRRPairsWithIndex = function(id,index){
@@ -277,16 +356,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                       rr.payloadType = 'XML';
                     }
 
-                    
-                  if(rr.method!== 'GET')
-                  {
-                    rr.getPayloadRequired = false;
-                  }
-
-                  if(rr.method === 'GET'&& rr.getPayloadRequired === false){
-                    rr.requestpayload = undefined;
-                  }
-                  console.log("this is req",rr.requestpayload);
                     // parse and display error if JSON is malformed
                     if (rr.payloadType === 'JSON') {
                       
@@ -334,34 +403,43 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     rr.queriesArr.forEach(function(q){
                       if(queries[q.k])
                         throw 'Duplicate Query Exists in an RR pair.';
+                      if(q.k)//for update service blank query key fix
                       queries[q.k] = q.v;
                     });
 
                     // only save queries if there are any
                     if (Object.keys(queries).length > 0) {
                       rr.queries = queries;
+                    }else if(Object.keys(queries).length == 0){
+                      rr.queries = undefined;
                     }
 
                     // convert array of response headers to object literal
                     var resHeaders = {};
                     rr.resHeadersArr.forEach(function(headerObj){
+                      if(headerObj.k)
                       resHeaders[headerObj.k] = headerObj.v;
                     });
 
                     // only save headers if there are any
                     if (Object.keys(resHeaders).length > 0) {
                       rr.resHeaders = resHeaders;
+                    }else if(Object.keys(resHeaders).length == 0){
+                      rr.resHeaders = undefined;
                     }
 
                     // convert array of response headers to object literal
                     var reqHeaders = {};
                     rr.reqHeadersArr.forEach(function(headerObj){
+                      if(headerObj.k)
                       reqHeaders[headerObj.k] = headerObj.v;
                     });
 
                     // only save headers if there are any
                     if (Object.keys(reqHeaders).length > 0) {
                       rr.reqHeaders = reqHeaders;
+                    }else if(Object.keys(reqHeaders).length == 0){
+                      rr.reqHeaders = undefined;
                     }
                      // only save request data for non-GETs
                     if (rr.method !== 'GET') {
@@ -369,7 +447,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     }
                     // save request data for get when Checkbox selected
                     else{
-                    console.log("This is GET");
                     if(rr.getPayloadRequired=== true) 
                     {
                       rr.reqData = reqPayload;
@@ -544,15 +621,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   if (servicevo.type === 'SOAP' || servicevo.type === 'MQ') {
                     rr.payloadType = 'XML';
                   }
-
-                  if(rr.method!== 'GET')
-                  {
-                    rr.getPayloadRequired = false;
-                  }
-                  
-                  if(rr.method === 'GET'&& rr.getPayloadRequired === false){
-                    rr.requestpayload = undefined;
-                  }
                   // parse and display error if JSON is malformed
                   if (rr.payloadType === 'JSON') {
                     try {
@@ -617,7 +685,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   }
                   // save request data for get when Checkbox selected
                   else{
-                      console.log("This is GET");
                   if(rr.getPayloadRequired=== true) 
                   {
                     rr.reqData = reqPayload;
@@ -709,7 +776,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                         data = response.data.service;
                     console.log(data);                   
                
-                    $location.path('/showDraftService/' + data._id + '/frmCreateDraft');
+                    $location.path('/showDraftService/' + data._id + '/frmDraft');
                  
                     $('#service-save-success-modal').modal('toggle');
                 })
@@ -1288,5 +1355,6 @@ serv.constant("servConstants", {
         "SERVICE_SAVE_FAIL_ERR_BODY": "Service Info save as draft failed",
         "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
         "MCH_HELP_TITLE" : "Match Templates Help",
-        "RECORD_HELP_TITLE" : "Using Live Recording"
+        "RECORD_HELP_TITLE" : "Using Live Recording",
+        "INVOKE_HELP_TITLE" : "Using Live Invocation"
       });

@@ -7,6 +7,7 @@ require('./lib/util');
 // import dependencies
 const express = require('express');
 const app = express();
+const session = require('express-session'); //secure cookies
 const compression = require('compression');
 const debug = require('debug')('default');
 const path = require('path');
@@ -51,6 +52,18 @@ function init() {
     return next();
   });
 
+  //secure cookies
+  app.use(session({
+    cookieName: 'mockiatoSession',
+    secret: process.env.MOCKIATO_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    httpOnly: true,  // dont let browser javascript access cookie ever
+    secure: true, // only use cookie over https
+    ephemeral: true // delete this cookie while browser close
+  }));
+
+
   // parse request body based on content-type
   app.use(bodyParser.text({ limit: '5mb', type: [ 'application/x-www-form-urlencoded', 'application/soap+xml', 'application/xml', 'text/xml', 'text/plain' ]}));
   app.use(bodyParser.json({ limit: '5mb', type: [ 'application/json' ]}));
@@ -59,11 +72,21 @@ function init() {
   // expose health info
   app.use(actuator('/api/admin'));
 
+  const ProtectedRoutes = express.Router();
+
+  app.use('/api-docs', ProtectedRoutes);
+
+  
+  var jwt2 = require('express-jwt');
   // expose swagger ui for internal api docs
   const YAML = require('yamljs');
   const apiDocs = YAML.load('./api-docs.yml');
   const swaggerUI = require('swagger-ui-express');
-  app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(apiDocs));
+  app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(apiDocs), jwt2({ secret: process.env.MOCKIATO_SECRET }),
+    function (req, res) {
+      if (!req.user.admin) return res.sendStatus(401);
+      res.sendStatus(200);
+    });
 
   // configure auth
   const passport = require('passport');
@@ -120,11 +143,11 @@ function init() {
         expiresIn: '1d'
       });
 
-      // return the token as JSON
       res.json({
         success: true,
         token: token
       });
+      
   });
 
   //When a Ldap user try to register externally. Show message.

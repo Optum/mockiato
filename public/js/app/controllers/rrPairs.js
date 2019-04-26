@@ -1,6 +1,6 @@
 var ctrl = angular.module("mockapp.controllers")
-  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants',
-    function (suggestionsService, $scope, ctrlConstants){
+  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants','domManipulationService','utilityService',
+    function (suggestionsService, $scope, ctrlConstants,domManipulationService,utilityService){
             $scope.addNewRRPair = function () {
                 var newItemNo = $scope.servicevo.rawpairs.length;
                 $scope.servicevo.rawpairs.push({
@@ -32,6 +32,44 @@ var ctrl = angular.module("mockapp.controllers")
                   $scope.$apply();
                 });
               };
+
+              /**
+               * Creates a template from a given RR pair's request
+               */
+              $scope.makeTemplateFromRequest = function(rr){
+                try{
+                  let newTemplate = null;
+                  if(rr.payloadType == "JSON"){
+                    let req = JSON.parse(rr.requestpayload);
+                    req = utilityService.emptyOutJSON(req);
+                    newTemplate = JSON.stringify(req,null,2);
+                  }else if(rr.payloadType == "XML" || $scope.servicevo.type == "SOAP"){
+                    let xml = rr.requestpayload;
+                    xml = xml.replace(/>[^<]+<\//g,"></");
+                    xml = utilityService.prettifyXml(xml);
+                    newTemplate = xml;
+                  }
+
+                  if(newTemplate){
+                    let addNewTemplate = true;
+                    $scope.servicevo.matchTemplates.forEach(function(temp){
+                      if(temp.val == newTemplate){
+                        addNewTemplate = false;
+                        return;
+                      }
+                      
+                    });
+                    if(addNewTemplate){
+                      $scope.servicevo.matchTemplates.push({id:0,val:newTemplate});
+                    }
+                  }
+                }catch(e){
+                  $('#genricMsg-dialog').find('.modal-title').text("Error creating matching template");
+                  $('#genricMsg-dialog').find('.modal-body').html(e.message);
+                  $('#genricMsg-dialog').find('.modal-footer').html("");
+                  $('#genricMsg-dialog').modal('toggle');
+                }
+              }
 
               $scope.addNewReqHeader = function (rr) {
                 var newItemNo = rr.reqHeadersArr.length;
@@ -86,6 +124,27 @@ var ctrl = angular.module("mockapp.controllers")
                 $scope.$broadcast('angucomplete-alt:changeInput', 'req-header-0', rr.reqHeadersArr[0].k);
                 $scope.$broadcast('angucomplete-alt:changeInput', 'res-header-0', rr.resHeadersArr[0].k);
               };
+
+              $scope.expandResponse = function($index,rr){
+                var ele = document.getElementsByClassName("responsePayload")[$index];
+                rr.resExpanded = true;
+                domManipulationService.expandTextarea(ele);        
+              }
+              $scope.collapseResponse = function($index,rr){
+                var ele = document.getElementsByClassName("responsePayload")[$index];
+                rr.resExpanded = false;
+                domManipulationService.collapseTextarea(ele);
+              }
+              $scope.expandRequest = function($index,rr){
+                var ele = document.getElementsByClassName("requestPayload")[$index];
+                rr.reqExpanded = true;
+                domManipulationService.expandTextarea(ele);        
+              }
+              $scope.collapseRequest = function($index,rr){
+                var ele = document.getElementsByClassName("requestPayload")[$index];
+                rr.reqExpanded = false;
+                domManipulationService.collapseTextarea(ele);
+              }
         
         }]);
     
