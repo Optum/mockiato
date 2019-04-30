@@ -72,6 +72,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Service'
                 description: successful response
+                
     post:
       tags:
       - services
@@ -970,6 +971,21 @@ paths:
             application/json:
               schema:
                 description: successful response
+  /report:
+    get:
+      tags:
+      - report
+      description: retrieves a report of total services, users, etc
+      responses:
+        200:
+          description: report
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+                description: report 
         
 components:
   securitySchemes:
@@ -1113,6 +1129,23 @@ components:
           type: array
           items:
             type: string
+    Report:
+        title: Report
+        type: object
+        properties:
+          totalServices:
+            type: integer
+          activeServices: 
+            type: integer
+          draftServices:
+            type: integer
+          archiveServices:
+            type: integer
+          users:
+            type: integer
+          systems:
+            type: integer
+
 tags:
 - name: services
   description: ''
