@@ -191,7 +191,7 @@ function fullReport(req,rsp,next){
         }
         ,
         function(err){
-            handleError(500,rsp,err);
+            handleError(err,rsp,500);
         }
     );
 
