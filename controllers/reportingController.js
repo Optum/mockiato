@@ -4,6 +4,7 @@ const Recording = require('../models/http/Recording');
 const User = require('../models/common/User');
 const System = require('../models/common/System');
 const DraftService = require ('../models/common/DraftService');
+const Archive = require ('../models/common/Archive');
 
 /**
  * Returns a promise that returns the # of total Services+MQServices. Does not include archive/drafts
@@ -69,6 +70,24 @@ function getCountOfDraftServices(){
 }
 
 /**
+ * Returns a promise that evaluates to the # of archive services
+ */
+function getCountOfArchiveServices(){
+    return new Promise(function(resolve,reject){
+        Archive.count({},
+            function(err,count){
+                if(err)
+                    reject(err);
+                else
+                    resolve(count);
+
+                
+            }
+        );
+    });
+}
+
+/**
  * Returns a promise that evaluates to the # of users
  */
 function getCountOfUsers(){
@@ -114,6 +133,8 @@ function fullReport(req,rsp,next){
     var report = {};
     var promises = [];
     var promiseLabels = [];
+
+    //Build list of promises
     promises.push(getCountOfAllServices());
     promiseLabels.push("totalServices");
 
@@ -121,7 +142,10 @@ function fullReport(req,rsp,next){
     promiseLabels.push("activeServices");
 
     promises.push(getCountOfDraftServices());
-    promiseLabels.push("totalDraftServices");
+    promiseLabels.push("draftServices");
+
+    promises.push(getCountOfArchiveServices());
+    promiseLabels.push("archiveServices");
 
     promises.push(getCountOfUsers());
     promiseLabels.push("users");
