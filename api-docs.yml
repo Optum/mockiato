@@ -1145,6 +1145,8 @@ components:
             type: integer
           systems:
             type: integer
+          totalTransactions:
+            type: integer
 
 tags:
 - name: services
