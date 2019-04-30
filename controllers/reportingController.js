@@ -6,6 +6,32 @@ const System = require('../models/common/System');
 const DraftService = require ('../models/common/DraftService');
 const Archive = require ('../models/common/Archive');
 
+function getTotalTransactionCount(){
+
+        return new Promise(
+            function(resolve, reject){
+                Service.aggregate(
+                    {
+                        $group:{_id:null,totalTransactions: {$sum:"$txnCount"}}
+                    }
+                ).then(function(result){
+                    resolve(result[0].totalTransactions);
+                })
+                .catch(function(err){
+                    reject(err);
+                });
+
+
+
+            }
+        );
+        
+        
+        
+
+}
+
+
 /**
  * Returns a promise that returns the # of total Services+MQServices. Does not include archive/drafts
  * @return A promise that returns the # of total Services+MQServices
@@ -152,6 +178,9 @@ function fullReport(req,rsp,next){
 
     promises.push(getCountOfSystems());
     promiseLabels.push("systems");
+
+    promises.push(getTotalTransactionCount());
+    promiseLabels.push("totalTransactions");
 
     Promise.all(promises).then(
         function(vals){
