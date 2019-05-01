@@ -6,6 +6,37 @@ const System = require('../models/common/System');
 const DraftService = require ('../models/common/DraftService');
 const Archive = require ('../models/common/Archive');
 
+
+function getAllServicesByGroups(){
+    return new Promise(
+        function(resolve, reject){
+            Service.aggregate(
+                {
+                    $group:{
+                        _id:"$sut.name",
+                        totalServices:
+                        {
+                            $sum:1
+                        }
+                    }
+                },{
+                    $project:
+                    {
+                        sut:"$_id",
+                        services:"$totalServices",
+                        _id:false
+                    } 
+                }
+                     
+            ).then(function(result){
+                resolve(result);
+            }).catch(function(err){
+                reject(err);
+            });
+        }
+    );
+}
+
 function getTotalTransactionCount(){
 
         return new Promise(
@@ -181,6 +212,9 @@ function fullReport(req,rsp,next){
 
     promises.push(getTotalTransactionCount());
     promiseLabels.push("totalTransactions");
+
+    promises.push(getAllServicesByGroups());
+    promiseLabels.push("servicesByGroup");
 
     Promise.all(promises).then(
         function(vals){
