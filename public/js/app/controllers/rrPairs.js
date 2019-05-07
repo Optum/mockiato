@@ -1,6 +1,10 @@
 var ctrl = angular.module("mockapp.controllers")
-  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants','domManipulationService','utilityService',
-    function (suggestionsService, $scope, ctrlConstants,domManipulationService,utilityService){
+  .controller("rrPairController", ['suggestionsService', '$scope', '$location', 'ctrlConstants','domManipulationService','utilityService',
+    function (suggestionsService, $scope, $location, ctrlConstants,domManipulationService,utilityService){
+            //To Check if it's for service cration page or service update page.
+            if ($location.path().slice(1) === 'addservice') {
+              $scope.isCreateServPage=true;
+            }
             $scope.addNewRRPair = function () {
                 var newItemNo = $scope.servicevo.rawpairs.length;
                 $scope.servicevo.rawpairs.push({

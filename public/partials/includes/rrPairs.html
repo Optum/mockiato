@@ -111,7 +111,22 @@
           <fieldset data-ng-repeat="header in rr.reqHeadersArr">
               <br>
               <div class="row">
-                <div class="col-xs-5">
+                <div class="col-xs-5" ng-if="isCreateServPage">
+                  <div angucomplete-alt
+                    id="req-header-{{ header.id }}"
+                    placeholder="e.g. Content-Type"
+                    pause="100"
+                    selected-object="header.k"
+                    local-data="possibleHeaders"
+                    override-suggestions="true"
+                    search-fields="name"
+                    title-field="name"
+                    minlength="3"
+                    input-class="form-control"
+                    match-class="highlight">
+                  </div>
+                </div>
+                <div class="col-xs-5" ng-if="!isCreateServPage">
                   <div angucomplete-alt
                     id="req-header-{{ header.id }}"
                     placeholder="e.g. Content-Type"
@@ -181,7 +196,21 @@
 
       <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
         <label for="service_response_status" class="col-xs-2 col-form-label">Response Status:</label>
-        <div class="col-xs-2">
+        <div class="col-xs-2" ng-if="isCreateServPage">
+          <div angucomplete-alt
+            id="res-status"
+            placeholder="e.g. 200"
+            pause="100"
+            selected-object="rr.resStatus"
+            local-data="statusCodes"
+            search-fields="value"
+            title-field="value,desc"
+            minlength="2"
+            input-class="form-control"
+            match-class="highlight">
+          </div>
+        </div>
+        <div class="col-xs-2" ng-if="!isCreateServPage">
           <div angucomplete-alt
             id="res-status"
             placeholder="e.g. 200"
@@ -204,7 +233,22 @@
           <fieldset data-ng-repeat="header in rr.resHeadersArr">
               <br>
               <div class="row">
-                <div class="col-xs-5">
+                <div class="col-xs-5" ng-if="isCreateServPage">
+                  <div angucomplete-alt
+                    id="res-header-{{ header.id }}"
+                    placeholder="e.g. Content-Type"
+                    pause="100"
+                    selected-object="header.k"
+                    local-data="possibleHeaders"
+                    override-suggestions="true"
+                    search-fields="name"
+                    title-field="name"
+                    minlength="3"
+                    input-class="form-control"
+                    match-class="highlight">
+                  </div>
+                </div>
+                <div class="col-xs-5" ng-if="!isCreateServPage">
                   <div angucomplete-alt
                     id="res-header-{{ header.id }}"
                     placeholder="e.g. Content-Type"
@@ -220,7 +264,6 @@
                     match-class="highlight">
                   </div>
                 </div>
-
                 <div class="col-xs-5">
                   <input type="text" class="form-control" id="res-head-val-{{ header.id }}" ng-model="header.v" placeholder="e.g. application/json">
                 </div>
