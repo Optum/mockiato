@@ -192,8 +192,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
       var totalRRPairs = 0;
 
-
-
       function processRRPairs(rrpairs) {
         var rrpairsRaw = [];
         var rrid = 0;
@@ -360,10 +358,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               return true;
             }
             else {
-
               return false;
             }
           };
+          if(!newsutlist.includes($scope.servicevo.sut.name)){
+            $('#genricMsg-dialog').find('.modal-title').html(ctrlConstants.EDIT_RECORDING_INFO_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html("You can\'t edit this recording because you aren\'t part of the group <b>"+$scope.servicevo.sut.name+"</b>.");
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.EDIT_SERV_INFO_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+          }
         })
 
         .catch(function (err) {
@@ -974,6 +977,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                 return false;
               }
             };
+            if(!newsutlist.includes($scope.servicevo.sut.name)){
+              $('#genricMsg-dialog').find('.modal-title').html(ctrlConstants.EDIT_RECORDING_INFO_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').html("You can\'t edit this recording because you aren\'t part of the group <b>"+$scope.servicevo.sut.name+"</b>.");
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.EDIT_SERV_INFO_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+            }
           })
 
           .catch(function (err) {
@@ -1257,10 +1266,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                     return true;
                   }
                   else {
-                    
                     return false;
                   }
                 };
+                if(!newsutlist.includes($scope.servicevo.sut.name)){
+                  $('#genricMsg-dialog').find('.modal-title').html(ctrlConstants.EDIT_SERV_INFO_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').html("You can\'t edit this service because you aren\'t part of the group <b>"+$scope.servicevo.sut.name+"</b>. You can request access from user <b>"+$scope.servicevo.lastUpdateUser+"</b>.");
+                  $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.EDIT_SERV_INFO_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                }
               })
 
               .catch(function (err) {
@@ -1381,16 +1395,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
       this.getService();
 
-      
-
-     
-
       $scope.viewRecorded = function () {
         $location.path("/update/" + $scope.servicevo.id + "/recorded")
       }
      
-      
-
       $scope.updateService = function (servicevo) {
         //handle blank query params in rrpairs
         servicevo.rawpairs.forEach(function(rrpair){  
@@ -2684,5 +2692,8 @@ ctrl.constant("ctrlConstants", {
   "MRG_CONFIRM_TITLE": "Merge Confirmation",
   "MRG_CONFIRM_BODY": "Do you want to merge this RRPair into the service?",
   "MRG_CONFIRM_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
-  "SERVICE_RESTORE_FAIL_TITLE" : "Restore Fail"
+  "SERVICE_RESTORE_FAIL_TITLE" : "Restore Fail",
+  "EDIT_SERV_INFO_TITLE": "<span class='text-info'>Edit Service Info</span>",
+  "EDIT_SERV_INFO_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-info">OK</button>',
+  "EDIT_RECORDING_INFO_TITLE": "<span class='text-info'>Edit Recording Info</span>"
 });
