@@ -2,9 +2,9 @@ var ctrl = angular.module("mockapp.controllers")
   .controller("rrPairController", ['suggestionsService', '$scope', '$location', 'ctrlConstants','domManipulationService','utilityService',
     function (suggestionsService, $scope, $location, ctrlConstants,domManipulationService,utilityService){
             //To Check if it's for service cration page or service update page.
-            if ($location.path().slice(1) === 'addservice') {
+            /* if ($location.path().slice(1) === 'addservice') {
               $scope.isCreateServPage=true;
-            }
+            } */
             $scope.addNewRRPair = function () {
                 var newItemNo = $scope.servicevo.rawpairs.length;
                 $scope.servicevo.rawpairs.push({
@@ -13,11 +13,12 @@ var ctrl = angular.module("mockapp.controllers")
                     id: 0
                   }],
                   reqHeadersArr: [{
-                    id: 0
-                  }],
+                    id: 0, 'k': " "
+                   }],
                   resHeadersArr: [{
-                    id: 0
-                  }]
+                    id: 0, 'k': " "
+                   }],
+                   resStatus: " "
                 });
                 if (newItemNo > 10){
                   $scope.loadMore();
@@ -77,7 +78,7 @@ var ctrl = angular.module("mockapp.controllers")
 
               $scope.addNewReqHeader = function (rr) {
                 var newItemNo = rr.reqHeadersArr.length;
-                rr.reqHeadersArr.push({ 'id': newItemNo });
+                rr.reqHeadersArr.push({ 'id': newItemNo, 'k': " " });
               };
         
               $scope.removeReqHeader = function (rr, index) {
@@ -86,7 +87,7 @@ var ctrl = angular.module("mockapp.controllers")
         
               $scope.addNewResHeader = function (rr) {
                 var newItemNo = rr.resHeadersArr.length;
-                rr.resHeadersArr.push({ 'id': newItemNo });
+                rr.resHeadersArr.push({ 'id': newItemNo, 'k': " " });
               };
         
               $scope.removeResHeader = function (rr, index) {
