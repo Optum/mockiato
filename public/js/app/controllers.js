@@ -45,11 +45,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           id: 0
         }],
         reqHeadersArr: [{
-          id: 0,
+          id: 0, 'k': " "
         }],
         resHeadersArr: [{
-          id: 0
-        }]
+          id: 0, 'k': " "
+        }],
+        resStatus: " "
       }];
 
       $scope.statusCodes = suggestionsService.getStatusCodes();
