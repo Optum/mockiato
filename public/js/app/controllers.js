@@ -112,7 +112,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           } else {
@@ -378,7 +378,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           } else {
@@ -828,7 +828,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           } else {
@@ -1447,7 +1447,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         try {
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           } else {
@@ -2651,7 +2651,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 //Put all the hard coding or constants here for controller.      
 ctrl.constant("ctrlConstants", {
   "DUP_REQ_ERR_TITLE": "Duplicate Request Error",
-  "DUP_REQ_ERR_BODY": "Two Requests are same. Either change request data or relative path of duplicate requests.",
+  "DUP_REQ_ERR_BODY": "Two Requests are same. These RR Pairs are highlighted with below red colour heading.<h4 style='color:#FF0000'><ins><i>Duplicate Req/Res Pair</i></ins></h4></br>Please make sure there is no duplicate request before publish.",
   "PUB_FAIL_ERR_TITLE": "Publish Failure Error",
   "PUB_FAIL_ERR_BODY": "Please ensure your request / response pairs are well formed.",
   "DUP_RECORDER_PATH_TITLE": "Publish Failure: Duplicate Path",

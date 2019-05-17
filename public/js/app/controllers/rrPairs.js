@@ -18,7 +18,8 @@ var ctrl = angular.module("mockapp.controllers")
                   resHeadersArr: [{
                     id: 0, 'k': " "
                    }],
-                   resStatus: " "
+                   resStatus: " ",
+                   isDup: false
                 });
                 if (newItemNo > 10){
                   $scope.loadMore();
