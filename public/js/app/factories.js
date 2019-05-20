@@ -254,6 +254,8 @@ fact.factory('helperFactory', [function () {
                     }
                     if (isAnyReqPairDuplicate) {
                         isSameReq = true;
+                        servicevo.rawpairs[i].isDup=true;
+                        servicevo.rawpairs[j].isDup=true;
                         break LOOP1;
                     }
                 }
