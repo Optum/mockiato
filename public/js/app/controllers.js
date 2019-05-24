@@ -27,9 +27,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
     }])
 
-  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService', 'mqInfoFactory',
+  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'commonCodeFactory','ctrlConstants','modalService', 'mqInfoFactory',
     
-    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants, modalService, mqInfoFactory) {
+    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, modalService, mqInfoFactory) {
       $scope.canEdit = function(){ return true; }
       $scope.myUser = authService.getUserInfo().username;
       $scope.canChangeType = true;
@@ -73,43 +73,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       });
       
       $scope.publishservice = function (servicevo) {
-
-        var i = servicevo.rawpairs.length;
-        while(i--){
-           /* handle blank request payload - when you edit and make request payload empty
-        then request payload becomes empty string so duplicate request check wil not work. */
-          if( servicevo.rawpairs[i].requestpayload == '' || servicevo.rawpairs[i].requestpayload === null || !servicevo.rawpairs[i].hasOwnProperty('requestpayload')){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          // handeling GET method without requestpayload 
-          if(servicevo.rawpairs[i].method!== 'GET')
-          {
-            servicevo.rawpairs[i].getPayloadRequired = false;
-          }
-          
-          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          }
-        //handle blank query params in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.queriesArr.length;
-          while(i--){
-            if( rrpair.queriesArr[i].k == '' ){
-              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
-            }
-          }
-        });
-        //handle blank Request Headers in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.reqHeadersArr.length;
-          while(i--){
-            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
-              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
-            }
-          }
-        });
         try {
+          servicevo = commonCodeFactory.modifyServicevoBeforePublish(servicevo);
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
             $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
@@ -187,8 +152,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
 
     }])
-  .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', '$timeout', 'authService',
-    function ($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, $timeout, authService) {
+  .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory','ctrlConstants', '$timeout', 'authService',
+    function ($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory,ctrlConstants, $timeout, authService) {
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
       var totalRRPairs = 0;
@@ -376,6 +341,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       $scope.publishService = function (servicevo) {
         try {
+          servicevo = commonCodeFactory.modifyServicevoBeforePublish(servicevo);
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
             $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
@@ -564,8 +530,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       this.getService();
     }])
 
-  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', 'modalService',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, modalService) {
+  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory','ctrlConstants', 'sutService', 'authService', 'modalService',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, sutService, authService, modalService) {
       $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -789,43 +755,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       
       $scope.updateService = function (servicevo) {
-        /* handle blank request payload - when you edit and make request payload empty
-        then request payload becomes empty string so duplicate request check wil not worker. */
-        var i = servicevo.rawpairs.length;
-        while(i--){
-          if( servicevo.rawpairs[i].requestpayload == ''  || servicevo.rawpairs[i].requestpayload === null || !servicevo.rawpairs[i].hasOwnProperty('requestpayload')){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-         // handeling GET method without requestpayload 
-          if(servicevo.rawpairs[i].method!== 'GET')
-          {
-            servicevo.rawpairs[i].getPayloadRequired = false;
-          }
-          
-          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          }
-
-        //handle blank query params in rrpairs. if you provide query param and then make it blank.
-        servicevo.rawpairs.forEach(function(rrpair){ 
-          var i = rrpair.queriesArr.length;
-          while(i--){
-            if( rrpair.queriesArr[i].k == '' ){
-              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
-            }
-          }
-        });
-        //handle blank Request Headers in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.reqHeadersArr.length;
-          while(i--){
-            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
-              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
-            }
-          }
-        });
         try {
+          servicevo = commonCodeFactory.modifyServicevoBeforePublish(servicevo);
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
             $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
@@ -1166,8 +1097,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       });
       $scope.pollForRRPairs();
     }])
-  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
+  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
       $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -1401,50 +1332,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       }
      
       $scope.updateService = function (servicevo) {
-        //handle blank query params in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.queriesArr.length;
-          while(i--){
-            if( rrpair.queriesArr[i].k == '' ){
-              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
-            }
-          }
-        });
-        /* handle blank request payload - when you edit and make request payload empty
-        then request payload becomes empty string so duplicate request check wil not work. */
-        var i = servicevo.rawpairs.length;
-        while(i--){
-          if( servicevo.rawpairs[i].requestpayload == '' || servicevo.rawpairs[i].requestpayload === null || !servicevo.rawpairs[i].hasOwnProperty('requestpayload')){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          // handeling GET method without requestpayload 
-          if(servicevo.rawpairs[i].method!== 'GET')
-          {
-            servicevo.rawpairs[i].getPayloadRequired = false;
-          }
-          
-          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          }
-
-          if($scope.servicevo.delayMax === null){
-            $scope.servicevo.delayMax = 0;
-          }
-          if($scope.servicevo.delay === null){
-            $scope.servicevo.delay = 0;
-          }
-          
-          //handle blank Request Headers in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.reqHeadersArr.length;
-          while(i--){
-            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
-              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
-            }
-          }
-        });
         try {
+          servicevo = commonCodeFactory.modifyServicevoBeforePublish(servicevo);
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
             $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
@@ -1461,8 +1350,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           $('#genricMsg-dialog').modal('toggle');
         }
       };
-
-     
 
       $scope.serviceInfo = function () {
         console.log($routeParams.id);

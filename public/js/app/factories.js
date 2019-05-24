@@ -195,6 +195,57 @@ fact.factory('mqInfoFactory', ['$http', function($http) {
     };
 }]);
 
+//Modify serviceVO before Publish - Pradeep
+fact.factory('commonCodeFactory', [function () {
+    return {
+        modifyServicevoBeforePublish: function (servicevo) {
+            var i = servicevo.rawpairs.length;
+          while(i--){
+            /* handle blank request payload - when you edit and make request payload empty
+                then request payload becomes empty string so duplicate request check wil not work. */
+            if( servicevo.rawpairs[i].requestpayload == ''  || servicevo.rawpairs[i].requestpayload === null || !servicevo.rawpairs[i].hasOwnProperty('requestpayload')){
+              servicevo.rawpairs[i].requestpayload = undefined;
+            }
+            /* handeling GET method without requestpayload  */
+            if(servicevo.rawpairs[i].method!== 'GET')
+            {
+              servicevo.rawpairs[i].getPayloadRequired = false;
+            }
+            if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
+              servicevo.rawpairs[i].requestpayload = undefined;
+            }
+            /* handle blank query params in rrpairs. if you provide query param and then make it blank.*/
+            var j = servicevo.rawpairs[i].queriesArr.length;
+            while(j--){
+              if( servicevo.rawpairs[i].queriesArr[j].k == '' ){
+                servicevo.rawpairs[i].queriesArr[j]={id: servicevo.rawpairs[i].queriesArr[j].id};
+              }
+            }
+            /* handle blank Request Headers in rrpairs */
+            var k = servicevo.rawpairs[i].reqHeadersArr.length;
+            while(k--){
+              if(!servicevo.rawpairs[i].reqHeadersArr[k].k || servicevo.rawpairs[i].reqHeadersArr[k].k == ' '){
+                servicevo.rawpairs[i].reqHeadersArr[k]={id: servicevo.rawpairs[i].reqHeadersArr[k].id};
+              }
+            }
+            /* before publish service make isDup flag false for all rrpairs and
+                let the isDuplicateReq function of factories method set this flag true b
+                    in case of duplicate*/
+            servicevo.rawpairs[i].isDup=false;
+          }
+          /* handle response delay on service level. if you provide response delay and then make it blank again. */
+          if(servicevo.delayMax === null){
+            servicevo.delayMax = 0;
+          }
+          if(servicevo.delay === null){
+            servicevo.delay = 0;
+          }
+          return servicevo;
+        }
+    };
+}]);
+
+
 //Below function is complex one. Any change will break Duplicate Req check. - Pradeep
 fact.factory('helperFactory', [function () {
     return {
