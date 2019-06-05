@@ -23,6 +23,7 @@ const System = require('./models/common/System');
 const MQService = require('./models/mq/MQService');
 const constants = require('./lib/util/constants');
 const fuseHelper = require('./lib/util/fuse');
+const reportingRouter = require('./routes/report');
 global.__basedir = __dirname;
 
 // connect to database
@@ -174,6 +175,7 @@ function init() {
   const recorderController = require('./controllers/recorderController');
   app.use('/recording',recorder.recordingRouter);
   app.use('/api/recording',recorder.apiRouter);
+  app.use('/api/report/',reportingRouter.router);
 
   const mqController = require('./controllers/mqController');
   mqController.registerAllMQServices();
