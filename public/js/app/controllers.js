@@ -1930,19 +1930,26 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         if (count != 0) {
           $scope.createGroupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
+          $scope.deleteGroupMessage = '';
         }
         else {
           sutService.addGroup($scope.createSut);
           $scope.createGroupMessage = ctrlConstants.GRP_CREATED_SUCCESS_MSG;
+          $scope.allSUT = sutService.getAllSUT();
+          $scope.deleteGroupMessage = '';
 
         }
-        window.location.reload(true);
+        $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       };
 
       $scope.removeGroup = function (deleteSut) {
         sutService.deleteGroup(deleteSut);
         $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG;
-        window.location.reload(true);
+        $scope.createGroupMessage = '';
+        $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.allSUT = sutService.getAllSUT();
       };
 
 
