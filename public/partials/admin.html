@@ -18,7 +18,7 @@
         </div>
         
         <div class="col-xs-3">
-            <select required class="form-control" ng-model="deleteSut" id="system_under_test" ng-options="sut.name for sut in deleteSutList">
+            <select required class="form-control" ng-model="deleteSut" id="system_under_test" ng-options="sut.name for sut in deleteSutList | orderBy:'name'">
                 <option selected="selected" disabled="true">Select Group</option>
             </select>
                     <div style='color:#b40037;font-weight:normal;font-size: 13px;'>{{deleteGroupMessage}}</div>
