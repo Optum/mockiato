@@ -710,6 +710,10 @@ function addService(req, res) {
     serv.liveInvocation = req.body.liveInvocation;
   }
 
+  if(req.body.defaultResponse){
+    serv.defaultResponse = req.body.defaultResponse;
+  }
+
   if (type === 'MQ') {    
     createService(serv,req).then(
       function(service){
@@ -915,6 +919,9 @@ function updateService(req, res) {
           }
         });
       }
+      if(req.body.defaultResponse){
+        service.defaultResponse = req.body.defaultResponse;
+      }    
       if(req.body.liveInvocation){
         if(service.liveInvocation && service.liveInvocation.recordedRRPairs){
           req.body.liveInvocation.recordedRRPairs = service.liveInvocation.recordedRRPairs;

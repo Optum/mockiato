@@ -74,9 +74,18 @@ function registerRRPair(service, rrpair) {
       
       // run the next callback if request not matched
       if (!matched) {
-        msg = "Request bodies don't match";
+        if(service.defaultResponse && service.defaultResponse.enabled){
+          msg= service.defaultResponse.defaultResponsePayload;
+          req.msgContainer =msg;
+          logEvent(path, label, msg);
+          //resp.send(new Buffer(req.msgContainer));
+        }
+       else
+        {
+          msg = "Request bodies don't match";
         req.msgContainer.reason = msg;
         logEvent(path, label, msg);
+        }
         return next();
       }
     }
