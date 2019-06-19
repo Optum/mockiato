@@ -1595,7 +1595,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.buttonHit = false;
 
       $scope.$watchGroup(['selectedSut', 'selectedUser'], function (newVals) {
-        $scope.filtersSelected(newVals[0], newVals[1]);
+        if($routeParams.sut || $routeParams.name){
+          $scope.filtersSelected($routeParams.sut ? { name: $routeParams.sut } : null, $routeParams.user ? { name: $routeParams.user } : null);
+        }else{
+          $scope.filtersSelected(newVals[0], newVals[1]);
+        }
         $scope.buttonHit = true; //bool check so function isnt called twice
       });
 
