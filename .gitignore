@@ -13,3 +13,4 @@ specs
 public/js/bower_components
 public/fusepartials
 .vscode/settings.json
+.vscode
