@@ -76,7 +76,7 @@ function registerRRPair(service, rrpair) {
       if (!matched) {
         if(service.defaultResponse && service.defaultResponse.enabled){
           msg= service.defaultResponse.defaultResponsePayload;
-          req.msgContainer =msg;
+          req.msgContainer = JSON.parse(msg);
           logEvent(path, label, msg);
           //resp.send(new Buffer(req.msgContainer));
         }
