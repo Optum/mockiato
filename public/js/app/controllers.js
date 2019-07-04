@@ -1954,9 +1954,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
 
       $scope.$watch('selectedSut', function (newSut) {
-        if ($scope.selectedSut != "") { //removes null response, saves resources
-          $scope.memberlist = sutService.getMembers(newSut.name);
-
+        if ($scope.selectedSut) { //removes null response, saves resources
+          $scope.memberlist = sutService.getMembers($scope.selectedSut.name);
           //disallows duplicate user add
           $scope.removeMembers = function (users) {
             return $scope.memberlist.indexOf(users.name) === -1;
@@ -1986,6 +1985,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         });
       };
 
+      $scope.$watch('getOwnerForThisSut', function () {
+        if ($scope.getOwnerForThisSut) { //removes null response, saves resources
+          $scope.owner = sutService.getMembers($scope.getOwnerForThisSut.name);
+         // $scope.owner = usersList[1];
+        }
+      });
     }])
 
 

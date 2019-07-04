@@ -96,10 +96,11 @@ fact.factory('groupFactory', ['$http', function ($http) {
             
             $http.get('/api/systems/' + selectedSut)
                 .then(function (response) {
-                    for (var i = 0; i < response.data.members.length; i++) {
-                        
-                        var member = response.data.members[i];
-                        memberlist.push(member);
+                    if(response.data){
+                        for (var i = 0; i < response.data.members.length; i++) {
+                            var member = response.data.members[i];
+                            memberlist.push(member);
+                        }
                     }
                 })
 

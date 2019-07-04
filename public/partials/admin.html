@@ -56,22 +56,41 @@
     </div>
     <br>
 
-    <!--ng-repeat start here-->
-    <ul class="row">
-        <div data-ng-repeat="member in memberlist track by $index" ng-show="$index!=0" class="row">
-            <div class="col-xs-2">
-                {{member}}
-            </div>
+    <div ng-show="selectedSut.name">
+        <ul class="row">
+            <div data-ng-repeat="member in memberlist track by $index" ng-show="$index!=0" class="row">
+                <div class="col-xs-2">
+                    {{member}}
+                </div>
 
-            <div class="col-xs-4">
-                <button type="button" class="btn btn-sm btn-danger" ng-click="removeMember($index)">
-                    <span class="glyphicon glyphicon-minus"></span>
-                    Remove
-                </button>
+                <div class="col-xs-4">
+                    <button type="button" class="btn btn-sm btn-danger" ng-click="removeMember($index)">
+                        <span class="glyphicon glyphicon-minus"></span>
+                        Remove
+                    </button>
+                </div>
+                <br></br>
             </div>
-            <br></br>
+        </ul>
+    </div>
+</form>
+
+
+<h2>Groups and Owner Info</h2>
+<form name="groupOwnerInfoForm" class="well col-xs-12">
+  <p>Select a group and check its owner name. New or existing user can contact owner to have access to the group.</p><br>
+  <div class="form-group row">
+        <label for="system_under_test" class="col-xs-3 col-form-label">Select a group to find its owner</label>
+        <div class="col-xs-3">
+            <select class="form-control" id="system_under_test" ng-model="getOwnerForThisSut" ng-options="sut.name for sut in allSUT | orderBy:'name'"></select>
         </div>
-    </ul>
-    <!--ng-repeat end here-->
-
+    </div>
+    <div class="row" ng-show="getOwnerForThisSut">
+        <table>
+            <tr>
+                <td><div class="col-xs-2">Owner</div></td>
+                <td><div class="col-xs-2">{{owner[1]}}</div></td>
+            </tr>
+        </table>    
+        </div>
 </form>
