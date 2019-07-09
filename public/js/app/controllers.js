@@ -1939,21 +1939,25 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           $scope.deleteGroupMessage = '';
 
         }
+        //Below resets every thing else on admin page.
         $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
         $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
       $scope.removeGroup = function (deleteSut) {
         sutService.deleteGroup(deleteSut);
+        //Below resets every thing else on admin page.
         $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG;
         $scope.createGroupMessage = '';
         $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
         $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
         $scope.allSUT = sutService.getAllSUT();
+        $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
 
-      $scope.$watch('selectedSut', function (newSut) {
+      $scope.$watch('selectedSut', function () {
         if ($scope.selectedSut) { //removes null response, saves resources
           $scope.memberlist = sutService.getMembers($scope.selectedSut.name);
           //disallows duplicate user add
@@ -1986,11 +1990,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
 
       $scope.$watch('getOwnerForThisSut', function () {
-        if ($scope.getOwnerForThisSut) { //removes null response, saves resources
-          $scope.owner = sutService.getMembers($scope.getOwnerForThisSut.name);
-         // $scope.owner = usersList[1];
+        if ($scope.getOwnerForThisSut) {
+          $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
         }
       });
+
     }])
 
 

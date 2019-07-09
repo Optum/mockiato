@@ -78,19 +78,15 @@
 
 <h2>Groups and Owner Info</h2>
 <form name="groupOwnerInfoForm" class="well col-xs-12">
-  <p>Select a group and check its owner name. New or existing user can contact owner to have access to the group.</p><br>
+  <p>Contact any user to have access to the group.</p><br>
   <div class="form-group row">
-        <label for="system_under_test" class="col-xs-3 col-form-label">Select a group to find its owner</label>
+        <label class="col-xs-3 col-form-label">Select a group to find its users</label>
         <div class="col-xs-3">
             <select class="form-control" id="system_under_test" ng-model="getOwnerForThisSut" ng-options="sut.name for sut in allSUT | orderBy:'name'"></select>
         </div>
     </div>
-    <div class="row" ng-show="getOwnerForThisSut">
-        <table>
-            <tr>
-                <td><div class="col-xs-2">Owner</div></td>
-                <td><div class="col-xs-2">{{owner[1]}}</div></td>
-            </tr>
-        </table>    
-        </div>
+    <div class="form-group row" ng-show="getOwnerForThisSut">
+            <label class="col-xs-3 col-form-label">Users</label>
+            <div class="col-xs-3"><a ng-repeat="user in usersList">{{user}}{{$last ? '' : ', '}}</a></div>
+    </div>
 </form>
