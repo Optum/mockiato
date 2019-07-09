@@ -87,6 +87,6 @@
     </div>
     <div class="form-group row" ng-show="getOwnerForThisSut">
             <label class="col-xs-3 col-form-label">Users</label>
-            <div class="col-xs-3"><a ng-repeat="user in usersList">{{user}}{{$last ? '' : ', '}}</a></div>
+            <div class="col-xs-3"><a ng-repeat="user in usersList | filter: mockiatoAdminFilter">{{user}}{{$last ? '' : ', '}}</a></div>
     </div>
 </form>
