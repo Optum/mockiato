@@ -38,7 +38,13 @@ var ctrl = angular.module("mockapp.controllers")
                   $scope.$apply();
                 });
               };
-
+              $scope.copyRRPair = function(index){
+                $scope.rrPairNo = index;
+                console.log($scope.rrPairNo);
+               $scope.rrPairCopy = $scope.servicevo.rawpairs.slice($scope.rrPairNo,$scope.rrPairNo+1);
+                $scope.servicevo.rawpairs.push($scope.rrPairCopy[0]);
+               console.log($scope.servicevo.rawpairs);
+              };
               /**
                * Creates a template from a given RR pair's request
                */
