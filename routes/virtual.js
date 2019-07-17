@@ -8,7 +8,7 @@ const invoke = require('./invoke');
 const matchTemplateController = require('../controllers/matchTemplateController');
 const randomController = require("../controllers/randomController");
   
-// function to simulate latency
+// function to simulate latency.
 function delay(ms,msMax) {
   if ((!ms || ms === 1) && (!msMax || msMax <= 1)) {
     return function(req, res, next) {
