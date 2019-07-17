@@ -523,9 +523,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     record : servicevo.liveRecordCheck,
                     liveFirst : servicevo.liveInvokePrePost == 'PRE'
                   };
-                  
-                
-
+                  console.log("This is default response", servicevo.defaultResponsePayload );
+                servData.defaultResponse =
+                {
+                  enabled : servicevo.defaultResponseCheck,
+                  defaultResponsePayload : servicevo.defaultResponsePayload
+                };
+                console.log("This is servData", servData.defaultResponse);
                 // publish the virtual service
                 var token = authService.getUserInfo().token;
 
@@ -760,7 +764,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   liveFirst : servicevo.liveInvokePrePost == 'PRE'
                 };
                 
-              
+                servData.defaultResponse =
+                {
+                  enabled : servicevo.defaultResponseCheck,
+                  defaultResponsePayload : servicevo.defaultResponsePayload
+                };
 
               // publish the virtual service
               var token = authService.getUserInfo().token;
