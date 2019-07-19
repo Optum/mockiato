@@ -1128,6 +1128,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
 
             };
+            console.log(service.defaultResponse);
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+            }
 
             if (service.liveInvocation) {
 
