@@ -1924,6 +1924,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.selectedSut = [];
       $scope.allSUT = sutService.getAllSUT();
       $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+      var adminUser;
+      userService.getAdmin().then(function (values) {
+        adminUser=values[0].name;
+      });
 
       $scope.checkAndAddGroup = function (createSut) {
         var count = 0;
@@ -1944,24 +1948,27 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           $scope.deleteGroupMessage = '';
 
         }
+        //Below resets every thing else on admin page.
         $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
         $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
       $scope.removeGroup = function (deleteSut) {
         sutService.deleteGroup(deleteSut);
+        //Below resets every thing else on admin page.
         $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG;
         $scope.createGroupMessage = '';
         $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
         $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
         $scope.allSUT = sutService.getAllSUT();
+        $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
 
-      $scope.$watch('selectedSut', function (newSut) {
-        if ($scope.selectedSut != "") { //removes null response, saves resources
-          $scope.memberlist = sutService.getMembers(newSut.name);
-
+      $scope.$watch('selectedSut', function () {
+        if ($scope.selectedSut) { //removes null response, saves resources
+          $scope.memberlist = sutService.getMembers($scope.selectedSut.name);
           //disallows duplicate user add
           $scope.removeMembers = function (users) {
             return $scope.memberlist.indexOf(users.name) === -1;
@@ -1989,6 +1996,16 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           $scope.$apply();
           $scope.saveGroup($scope.selectedSut);
         });
+      };
+
+      $scope.$watch('getOwnerForThisSut', function () {
+        if ($scope.getOwnerForThisSut) {
+          $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
+        }
+      });
+
+      $scope.mockiatoAdminFilter = function (item) {
+        return item !== adminUser; 
       };
 
     }])

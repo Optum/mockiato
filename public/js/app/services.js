@@ -1303,6 +1303,15 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 });
               });
           };
+          this.getAdmin = function() {
+            return new Promise(function(resolve,reject){
+              $http.get('/api/users/admin').then(function(response){
+                var adminlist = [];
+                adminlist.push({name:response.data});
+                resolve(adminlist);
+              });
+            });
+        };
     }])
 
     .service('suggestionsService', ['statusCodesFactory', 'headersFactory',
