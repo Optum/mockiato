@@ -238,6 +238,23 @@
       </div>
     <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
   </div>
+
+  <div class="form-group row" ng-show="servicevo.type !== 'MQ'">
+    <label for="default_response_enable" class="col-xs-2 col-form-label">Set Default Response:</label>
+     <div class="col-xs-1">
+      <input type="checkbox" id="defaultcheck" ng-model="servicevo.defaultResponseCheck" ng-click="">
+    </div>
+    <div class="col-xs-1">
+      
+    </div>
+  </div>
+  <div class="form-group row" ng-show="servicevo.defaultResponseCheck && servicevo.type !== 'MQ'">
+    <label for="service_response_payload" class="col-xs-2 col-form-label">Default Response Payload:</label>
+    <div class="col-xs-9">
+      <textarea id="service_response_payload" class="form-control vertResize responsePayload" ng-model="servicevo.defaultResponsePayload" placeholder="Insert Default Response Payload"></textarea>
+    </div>
+    </div>
+
     <div ng-show="showDates">
         <div class="form-group row">
             <label class="col-xs-2 col-form-label">Created At:</label>

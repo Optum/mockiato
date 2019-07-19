@@ -68,7 +68,12 @@ const serviceSchema = new mongoose.Schema({
   },
   lastUpdateUser:{
     type: User.schema
-  }, liveInvocation: {
+  },
+  defaultResponse: {
+    enabled:Boolean,
+    defaultResponsePayload : String
+  },
+  liveInvocation: {
     enabled: Boolean,
     liveFirst: {
       type: Boolean,
