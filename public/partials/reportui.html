@@ -1,0 +1,51 @@
+<h2>Mockiato statistics</h2>
+<table class="table">
+    <tr bgcolor="#DEE0FF">
+        <td>Number of services</td>
+        <td>{{reportingJson.totalServices}}</td>
+        <td></td><td></td><td></td><td></td>
+    </tr>
+    <tr class="bg-success">
+        <td>Number of active services</td>
+        <td>{{reportingJson.activeServices}}</td>
+        <td></td><td></td><td></td><td></td>
+    </tr>
+    <tr class="bg-danger">
+        <td>Number of draft services</td>
+        <td>{{reportingJson.draftServices}}</td>
+        <td></td><td></td><td></td><td></td>
+    </tr>
+    <tr class="bg-warning">
+        <td>Number of archive/deleted services</td>
+        <td>{{reportingJson.archiveServices}}</td>
+        <td></td><td></td><td></td><td></td>
+    </tr>
+    <tr class="bg-info">
+        <td>Number of users</td>
+        <td>{{reportingJson.users}}</td>
+        <td></td><td></td><td></td><td></td>
+    </tr>
+    <tr bgcolor="#DCDCDC">
+        <td>Number of groups</td>
+        <td>{{reportingJson.systems}}</td>
+        <td></td><td></td><td></td><td></td>
+    </tr>
+    <tr bgcolor="#DEFFFF">
+        <td>Number of transactions</td>
+        <td>{{reportingJson.totalTransactions}}</td>
+        <td></td><td></td><td></td><td></td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+        <td>
+            <p class="text-muted" style='font-size: 10.5px;'>**Number of services are Services+MQServices including stopped services. It does not include archive/drafts services.</p>
+            <p class="text-muted" style='font-size: 10.5px;'>**Total no. of active services are Services+MQServices. It does not include stopped services and archive/drafts services.</p>
+            <br>
+            <h3>Number of services by Group</h3>
+        </td>
+    </tr>
+    <tr ng-repeat="sutAndservice in reportingJson.servicesByGroup" ng-class-odd="'odd'" ng-class-even="'even'">
+        <td>{{sutAndservice.sut}}</td>
+        <td>{{sutAndservice.services}}</td>
+        <td></td><td></td><td></td><td></td>
+    </tr>
+</table>
