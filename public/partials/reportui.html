@@ -64,18 +64,31 @@
     <tr bgcolor="#FFFFFF">
         <td>
             <br><br>
-            <h4>Group names</h4>
+            <h4>Group names <a href="" title="sort by group name"
+                    ng-click="orderByField='sut'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort"
+                            class="glyphicon glyphicon-sort" style='color: #32CD32'></span></small><small><span
+                            ng-show="reverseSort" class="glyphicon glyphicon-sort"
+                            style='color: #FF4851'></span></small></a></h4>
         </td>
         <td>
             <br><br>
-            <h4>Services count</h4>
+            <h4>Services count <a href="" title="sort by services count"
+                    ng-click="orderByField='services'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort"
+                            class="glyphicon glyphicon-sort" style='color: #32CD32'></span></small><small><span
+                            ng-show="reverseSort" class="glyphicon glyphicon-sort"
+                            style='color: #FF4851'></span></small></a></h4>
         </td>
         <td>
             <br><br>
-            <h4>Transactions count</h4>
+            <h4>Transactions count <a href="" title="sort by transactions count"
+                    ng-click="orderByField='transactions'; reverseSort = !reverseSort"><small><span
+                            ng-show="!reverseSort" class="glyphicon glyphicon-sort"
+                            style='color: #32CD32'></span></small><small><span ng-show="reverseSort"
+                            class="glyphicon glyphicon-sort" style='color: #FF4851'></span></small></a></h4>
         </td>
     </tr>
-    <tr ng-repeat="sutAndservice in reportingJson.servicesByGroup" ng-class-odd="'odd'" ng-class-even="'even'">
+    <tr ng-repeat="sutAndservice in reportingJson.servicesByGroup | orderBy:orderByField:reverseSort"
+        ng-class-odd="'odd'" ng-class-even="'even'">
         <td>{{sutAndservice.sut}}</td>
         <td>{{sutAndservice.services}}</td>
         <td>{{sutAndservice.transactions}}</td>
