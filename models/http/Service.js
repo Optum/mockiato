@@ -168,7 +168,7 @@ function filterDuplicateRecordedPairs(service){
         rrPairs.push(pairs[i]);
       }
     }
-    
+    rrPairs = rrPairs.slice(-10);
     //if changes were made, save them
     if(rrPairs.length != pairs.length){
       service.liveInvocation.recordedRRPairs = rrPairs;
