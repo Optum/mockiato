@@ -389,6 +389,47 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               basePath: service.basePath,
 
             };
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+            }
+            if (service.liveInvocation) {
+
+              $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+              $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+              $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+              $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+              $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+              //Extract and build out codes/strings for failures
+              var failStatusCodes = service.liveInvocation.failStatusCodes;
+              var failStrings = service.liveInvocation.failStrings;
+              $scope.servicevo.failStatuses = [];
+              $scope.servicevo.failStrings = [];
+              for (var i = 0; i < failStatusCodes.length; i++) {
+                $scope.servicevo.failStatuses[i] = { 'id': i, 'val': failStatusCodes[i] };
+
+              }
+              for (var i = 0; i < failStrings.length; i++) {
+                $scope.servicevo.failStrings[i] = { 'id': i, 'val': failStrings[i] };
+              }
+              if (!$scope.servicevo.failStatuses.length) {
+                $scope.servicevo.failStatuses[0] = { 'id': 0, val: '' };
+              }
+              if (!$scope.servicevo.failStrings.length) {
+                $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
+              }
+              //Select correct radio
+              if (service.liveInvocation.liveFirst)
+                $scope.servicevo.liveInvokePrePost = 'PRE';
+              else
+                $scope.servicevo.liveInvokePrePost = 'POST';
+
+            } else {
+              $scope.servicevo.failStatuses = [];
+              $scope.servicevo.failStrings = [];
+              $scope.servicevo.failStatuses[0] = { 'id': 0, val: '' };
+              $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
+            }
 
             $scope.myUser = authService.getUserInfo().username;
 
@@ -556,6 +597,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               basePath: service.basePath
             };
 
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+            }
             if (service.liveInvocation) {
 
               $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
@@ -1914,6 +1959,17 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.gen.columns[2].header = 'email';
       $scope.gen.columns[2].dataType = 'Email Address';
 
+    }])
+
+  .controller("reportuiController", ['$scope', '$http',
+    function ($scope,  $http) {    
+        $http.get('/api/report')
+        .then(function (response) {
+          $scope.reportingJson = response.data;
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
     }])
 
   .controller("adminController", ['$scope', 'authService', 'userService', 'sutService', 'ctrlConstants',
