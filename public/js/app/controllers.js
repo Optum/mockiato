@@ -1961,6 +1961,17 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
     }])
 
+  .controller("reportuiController", ['$scope', '$http',
+    function ($scope,  $http) {    
+        $http.get('/api/report')
+        .then(function (response) {
+          $scope.reportingJson = response.data;
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
+    }])
+
   .controller("adminController", ['$scope', 'authService', 'userService', 'sutService', 'ctrlConstants',
     function ($scope, authService, userService, sutService, ctrlConstants) {
       $scope.myUser = authService.getUserInfo().username;

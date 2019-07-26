@@ -239,6 +239,12 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
 
             })
 
+            .when("/reportui", {
+                templateUrl: "fusepartials/reportui.html",
+                controller: "reportuiController"
+
+            })
+
             .when('/login', {
                 templateUrl: 'fusepartials/login.html',
                 controller: 'authController'
