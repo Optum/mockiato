@@ -995,6 +995,9 @@ function updateServiceAsDraft(req, res) {
       if (req.body.matchTemplates) {
         draftservice.service.matchTemplates = req.body.matchTemplates;
       }
+      if(req.body.defaultResponse){
+        draftservice.service.defaultResponse = req.body.defaultResponse;
+      }
       
       const delay = req.body.delay;
       if (delay || delay === 0) {
