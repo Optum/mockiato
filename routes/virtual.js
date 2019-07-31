@@ -76,7 +76,13 @@ function registerRRPair(service, rrpair) {
       if (!matched) {
         if(service.defaultResponse && service.defaultResponse.enabled){
           msg= service.defaultResponse.defaultResponsePayload;
-          req.msgContainer = JSON.parse(msg);
+          if(service.type === 'REST'){
+            req.msgContainer = JSON.parse(msg)
+          
+         }
+         else{
+           req.msgContainer = msg;
+         }
           logEvent(path, label, msg);
           //resp.send(new Buffer(req.msgContainer));
         }
