@@ -87,6 +87,7 @@
     </div>
     <div class="form-group row" ng-show="getOwnerForThisSut">
             <label class="col-xs-3 col-form-label">Users</label>
-            <div class="col-xs-3"><a ng-repeat="user in usersList | filter: mockiatoAdminFilter">{{user}}{{$last ? '' : ', '}}</a></div>
+            <diiv ng-if="usersList.length == 1" class="col-xs-3"><text style='color: #FF4851'>There are no users in this group.</text></diiv>
+            <div class="col-xs-3"><text ng-repeat="user in usersList | filter: mockiatoAdminFilter">{{user}}{{$last ? '' : ', '}}</text></div>
     </div>
 </form>
