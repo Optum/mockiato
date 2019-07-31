@@ -2007,6 +2007,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         //Below resets every thing else on admin page.
         $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
         $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.allSUT = sutService.getAllSUT();
         $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
@@ -2039,9 +2040,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.addMember = function () {
         $scope.memberlist.push($scope.member.name);
         $scope.saveGroup($scope.selectedSut);
+        $scope.getOwnerForThisSut=[];
       }
 
       $scope.removeMember = function (index) {
+        $scope.getOwnerForThisSut=[];
         $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
         $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
