@@ -2013,7 +2013,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       $scope.removeGroup = function (deleteSut) {
         sutService.deleteGroup(deleteSut);
-        //Below resets every thing else on admin page.
+        //Below resets every thing else on admin page
         $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG;
         $scope.createGroupMessage = '';
         $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
