@@ -96,10 +96,11 @@ fact.factory('groupFactory', ['$http', function ($http) {
             
             $http.get('/api/systems/' + selectedSut)
                 .then(function (response) {
-                    for (var i = 0; i < response.data.members.length; i++) {
-                        
-                        var member = response.data.members[i];
-                        memberlist.push(member);
+                    if(response.data){
+                        for (var i = 0; i < response.data.members.length; i++) {
+                            var member = response.data.members[i];
+                            memberlist.push(member);
+                        }
                     }
                 })
 
@@ -232,6 +233,28 @@ fact.factory('commonCodeFactory', [function () {
                 let the isDuplicateReq function of factories method set this flag true b
                     in case of duplicate*/
             servicevo.rawpairs[i].isDup=false;
+             /* clean up autosuggest selections for Headers and Status.*/
+            var selectedStatus = servicevo.rawpairs[i].resStatus;
+            if (selectedStatus && selectedStatus.description) servicevo.rawpairs[i].resStatus = selectedStatus.description.value;
+
+            if (servicevo.rawpairs[i].reqHeadersArr && servicevo.rawpairs[i].reqHeadersArr.length > 0) {
+            servicevo.rawpairs[i].reqHeadersArr.forEach(function(head) {
+                var selectedHeader = head.k;
+                if (selectedHeader) {
+                  if (selectedHeader.description) head.k = selectedHeader.description.name;
+                  else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
+                }
+              });
+            }
+            if (servicevo.rawpairs[i].resHeadersArr && servicevo.rawpairs[i].resHeadersArr.length > 0) {
+                servicevo.rawpairs[i].resHeadersArr.forEach(function(head) {
+                var selectedHeader = head.k;
+                if (selectedHeader) {
+                  if (selectedHeader.description) head.k = selectedHeader.description.name;
+                  else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
+                }
+              });
+            }
           }
           /* handle response delay on service level. if you provide response delay and then make it blank again. */
           if(servicevo.delayMax === null){

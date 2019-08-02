@@ -8,7 +8,7 @@ const invoke = require('./invoke');
 const matchTemplateController = require('../controllers/matchTemplateController');
 const randomController = require("../controllers/randomController");
   
-// function to simulate latency
+// function to simulate latency.
 function delay(ms,msMax) {
   if ((!ms || ms === 1) && (!msMax || msMax <= 1)) {
     return function(req, res, next) {
@@ -74,9 +74,24 @@ function registerRRPair(service, rrpair) {
       
       // run the next callback if request not matched
       if (!matched) {
-        msg = "Request bodies don't match";
+        if(service.defaultResponse && service.defaultResponse.enabled){
+          msg= service.defaultResponse.defaultResponsePayload;
+          if(service.type === 'REST'){
+            req.msgContainer = JSON.parse(msg)
+          
+         }
+         else{
+           req.msgContainer = msg;
+         }
+          logEvent(path, label, msg);
+          //resp.send(new Buffer(req.msgContainer));
+        }
+       else
+        {
+          msg = "Request bodies don't match";
         req.msgContainer.reason = msg;
         logEvent(path, label, msg);
+        }
         return next();
       }
     }

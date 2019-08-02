@@ -68,7 +68,12 @@ const serviceSchema = new mongoose.Schema({
   },
   lastUpdateUser:{
     type: User.schema
-  }, liveInvocation: {
+  },
+  defaultResponse: {
+    enabled:Boolean,
+    defaultResponsePayload : String
+  },
+  liveInvocation: {
     enabled: Boolean,
     liveFirst: {
       type: Boolean,
@@ -163,7 +168,7 @@ function filterDuplicateRecordedPairs(service){
         rrPairs.push(pairs[i]);
       }
     }
-    
+    rrPairs = rrPairs.slice(-10);
     //if changes were made, save them
     if(rrPairs.length != pairs.length){
       service.liveInvocation.recordedRRPairs = rrPairs;

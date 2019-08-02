@@ -389,6 +389,47 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               basePath: service.basePath,
 
             };
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+            }
+            if (service.liveInvocation) {
+
+              $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+              $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+              $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+              $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+              $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+              //Extract and build out codes/strings for failures
+              var failStatusCodes = service.liveInvocation.failStatusCodes;
+              var failStrings = service.liveInvocation.failStrings;
+              $scope.servicevo.failStatuses = [];
+              $scope.servicevo.failStrings = [];
+              for (var i = 0; i < failStatusCodes.length; i++) {
+                $scope.servicevo.failStatuses[i] = { 'id': i, 'val': failStatusCodes[i] };
+
+              }
+              for (var i = 0; i < failStrings.length; i++) {
+                $scope.servicevo.failStrings[i] = { 'id': i, 'val': failStrings[i] };
+              }
+              if (!$scope.servicevo.failStatuses.length) {
+                $scope.servicevo.failStatuses[0] = { 'id': 0, val: '' };
+              }
+              if (!$scope.servicevo.failStrings.length) {
+                $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
+              }
+              //Select correct radio
+              if (service.liveInvocation.liveFirst)
+                $scope.servicevo.liveInvokePrePost = 'PRE';
+              else
+                $scope.servicevo.liveInvokePrePost = 'POST';
+
+            } else {
+              $scope.servicevo.failStatuses = [];
+              $scope.servicevo.failStrings = [];
+              $scope.servicevo.failStatuses[0] = { 'id': 0, val: '' };
+              $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
+            }
 
             $scope.myUser = authService.getUserInfo().username;
 
@@ -556,6 +597,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               basePath: service.basePath
             };
 
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+            }
             if (service.liveInvocation) {
 
               $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
@@ -1128,6 +1173,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
 
             };
+            console.log(service.defaultResponse);
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+            }
 
             if (service.liveInvocation) {
 
@@ -1911,6 +1961,17 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
     }])
 
+  .controller("reportuiController", ['$scope', '$http',
+    function ($scope,  $http) {    
+        $http.get('/api/report')
+        .then(function (response) {
+          $scope.reportingJson = response.data;
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
+    }])
+
   .controller("adminController", ['$scope', 'authService', 'userService', 'sutService', 'ctrlConstants',
     function ($scope, authService, userService, sutService, ctrlConstants) {
       $scope.myUser = authService.getUserInfo().username;
@@ -1919,6 +1980,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.selectedSut = [];
       $scope.allSUT = sutService.getAllSUT();
       $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+      var adminUser;
+      userService.getAdmin().then(function (values) {
+        adminUser=values[0].name;
+      });
 
       $scope.checkAndAddGroup = function (createSut) {
         var count = 0;
@@ -1930,26 +1995,37 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         if (count != 0) {
           $scope.createGroupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
+          $scope.deleteGroupMessage = '';
         }
         else {
           sutService.addGroup($scope.createSut);
           $scope.createGroupMessage = ctrlConstants.GRP_CREATED_SUCCESS_MSG;
+          $scope.allSUT = sutService.getAllSUT();
+          $scope.deleteGroupMessage = '';
 
         }
-        window.location.reload(true);
+        //Below resets every thing else on admin page.
+        $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.allSUT = sutService.getAllSUT();
+        $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
       $scope.removeGroup = function (deleteSut) {
         sutService.deleteGroup(deleteSut);
+        //Below resets every thing else on admin page
         $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG;
-        window.location.reload(true);
+        $scope.createGroupMessage = '';
+        $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.allSUT = sutService.getAllSUT();
+        $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
 
-      $scope.$watch('selectedSut', function (newSut) {
-        if ($scope.selectedSut != "") { //removes null response, saves resources
-          $scope.memberlist = sutService.getMembers(newSut.name);
-
+      $scope.$watch('selectedSut', function () {
+        if ($scope.selectedSut) { //removes null response, saves resources
+          $scope.memberlist = sutService.getMembers($scope.selectedSut.name);
           //disallows duplicate user add
           $scope.removeMembers = function (users) {
             return $scope.memberlist.indexOf(users.name) === -1;
@@ -1964,9 +2040,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.addMember = function () {
         $scope.memberlist.push($scope.member.name);
         $scope.saveGroup($scope.selectedSut);
+        $scope.getOwnerForThisSut=[];
       }
 
       $scope.removeMember = function (index) {
+        $scope.getOwnerForThisSut=[];
         $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
         $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
@@ -1977,6 +2055,16 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           $scope.$apply();
           $scope.saveGroup($scope.selectedSut);
         });
+      };
+
+      $scope.$watch('getOwnerForThisSut', function () {
+        if ($scope.getOwnerForThisSut) {
+          $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
+        }
+      });
+
+      $scope.mockiatoAdminFilter = function (item) {
+        return item !== adminUser; 
       };
 
     }])

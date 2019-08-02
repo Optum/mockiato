@@ -129,3 +129,10 @@ input[type="radio"] {
 .ng-invalid.ng-touched{
   border-color:#f00;
 }
+
+.odd {
+  background-color: #F5FFFA;
+}
+.even {
+  background-color: #FFFAFA;
+}

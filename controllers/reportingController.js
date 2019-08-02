@@ -17,13 +17,15 @@ function getAllServicesByGroups(){
                         totalServices:
                         {
                             $sum:1
-                        }
+                        },
+                        totalTransactions: {$sum:"$txnCount"}
                     }
                 },{
                     $project:
                     {
                         sut:"$_id",
                         services:"$totalServices",
+                        transactions:"$totalTransactions",
                         _id:false
                     } 
                 }

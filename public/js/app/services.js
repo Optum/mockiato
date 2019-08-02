@@ -312,33 +312,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
 
             this.publishServiceToAPI = function(servicevo, isUpdate, isRecording) {
-                // clean up autosuggest selections
-                servicevo.rawpairs.forEach(function(rr) {
-                  var selectedStatus = rr.resStatus;
-                  if (selectedStatus && selectedStatus.description) rr.resStatus = selectedStatus.description.value;
-
-                  if (rr.reqHeadersArr && rr.reqHeadersArr.length > 0) {
-                    console.log(rr.reqHeadersArr);
-                    rr.reqHeadersArr.forEach(function(head) {
-                      var selectedHeader = head.k;
-                      if (selectedHeader) {
-                        if (selectedHeader.description) head.k = selectedHeader.description.name;
-                        else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
-                      }
-                    });
-                  }
-
-                  if (rr.resHeadersArr && rr.resHeadersArr.length > 0) {
-                    rr.resHeadersArr.forEach(function(head) {
-                      var selectedHeader = head.k;
-                      if (selectedHeader) {
-                        if (selectedHeader.description) head.k = selectedHeader.description.name;
-                        else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
-                      }
-                    });
-                  }
-                });
-
                 // build service model for API call
                 var rrpairs = [];
                 servicevo.rawpairs.forEach(function(rr){
@@ -523,9 +496,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     record : servicevo.liveRecordCheck,
                     liveFirst : servicevo.liveInvokePrePost == 'PRE'
                   };
-                  
-                
-
+                  console.log("This is default response", servicevo.defaultResponsePayload );
+                servData.defaultResponse =
+                {
+                  enabled : servicevo.defaultResponseCheck,
+                  defaultResponsePayload : servicevo.defaultResponsePayload
+                };
+                console.log("This is servData", servData.defaultResponse);
                 // publish the virtual service
                 var token = authService.getUserInfo().token;
 
@@ -578,33 +555,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             };
 
             this.saveServiceAsDraft = function(servicevo, isUpdate) {
-              // clean up autosuggest selections
-              servicevo.rawpairs.forEach(function(rr) {
-                var selectedStatus = rr.resStatus;
-                if (selectedStatus && selectedStatus.description) rr.resStatus = selectedStatus.description.value;
-
-                if (rr.reqHeadersArr && rr.reqHeadersArr.length > 0) {
-                  console.log(rr.reqHeadersArr);
-                  rr.reqHeadersArr.forEach(function(head) {
-                    var selectedHeader = head.k;
-                    if (selectedHeader) {
-                      if (selectedHeader.description) head.k = selectedHeader.description.name;
-                      else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
-                    }
-                  });
-                }
-
-                if (rr.resHeadersArr && rr.resHeadersArr.length > 0) {
-                  rr.resHeadersArr.forEach(function(head) {
-                    var selectedHeader = head.k;
-                    if (selectedHeader) {
-                      if (selectedHeader.description) head.k = selectedHeader.description.name;
-                      else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
-                    }
-                  });
-                }
-              });
-
               // build service model for API call
               var rrpairs = [];
               servicevo.rawpairs.forEach(function(rr){
@@ -760,7 +710,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   liveFirst : servicevo.liveInvokePrePost == 'PRE'
                 };
                 
-              
+                servData.defaultResponse =
+                {
+                  enabled : servicevo.defaultResponseCheck,
+                  defaultResponsePayload : servicevo.defaultResponsePayload
+                };
 
               // publish the virtual service
               var token = authService.getUserInfo().token;
@@ -1295,6 +1249,15 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 });
               });
           };
+          this.getAdmin = function() {
+            return new Promise(function(resolve,reject){
+              $http.get('/api/users/admin').then(function(response){
+                var adminlist = [];
+                adminlist.push({name:response.data});
+                resolve(adminlist);
+              });
+            });
+        };
     }])
 
     .service('suggestionsService', ['statusCodesFactory', 'headersFactory',
