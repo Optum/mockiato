@@ -136,3 +136,10 @@ input[type="radio"] {
 .even {
   background-color: #FFFAFA;
 }
+
+.sameBtns {
+  display: block;
+  width: 100%;
+  margin: 2px;
+  text-align: center;
+}
