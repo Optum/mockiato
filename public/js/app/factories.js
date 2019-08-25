@@ -263,6 +263,12 @@ fact.factory('commonCodeFactory', [function () {
           if(servicevo.delay === null){
             servicevo.delay = 0;
           }
+          if(servicevo.defResStatus == " "){
+              servicevo.defResStatus = undefined;
+          }
+          if(!servicevo.defaultResponsePayload){
+            servicevo.defaultResponseCheck = false;
+        }
           return servicevo;
         }
     };

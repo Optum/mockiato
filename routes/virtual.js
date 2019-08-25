@@ -74,23 +74,27 @@ function registerRRPair(service, rrpair) {
       
       // run the next callback if request not matched
       if (!matched) {
-        if(service.defaultResponse && service.defaultResponse.enabled){
-          msg= service.defaultResponse.defaultResponsePayload;
-          if(service.type === 'REST'){
-            req.msgContainer = JSON.parse(msg)
-          
-         }
-         else{
-           req.msgContainer = msg;
-         }
+        if (service.defaultResponse && service.defaultResponse.enabled) {
+          msg = service.defaultResponse.defaultResponsePayload;
+          let rspstatus;
+          if (service.defaultResponse.defResStatus) {
+            rspstatus = service.defaultResponse.defResStatus;
+          } else {
+            rspstatus = 404;
+          }
+          resp.status(rspstatus);
+          try {
+            resp.send(JSON.parse(msg));
+          } catch (e) {
+            resp.send(msg);
+          }
           logEvent(path, label, msg);
           //resp.send(new Buffer(req.msgContainer));
         }
-       else
-        {
+        else {
           msg = "Request bodies don't match";
-        req.msgContainer.reason = msg;
-        logEvent(path, label, msg);
+          req.msgContainer.reason = msg;
+          logEvent(path, label, msg);
         }
         return next();
       }
