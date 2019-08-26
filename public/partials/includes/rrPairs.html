@@ -2,24 +2,24 @@
   <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs track by $index | limitTo:totalDisplayed">
       <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
         <div class="form-group row">
-          <div class="col-xs-10">
+          <div class="col-xs-9">
                   <span ng-if="rr.isDup" ng-style="{color: 'red'}" ><h4><ins><i>Duplicate Req/Res Pair</i></ins></h4></span>
                   <span ng-if="!rr.isDup" ng-style="{color: 'black'}" ><h4><ins>Request / Response Pair</ins></h4></span>
           </div>
           <div class="col-xs-1" ng-if="servicevo.rawpairs.length > 1">
-            <button type="button" class="btn btn-danger" ng-click="removeRRPair($index)">
+            <button type="button" class="btn btn-danger sameBtns" ng-click="removeRRPair($index)">
               Delete
             </button> 
           </div>
   
           <div class="col-xs-1">
-            <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewRRPair()">
+            <button type="button" class="btn btn-success sameBtns" ng-show="$last" ng-click="addNewRRPair()">
               Add
             </button>
           </div>
 
           <div class="col-xs-1">
-            <button type="button" class="btn btn-success"  ng-click="copyRRPair($index)">
+            <button type="button" class="btn btn-success sameBtns"  ng-click="copyRRPair($index)">
               Copy
             </button>
           </div>
