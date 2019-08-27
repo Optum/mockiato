@@ -71,7 +71,14 @@ const serviceSchema = new mongoose.Schema({
   },
   defaultResponse: {
     enabled:Boolean,
-    defaultResponsePayload : String
+    defaultResponsePayload : String,
+    defResStatus : {
+      // force integer only
+      type: Number,
+      default: 404,
+      get: function(v) { return Math.round(v); },
+      set: function(v) { return Math.round(v); }
+    }
   },
   liveInvocation: {
     enabled: Boolean,
