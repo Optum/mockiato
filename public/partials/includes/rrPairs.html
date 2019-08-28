@@ -1,6 +1,6 @@
 <div ng-controller="rrPairController">
   <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs track by $index | limitTo:totalDisplayed">
-      <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+      <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;"/>
         <div class="form-group row">
           <div class="col-xs-9">
                   <span ng-if="rr.isDup" ng-style="{color: 'red'}" ><h4><ins><i>Duplicate Req/Res Pair</i></ins></h4></span>
