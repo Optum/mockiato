@@ -245,15 +245,21 @@
      <div class="col-xs-1">
       <input type="checkbox" id="defaultcheck" ng-model="servicevo.defaultResponseCheck" ng-click="">
     </div>
-    <div class="col-xs-1">
-      
-    </div>
   </div>
   <div class="form-group row" ng-show="servicevo.defaultResponseCheck && servicevo.type !== 'MQ'">
     <label for="service_response_payload" class="col-xs-2 col-form-label">Default Response Payload:</label>
       <div class="col-xs-9">
-        <textarea id="service_response_payload" class="form-control vertResize responsePayload" ng-model="servicevo.defaultResponsePayload" placeholder="Insert Default Response Payload"></textarea>
-      </div><br><br><br>
+        <textarea id="service_response_payload" class="form-control vertResize defaultResponsePayload" ng-model="servicevo.defaultResponsePayload" placeholder="Insert Default Response Payload"></textarea>
+      </div>
+      <div class="col-xs-1 h-100">
+        <button type="button" class="btn btn-success align-bottom" ng-click="expandRequest(servicevo)" ng-show="!servicevo.reqExpanded">
+          <span class="glyphicon glyphicon-resize-full"></span>
+        </button>
+        <button type="button" class="btn btn-success align-bottom" ng-click="collapseRequest(servicevo)" ng-show="servicevo.reqExpanded">
+          <span class="glyphicon glyphicon-resize-small"></span>
+        </button>
+      </div>
+      <br><br><br>
     <label for="service_dfResponse_status" class="col-xs-2 col-form-label">Response Status:</label>
       <div class="col-xs-2">
         <div angucomplete-alt
