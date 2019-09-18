@@ -42,7 +42,8 @@ function updateGroup(req, res){
     }
 
     if (req.body.mqInfo) system.mqInfo = req.body.mqInfo;
-    system.members = _.union(system.members, req.body.members);
+    //system.members = _.union(system.members, req.body.members);
+    system.members = req.body.members;
 
     system.save(function (err, newSystem) {
       if (err) {

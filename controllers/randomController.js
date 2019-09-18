@@ -57,7 +57,7 @@ function performRandomInsertion(resBody,reqBody,query,path){
     var myChance = new chance(objectHash(reqBody)+objectHash(query)+objectHash(path));
 
     //Find our tags
-    var split = resBody.split(/({{random:[A-z:,0-9]+}})/);
+    var split = resBody.split(/({{random:[A-Za-z:,0-9]+}})/);
     var retBody = "";
 
     //Go through each split part of body, parse tags, and reassemble

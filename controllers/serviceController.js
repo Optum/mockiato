@@ -710,6 +710,10 @@ function addService(req, res) {
     serv.liveInvocation = req.body.liveInvocation;
   }
 
+  if(req.body.defaultResponse){
+    serv.defaultResponse = req.body.defaultResponse;
+  }
+
   if (type === 'MQ') {    
     createService(serv,req).then(
       function(service){
@@ -852,6 +856,9 @@ function addServiceAsDraft(req, res) {
       }
     });
   }
+ if(req.body.defaultResponse){
+        serv.defaultResponse = req.body.defaultResponse;
+      }  
 
   if(req.body.liveInvocation){
     serv.liveInvocation = req.body.liveInvocation;
@@ -915,6 +922,9 @@ function updateService(req, res) {
           }
         });
       }
+      if(req.body.defaultResponse){
+        service.defaultResponse = req.body.defaultResponse;
+      }    
       if(req.body.liveInvocation){
         if(service.liveInvocation && service.liveInvocation.recordedRRPairs){
           req.body.liveInvocation.recordedRRPairs = service.liveInvocation.recordedRRPairs;
@@ -985,6 +995,9 @@ function updateServiceAsDraft(req, res) {
       if (req.body.matchTemplates) {
         draftservice.service.matchTemplates = req.body.matchTemplates;
       }
+      if(req.body.defaultResponse){
+        draftservice.service.defaultResponse = req.body.defaultResponse;
+      }
       
       const delay = req.body.delay;
       if (delay || delay === 0) {
@@ -1049,7 +1062,7 @@ function toggleService(req, res) {
         }
 
         res.json({'message': 'toggled', 'service': newService });
-        syncWorkers(newService, 'register');
+        syncWorkers(newService, service.running ? 'register' : 'deregister');
       });
     }
     else {
@@ -1067,7 +1080,7 @@ function toggleService(req, res) {
             }
 
             res.json({'message': 'toggled', 'service': mqService });
-            syncWorkers(mqService, 'register');
+            syncWorkers(mqService, mqService.running ? 'register' : 'deregister');
          });
         }
         else {
@@ -1163,8 +1176,11 @@ function restoreService(req, res) {
                   running: false,
                   matchTemplates: archive.service.matchTemplates,
                   rrpairs: archive.service.rrpairs,
-                  lastUpdateUser: archive.service.lastUpdateUser
+                  lastUpdateUser: archive.service.lastUpdateUser,
+                  defaultResponse: archive.service.defaultResponse,
+                  liveInvocation: archive.service.liveInvocation
                 };
+               
                 createService(newService,req).then(function(service){
                   res.json({ 'message' : 'restored', 'id' : archive.service._id });
                 },

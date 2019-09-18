@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="js/bower_components/bootstrap/dist/css/bootstrap.min.css">
 				<link rel="stylesheet" href="css/angucomplete-alt.css">
         <link rel="stylesheet" href="css/style.css">
-
+				<link rel="shortcut icon" href="#" />
 
         <script src="js/bower_components/angular/angular.min.js"></script>
         <script src="js/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
@@ -21,8 +21,6 @@
 				<script src="js/lib/angular-file-saver.bundle.js"></script>
 				<script src="js/bower_components/angucomplete-alt/dist/angucomplete-alt.min.js"></script>
 				<script src="js/bower_components/chance/dist/chance.min.js"></script>
-
-				<script src="partials/includes/constants.js"></script>
         <script src="js/app/factories.js"></script>
         <script src="js/app/services.js"></script>
         <script src="js/app/controllers.js"></script>
@@ -66,6 +64,7 @@
 										<a class="dropdown-toggle" data-toggle="dropdown" href="">Tools<span class="caret"></span></a>
 										<ul class="dropdown-menu">
 											<li><a href="#!datagen">Data Generator</a></li>
+											<li><a href="#!reportui">Report</a></li>
 										</ul>
 									</li>
 									
@@ -125,7 +124,8 @@
 										<div ng-show="virt.type === 'REST'">
 											<p><b>Operations:</b></p>
 											<fieldset ng-repeat="op in virt.operations">
-												<p class="wordwrap">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path }}</p>
+												<p class="wordwrap" ng-show="!op.queries">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path }}</p>
+												<p class="wordwrap" ng-show="op.queries">{{ op.verb }} {{ mockiatoHost + virt.baseUrl + op.path + op.queries }}</p>
 												<p ng-show="op.verb === 'POST' || op.verb === 'PUT'" class="tab">Required Headers: Name = Content-Type | Value = application/json</p>
 												<p ng-show="op.verb === 'DELETE'" class="tab">Note: if you included a request payload for DELETE, be sure to use the required headers in your request: Name = Content-Type | Value = application/json</p></br>
 											</fieldset>

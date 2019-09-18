@@ -1,6 +1,10 @@
 var ctrl = angular.module("mockapp.controllers")
-  .controller("rrPairController", ['suggestionsService', '$scope', 'ctrlConstants','domManipulationService','utilityService',
-    function (suggestionsService, $scope, ctrlConstants,domManipulationService,utilityService){
+  .controller("rrPairController", ['suggestionsService', '$scope', '$location', 'ctrlConstants','domManipulationService','utilityService',
+    function (suggestionsService, $scope, $location, ctrlConstants,domManipulationService,utilityService){
+            //To Check if it's for service cration page or service update page.
+            /* if ($location.path().slice(1) === 'addservice') {
+              $scope.isCreateServPage=true;
+            } */
             $scope.addNewRRPair = function () {
                 var newItemNo = $scope.servicevo.rawpairs.length;
                 $scope.servicevo.rawpairs.push({
@@ -9,11 +13,13 @@ var ctrl = angular.module("mockapp.controllers")
                     id: 0
                   }],
                   reqHeadersArr: [{
-                    id: 0
-                  }],
+                    id: 0, 'k': " "
+                   }],
                   resHeadersArr: [{
-                    id: 0
-                  }]
+                    id: 0, 'k': " "
+                   }],
+                   resStatus: " ",
+                   isDup: false
                 });
                 if (newItemNo > 10){
                   $scope.loadMore();
@@ -32,7 +38,39 @@ var ctrl = angular.module("mockapp.controllers")
                   $scope.$apply();
                 });
               };
+              $scope.copyRRPair = function(index){
+                var newItemNo = $scope.servicevo.rawpairs.length;
+                $scope.rrPairCopy = $scope.servicevo.rawpairs[index];
+                var newArray = {};
+               newArray= angular.copy($scope.rrPairCopy);
+                 // clean up autosuggest selections of Headers and Status from the copied RR Pair
+               var selectedStatus = newArray.resStatus;
+               if (selectedStatus && selectedStatus.description) newArray.resStatus = selectedStatus.description.value;
 
+               if (newArray.reqHeadersArr && newArray.reqHeadersArr.length > 0) {
+                 newArray.reqHeadersArr.forEach(function(head) {
+                   var selectedHeader = head.k;
+                   if (selectedHeader) {
+                     if (selectedHeader.description) head.k = selectedHeader.description.name;
+                     else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
+                   }
+                 });
+               }
+
+               if (newArray.resHeadersArr && newArray.resHeadersArr.length > 0) {
+                newArray.resHeadersArr.forEach(function(head) {
+                   var selectedHeader = head.k;
+                   if (selectedHeader) {
+                     if (selectedHeader.description) head.k = selectedHeader.description.name;
+                     else if (selectedHeader.originalObject) head.k = selectedHeader.originalObject;
+                   }
+                 });
+               }
+               console.log("After updating Header & status",newArray);
+                newArray.id = newItemNo;
+                $scope.servicevo.rawpairs.push(newArray);
+                console.log($scope.servicevo.rawpairs);
+              };
               /**
                * Creates a template from a given RR pair's request
                */
@@ -73,7 +111,7 @@ var ctrl = angular.module("mockapp.controllers")
 
               $scope.addNewReqHeader = function (rr) {
                 var newItemNo = rr.reqHeadersArr.length;
-                rr.reqHeadersArr.push({ 'id': newItemNo });
+                rr.reqHeadersArr.push({ 'id': newItemNo, 'k': " " });
               };
         
               $scope.removeReqHeader = function (rr, index) {
@@ -82,7 +120,7 @@ var ctrl = angular.module("mockapp.controllers")
         
               $scope.addNewResHeader = function (rr) {
                 var newItemNo = rr.resHeadersArr.length;
-                rr.resHeadersArr.push({ 'id': newItemNo });
+                rr.resHeadersArr.push({ 'id': newItemNo, 'k': " " });
               };
         
               $scope.removeResHeader = function (rr, index) {

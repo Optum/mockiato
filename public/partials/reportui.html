@@ -1,0 +1,96 @@
+<h2>Mockiato statistics</h2>
+<br>
+<table class="table">
+    <tr bgcolor="#FFFFFF">
+        <td>
+            <h4>Types of services</h4>
+        </td>
+        <td></td>
+        <td>
+            <h4>Count</h4>
+        </td>
+    </tr>
+    <tr bgcolor="#DEE0FF">
+        <td>Services</td>
+        <td></td>
+        <td>{{reportingJson.totalServices}}</td>
+    </tr>
+    <tr class="bg-success">
+        <td>Active services</td>
+        <td></td>
+        <td>{{reportingJson.activeServices}}</td>
+    </tr>
+    <tr class="bg-warning">
+        <td>Draft services</td>
+        <td></td>
+        <td>{{reportingJson.draftServices}}</td>
+    </tr>
+    <tr class="bg-danger">
+        <td>Archived services</td>
+        <td></td>
+        <td>{{reportingJson.archiveServices}}</td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+        <td>
+            <p class="text-muted" style='font-size: 10.5px;'>**Services are Services+MQServices including stopped
+                services, not including archived or draft services.</p>
+            <p class="text-muted" style='font-size: 10.5px;'>**Active services are running Services+MQServices. It does not
+                include stopped services, archived or draft services.</p>
+            <br><br>
+            <h4>Users & groups</h4>
+        </td>
+    </tr>
+    <tr class="bg-info">
+        <td>Users</td>
+        <td></td>
+        <td>{{reportingJson.users}}</td>
+    </tr>
+    <tr bgcolor="#DCDCDC">
+        <td>Groups</td>
+        <td></td>
+        <td>{{reportingJson.systems}}</td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+        <td>
+            <br><br>
+            <h4>Transactions</h4>
+        </td>
+    </tr>
+    <tr bgcolor="#DEFFFF">
+        <td>Total transactions</td>
+        <td></td>
+        <td>{{reportingJson.totalTransactions}}</td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+        <td>
+            <br><br>
+            <h4>Group names <a href="" title="sort by group name"
+                    ng-click="orderByField='sut'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort"
+                            class="glyphicon glyphicon-sort" style='color: #32CD32'></span></small><small><span
+                            ng-show="reverseSort" class="glyphicon glyphicon-sort"
+                            style='color: #FF4851'></span></small></a></h4>
+        </td>
+        <td>
+            <br><br>
+            <h4>Services count <a href="" title="sort by services count"
+                    ng-click="orderByField='services'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort"
+                            class="glyphicon glyphicon-sort" style='color: #32CD32'></span></small><small><span
+                            ng-show="reverseSort" class="glyphicon glyphicon-sort"
+                            style='color: #FF4851'></span></small></a></h4>
+        </td>
+        <td>
+            <br><br>
+            <h4>Transactions count <a href="" title="sort by transactions count"
+                    ng-click="orderByField='transactions'; reverseSort = !reverseSort"><small><span
+                            ng-show="!reverseSort" class="glyphicon glyphicon-sort"
+                            style='color: #32CD32'></span></small><small><span ng-show="reverseSort"
+                            class="glyphicon glyphicon-sort" style='color: #FF4851'></span></small></a></h4>
+        </td>
+    </tr>
+    <tr ng-repeat="sutAndservice in reportingJson.servicesByGroup | orderBy:orderByField:reverseSort"
+        ng-class-odd="'odd'" ng-class-even="'even'">
+        <td>{{sutAndservice.sut}}</td>
+        <td>{{sutAndservice.services}}</td>
+        <td>{{sutAndservice.transactions}}</td>
+    </tr>
+</table>

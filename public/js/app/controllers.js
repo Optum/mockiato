@@ -27,15 +27,16 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
     }])
 
-  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'ctrlConstants','modalService', 'mqInfoFactory',
+  .controller("myMenuAppController", ['$scope', 'apiHistoryService', 'sutService', 'authService', 'suggestionsService', 'helperFactory', 'commonCodeFactory','ctrlConstants','modalService', 'mqInfoFactory',
     
-    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, ctrlConstants, modalService, mqInfoFactory) {
+    function ($scope, apiHistoryService, sutService, authService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, modalService, mqInfoFactory) {
       $scope.canEdit = function(){ return true; }
       $scope.myUser = authService.getUserInfo().username;
       $scope.canChangeType = true;
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.mqLabelsOriginal = [];
       $scope.servicevo = {};
+      $scope.servicevo.defResStatus=" ";
       $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
       $scope.servicevo.failStatuses = [{ id: 0, val: '' }];
       $scope.servicevo.failStrings = [{ id: 0, val: '' }];
@@ -45,11 +46,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           id: 0
         }],
         reqHeadersArr: [{
-          id: 0,
+          id: 0, 'k': " "
         }],
         resHeadersArr: [{
-          id: 0
-        }]
+          id: 0, 'k': " "
+        }],
+        resStatus: " "
       }];
 
       $scope.statusCodes = suggestionsService.getStatusCodes();
@@ -72,46 +74,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       });
       
       $scope.publishservice = function (servicevo) {
-
-        var i = servicevo.rawpairs.length;
-        while(i--){
-           /* handle blank request payload - when you edit and make request payload empty
-        then request payload becomes empty string so duplicate request check wil not work. */
-          if( servicevo.rawpairs[i].requestpayload == '' || servicevo.rawpairs[i].requestpayload === null){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          // handeling GET method without requestpayload 
-          if(servicevo.rawpairs[i].method!== 'GET')
-          {
-            servicevo.rawpairs[i].getPayloadRequired = false;
-          }
-          
-          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          }
-        //handle blank query params in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.queriesArr.length;
-          while(i--){
-            if( rrpair.queriesArr[i].k == '' ){
-              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
-            }
-          }
-        });
-        //handle blank Request Headers in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.reqHeadersArr.length;
-          while(i--){
-            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
-              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
-            }
-          }
-        });
         try {
+          servicevo = commonCodeFactory.modifyServicevoBeforePublish(servicevo);
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           } else {
@@ -186,13 +153,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
 
     }])
-  .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', '$timeout', 'authService',
-    function ($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, $timeout, authService) {
+  .controller("viewRecorderController", ['$scope', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory','ctrlConstants', '$timeout', 'authService',
+    function ($scope, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory,ctrlConstants, $timeout, authService) {
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
       var totalRRPairs = 0;
-
-
 
       function processRRPairs(rrpairs) {
         var rrpairsRaw = [];
@@ -360,10 +325,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               return true;
             }
             else {
-
               return false;
             }
           };
+          if(!newsutlist.includes($scope.servicevo.sut.name)){
+            $('#genricMsg-dialog').find('.modal-title').html(ctrlConstants.EDIT_RECORDING_INFO_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').html("You can\'t edit this recording because you aren\'t part of the group <b>"+$scope.servicevo.sut.name+"</b>.");
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.EDIT_SERV_INFO_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+          }
         })
 
         .catch(function (err) {
@@ -372,9 +342,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       $scope.publishService = function (servicevo) {
         try {
+          servicevo = commonCodeFactory.modifyServicevoBeforePublish(servicevo);
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           } else {
@@ -419,6 +390,48 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               basePath: service.basePath,
 
             };
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+              $scope.servicevo.defResStatus = service.defaultResponse.defResStatus;
+            }
+            if (service.liveInvocation) {
+
+              $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
+              $scope.servicevo.remotePort = service.liveInvocation.remotePort;
+              $scope.servicevo.remotePath = service.liveInvocation.remoteBasePath;
+              $scope.servicevo.liveInvocationCheck = service.liveInvocation.enabled;
+              $scope.servicevo.invokeSSL = service.liveInvocation.ssl;
+              //Extract and build out codes/strings for failures
+              var failStatusCodes = service.liveInvocation.failStatusCodes;
+              var failStrings = service.liveInvocation.failStrings;
+              $scope.servicevo.failStatuses = [];
+              $scope.servicevo.failStrings = [];
+              for (var i = 0; i < failStatusCodes.length; i++) {
+                $scope.servicevo.failStatuses[i] = { 'id': i, 'val': failStatusCodes[i] };
+
+              }
+              for (var i = 0; i < failStrings.length; i++) {
+                $scope.servicevo.failStrings[i] = { 'id': i, 'val': failStrings[i] };
+              }
+              if (!$scope.servicevo.failStatuses.length) {
+                $scope.servicevo.failStatuses[0] = { 'id': 0, val: '' };
+              }
+              if (!$scope.servicevo.failStrings.length) {
+                $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
+              }
+              //Select correct radio
+              if (service.liveInvocation.liveFirst)
+                $scope.servicevo.liveInvokePrePost = 'PRE';
+              else
+                $scope.servicevo.liveInvokePrePost = 'POST';
+
+            } else {
+              $scope.servicevo.failStatuses = [];
+              $scope.servicevo.failStrings = [];
+              $scope.servicevo.failStatuses[0] = { 'id': 0, val: '' };
+              $scope.servicevo.failStrings[0] = { 'id': 0, val: '' };
+            }
 
             $scope.myUser = authService.getUserInfo().username;
 
@@ -560,8 +573,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       this.getService();
     }])
 
-  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', 'modalService',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, modalService) {
+  .controller("showDraftController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory','ctrlConstants', 'sutService', 'authService', 'modalService',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, sutService, authService, modalService) {
       $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -586,6 +599,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               basePath: service.basePath
             };
 
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+              $scope.servicevo.defResStatus = service.defaultResponse.defResStatus;
+            }
             if (service.liveInvocation) {
 
               $scope.servicevo.remoteHost = service.liveInvocation.remoteHost;
@@ -785,46 +803,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       
       $scope.updateService = function (servicevo) {
-        /* handle blank request payload - when you edit and make request payload empty
-        then request payload becomes empty string so duplicate request check wil not worker. */
-        var i = servicevo.rawpairs.length;
-        while(i--){
-          if( servicevo.rawpairs[i].requestpayload == ''  || servicevo.rawpairs[i].requestpayload === null){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-         // handeling GET method without requestpayload 
-          if(servicevo.rawpairs[i].method!== 'GET')
-          {
-            servicevo.rawpairs[i].getPayloadRequired = false;
-          }
-          
-          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          }
-
-        //handle blank query params in rrpairs. if you provide query param and then make it blank.
-        servicevo.rawpairs.forEach(function(rrpair){ 
-          var i = rrpair.queriesArr.length;
-          while(i--){
-            if( rrpair.queriesArr[i].k == '' ){
-              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
-            }
-          }
-        });
-        //handle blank Request Headers in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.reqHeadersArr.length;
-          while(i--){
-            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
-              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
-            }
-          }
-        });
         try {
+          servicevo = commonCodeFactory.modifyServicevoBeforePublish(servicevo);
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           } else {
@@ -974,6 +957,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                 return false;
               }
             };
+            if(!newsutlist.includes($scope.servicevo.sut.name)){
+              $('#genricMsg-dialog').find('.modal-title').html(ctrlConstants.EDIT_RECORDING_INFO_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').html("You can\'t edit this recording because you aren\'t part of the group <b>"+$scope.servicevo.sut.name+"</b>.");
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.EDIT_SERV_INFO_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+            }
           })
 
           .catch(function (err) {
@@ -1156,8 +1145,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       });
       $scope.pollForRRPairs();
     }])
-  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
-    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
+  .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
+    function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
       $scope.showDates = true;
       $scope.statusCodes = suggestionsService.getStatusCodes();
       $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
@@ -1187,6 +1176,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
 
             };
+            console.log(service.defaultResponse);
+            if(service.defaultResponse){
+              $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
+              $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+              $scope.servicevo.defResStatus = service.defaultResponse.defResStatus;
+            }
 
             if (service.liveInvocation) {
 
@@ -1257,10 +1252,15 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                     return true;
                   }
                   else {
-                    
                     return false;
                   }
                 };
+                if(!newsutlist.includes($scope.servicevo.sut.name)){
+                  $('#genricMsg-dialog').find('.modal-title').html(ctrlConstants.EDIT_SERV_INFO_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').html("You can\'t edit this service because you aren\'t part of the group <b>"+$scope.servicevo.sut.name+"</b>. You can request access from user <b>"+$scope.servicevo.lastUpdateUser+"</b>.");
+                  $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.EDIT_SERV_INFO_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                }
               })
 
               .catch(function (err) {
@@ -1381,56 +1381,16 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
       this.getService();
 
-      
-
-     
-
       $scope.viewRecorded = function () {
         $location.path("/update/" + $scope.servicevo.id + "/recorded")
       }
      
-      
-
       $scope.updateService = function (servicevo) {
-        //handle blank query params in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.queriesArr.length;
-          while(i--){
-            if( rrpair.queriesArr[i].k == '' ){
-              rrpair.queriesArr[i]={id: rrpair.queriesArr[i].id};
-            }
-          }
-        });
-        /* handle blank request payload - when you edit and make request payload empty
-        then request payload becomes empty string so duplicate request check wil not work. */
-        var i = servicevo.rawpairs.length;
-        while(i--){
-          if( servicevo.rawpairs[i].requestpayload == '' || servicevo.rawpairs[i].requestpayload === null){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          // handeling GET method without requestpayload 
-          if(servicevo.rawpairs[i].method!== 'GET')
-          {
-            servicevo.rawpairs[i].getPayloadRequired = false;
-          }
-          
-          if(servicevo.rawpairs[i].method === 'GET'&& servicevo.rawpairs[i].getPayloadRequired === false){
-            servicevo.rawpairs[i].requestpayload = undefined;
-          }
-          }
-          //handle blank Request Headers in rrpairs
-        servicevo.rawpairs.forEach(function(rrpair){  
-          var i = rrpair.reqHeadersArr.length;
-          while(i--){
-            if(!rrpair.reqHeadersArr[i].k || rrpair.reqHeadersArr[i].k == ''){
-              rrpair.reqHeadersArr[i]={id: rrpair.reqHeadersArr[i].id};
-            }
-          }
-        });
         try {
+          servicevo = commonCodeFactory.modifyServicevoBeforePublish(servicevo);
           if (helperFactory.isDuplicateReq(servicevo)) {
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DUP_REQ_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.DUP_REQ_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DUP_REQ_ERR_BODY);
             $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DUPLICATE_CONFIRM_FOOTER);
             $('#genricMsg-dialog').modal('toggle');
           } else {
@@ -1444,8 +1404,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           $('#genricMsg-dialog').modal('toggle');
         }
       };
-
-     
 
       $scope.serviceInfo = function () {
         console.log($routeParams.id);
@@ -1520,16 +1478,105 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $('#success-modal').modal('toggle');
       }
     }])
-  .controller("recorderListController", ['$scope', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
-    function ($scope, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
-      $scope.sutlist = sutService.getAllSUT();
-      $scope.userlist = userService.getAllUsers();
+  .controller("recorderListController", ['$scope', '$location', '$routeParams','$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
+    function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+       Promise.all([sutService.getAllSUTPromise()]).then(function (values) {
+        $scope.sutlist = values[0];
+        if ($routeParams.sut)
+          performUpdateOnPathParams();
+           });
+
       $scope.recordingList = [];
+      console.log($routeParams);
+
+      $scope.buttonHit = false;
+
+      $scope.$watchGroup(['selectedSut'], function (newVals) {
+        $scope.filtersSelected(newVals[0]);
+        $scope.buttonHit = true; //bool check so function isnt called twice
+      });
+
+
+      $scope.filtersSelected = function (sut) {
+        $location.path("/fetchrecorders/" + (sut ? sut.name : ''));
+       
+        if (sut) {
+          apiHistoryService.getRecordingBySUT(sut.name) .then(function (response) {
+              var data = response.data;
+              console.log(data);
+              $scope.recordingList = data;
+            })
+
+            .catch(function (err) {
+              console.log(err);
+            });
+        }
+
+        else if (!sut) {
+          apiHistoryService.getRecordings().then(function (response) {
+            var data = response.data;
+            $scope.recordingList = data;
+          }) .catch(function (err) {
+              console.log(err);
+            });
+        }
+
+        $scope.orderByField = 'name';
+        $scope.reverseSort = false;
+      };
+
+      function performUpdateOnPathParams() {
+        $scope.filtersSelected($routeParams.sut ? { name: $routeParams.sut } : null);
+        if ($routeParams.sut) {
+          for (let sut of $scope.sutlist) {
+            if (sut.name == $routeParams.sut) {
+              $scope.selectedSut = sut;
+              break;
+            }
+          }
+        } else {
+          $scope.selectedSut = null;
+        }}
+
+      $scope.$on('$routeUpdate', function () {
+        if (!$scope.buttonHit)
+          performUpdateOnPathParams();
+        else
+          $scope.buttonHit = false;
+      });
+      $scope.clearSelected = function () {
+        $scope.selectedSut = null;
+       // $scope.selectedUser = null;
+        $scope.recordingList = [];
+      };
+
+      //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+      $http.get('/api/systems')
+        .then(function (response) {
+          $scope.myUser = authService.getUserInfo().username;
+          $scope.myGroups = [];
+          response.data.forEach(function (sutData) {
+            var sut = {
+              name: sutData.name,
+              members: sutData.members
+            };
+            sut.members.forEach(function (memberlist) {
+              if (memberlist.includes($scope.myUser)) {
+                $scope.myGroups.push(sut.name);
+              }
+            });
+          });
+        }).catch(function (err) {
+          console.log(err);
+        });
+     /** $scope.sutlist = sutService.getAllSUT();
+     // $scope.userlist = userService.getAllUsers();
+      //$scope.recordingList = [];
       apiHistoryService.getRecordings().then(function (response) {
         var data = response.data;
         $scope.recordingList = data;
       });
-
+*/
       $scope.startRecorder = function (recorder) {
         apiHistoryService.startRecorder(recorder)
           .then(function (response) {
@@ -1918,6 +1965,17 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
     }])
 
+  .controller("reportuiController", ['$scope', '$http',
+    function ($scope,  $http) {    
+        $http.get('/api/report')
+        .then(function (response) {
+          $scope.reportingJson = response.data;
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
+    }])
+
   .controller("adminController", ['$scope', 'authService', 'userService', 'sutService', 'ctrlConstants',
     function ($scope, authService, userService, sutService, ctrlConstants) {
       $scope.myUser = authService.getUserInfo().username;
@@ -1926,6 +1984,10 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.selectedSut = [];
       $scope.allSUT = sutService.getAllSUT();
       $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+      var adminUser;
+      userService.getAdmin().then(function (values) {
+        adminUser=values[0].name;
+      });
 
       $scope.checkAndAddGroup = function (createSut) {
         var count = 0;
@@ -1937,26 +1999,37 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         }
         if (count != 0) {
           $scope.createGroupMessage = ctrlConstants.GRP_ALREADY_EXIST_MSG;
+          $scope.deleteGroupMessage = '';
         }
         else {
           sutService.addGroup($scope.createSut);
           $scope.createGroupMessage = ctrlConstants.GRP_CREATED_SUCCESS_MSG;
+          $scope.allSUT = sutService.getAllSUT();
+          $scope.deleteGroupMessage = '';
 
         }
-        window.location.reload(true);
+        //Below resets every thing else on admin page.
+        $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.allSUT = sutService.getAllSUT();
+        $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
       $scope.removeGroup = function (deleteSut) {
         sutService.deleteGroup(deleteSut);
+        //Below resets every thing else on admin page
         $scope.deleteGroupMessage = ctrlConstants.GRP_DELETION_SUCCESS_MSG;
-        window.location.reload(true);
+        $scope.createGroupMessage = '';
+        $scope.deleteSutList = sutService.getGroupsToBeDeleted($scope.myUser);
+        $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
+        $scope.allSUT = sutService.getAllSUT();
+        $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
       };
 
 
-      $scope.$watch('selectedSut', function (newSut) {
-        if ($scope.selectedSut != "") { //removes null response, saves resources
-          $scope.memberlist = sutService.getMembers(newSut.name);
-
+      $scope.$watch('selectedSut', function () {
+        if ($scope.selectedSut) { //removes null response, saves resources
+          $scope.memberlist = sutService.getMembers($scope.selectedSut.name);
           //disallows duplicate user add
           $scope.removeMembers = function (users) {
             return $scope.memberlist.indexOf(users.name) === -1;
@@ -1971,9 +2044,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.addMember = function () {
         $scope.memberlist.push($scope.member.name);
         $scope.saveGroup($scope.selectedSut);
+        $scope.getOwnerForThisSut=[];
       }
 
       $scope.removeMember = function (index) {
+        $scope.getOwnerForThisSut=[];
         $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
         $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_USER_BODY);
         $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
@@ -1984,6 +2059,16 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           $scope.$apply();
           $scope.saveGroup($scope.selectedSut);
         });
+      };
+
+      $scope.$watch('getOwnerForThisSut', function () {
+        if ($scope.getOwnerForThisSut) {
+          $scope.usersList = sutService.getMembers($scope.getOwnerForThisSut.name);
+        }
+      });
+
+      $scope.mockiatoAdminFilter = function (item) {
+        return item !== adminUser; 
       };
 
     }])
@@ -2545,7 +2630,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 //Put all the hard coding or constants here for controller.      
 ctrl.constant("ctrlConstants", {
   "DUP_REQ_ERR_TITLE": "Duplicate Request Error",
-  "DUP_REQ_ERR_BODY": "Two Requests are same. Either change request data or relative path of duplicate requests.",
+  "DUP_REQ_ERR_BODY": "Two Requests are same. These RR Pairs are highlighted with below red colour heading.<h4 style='color:#FF0000'><ins><i>Duplicate Req/Res Pair</i></ins></h4></br>Please make sure there is no duplicate request before publish.",
   "PUB_FAIL_ERR_TITLE": "Publish Failure Error",
   "PUB_FAIL_ERR_BODY": "Please ensure your request / response pairs are well formed.",
   "DUP_RECORDER_PATH_TITLE": "Publish Failure: Duplicate Path",
@@ -2587,5 +2672,8 @@ ctrl.constant("ctrlConstants", {
   "MRG_CONFIRM_TITLE": "Merge Confirmation",
   "MRG_CONFIRM_BODY": "Do you want to merge this RRPair into the service?",
   "MRG_CONFIRM_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-success" id="modal-btn-yes">Yes</button><button type="button" data-dismiss="modal" class="btn btn-default" id="modal-btn-no">No</button>',
-  "SERVICE_RESTORE_FAIL_TITLE" : "Restore Fail"
+  "SERVICE_RESTORE_FAIL_TITLE" : "Restore Fail",
+  "EDIT_SERV_INFO_TITLE": "<span class='text-info'>Edit Service Info</span>",
+  "EDIT_SERV_INFO_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-info">OK</button>',
+  "EDIT_RECORDING_INFO_TITLE": "<span class='text-info'>Edit Recording Info</span>"
 });
