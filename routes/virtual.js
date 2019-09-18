@@ -256,7 +256,9 @@ function registerRRPair(service, rrpair) {
           resp.send(new Buffer(resString));
         }
         else if (rrpair.resStatus && !rrpair.resData) {
-          resp.sendStatus(rrpair.resStatus);
+          resp.status(rrpair.resStatus);
+          //resp.sendStatus(rrpair.resStatus);
+          resp.send(new Buffer(""));
         }
         else {
           resp.sendStatus(200);
