@@ -50,7 +50,7 @@
     "unzip2": "^0.2.5",
     "winston": "^3.1.0",
     "winston-splunk-httplogger": "^1.2.2",
-    "xml2js": "0.4.17",
+    "xml2js": "0.4.19",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {

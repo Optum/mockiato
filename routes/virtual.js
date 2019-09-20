@@ -261,7 +261,9 @@ function registerRRPair(service, rrpair) {
           resp.send(new Buffer(""));
         }
         else {
-          resp.sendStatus(200);
+          //resp.sendStatus(200);
+          resp.status(200);
+          resp.send(new Buffer(""));
         }
 
         invoke.incrementTransactionCount(service._id);
