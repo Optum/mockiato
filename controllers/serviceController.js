@@ -943,7 +943,9 @@ function updateService(req, res) {
         }
 
         res.json(newService);
-        syncWorkers(newService, 'register');
+        //syncWorkers(newService, 'register');
+        //fixed for issue - stopped service gives response if you update a service. even when it is stopped in database.
+        syncWorkers(newService, service.running ? 'register' : 'deregister');
       });
     }else{
       const query = { $or: [ { 'service._id': req.params.id }, { 'mqservice._id': req.params.id } ] };
