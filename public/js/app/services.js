@@ -497,10 +497,18 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     liveFirst : servicevo.liveInvokePrePost == 'PRE'
                   };
                   console.log("This is default response", servicevo.defaultResponsePayload );
+
+                  let defStatus;
+                  if(servicevo.defResStatus && servicevo.defResStatus.description){
+                    defStatus = servicevo.defResStatus.description.value;
+                  }else if (servicevo.defResStatus){
+                    defStatus = servicevo.defResStatus;
+                  }
                 servData.defaultResponse =
                 {
                   enabled : servicevo.defaultResponseCheck,
-                  defaultResponsePayload : servicevo.defaultResponsePayload
+                  defaultResponsePayload : servicevo.defaultResponsePayload,
+                  defResStatus : defStatus
                 };
                 console.log("This is servData", servData.defaultResponse);
                 // publish the virtual service
@@ -710,10 +718,17 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   liveFirst : servicevo.liveInvokePrePost == 'PRE'
                 };
                 
+                let defStatus;
+                  if(servicevo.defResStatus && servicevo.defResStatus.description){
+                    defStatus = servicevo.defResStatus.description.value;
+                  }else if (servicevo.defResStatus){
+                    defStatus = servicevo.defResStatus;
+                  }
                 servData.defaultResponse =
                 {
                   enabled : servicevo.defaultResponseCheck,
-                  defaultResponsePayload : servicevo.defaultResponsePayload
+                  defaultResponsePayload : servicevo.defaultResponsePayload,
+                  defResStatus : defStatus
                 };
 
               // publish the virtual service

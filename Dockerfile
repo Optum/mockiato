@@ -12,7 +12,10 @@ RUN mkdir -p /app
 COPY . /app
 WORKDIR /app
 
+
+
 # install app dependencies
+RUN npm config set registry https://repo1.uhc.com/artifactory/api/npm/npm-virtual/ 
 RUN npm install
 RUN npm install -g bower
 RUN bower install --allow-root

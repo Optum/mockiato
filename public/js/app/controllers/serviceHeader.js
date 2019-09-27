@@ -1,6 +1,6 @@
 var ctrl = angular.module("mockapp.controllers")
-.controller("serviceHeaderController",['suggestionsService','$scope','modalService',
-    function(suggestionsService,$scope,modalService){
+.controller("serviceHeaderController",['suggestionsService','$scope','modalService','domManipulationService',
+    function(suggestionsService,$scope,modalService,domManipulationService){
         $scope.addFailStatus = function () {
             $scope.servicevo.failStatuses.push({ val: '' });
           }
@@ -23,6 +23,16 @@ var ctrl = angular.module("mockapp.controllers")
           $scope.showLiveInvocationHelp = function(){
             modalService.showLiveInvocationHelp();
           };
+          $scope.expandRequest = function(servicevo){
+            var ele = document.getElementsByClassName("defaultResponsePayload")[0];
+            servicevo.reqExpanded = true;
+            domManipulationService.expandTextarea(ele);        
+          }
+          $scope.collapseRequest = function(servicevo){
+            var ele = document.getElementsByClassName("defaultResponsePayload")[0];
+            servicevo.reqExpanded = false;
+            domManipulationService.collapseTextarea(ele);
+          }
           
     
     }]);

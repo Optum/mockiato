@@ -36,6 +36,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.sutlist = sutService.getGroupsByUser($scope.myUser);
       $scope.mqLabelsOriginal = [];
       $scope.servicevo = {};
+      $scope.servicevo.defResStatus=" ";
       $scope.servicevo.matchTemplates = [{ id: 0, val: '' }];
       $scope.servicevo.failStatuses = [{ id: 0, val: '' }];
       $scope.servicevo.failStrings = [{ id: 0, val: '' }];
@@ -392,6 +393,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             if(service.defaultResponse){
               $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
               $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+              $scope.servicevo.defResStatus = service.defaultResponse.defResStatus;
             }
             if (service.liveInvocation) {
 
@@ -600,6 +602,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             if(service.defaultResponse){
               $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
               $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+              $scope.servicevo.defResStatus = service.defaultResponse.defResStatus;
             }
             if (service.liveInvocation) {
 
@@ -1177,6 +1180,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             if(service.defaultResponse){
               $scope.servicevo.defaultResponseCheck = service.defaultResponse.enabled;
               $scope.servicevo.defaultResponsePayload = service.defaultResponse.defaultResponsePayload;
+              $scope.servicevo.defResStatus = service.defaultResponse.defResStatus;
             }
 
             if (service.liveInvocation) {
