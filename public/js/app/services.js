@@ -6,7 +6,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         $http.get(remoteBodyLocation).then(function(rsp){
           $('#genricMsg-dialog').find('.modal-title').text(title);
           $('#genricMsg-dialog').find('.modal-body').html(rsp.data);
-          $('#genricMsg-dialog').find('.modal-footer').html("");
+          $('#genricMsg-dialog').find('.modal-footer').html(footer);
           $('#genricMsg-dialog').modal('toggle');
         });
       }
