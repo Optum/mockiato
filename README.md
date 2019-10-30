@@ -6,8 +6,13 @@
 
 1. Clone this repo: `git clone https://github.com/Optum/mockiato.git && cd mockiato`
 2. Set secret for JWT: `echo MOCKIATO_SECRET="<REPLACE>" > .env`
-3. Start Mockiato & MongoDB: `docker-compose up`
-4. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
+3. Delete line no. 18 & 19 from Dockerfile
+4. Start Mockiato & MongoDB: `docker-compose up`
+5. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
+
+Note:- 
+1. By deleting line no. 18 & 19 from Dokerfile your NPM packages will be downloaded from public NPM registry. To use private NPM registry you need to provide build argument REG_URL in docker build or docker-compose build commands. 
+2. If you run the project locally (npm start) without docker you can use .npmrc file to download packages from private NPM registry. If you don't create .npmrc file NPM packages will be downloaded from public NPM registry by default.
 
 This quick-start makes some basic assumptions on how you want to run the application. For other possible configurations, please see the next section.
 
