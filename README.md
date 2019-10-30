@@ -27,6 +27,8 @@ Mockiato can be configured with the following environment variables. These can b
 | MONGODB_HOST | localhost | The hostname for your Mongo instance |
 | MONGODB_USER | admin | The user to connect to Mongo with |
 | MONGODB_PASSWORD | | The password for the Mongo user |
+| MOCKIATO_ADMIN | | The admin user id |
+| MOCKIATO_ARCHIVE | 0 0 1 * * | The time interval for archive service to delete permanently. The value is Cron-style Scheduling type|
 
 
 ## What is it?
