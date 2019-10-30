@@ -15,7 +15,7 @@ WORKDIR /app
 
 
 # install app dependencies
-ARG REG_URL
+ARG REG_URL=https://registry.npmjs.org/
 RUN npm config set registry $REG_URL
 RUN npm install
 RUN npm install -g bower
