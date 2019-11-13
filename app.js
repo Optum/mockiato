@@ -162,13 +162,14 @@ function init() {
   const virtual = require('./routes/virtual');
   const api = require('./routes/services');
   const invoke = require('./routes/invoke');
-
+  const restclient = require('./routes/restClient');
   // register SOAP / REST virts from DB
   virtual.registerAllRRPairsForAllServices();
 
   app.use('/api/services', api);
   app.use('/virtual', virtual.router);
   app.use('/virtual', invoke.router);
+  app.use('/restClient', restclient);
 
   // initialize recording routers
   const recorder = require('./routes/recording');
