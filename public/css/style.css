@@ -143,3 +143,13 @@ input[type="radio"] {
   margin: 2px;
   text-align: center;
 }
+
+.description {
+  color: #000;
+}
+
+.description em {
+  color: green;
+  font-style: normal;
+  font-family: "Times New Roman", Times, serif;
+}

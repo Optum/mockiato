@@ -1,0 +1,75 @@
+<div ng-controller="serviceHeaderController">
+<div class="form-group req row">
+    <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
+    <div class="col-xs-8">
+      <div class="radio">
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-disabled="!canChangeType">
+              SOAP
+        </label>
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-disabled="!canChangeType">
+              REST
+        </label>
+      </div>
+    </div>
+    <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
+        <button class="btn btn-info" title="Api Test" ng-click="updateService()">
+          Update Service <i class="glyphicon glyphicon-pencil"></i>
+        </button>
+      </div>
+  </div>
+
+  <div class="form-group req row" ng-show="!canChangeType">
+    <label for="system_under_test" class="col-xs-2 col-form-label">Group:</label>
+    <div class="col-xs-2">
+      <input required type="text" id="system_under_test" class="form-control" ng-model="servicevo.sut.name" placeholder="Enter new group" ng-disabled="!canChangeType">
+    </div>
+  </div>
+
+  <div class="form-group req row">
+    <label for="service_name" class="col-xs-2 col-form-label">Name:</label>
+    <div class="col-xs-4">
+      <input required type="text" id="service_name" class="form-control" ng-model="servicevo.name" placeholder="Enter Service Name" ng-disabled="!canChangeType">
+    </div>
+  </div>
+
+  <div class="form-group req row" ng-show="servicevo.type !== 'MQ'">
+    <label for="service_base_path" class="col-xs-2 col-form-label">Endpoint:</label>
+    <div class="col-xs-9">
+          <input required type="text" id="base_URL" class="form-control" ng-model="base_URL" ng-disabled="!canChangeType">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label for="service_delay" class="col-xs-2 col-form-label">Response Delay (ms):</label>
+    <div class="col-xs-2">
+      <input type="number" id="service_delay" class="form-control" ng-model="servicevo.delay" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" ng-disabled="!canChangeType"/>
+    </div>
+    <div class="col-xs-1 conjunction">to</div>
+    <div class="col-xs-2">
+        <input type="number" id="service_delayMax" class="form-control" ng-model="servicevo.delayMax" placeholder="0" ng-pattern="/^[0-9]{1,9}$/"
+         onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 48 
+              && event.charCode <= 57" onpaste="return false" ng-disabled="!canChangeType"/>
+      </div>
+  </div>
+
+    <div ng-show="showDates">
+        <div class="form-group row">
+            <label class="col-xs-2 col-form-label">Created At:</label>
+            <div class="col-xs-3"><input id="created_datetime" class="form-control" ng-model="servicevo.createdAt" ng-disabled="true"></div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-xs-2 col-form-label">Updated At:</label>
+            <div class="col-xs-3"><input id="updated_datetime" class="form-control" ng-model="servicevo.updatedAt" ng-disabled="true"></div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-xs-2 col-form-label">Updated By:</label>
+            <div class="col-xs-3"><input id="updated_user" class="form-control" ng-model="servicevo.lastUpdateUser" ng-disabled="true"></div>
+        </div>
+    </div>
+  </div>
