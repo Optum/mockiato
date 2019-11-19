@@ -58,28 +58,52 @@ function processCondition(field,conditionString,flatPayload){
         switch(split[0]){
             case "map":
                 var map = {};
-                if(flatPayload[field]  === undefined)
+                if(flatPayload[field]  === undefined){
+                    logEvent('','',"Match template failure: field " + field + " missing.");
                     return false;
+                }
                 map[split[1]] = flatPayload[field] || '';
                 return {map};
             case "lt":  
-                if(flatPayload[field] === undefined)
+                if(flatPayload[field] === undefined){
+                    logEvent('','',"Match template failure: field " + field + " missing.");
                     return false;
+                }
+                    
                 condNum = parseFloat(split[1]);
                 payloadNum = parseFloat(flatPayload[field]);
-                return payloadNum < condNum;
+                var mt = payloadNum < condNum;
+                if(!mt)
+                    logEvent('','',"Match template failure: field " + field + " did not match lt condition.");
+                return mt;
             case "gt":  
-                if(flatPayload[field] === undefined)
+                if(flatPayload[field] === undefined){
+                    logEvent('','',"Match template failure: field " + field + " missing.");
                     return false;
+                }
                 condNum = parseFloat(split[1]);
                 payloadNum = parseFloat(flatPayload[field]);
-                return payloadNum > condNum;
+                var mt = payloadNum > condNum;
+                if(!mt)
+                    logEvent('','',"Match template failure: field " + field + " did not match gt condition.");
+                return mt;
 
             case "any":
+                if(flatPayload[field] === undefined){
+                    logEvent('','',"Match template failure: field " + field + " missing.");
+                    return false;
+                }
                 return flatPayload[field] !== undefined;
             case "regex":
+                if(flatPayload[field] === undefined){
+                    logEvent('','',"Match template failure: field " + field + " missing.");
+                    return false;
+                }
                 var reg = new RegExp(split[1]);
-                return flatPayload[field].match(reg) !== null;
+                var mt = flatPayload[field].match(reg) !== null;
+                if(!mt)
+                    logEvent('','',"Match template failure: field " + field + " did not match regex.");
+                return mt;
             default:
                 return {};
         }
