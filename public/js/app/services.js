@@ -1093,8 +1093,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         };
     }])
 
-    .service('restClientService', ['$http', '$rootScope', 'authService', 'getSizeFactory',
-    function ($http, rootScope, authService, getSizeFactory) {
+    .service('restClientService', ['$http', '$rootScope', 'authService', 'getSizeFactory', 'servConstants',
+    function ($http, rootScope, authService, getSizeFactory, servConstants) {
         this.callRestClient = function(serviceVo, rr, message) {
           var data = {
             "basePath" : rootScope.mockiatoHost + '/virtual' + serviceVo.basePath,
