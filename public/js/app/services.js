@@ -1093,6 +1093,45 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         };
     }])
 
+    .service('restClientService', ['$http', '$rootScope', 'authService', 'getSizeFactory',
+    function ($http, rootScope, authService, getSizeFactory) {
+        this.callRestClient = function(serviceVo, rr, message) {
+          var data = {
+            "basePath" : rootScope.mockiatoHost + '/virtual' + serviceVo.basePath,
+            "method" : rr.method,
+            "relativePath" : rr.path,
+            "queries" : rr.queries,
+            "reqHeaders" : rr.reqHeaders,
+            "reqData" : rr.reqData
+          };
+
+          var params = {};
+          params.token = authService.getUserInfo().token;;
+          //send any number of params here.
+
+            $http.post('/restClient/request', JSON.stringify(data), {
+              //define configs here
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+            })
+              .then(function (response) {
+                var size = getSizeFactory.getSize(response);
+                response.respSize = size;
+                var time = response.config.responseTimestamp - response.config.requestTimestamp;
+                response.timeTaken = time + ' ' + 'ms';
+                return message(response);
+               })
+              .catch(function (err) {
+                console.log(err);
+                $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
+                $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
+                $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
+                $('#genricMsg-dialog').modal('toggle');
+              });
+        };
+    }])
+
     .service('genDataService', [
         function() {
 
