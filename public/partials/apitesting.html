@@ -1,0 +1,19 @@
+<div class="form-group req row">
+    <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
+    <div class="col-xs-6">
+      <div class="radio">
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-disabled="!canChangeType">
+              SOAP
+        </label>
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'REST'" ng-disabled="!canChangeType">
+              REST
+        </label>
+        <label class="move-radios">
+            <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'MQ'" ng-disabled="!canChangeType">
+              MQ
+        </label>
+      </div>
+    </div>
+</div>

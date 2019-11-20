@@ -1294,6 +1294,16 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
     }])
 
+  .controller("apiTestingController", ['$scope', '$http',
+      function ($scope,  $http) {    
+           $http.get('/api/report')
+          .then(function (response) {
+            $scope.reportingJson = response.data;
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+      }])
 
   .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
