@@ -1,23 +1,24 @@
 [![Build Status](https://travis-ci.org/Optum/mockiato.svg?branch=master)](https://travis-ci.org/Optum/mockiato) [![DeepScan grade](https://deepscan.io/api/projects/2971/branches/22804/badge/grade.svg)](https://deepscan.io/dashboard#view=project&pid=2971&bid=22804)
 
-# Mockiato: A web-based platform for API virtualization 
- 
-## Quick Start 
+# Mockiato: A web-based platform for API virtualization
+
+## Quick Start
 
 1. Clone this repo: `git clone https://github.com/Optum/mockiato.git && cd mockiato`
 2. Set secret for JWT: `echo MOCKIATO_SECRET="<REPLACE>" > .env`
 3. Start Mockiato & MongoDB: `docker-compose up`
 4. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
+5. Use the '...Register an account here.' link to register as a default admin account and log in.
 
-Note:- 
-1. To use private NPM registry you need to provide build argument REG_URL(private registry url) in docker build or docker-compose build commands. 
+Note:-
+1. To use private NPM registry you need to provide build argument REG_URL(private registry url) in docker build or docker-compose build commands.
 2. If you run the project locally (npm start) without docker you can use .npmrc file to download packages from private NPM registry. If you don't create .npmrc file NPM packages will be downloaded from public NPM registry (https://registry.npmjs.org/) by default.
 
 This quick-start makes some basic assumptions on how you want to run the application. For other possible configurations, please see the next section.
 
 ## Configuration
 
-Mockiato can be configured with the following environment variables. These can be set globally or in a file called `.env` in the project root directory. 
+Mockiato can be configured with the following environment variables. These can be set globally or in a file called `.env` in the project root directory.
 
 | Option | Example | Description |
 | ------ | ------------- | ----------- |
@@ -54,7 +55,7 @@ For more information on the methods available in the API, please see our Swagger
 
 #### NoSQL
 
-All of the data that comprises a virtual service (base path, request data, response data, etc.) is stored in a Mongo database. 
+All of the data that comprises a virtual service (base path, request data, response data, etc.) is stored in a Mongo database.
 
 Please see the next section for more information on the data models behind Mockiato.
 
