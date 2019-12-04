@@ -1296,18 +1296,21 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
   .controller('apiTestingController',['$scope',
     function ($scope) {
+
       /** holds tabs, we will perform repeat on this **/
       $scope.tabs = [{
         id: 1,
-        content: 'This is a default tab on load'
+        content: 'This is a default tab on load',
+        method: 'GET'
       }]
 
       $scope.counter = 1;
       /** Function to add a new tab **/
       $scope.addTab = function () {
         $scope.counter++;
-        $scope.tabs.push({ id: $scope.counter, content: 'Any Content' });
-        $scope.selectedTab = $scope.tabs.length - 1; //set the newly added tab active. 
+        $scope.tabs.push({ id: $scope.counter, content: 'Any Content', method: 'GET' });
+        $scope.selectedTab = $scope.tabs.length - 1; //set the newly added tab active.
+        $scope.httpMethod = 'GET';
       }
 
       /** Function to delete a tab **/
@@ -1320,6 +1323,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       /** Function to set selectedTab **/
       $scope.selectTab = function (index) {
         $scope.selectedTab = index;
+        $scope.httpMethod = $scope.tabs[$scope.selectedTab].method;
+      }
+
+      /** Function to change header name of a tab on selecting diff. method. **/
+      $scope.update = function () {
+        $scope.tabs[$scope.selectedTab].method=$scope.httpMethod;
       }
     }])
 

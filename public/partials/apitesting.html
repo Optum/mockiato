@@ -19,8 +19,8 @@
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" ng-repeat="tab in tabs" ng-click="selectTab($index)"
       ng-class="{'active':selectedTab == $index}">
-      <a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">Tab {{tab.id}} <span
-          ng-click="deleteTab($index)" class="glyphicon glyphicon-remove"></span></a>
+      <a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">{{tab.method}}&emsp;&emsp;
+        <span ng-click="deleteTab($index)" class="glyphicon glyphicon-remove"></span></a>
     </li>
     <li role="presentation" ng-click="addTab()">
       <a aria-controls="home" role="tab" data-toggle="tab" class="glyphicon glyphicon-plus"></a>
@@ -28,8 +28,29 @@
   </ul>
   <div class="tab-content">
     <div role="tabpanel" class="tab-pane active" id="tab">
-      <h1>Tab {{tabs[selectedTab].id}}</h1>
-      <h3>Content:- {{tabs[selectedTab].content}}</h3>
+      <!-- <h1>Tab {{tabs[selectedTab].id}}</h1>
+      <h3>Content:- {{tabs[selectedTab].content}}</h3> -->
+          <p></p>
+          <label for="service_method" class="col-xs-2 col-form-label">HTTP Method:</label>
+          <div class="col-xs-3">
+            <div class="radio">
+                <select ng-model="httpMethod" ng-init="httpMethod = 'GET'" ng-change="update()">
+                    <option value="GET" ng-value="'GET'">GET</option>
+                    <option value="POST" ng-value="'POST'">POST</option>
+                    <option value="UPDATE" ng-value="'UPDATE'">UPDATE</option>
+                    <option value="DELETE" ng-value="'DELETE'">DELETE</option>
+                    <option value="PATCH" ng-value="'PATCH'">PATCH</option>
+                    <option value="PUT" ng-value="'PUT'">PUT</option>
+                    <option value="HEAD" ng-value="'HEAD'">HEAD</option>
+                    <option value="CONNECT" ng-value="'CONNECT'">CONNECT</option>
+                    <option value="OPTIONS" ng-value="'OPTIONS'">OPTIONS</option>
+                    <option value="TRACE" ng-value="'TRACE'">TRACE</option>              
+                  </select>
+            </div>
+          </div>
+        
+
+
     </div>
   </div>
 </div>
