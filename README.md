@@ -8,6 +8,7 @@
 2. Set secret for JWT: `echo MOCKIATO_SECRET="<REPLACE>" > .env`
 3. Start Mockiato & MongoDB: `docker-compose up`
 4. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
+5. Use the '...Register an account here.' link to register as a mockiato user and log in.
 
 Note:- 
 1. To use private NPM registry you need to provide build argument REG_URL(private registry url) in docker build or docker-compose build commands. 
