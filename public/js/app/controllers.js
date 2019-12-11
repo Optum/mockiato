@@ -1281,17 +1281,14 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       $scope.callApi = function (rr) {
         restClientService.callRestClient($scope.servicevo, rr, function (message) {
-          if (message) { 
-              if(message.headers('content-type') && message.headers('content-type').startsWith('application/json')){
-                message.data=JSON.stringify(message.data,null,"    ");
-              }
-             message.selectedRRPair=rr;
-             message.headerLength = Object.keys(message.headers()).length;
-             $scope.restClientResponse = message;
+          if (message.data && message.headers('content-type') && message.headers('content-type').startsWith('application/json')) {
+            message.data = JSON.stringify(message.data, null, "    ");
           }
+          message.selectedRRPair = rr;
+          message.headerLength = Object.keys(message.headers()).length;
+          $scope.restClientResponse = message;
         });
       }
-
     }])
 
 
