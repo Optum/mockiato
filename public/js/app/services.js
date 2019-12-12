@@ -1163,7 +1163,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           }
 
           var params = {};
-          params.token = authService.getUserInfo().token;;
+          params.token = authService.getUserInfo().token;
           //send any number of params here.
 
             $http.post('/restClient/request', JSON.stringify(data), {
@@ -1180,11 +1180,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                 return message(response);
                })
               .catch(function (err) {
-                console.log(err);
-                $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
-                $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
-                $('#genricMsg-dialog').modal('toggle');
+                var time = new Date().getTime() - err.config.requestTimestamp;
+                err.timeTaken = time + ' ' + 'ms';
+                var size = getSizeFactory.getSize(err);
+                err.respSize = size;
+                return message(err);
               });
         };
     }])
