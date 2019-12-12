@@ -1,4 +1,14 @@
 <div ng-controller="serviceHeaderController">
+    <div class="form-group row">
+        <div class="col-xs-10">
+                <span ng-style="{color: 'black'}" ><h3><ins>Service Detail</ins></h3></span>
+        </div>
+        <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
+            <button class="btn btn-info" title="Update Service" ng-click="updateService()">
+              Update Service <i class="glyphicon glyphicon-pencil"></i>
+            </button>
+          </div>
+    </div>
 <div class="form-group req row">
     <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
     <div class="col-xs-8">
@@ -13,11 +23,6 @@
         </label>
       </div>
     </div>
-    <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
-        <button class="btn btn-info" title="Api Test" ng-click="updateService()">
-          Update Service <i class="glyphicon glyphicon-pencil"></i>
-        </button>
-      </div>
   </div>
 
   <div class="form-group req row" ng-show="!canChangeType">
