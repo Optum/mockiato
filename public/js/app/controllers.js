@@ -1362,6 +1362,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       }
 
       $scope.callApi = function () {
+        $scope.tabs[$scope.selectedTab].restClientResponse='';
         apiTestService.callAPITest($scope.tabs[$scope.selectedTab], function (message) {
           if (message) { 
               if(message.headers('content-type') && message.headers('content-type').startsWith('application/json')){
