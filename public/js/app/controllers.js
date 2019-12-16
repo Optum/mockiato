@@ -1174,12 +1174,6 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
                     return false;
                   }
                 };
-                // if(!newsutlist.includes($scope.servicevo.sut.name)){
-                //   $('#genricMsg-dialog').find('.modal-title').html(ctrlConstants.EDIT_SERV_INFO_TITLE);
-                //   $('#genricMsg-dialog').find('.modal-body').html("You can\'t edit this service because you aren\'t part of the group <b>"+$scope.servicevo.sut.name+"</b>. You can request access from user <b>"+$scope.servicevo.lastUpdateUser+"</b>.");
-                //   $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.EDIT_SERV_INFO_FOOTER);
-                //   $('#genricMsg-dialog').modal('toggle');
-                // }
               })
 
               .catch(function (err) {
