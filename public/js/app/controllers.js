@@ -1146,10 +1146,48 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.pollForRRPairs();
     }])
 
-  .controller("restClientController", ['$location', '$rootScope', '$scope', '$routeParams', 'apiHistoryService', 'restClientService',
-    function ($location, rootScope, $scope, $routeParams, apiHistoryService, restClientService) {
+  .controller("restClientController", ['$location', '$rootScope', '$scope', '$http', '$routeParams', 'apiHistoryService', 'restClientService', 'authService',
+    function ($location, rootScope, $scope, $http, $routeParams, apiHistoryService, restClientService, authService) {
       $scope.showDates = true;
       $scope.angular = angular;
+
+      $scope.myUser = authService.getUserInfo().username;
+      $http.get('/api/systems')
+              .then(function (response) {
+                var newsutlist = [];
+                response.data.forEach(function (sutData) {
+                  var sut = {
+                    name: sutData.name,
+                    members: sutData.members
+                  };
+                  sut.members.forEach(function (memberlist) {
+                    if (memberlist.includes($scope.myUser)) {
+                      newsutlist.push(sut.name);
+                    }
+                  });
+                });
+                $scope.canEdit = function () {
+                  if (newsutlist.includes($scope.servicevo.sut.name)) {
+                    return true;
+                  }
+                  else {
+                    return false;
+                  }
+                };
+                // if(!newsutlist.includes($scope.servicevo.sut.name)){
+                //   $('#genricMsg-dialog').find('.modal-title').html(ctrlConstants.EDIT_SERV_INFO_TITLE);
+                //   $('#genricMsg-dialog').find('.modal-body').html("You can\'t edit this service because you aren\'t part of the group <b>"+$scope.servicevo.sut.name+"</b>. You can request access from user <b>"+$scope.servicevo.lastUpdateUser+"</b>.");
+                //   $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.EDIT_SERV_INFO_FOOTER);
+                //   $('#genricMsg-dialog').modal('toggle');
+                // }
+              })
+
+              .catch(function (err) {
+                console.log(err);
+              });
+
+
+
       this.getService = function () {
         apiHistoryService.getServiceById($routeParams.id)
 
