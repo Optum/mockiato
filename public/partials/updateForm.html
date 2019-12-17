@@ -1,5 +1,15 @@
 <h2>Update Mock Service</h2>
-<!-- <h4 ng-show="!canEdit() && !isFrmArchive" class="text-info">You are unable to edit this service because you aren't part of the group "{{servicevo.sut.name}}". You can request access from the user: {{servicevo.lastUpdateUser}}.</h4> -->
+<div class="form-group req row">
+    <label class="col-xs-2"></label>
+    <div class="col-xs-8">
+    </div>
+  <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates ">
+      <button class="btn btn-info" title="Api Test" ng-click="goToApiTest()" ng-disabled="isFrmArchive || frmWher == 'frmDraft'">
+        Test Service <i class="glyphicon glyphicon-expand"></i>
+      </button>
+    </div>
+  </div>
+
 <fieldset ng-disabled="!canEdit()">
 <form name="form" ng-disabled="!canEdit()" class="well col-xs-12">
   <!-- @depends /includes/serviceHeader.html -->

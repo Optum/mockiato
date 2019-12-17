@@ -1,7 +1,7 @@
 <div ng-controller="serviceHeaderController">
 <div class="form-group req row">
     <label for="service_payloadtype" class="col-xs-2 col-form-label">Service Type:</label>
-    <div class="col-xs-6">
+    <div class="col-xs-8">
       <div class="radio">
         <label class="move-radios">
             <input ng-model="servicevo.type" id="service_type" type="radio" ng-value="'SOAP'" ng-disabled="!canChangeType">
@@ -17,16 +17,16 @@
         </label>
       </div>
     </div>
-    <div class="col-xs-2" ng-show="servicevo.type !== 'MQ' && showDates">
+    <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
       <button class="btn btn-info" title="Service Info" ng-click="serviceInfo()">
         View Endpoints <i class="glyphicon glyphicon-info-sign"></i>
       </button>
     </div>
-    <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
+    <!-- <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
       <button class="btn btn-info" title="Api Test" ng-click="goToApiTest()">
         Test Service <i class="glyphicon glyphicon-expand"></i>
       </button>
-    </div>
+    </div> -->
   </div>
 
   <div class="form-group req row" ng-show="!canChangeType">
