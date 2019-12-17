@@ -827,6 +827,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       //To Show Service Success Modal when a new service is created as draft.
       if ($routeParams.frmWher == 'frmDraft') {
+        $scope.frmWher = 'frmDraft';
         $http.get('/api/services/draft/' + $routeParams.id)
           .then(function (response) {
             var data;
@@ -1146,10 +1147,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.pollForRRPairs();
     }])
 
-  .controller("restClientController", ['$location', '$rootScope', '$scope', '$routeParams', 'apiHistoryService', 'restClientService',
-    function ($location, rootScope, $scope, $routeParams, apiHistoryService, restClientService) {
+  .controller("restClientController", ['$location', '$rootScope', '$scope', '$http', '$routeParams', 'apiHistoryService', 'restClientService', 'authService',
+    function ($location, rootScope, $scope, $http, $routeParams, apiHistoryService, restClientService, authService) {
       $scope.showDates = true;
       $scope.angular = angular;
+
       this.getService = function () {
         apiHistoryService.getServiceById($routeParams.id)
 
@@ -1275,6 +1277,38 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
       this.getService();
       
+
+      $scope.myUser = authService.getUserInfo().username;
+      $http.get('/api/systems')
+              .then(function (response) {
+                var newsutlist = [];
+                response.data.forEach(function (sutData) {
+                  var sut = {
+                    name: sutData.name,
+                    members: sutData.members
+                  };
+                  sut.members.forEach(function (memberlist) {
+                    if (memberlist.includes($scope.myUser)) {
+                      newsutlist.push(sut.name);
+                    }
+                  });
+                });
+                $scope.canEdit = function () {
+                  if (newsutlist.includes($scope.servicevo.sut.name)) {
+                    return true;
+                  }
+                  else {
+                    return false;
+                  }
+                };
+              })
+
+              .catch(function (err) {
+                console.log(err);
+              });
+
+
+
       $scope.updateService = function () {
         $location.path("/update/" + $scope.servicevo.id + "/restClient")
       }
