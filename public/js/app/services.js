@@ -340,13 +340,32 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                             resPayload = trimmed;
                           }else{
                             resPayload = JSON.parse(rr.responsepayload);
+                            //above line will not fail for special json eg. "test" is valid json
+                            //so below code will restrict to set this type of JSON.
+                              var entry = JSON.parse(rr.responsepayload);
+                              if(typeof (entry) === 'object' && entry !== null){
+                                resPayload = JSON.parse(rr.responsepayload);
+                              }else
+                              throw'special json';
                           }
                         }
                        ;
-                        if (rr.requestpayload) reqPayload = JSON.parse(rr.requestpayload);
+                        if (rr.requestpayload) {
+                          reqPayload = JSON.parse(rr.requestpayload);
+                            //above line will not fail for special json eg. "test" is valid json
+                            //so below code will restrict to set this type of JSON.
+                              var entry = JSON.parse(rr.requestpayload);
+                              if(typeof (entry) === 'object' && entry !== null){
+                                reqPayload = JSON.parse(rr.requestpayload);
+                              }else
+                              throw'special json';
+                            }
                       }
                       catch(e) {
                         console.log(e);
+                        if(e=='special json')
+                        throw 'JSON in an RR pair is not supported !';
+                        else
                         throw 'JSON in an RR pair is malformed.';
                       }
                     }
