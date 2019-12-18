@@ -1132,6 +1132,64 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         };
     }])
 
+    .service('apiTestService', ['$http', '$rootScope', 'authService', 'getSizeFactory', 'servConstants', 'getQueryParamsFactory',
+    function ($http, rootScope, authService, getSizeFactory, servConstants, getQueryParamsFactory) {
+        this.callAPITest = function(tab, message) {
+          var queryParams = getQueryParamsFactory.getQueryParams(tab.requestURL);
+          var reqHeader = {};
+          for (var i = 0; i < tab.reqHeadersArr.length; i++) {
+            var key;
+            if(tab.reqHeadersArr[i].k && tab.reqHeadersArr[i].k.originalObject.name)
+               key = tab.reqHeadersArr[i].k.originalObject.name;
+            else if(tab.reqHeadersArr[i].k)
+               key = tab.reqHeadersArr[i].k.originalObject;
+            if(key)
+            reqHeader[key] = tab.reqHeadersArr[i].v;
+        }
+
+        if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'].startsWith('application/json')){
+          tab.requestpayload=JSON.parse(tab.requestpayload);
+        }
+          var data = {
+            "basePath" : tab.requestURL.split('?')[0],
+            "method" : tab.method,
+            "relativePath" : '',
+            "queries" : queryParams,
+            "reqHeaders" : reqHeader,
+            "reqData" : tab.requestpayload
+          };
+
+          if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'].startsWith('application/json')){
+            tab.requestpayload=JSON.stringify(tab.requestpayload,null,"    ");
+          }
+
+          var params = {};
+          params.token = authService.getUserInfo().token;
+          //send any number of params here.
+
+            $http.post('/restClient/request', JSON.stringify(data), {
+              //define configs here
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+            })
+              .then(function (response) {
+                var size = getSizeFactory.getSize(response);
+                response.respSize = size;
+                var time = response.config.responseTimestamp - response.config.requestTimestamp;
+                response.timeTaken = time + ' ' + 'ms';
+                return message(response);
+               })
+              .catch(function (err) {
+                var time = new Date().getTime() - err.config.requestTimestamp;
+                err.timeTaken = time + ' ' + 'ms';
+                var size = getSizeFactory.getSize(err);
+                err.respSize = size;
+                return message(err);
+              });
+        };
+    }])
+
     .service('genDataService', [
         function() {
 

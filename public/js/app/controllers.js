@@ -1325,6 +1325,85 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       }
     }])
 
+  .controller('apiTestingController', ['$scope', 'suggestionsService', 'domManipulationService', 'apiTestService',
+    function ($scope, suggestionsService, domManipulationService, apiTestService) {
+
+      $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
+      $scope.addNewReqHeader = function (reqHeadersArr) {
+        var newItemNo = reqHeadersArr.length;
+        reqHeadersArr.push({ 'id': newItemNo, 'k': " " });
+      };
+
+      $scope.removeReqHeader = function (reqHeadersArr, index) {
+        reqHeadersArr.splice(index, 1);
+      };
+
+      $scope.expandRequest = function () {
+        var ele = document.getElementsByClassName("requestPayload")[0];
+        $scope.reqExpanded = true;
+        domManipulationService.expandTextarea(ele);
+      }
+      $scope.collapseRequest = function () {
+        var ele = document.getElementsByClassName("requestPayload")[0];
+        $scope.reqExpanded = false;
+        domManipulationService.collapseTextarea(ele);
+      }
+      $scope.expandResponse = function () {
+        var ele = document.getElementsByClassName("responsePayload")[0];
+        $scope.resExpanded = true;
+        domManipulationService.expandTextarea(ele);
+      }
+      $scope.collapseResponse = function () {
+        var ele = document.getElementsByClassName("responsePayload")[0];
+        $scope.resExpanded = false;
+        domManipulationService.collapseTextarea(ele);
+      }
+
+      /** holds tabs, we will perform repeat on this **/
+      $scope.tabs = [{
+        id: 1,
+        method: 'GET',
+        requestURL: '',
+        reqHeadersArr: [{
+          id: 0
+        }],
+        requestpayload: ''
+      }]
+
+      $scope.counter = 1;
+      /** Function to add a new tab **/
+      $scope.addTab = function () {
+        $scope.counter++;
+        $scope.tabs.push({ id: $scope.counter, method: 'GET', requestURL: '', reqHeadersArr: [{ id: 0 }], requestpayload: '' });
+        $scope.selectedTab = $scope.tabs.length - 1; //set the newly added tab active.
+      }
+
+      /** Function to delete a tab **/
+      $scope.deleteTab = function (index) {
+        $scope.tabs.splice(index, 1); //remove the object from the array based on index
+      }
+
+      $scope.selectedTab = 0; //set selected tab to the 1st by default.
+      /** Function to set selectedTab **/
+      $scope.selectTab = function (index) {
+        $scope.selectedTab = index;
+        $scope.collapseRequest();
+        $scope.collapseResponse();
+      }
+
+      $scope.callApi = function () {
+        $scope.tabs[$scope.selectedTab].restClientResponse='';
+        apiTestService.callAPITest($scope.tabs[$scope.selectedTab], function (message) {
+          if (message.data && message.headers('content-type') && message.headers('content-type').startsWith('application/json')) {
+                message.data=JSON.stringify(message.data,null,"    ");
+              }
+             message.headerLength = Object.keys(message.headers()).length;
+             $scope.tabs[$scope.selectedTab].restClientResponse = message;
+        });
+      }
+
+    }])
 
   .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
