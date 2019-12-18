@@ -1138,10 +1138,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           var queryParams = getQueryParamsFactory.getQueryParams(tab.requestURL);
           var reqHeader = {};
           for (var i = 0; i < tab.reqHeadersArr.length; i++) {
+            var key;
             if(tab.reqHeadersArr[i].k && tab.reqHeadersArr[i].k.originalObject.name)
-              var key = tab.reqHeadersArr[i].k.originalObject.name;
+               key = tab.reqHeadersArr[i].k.originalObject.name;
             else if(tab.reqHeadersArr[i].k)
-              var key = tab.reqHeadersArr[i].k.originalObject;
+               key = tab.reqHeadersArr[i].k.originalObject;
             if(key)
             reqHeader[key] = tab.reqHeadersArr[i].v;
         }
