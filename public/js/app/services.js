@@ -339,14 +339,33 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                           if(trimmed == "{}" || trimmed == "[]"){
                             resPayload = trimmed;
                           }else{
-                            resPayload = JSON.parse(rr.responsepayload);
+                              JSON.parse(rr.responsepayload);
+                            //above line will not fail for special json eg. "test" is valid json
+                            //so below code will restrict to set this type of JSON.
+                              let entry = JSON.parse(rr.responsepayload);
+                              if(typeof (entry) === 'object' && entry !== null){
+                                  JSON.parse(rr.responsepayload);
+                              }else
+                              throw'special json';
                           }
                         }
                        ;
-                        if (rr.requestpayload) reqPayload = JSON.parse(rr.requestpayload);
+                        if (rr.requestpayload) {
+                            JSON.parse(rr.requestpayload);
+                            //above line will not fail for special json eg. "test" is valid json
+                            //so below code will restrict to set this type of JSON.
+                              let entry = JSON.parse(rr.requestpayload);
+                              if(typeof (entry) === 'object' && entry !== null){
+                                  JSON.parse(rr.requestpayload);
+                              }else
+                              throw'special json';
+                            }
                       }
                       catch(e) {
                         console.log(e);
+                        if(e=='special json')
+                        throw 'JSON in an RR pair is not supported.';
+                        else
                         throw 'JSON in an RR pair is malformed.';
                       }
                     }
@@ -1096,6 +1115,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     .service('restClientService', ['$http', '$rootScope', 'authService', 'getSizeFactory', 'servConstants',
     function ($http, rootScope, authService, getSizeFactory, servConstants) {
         this.callRestClient = function(serviceVo, rr, message) {
+
+          if(rr.payloadType=='JSON' && !rr.reqHeaders)
+            rr.reqHeaders={"Content-Type": "application/json"};
+          else if(rr.reqHeaders && rr.payloadType=='JSON' && rr.reqHeaders['Content-Type']!=='application/json')
+            rr.reqHeaders['Content-Type']='application/json';
+
           var data = {
             "basePath" : rootScope.mockiatoHost + '/virtual' + serviceVo.basePath,
             "method" : rr.method,
