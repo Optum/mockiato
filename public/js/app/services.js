@@ -520,8 +520,6 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .then(function(response) {
                       var data = response.data;
                       console.log(data);
-                      console.log('isRecording '+ isRecording);
-                      debug.log('isRecording '+ isRecording);
                       if(isRecording){
                         $http.delete('/api/recording/' + $routeParams.id).then(function(){
                           $location.path('/update/' + data._id + '/frmServCreate');
