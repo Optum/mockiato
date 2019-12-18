@@ -82,6 +82,12 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
             
+            .when("/apitesting", {
+                templateUrl: "fusepartials/apitesting.html",
+                controller: "apiTestingController"
+
+            })
+
             .when("/showArchiveService/:id/:frmWher", {
                 templateUrl: "fusepartials/updateForm.html",
                 controller: "showArchiveController",
