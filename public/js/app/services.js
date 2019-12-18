@@ -1096,6 +1096,12 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
     .service('restClientService', ['$http', '$rootScope', 'authService', 'getSizeFactory', 'servConstants',
     function ($http, rootScope, authService, getSizeFactory, servConstants) {
         this.callRestClient = function(serviceVo, rr, message) {
+
+          if(rr.payloadType=='JSON' && !rr.reqHeaders)
+            rr.reqHeaders={"Content-Type": "application/json"};
+          else if(rr.reqHeaders && rr.payloadType=='JSON' && rr.reqHeaders['Content-Type']!=='application/json')
+            rr.reqHeaders['Content-Type']='application/json';
+
           var data = {
             "basePath" : rootScope.mockiatoHost + '/virtual' + serviceVo.basePath,
             "method" : rr.method,
