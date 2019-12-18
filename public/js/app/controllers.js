@@ -827,6 +827,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       //To Show Service Success Modal when a new service is created as draft.
       if ($routeParams.frmWher == 'frmDraft') {
+        $scope.frmWher = 'frmDraft';
         $http.get('/api/services/draft/' + $routeParams.id)
           .then(function (response) {
             var data;
@@ -1146,10 +1147,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.pollForRRPairs();
     }])
 
-  .controller("restClientController", ['$location', '$rootScope', '$scope', '$routeParams', 'apiHistoryService', 'restClientService',
-    function ($location, rootScope, $scope, $routeParams, apiHistoryService, restClientService) {
+  .controller("restClientController", ['$location', '$rootScope', '$scope', '$http', '$routeParams', 'apiHistoryService', 'restClientService', 'authService',
+    function ($location, rootScope, $scope, $http, $routeParams, apiHistoryService, restClientService, authService) {
       $scope.showDates = true;
       $scope.angular = angular;
+
       this.getService = function () {
         apiHistoryService.getServiceById($routeParams.id)
 
@@ -1275,6 +1277,38 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
       this.getService();
       
+
+      $scope.myUser = authService.getUserInfo().username;
+      $http.get('/api/systems')
+              .then(function (response) {
+                var newsutlist = [];
+                response.data.forEach(function (sutData) {
+                  var sut = {
+                    name: sutData.name,
+                    members: sutData.members
+                  };
+                  sut.members.forEach(function (memberlist) {
+                    if (memberlist.includes($scope.myUser)) {
+                      newsutlist.push(sut.name);
+                    }
+                  });
+                });
+                $scope.canEdit = function () {
+                  if (newsutlist.includes($scope.servicevo.sut.name)) {
+                    return true;
+                  }
+                  else {
+                    return false;
+                  }
+                };
+              })
+
+              .catch(function (err) {
+                console.log(err);
+              });
+
+
+
       $scope.updateService = function () {
         $location.path("/update/" + $scope.servicevo.id + "/restClient")
       }
@@ -1291,6 +1325,85 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       }
     }])
 
+  .controller('apiTestingController', ['$scope', 'suggestionsService', 'domManipulationService', 'apiTestService',
+    function ($scope, suggestionsService, domManipulationService, apiTestService) {
+
+      $scope.possibleHeaders = suggestionsService.getPossibleHeaders();
+
+      $scope.addNewReqHeader = function (reqHeadersArr) {
+        var newItemNo = reqHeadersArr.length;
+        reqHeadersArr.push({ 'id': newItemNo, 'k': " " });
+      };
+
+      $scope.removeReqHeader = function (reqHeadersArr, index) {
+        reqHeadersArr.splice(index, 1);
+      };
+
+      $scope.expandRequest = function () {
+        var ele = document.getElementsByClassName("requestPayload")[0];
+        $scope.reqExpanded = true;
+        domManipulationService.expandTextarea(ele);
+      }
+      $scope.collapseRequest = function () {
+        var ele = document.getElementsByClassName("requestPayload")[0];
+        $scope.reqExpanded = false;
+        domManipulationService.collapseTextarea(ele);
+      }
+      $scope.expandResponse = function () {
+        var ele = document.getElementsByClassName("responsePayload")[0];
+        $scope.resExpanded = true;
+        domManipulationService.expandTextarea(ele);
+      }
+      $scope.collapseResponse = function () {
+        var ele = document.getElementsByClassName("responsePayload")[0];
+        $scope.resExpanded = false;
+        domManipulationService.collapseTextarea(ele);
+      }
+
+      /** holds tabs, we will perform repeat on this **/
+      $scope.tabs = [{
+        id: 1,
+        method: 'GET',
+        requestURL: '',
+        reqHeadersArr: [{
+          id: 0
+        }],
+        requestpayload: ''
+      }]
+
+      $scope.counter = 1;
+      /** Function to add a new tab **/
+      $scope.addTab = function () {
+        $scope.counter++;
+        $scope.tabs.push({ id: $scope.counter, method: 'GET', requestURL: '', reqHeadersArr: [{ id: 0 }], requestpayload: '' });
+        $scope.selectedTab = $scope.tabs.length - 1; //set the newly added tab active.
+      }
+
+      /** Function to delete a tab **/
+      $scope.deleteTab = function (index) {
+        $scope.tabs.splice(index, 1); //remove the object from the array based on index
+      }
+
+      $scope.selectedTab = 0; //set selected tab to the 1st by default.
+      /** Function to set selectedTab **/
+      $scope.selectTab = function (index) {
+        $scope.selectedTab = index;
+        $scope.collapseRequest();
+        $scope.collapseResponse();
+      }
+
+      $scope.callApi = function () {
+        $scope.tabs[$scope.selectedTab].restClientResponse='';
+        apiTestService.callAPITest($scope.tabs[$scope.selectedTab], function (message) {
+          if (message.data && message.headers('content-type') && message.headers('content-type').startsWith('application/json')) {
+                message.data=JSON.stringify(message.data,null,"    ");
+              }
+             message.headerLength = Object.keys(message.headers()).length;
+             $scope.tabs[$scope.selectedTab].restClientResponse = message;
+        });
+      }
+
+    }])
 
   .controller("updateController", ['$scope', '$q', '$http', '$routeParams', 'apiHistoryService', 'feedbackService', 'suggestionsService', 'helperFactory', 'commonCodeFactory', 'ctrlConstants', 'sutService', 'authService', "$location",'modalService', 'mqInfoFactory',
     function ($scope, $q, $http, $routeParams, apiHistoryService, feedbackService, suggestionsService, helperFactory, commonCodeFactory, ctrlConstants, sutService, authService, $location, modalService, mqInfoFactory) {
