@@ -4,7 +4,7 @@
                 <span ng-style="{color: 'black'}" ><h3><ins>Service Detail</ins></h3></span>
         </div>
         <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
-            <button class="btn btn-info" title="Update Service" ng-click="updateService()">
+            <button class="btn btn-info" title="Update Service" ng-click="updateService()" ng-disabled="!canEdit()">
               Update Service <i class="glyphicon glyphicon-pencil"></i>
             </button>
           </div>
