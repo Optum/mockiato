@@ -330,45 +330,40 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     }
 
                     // parse and display error if JSON is malformed
-                    if (rr.payloadType === 'JSON') {
-                      
-                      try {
-                        //Handle empty json object payload
-                        if (rr.responsepayload)  {
-                          var trimmed = rr.responsepayload.trim();
-                          if(trimmed == "{}" || trimmed == "[]"){
-                            resPayload = trimmed;
-                          }else{
-                              JSON.parse(rr.responsepayload);
-                            //above line will not fail for special json eg. "test" is valid json
-                            //so below code will restrict to set this type of JSON.
-                              let entry = JSON.parse(rr.responsepayload);
-                              if(typeof (entry) === 'object' && entry !== null){
-                                  JSON.parse(rr.responsepayload);
-                              }else
-                              throw'special json';
-                          }
+                  if (rr.payloadType === 'JSON') {
+                    try {
+                      //Handle empty json object payload
+                      if (rr.responsepayload) {
+                        var trimmed = rr.responsepayload.trim();
+                        if (trimmed == "{}" || trimmed == "[]") {
+                          resPayload = trimmed;
+                        } else {
+                          let entry = JSON.parse(rr.responsepayload);
+                          /* For a wrong json data above line will fail and control will go to catch block. 
+                            For special json eg. "test" is a valid json. but we want don't want to support
+                            this specail one word json. below code will restrict to set this type of JSON.*/
+                          if (typeof (entry) === 'object' && entry !== null) {
+                            resPayload = JSON.parse(rr.responsepayload);
+                          } else
+                            throw 'special json';
                         }
-                       ;
-                        if (rr.requestpayload) {
-                            JSON.parse(rr.requestpayload);
-                            //above line will not fail for special json eg. "test" is valid json
-                            //so below code will restrict to set this type of JSON.
-                              let entry = JSON.parse(rr.requestpayload);
-                              if(typeof (entry) === 'object' && entry !== null){
-                                  JSON.parse(rr.requestpayload);
-                              }else
-                              throw'special json';
-                            }
                       }
-                      catch(e) {
-                        console.log(e);
-                        if(e=='special json')
-                        throw 'JSON in an RR pair is not supported.';
-                        else
-                        throw 'JSON in an RR pair is malformed.';
+                      if (rr.requestpayload) {
+                        let entry = JSON.parse(rr.requestpayload);
+                        if (typeof (entry) === 'object' && entry !== null) {
+                          reqPayload = JSON.parse(rr.requestpayload);
+                        } else
+                          throw 'special json';
                       }
                     }
+                    catch (e) {
+                      console.log(e);
+                      if (e == 'special json')
+                        throw 'JSON in a RR pair is not supported.';
+                      else
+                        throw 'JSON in a RR pair is malformed.';
+                    }
+                  }
                     // verify that XML is well formed
                     else if (rr.payloadType === 'XML') {
                       var reqValid = true;
