@@ -4,7 +4,7 @@
     <li role="presentation" ng-repeat="tab in tabs" ng-click="selectTab($index)"
       ng-class="{'active':selectedTab == $index}">
       <a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">{{tab.method}}&emsp;&emsp;
-        <span ng-click="deleteTab($index)" class="glyphicon glyphicon-remove"></span></a>
+        <span ng-click="deleteTab($index)" class="glyphicon glyphicon-remove" ng-show="tabs.length > 1"></span></a>
     </li>
     <li role="presentation" ng-click="addTab()">
       <a aria-controls="home" role="tab" data-toggle="tab" class="glyphicon glyphicon-plus"></a>

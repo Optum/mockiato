@@ -1381,7 +1381,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       /** Function to delete a tab **/
       $scope.deleteTab = function (index) {
+        let noOfTabs=$scope.tabs.length;
         $scope.tabs.splice(index, 1); //remove the object from the array based on index
+        if(index == 0 && noOfTabs > 1)
+          $scope.selectedTab = index;
+            else
+            $scope.selectedTab = index-1;
       }
 
       $scope.selectedTab = 0; //set selected tab to the 1st by default.
