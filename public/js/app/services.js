@@ -569,7 +569,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .catch(function(err) {
                       console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.err.data.error);
+                      $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
                       $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                   });
