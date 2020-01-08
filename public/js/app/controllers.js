@@ -1165,10 +1165,13 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               delay: service.delay,
               delayMax: service.delayMax,
               txnCount: service.txnCount,
-              basePath: service.basePath,
+              basePath: service.basePath
             };
 
             $scope.base_URL=rootScope.mockiatoHost + '/virtual' + $scope.servicevo.basePath;
+
+            if(service.running)$scope.isServiceRunning='#333';
+            else $scope.isServiceRunning='rgba(255,0,0,0.73)';
 
             if($scope.servicevo.delayMax === null){
               $scope.servicevo.delayMax = 0;
@@ -1322,7 +1325,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           message.headerLength = Object.keys(message.headers()).length;
           $scope.restClientResponse = message;
         });
-      }
+      }     
     }])
 
   .controller('apiTestingController', ['$scope', 'suggestionsService', 'domManipulationService', 'apiTestService',

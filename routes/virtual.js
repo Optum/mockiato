@@ -196,7 +196,8 @@ function registerRRPair(service, rrpair) {
         if (rrpair.reqHeaders) {
           let matchedHeaders = true;
           const expectedHeaders = Object.entries(rrpair.reqHeaders);
-
+          logEvent(path, label, 'expected Headers: ' + expectedHeaders);
+          logEvent(path, label, 'received Headers: ' + Object.entries(req.headers));
           expectedHeaders.forEach(function(keyVal) {
             // skip content-type header
             if (keyVal[0].toLowerCase() !== 'content-type') {
