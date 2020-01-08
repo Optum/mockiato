@@ -1168,6 +1168,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         }
 
         if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'].startsWith('application/json')){
+          if(tab.requestpayload)//for blank request payload double quote was showing on ui after response.
           tab.requestpayload=JSON.parse(tab.requestpayload);
         }
           var data = {
@@ -1180,11 +1181,13 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           };
 
           if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'].startsWith('application/json')){
+            if(tab.requestpayload)//for blank request payload double quote was showing on ui after response.
             tab.requestpayload=JSON.stringify(tab.requestpayload,null,"    ");
           }
 
           var params = {};
-          params.token = authService.getUserInfo().token;
+          //login not required for Rest Client Tool.
+          //params.token = authService.getUserInfo().token;
           //send any number of params here.
 
             $http.post('/restClient/request', JSON.stringify(data), {
