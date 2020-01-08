@@ -1366,7 +1366,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         method: 'GET',
         requestURL: '',
         reqHeadersArr: [{
-          id: 0
+          id: 0,
+          k: {originalObject: {name: "Content-Type"}},
+          v: 'application/json'
         }],
         requestpayload: ''
       }]
@@ -1375,7 +1377,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       /** Function to add a new tab **/
       $scope.addTab = function () {
         $scope.counter++;
-        $scope.tabs.push({ id: $scope.counter, method: 'GET', requestURL: '', reqHeadersArr: [{ id: 0 }], requestpayload: '' });
+        $scope.tabs.push({ id: $scope.counter, method: 'GET', requestURL: '', reqHeadersArr: [{ id: 0, k: {originalObject: {name: "Content-Type"}}, v: 'application/json'}], requestpayload: '' });
         $scope.selectedTab = $scope.tabs.length - 1; //set the newly added tab active.
       }
 
