@@ -4,7 +4,7 @@
     <li role="presentation" ng-repeat="tab in tabs" ng-click="selectTab($index)"
       ng-class="{'active':selectedTab == $index}">
       <a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">{{tab.method}}&emsp;&emsp;
-        <span ng-click="deleteTab($index)" class="glyphicon glyphicon-remove"></span></a>
+        <span ng-click="deleteTab($index)" class="glyphicon glyphicon-remove" ng-show="tabs.length > 1"></span></a>
     </li>
     <li role="presentation" ng-click="addTab()">
       <a aria-controls="home" role="tab" data-toggle="tab" class="glyphicon glyphicon-plus"></a>
@@ -22,7 +22,6 @@
             <select ng-model="tabs[selectedTab].method" ng-init="tabs[selectedTab].method = 'GET'">
               <option value="GET" ng-value="'GET'">GET</option>
               <option value="POST" ng-value="'POST'">POST</option>
-              <option value="UPDATE" ng-value="'UPDATE'">UPDATE</option>
               <option value="DELETE" ng-value="'DELETE'">DELETE</option>
               <option value="PATCH" ng-value="'PATCH'">PATCH</option>
               <option value="PUT" ng-value="'PUT'">PUT</option>
@@ -61,7 +60,8 @@
                   title-field="name" 
                   minlength="3"
                   input-class="form-control" 
-                  match-class="highlight">
+                  match-class="highlight"
+                  disable-input="$index==0">
                 </div>
               </div>
 
@@ -71,7 +71,8 @@
               </div>
 
               <div class="col-xs-1" ng-if="tabs[selectedTab].reqHeadersArr.length > 1">
-                <button type="button" class="btn btn-warning" ng-click="removeReqHeader(tabs[selectedTab].reqHeadersArr, $index)">
+                <button type="button" class="btn btn-warning" ng-click="removeReqHeader(tabs[selectedTab].reqHeadersArr, $index)" 
+                                  ng-if="$index!==0">
                   <span class="glyphicon glyphicon-minus"></span>
                 </button>
               </div>
