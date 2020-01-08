@@ -1369,7 +1369,9 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         method: 'GET',
         requestURL: '',
         reqHeadersArr: [{
-          id: 0
+          id: 0,
+          k: {originalObject: {name: "Content-Type"}},
+          v: 'application/json'
         }],
         requestpayload: ''
       }]
@@ -1378,13 +1380,18 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       /** Function to add a new tab **/
       $scope.addTab = function () {
         $scope.counter++;
-        $scope.tabs.push({ id: $scope.counter, method: 'GET', requestURL: '', reqHeadersArr: [{ id: 0 }], requestpayload: '' });
+        $scope.tabs.push({ id: $scope.counter, method: 'GET', requestURL: '', reqHeadersArr: [{ id: 0, k: {originalObject: {name: "Content-Type"}}, v: 'application/json'}], requestpayload: '' });
         $scope.selectedTab = $scope.tabs.length - 1; //set the newly added tab active.
       }
 
       /** Function to delete a tab **/
       $scope.deleteTab = function (index) {
+        let noOfTabs=$scope.tabs.length;
         $scope.tabs.splice(index, 1); //remove the object from the array based on index
+        if(index == 0 && noOfTabs > 1)
+          $scope.selectedTab = index;
+            else
+            $scope.selectedTab = index-1;
       }
 
       $scope.selectedTab = 0; //set selected tab to the 1st by default.
