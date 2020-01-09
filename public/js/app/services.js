@@ -1177,8 +1177,8 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             {
               try {
                   var trimmed = tab.requestpayload.trim();
-                  if (trimmed == "{}") {
-                    throw 'special json';
+                  if (trimmed == "{}" || trimmed == "[]") {
+                    tab.requestpayload = trimmed;
                   } else {
                     let entry = JSON.parse(tab.requestpayload);
                     /* For a wrong json data above line will fail and control will go to catch block. 
@@ -1218,7 +1218,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
           };
 
           if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'].startsWith('application/json')){
-            if(tab.requestpayload)//for blank request payload double quote was showing on ui after response.
+            if(tab.requestpayload && tab.requestpayload !== '{}' && tab.requestpayload !== '[]')//for blank request payload double quote was showing on ui after response.
             tab.requestpayload=JSON.stringify(tab.requestpayload,null,"    ");
           }
 
