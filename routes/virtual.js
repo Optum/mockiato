@@ -74,7 +74,7 @@ function registerRRPair(service, rrpair) {
       
       // run the next callback if request not matched
       if (!matched) {
-        if (service.defaultResponse && service.defaultResponse.enabled) {
+        if (service.defaultResponse && service.defaultResponse.enabled && !next()) {
           msg = service.defaultResponse.defaultResponsePayload;
           let rspstatus;
           if (service.defaultResponse.defResStatus) {
