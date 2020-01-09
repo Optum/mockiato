@@ -165,10 +165,13 @@ function registerRRPair(service, rrpair) {
         }
       }
       else {
-        match = deepEquals(payload, reqData);
+        if(Object.keys(payload).length === 0 && payload.constructor === Object && !reqData)
+            match = true;
+            else
+              match = deepEquals(payload, reqData);
       }
       
-      if (!rrpair.reqData || match) {
+      if (match) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent

@@ -1174,7 +1174,39 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
 
         if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'].startsWith('application/json')){
           if(tab.requestpayload)//for blank request payload double quote was showing on ui after response.
-          tab.requestpayload=JSON.parse(tab.requestpayload);
+            {
+              try {
+                  var trimmed = tab.requestpayload.trim();
+                  if (trimmed == "{}") {
+                    throw 'special json';
+                  } else {
+                    let entry = JSON.parse(tab.requestpayload);
+                    /* For a wrong json data above line will fail and control will go to catch block. 
+                      For special json eg. "test" is a valid json. but we want don't want to support
+                      this specail one word json. below code will restrict to set this type of JSON.*/
+                    if (typeof (entry) === 'object' && entry !== null) {
+                      tab.requestpayload=JSON.parse(tab.requestpayload);
+                    } else
+                      throw 'special json';
+                  }
+              }
+              catch (e) {
+                if (e == 'special json'){
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.REQ_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.REQ_FAIL_JSON_NOT_SUPPORTED_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  throw e;
+                }
+                else{
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.REQ_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.REQ_FAIL_JSON_MALFORMED_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  throw e;
+                }
+              }
+            }
         }
           var data = {
             "basePath" : tab.requestURL.split('?')[0],
@@ -1459,5 +1491,8 @@ serv.constant("servConstants", {
         "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
         "MCH_HELP_TITLE" : "Match Templates Help",
         "RECORD_HELP_TITLE" : "Using Live Recording",
-        "INVOKE_HELP_TITLE" : "Using Live Invocation"
+        "INVOKE_HELP_TITLE" : "Using Live Invocation",
+        "REQ_FAIL_ERR_TITLE" : "Request Failure Error",
+        "REQ_FAIL_JSON_NOT_SUPPORTED_BODY" : "JSON in Request Payload is not supported.",
+        "REQ_FAIL_JSON_MALFORMED_BODY" : "JSON in Request Payload is malformed."
       });
