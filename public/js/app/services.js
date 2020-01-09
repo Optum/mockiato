@@ -1157,6 +1157,11 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         this.callAPITest = function(tab, message) {
           var queryParams = getQueryParamsFactory.getQueryParams(tab.requestURL);
           var reqHeader = {};
+          //remove blank headers
+          for (var i = 0; i < tab.reqHeadersArr.length; i++) {
+            if(tab.reqHeadersArr[i].k && !tab.reqHeadersArr[i].k.originalObject)
+              {tab.reqHeadersArr.splice(i, 1); i=i-1;}
+          }
           for (var i = 0; i < tab.reqHeadersArr.length; i++) {
             var key;
             if(tab.reqHeadersArr[i].k && tab.reqHeadersArr[i].k.originalObject.name)
