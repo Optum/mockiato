@@ -1172,7 +1172,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             reqHeader[key] = tab.reqHeadersArr[i].v;
         }
 
-        if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'].startsWith('application/json')){
+        if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'] && reqHeader['Content-Type'].startsWith('application/json')){
           if(tab.requestpayload)//for blank request payload double quote was showing on ui after response.
             {
               try {
@@ -1217,9 +1217,14 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
             "reqData" : tab.requestpayload
           };
 
-          if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'].startsWith('application/json')){
+          if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'] && reqHeader['Content-Type'].startsWith('application/json')){
             if(tab.requestpayload && tab.requestpayload !== '{}' && tab.requestpayload !== '[]')//for blank request payload double quote was showing on ui after response.
             tab.requestpayload=JSON.stringify(tab.requestpayload,null,"    ");
+          }
+
+          //if no headers then set a blank header
+          if(Object.keys(reqHeader).length === 0 && reqHeader.constructor === Object){
+            tab.reqHeadersArr = [{ id: 0, k: {originalObject: {name: null}}, v: null}]
           }
 
           var params = {};

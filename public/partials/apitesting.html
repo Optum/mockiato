@@ -61,7 +61,7 @@
                   minlength="3"
                   input-class="form-control" 
                   match-class="highlight"
-                  disable-input="$index==0">
+                  disable-input="header.k.originalObject.name==='Content-Type'">
                 </div>
               </div>
 
@@ -71,8 +71,7 @@
               </div>
 
               <div class="col-xs-1" ng-if="tabs[selectedTab].reqHeadersArr.length > 1">
-                <button type="button" class="btn btn-warning" ng-click="removeReqHeader(tabs[selectedTab].reqHeadersArr, $index)" 
-                                  ng-if="$index!==0">
+                <button type="button" class="btn btn-warning" ng-click="removeReqHeader(tabs[selectedTab].reqHeadersArr, $index)">
                   <span class="glyphicon glyphicon-minus"></span>
                 </button>
               </div>
