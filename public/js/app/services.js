@@ -6,7 +6,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         $http.get(remoteBodyLocation).then(function(rsp){
           $('#genricMsg-dialog').find('.modal-title').text(title);
           $('#genricMsg-dialog').find('.modal-body').html(rsp.data);
-          $('#genricMsg-dialog').find('.modal-footer').html("");
+          $('#genricMsg-dialog').find('.modal-footer').html(footer);
           $('#genricMsg-dialog').modal('toggle');
         });
       }
@@ -330,26 +330,40 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                     }
 
                     // parse and display error if JSON is malformed
-                    if (rr.payloadType === 'JSON') {
-                      
-                      try {
-                        //Handle empty json object payload
-                        if (rr.responsepayload)  {
-                          var trimmed = rr.responsepayload.trim();
-                          if(trimmed == "{}" || trimmed == "[]"){
-                            resPayload = trimmed;
-                          }else{
+                  if (rr.payloadType === 'JSON') {
+                    try {
+                      //Handle empty json object payload
+                      if (rr.responsepayload) {
+                        var trimmed = rr.responsepayload.trim();
+                        if (trimmed == "{}" || trimmed == "[]") {
+                          resPayload = trimmed;
+                        } else {
+                          let entry = JSON.parse(rr.responsepayload);
+                          /* For a wrong json data above line will fail and control will go to catch block. 
+                            For special json eg. "test" is a valid json. but we want don't want to support
+                            this specail one word json. below code will restrict to set this type of JSON.*/
+                          if (typeof (entry) === 'object' && entry !== null) {
                             resPayload = JSON.parse(rr.responsepayload);
-                          }
+                          } else
+                            throw 'special json';
                         }
-                       ;
-                        if (rr.requestpayload) reqPayload = JSON.parse(rr.requestpayload);
                       }
-                      catch(e) {
-                        console.log(e);
-                        throw 'JSON in an RR pair is malformed.';
+                      if (rr.requestpayload) {
+                        let entry = JSON.parse(rr.requestpayload);
+                        if (typeof (entry) === 'object' && entry !== null) {
+                          reqPayload = JSON.parse(rr.requestpayload);
+                        } else
+                          throw 'special json';
                       }
                     }
+                    catch (e) {
+                      console.log(e);
+                      if (e == 'special json')
+                        throw 'JSON in a RR pair is not supported.';
+                      else
+                        throw 'JSON in a RR pair is malformed.';
+                    }
+                  }
                     // verify that XML is well formed
                     else if (rr.payloadType === 'XML') {
                       var reqValid = true;
@@ -555,7 +569,7 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
                   .catch(function(err) {
                       console.log(err);
                       $('#genricMsg-dialog').find('.modal-title').text(servConstants.PUB_FAIL_ERR_TITLE);
-                      $('#genricMsg-dialog').find('.modal-body').text(servConstants.err.data.error);
+                      $('#genricMsg-dialog').find('.modal-body').text(err.data.error);
                       $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
                       $('#genricMsg-dialog').modal('toggle');
                   });
@@ -1093,6 +1107,154 @@ var serv = angular.module('mockapp.services',['mockapp.factories'])
         };
     }])
 
+    .service('restClientService', ['$http', '$rootScope', 'authService', 'getSizeFactory', 'servConstants',
+    function ($http, rootScope, authService, getSizeFactory, servConstants) {
+        this.callRestClient = function(serviceVo, rr, message) {
+
+          if(rr.payloadType=='JSON' && !rr.reqHeaders)
+            rr.reqHeaders={"Content-Type": "application/json"};
+          else if(rr.reqHeaders && rr.payloadType=='JSON' && rr.reqHeaders['Content-Type']!=='application/json')
+            rr.reqHeaders['Content-Type']='application/json';
+
+          var data = {
+            "basePath" : rootScope.mockiatoHost + '/virtual' + serviceVo.basePath,
+            "method" : rr.method,
+            "relativePath" : rr.path,
+            "queries" : rr.queries,
+            "reqHeaders" : rr.reqHeaders,
+            "reqData" : rr.reqData
+          };
+
+          var params = {};
+          params.token = authService.getUserInfo().token;
+          //send any number of params here.
+
+            $http.post('/restClient/request', JSON.stringify(data), {
+              //define configs here
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+            })
+              .then(function (response) {
+                var size = getSizeFactory.getSize(response);
+                response.respSize = size;
+                var time = response.config.responseTimestamp - response.config.requestTimestamp;
+                response.timeTaken = time + ' ' + 'ms';
+                return message(response);
+               })
+              .catch(function (err) {
+                var time = new Date().getTime() - err.config.requestTimestamp;
+                err.timeTaken = time + ' ' + 'ms';
+                var size = getSizeFactory.getSize(err);
+                err.respSize = size;
+                return message(err);
+              });
+        };
+    }])
+
+    .service('apiTestService', ['$http', '$rootScope', 'authService', 'getSizeFactory', 'servConstants', 'getQueryParamsFactory',
+    function ($http, rootScope, authService, getSizeFactory, servConstants, getQueryParamsFactory) {
+        this.callAPITest = function(tab, message) {
+          var queryParams = getQueryParamsFactory.getQueryParams(tab.requestURL);
+          var reqHeader = {};
+          //remove headers with blank keys
+          for (var i = 0; i < tab.reqHeadersArr.length; i++) {
+            if(!tab.reqHeadersArr[i].k || !tab.reqHeadersArr[i].k.originalObject)
+              {tab.reqHeadersArr.splice(i, 1); i=i-1;}
+          }
+          for (var i = 0; i < tab.reqHeadersArr.length; i++) {
+            var key;
+            if(tab.reqHeadersArr[i].k && tab.reqHeadersArr[i].k.originalObject.name)
+               key = tab.reqHeadersArr[i].k.originalObject.name;
+            else if(tab.reqHeadersArr[i].k)
+               key = tab.reqHeadersArr[i].k.originalObject;
+            if(key)
+            reqHeader[key] = tab.reqHeadersArr[i].v;
+        }
+
+        if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'] && reqHeader['Content-Type'].startsWith('application/json')){
+          if(tab.requestpayload)//for blank request payload double quote was showing on ui after response.
+            {
+              try {
+                  var trimmed = tab.requestpayload.trim();
+                  if (trimmed == "{}" || trimmed == "[]") {
+                    tab.requestpayload = trimmed;
+                  } else {
+                    let entry = JSON.parse(tab.requestpayload);
+                    /* For a wrong json data above line will fail and control will go to catch block. 
+                      For special json eg. "test" is a valid json. but we want don't want to support
+                      this specail one word json. below code will restrict to set this type of JSON.*/
+                    if (typeof (entry) === 'object' && entry !== null) {
+                      tab.requestpayload=JSON.parse(tab.requestpayload);
+                    } else
+                      throw 'special json';
+                  }
+              }
+              catch (e) {
+                if (e == 'special json'){
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.REQ_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.REQ_FAIL_JSON_NOT_SUPPORTED_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  throw e;
+                }
+                else{
+                  $('#genricMsg-dialog').find('.modal-title').text(servConstants.REQ_FAIL_ERR_TITLE);
+                  $('#genricMsg-dialog').find('.modal-body').text(servConstants.REQ_FAIL_JSON_MALFORMED_BODY);
+                  $('#genricMsg-dialog').find('.modal-footer').html(servConstants.BACK_DANGER_BTN_FOOTER);
+                  $('#genricMsg-dialog').modal('toggle');
+                  throw e;
+                }
+              }
+            }
+        }
+          var data = {
+            "basePath" : tab.requestURL.split('?')[0],
+            "method" : tab.method,
+            "relativePath" : '',
+            "queries" : queryParams,
+            "reqHeaders" : reqHeader,
+            "reqData" : tab.requestpayload
+          };
+
+          if(reqHeader.hasOwnProperty('Content-Type') && reqHeader['Content-Type'] && reqHeader['Content-Type'].startsWith('application/json')){
+            if(tab.requestpayload && tab.requestpayload !== '{}' && tab.requestpayload !== '[]')//for blank request payload double quote was showing on ui after response.
+            tab.requestpayload=JSON.stringify(tab.requestpayload,null,"    ");
+          }
+
+          //if no headers then set a blank header
+          if(Object.keys(reqHeader).length === 0 && reqHeader.constructor === Object){
+            tab.reqHeadersArr = [{ id: 0, k: {originalObject: {name: null}}, v: null}]
+          }
+
+          var params = {};
+          //login not required for Rest Client Tool.
+          //params.token = authService.getUserInfo().token;
+          //send any number of params here.
+
+            $http.post('/restClient/request', JSON.stringify(data), {
+              //define configs here
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined},
+              params: params
+            })
+              .then(function (response) {
+                var size = getSizeFactory.getSize(response);
+                response.respSize = size;
+                var time = response.config.responseTimestamp - response.config.requestTimestamp;
+                response.timeTaken = time + ' ' + 'ms';
+                return message(response);
+               })
+              .catch(function (err) {
+                var time = new Date().getTime() - err.config.requestTimestamp;
+                err.timeTaken = time + ' ' + 'ms';
+                var size = getSizeFactory.getSize(err);
+                err.respSize = size;
+                return message(err);
+              });
+        };
+    }])
+
     .service('genDataService', [
         function() {
 
@@ -1334,5 +1496,8 @@ serv.constant("servConstants", {
         "BACK_DANGER_BTN_FOOTER" : '<button type="button" data-dismiss="modal" class="btn btn-danger">Back</button>',
         "MCH_HELP_TITLE" : "Match Templates Help",
         "RECORD_HELP_TITLE" : "Using Live Recording",
-        "INVOKE_HELP_TITLE" : "Using Live Invocation"
+        "INVOKE_HELP_TITLE" : "Using Live Invocation",
+        "REQ_FAIL_ERR_TITLE" : "Request Failure Error",
+        "REQ_FAIL_JSON_NOT_SUPPORTED_BODY" : "JSON in Request Payload is not supported.",
+        "REQ_FAIL_JSON_MALFORMED_BODY" : "JSON in Request Payload is malformed."
       });

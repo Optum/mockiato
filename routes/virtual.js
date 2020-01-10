@@ -74,7 +74,7 @@ function registerRRPair(service, rrpair) {
       
       // run the next callback if request not matched
       if (!matched) {
-        if (service.defaultResponse && service.defaultResponse.enabled) {
+        if (service.defaultResponse && service.defaultResponse.enabled && !next()) {
           msg = service.defaultResponse.defaultResponsePayload;
           let rspstatus;
           if (service.defaultResponse.defResStatus) {
@@ -165,10 +165,13 @@ function registerRRPair(service, rrpair) {
         }
       }
       else {
-        match = deepEquals(payload, reqData);
+        if(Object.keys(payload).length === 0 && payload.constructor === Object && !reqData)
+            match = true;
+            else
+              match = deepEquals(payload, reqData);
       }
       
-      if (!rrpair.reqData || match) {
+      if (match) {
         // check request queries
         if (rrpair.queries) {
           // try the next rr pair if no queries were sent
@@ -196,7 +199,8 @@ function registerRRPair(service, rrpair) {
         if (rrpair.reqHeaders) {
           let matchedHeaders = true;
           const expectedHeaders = Object.entries(rrpair.reqHeaders);
-
+          logEvent(path, label, 'expected Headers: ' + expectedHeaders);
+          logEvent(path, label, 'received Headers: ' + Object.entries(req.headers));
           expectedHeaders.forEach(function(keyVal) {
             // skip content-type header
             if (keyVal[0].toLowerCase() !== 'content-type') {

@@ -17,6 +17,8 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
         $httpProvider.defaults.headers.get['Cache-Control'] = 'no-cache';
         $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
 
+        $httpProvider.interceptors.push('logTimeTaken');
+
         $routeProvider
             .when("/addservice", {
                 templateUrl: "fusepartials/addapiform.html",
@@ -63,7 +65,29 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                     }]
                 }
             })
+
+            .when("/restClient/:id", {
+                templateUrl: "fusepartials/restClient.html",
+                controller: "restClientController",
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
             
+            .when("/apitesting", {
+                templateUrl: "fusepartials/apitesting.html",
+                controller: "apiTestingController"
+
+            })
+
             .when("/showArchiveService/:id/:frmWher", {
                 templateUrl: "fusepartials/updateForm.html",
                 controller: "showArchiveController",

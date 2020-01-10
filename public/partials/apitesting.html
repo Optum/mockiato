@@ -1,0 +1,157 @@
+<h2>API Testing</h2>
+<div role="tabpanel">
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" ng-repeat="tab in tabs" ng-click="selectTab($index)"
+      ng-class="{'active':selectedTab == $index}">
+      <a data-target="#tab" aria-controls="home" role="tab" data-toggle="tab">{{tab.method}}&emsp;&emsp;
+        <span ng-click="deleteTab($index)" class="glyphicon glyphicon-remove" ng-show="tabs.length > 1"></span></a>
+    </li>
+    <li role="presentation" ng-click="addTab()">
+      <a aria-controls="home" role="tab" data-toggle="tab" class="glyphicon glyphicon-plus"></a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="tab">
+      
+      <p></p>
+      <br>
+      <div class="form-group req row">
+        <label for="service_method" class="col-xs-2 col-form-label">HTTP Method:</label>
+        <div class="col-xs-3">
+          <div class="radio">
+            <select ng-model="tabs[selectedTab].method" ng-init="tabs[selectedTab].method = 'GET'">
+              <option value="GET" ng-value="'GET'">GET</option>
+              <option value="POST" ng-value="'POST'">POST</option>
+              <option value="DELETE" ng-value="'DELETE'">DELETE</option>
+              <option value="PATCH" ng-value="'PATCH'">PATCH</option>
+              <option value="PUT" ng-value="'PUT'">PUT</option>
+              <option value="HEAD" ng-value="'HEAD'">HEAD</option>
+              <option value="CONNECT" ng-value="'CONNECT'">CONNECT</option>
+              <option value="OPTIONS" ng-value="'OPTIONS'">OPTIONS</option>
+              <option value="TRACE" ng-value="'TRACE'">TRACE</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group req row">
+        <label for="service_base_path" class="col-xs-2 col-form-label">Request URL:</label>
+        <div class="col-xs-9">
+          <input required type="text" id="base_URL" class="form-control" ng-model="tabs[selectedTab].requestURL">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-xs-2 col-form-label">Request Headers:</label>
+        <div class="col-xs-9">
+          <fieldset data-ng-repeat="header in tabs[selectedTab].reqHeadersArr">
+            <br>
+            <div class="row">
+              <div class="col-xs-5">
+                <div angucomplete-alt 
+                  id="req-header-{{ header.id }}" 
+                  placeholder="e.g. Content-Type" 
+                  pause="100"
+                  initial-value="header.k.originalObject" 
+                  selected-object="header.k" 
+                  local-data="possibleHeaders"
+                  override-suggestions="true" 
+                  search-fields="name" 
+                  title-field="name" 
+                  minlength="3"
+                  input-class="form-control" 
+                  match-class="highlight"
+                  disable-input="header.k.originalObject.name==='Content-Type'">
+                </div>
+              </div>
+
+              <div class="col-xs-5">
+                <input type="text" class="form-control" id="req-head-val-{{ header.id }}" ng-model="header.v"
+                  placeholder="e.g. application/json">
+              </div>
+
+              <div class="col-xs-1" ng-if="tabs[selectedTab].reqHeadersArr.length > 1">
+                <button type="button" class="btn btn-warning" ng-click="removeReqHeader(tabs[selectedTab].reqHeadersArr, $index)">
+                  <span class="glyphicon glyphicon-minus"></span>
+                </button>
+              </div>
+
+              <div class="col-xs-1">
+                <button type="button" class="btn btn-success" ng-show="$last" ng-click="addNewReqHeader(tabs[selectedTab].reqHeadersArr)">
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="form-group row" ng-class="" ng-show="true">
+        <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
+        <div class="col-xs-9">
+          <textarea ng-required="false" id="service_request_payload" class="form-control vertResize requestPayload"
+            ng-model="tabs[selectedTab].requestpayload" placeholder="Insert Request Payload"></textarea>
+        </div>
+        <div class="col-xs-1 h-100">
+          <button type="button" class="btn btn-success align-bottom" ng-click="expandRequest()" ng-show="!reqExpanded">
+            <span class="glyphicon glyphicon-resize-full"></span>
+          </button>
+          <button type="button" class="btn btn-success align-bottom" ng-click="collapseRequest()" ng-show="reqExpanded">
+            <span class="glyphicon glyphicon-resize-small"></span>
+          </button>
+        </div>
+      </div>
+
+      <br>
+        <div class="col-sm-12">
+            <button type="button" title="Test Request" class="btn btn-primary left-block" ng-click="callApi()">Send&emsp;<span class="glyphicon glyphicon-play"></span></button>
+        </div>
+        <br><br><br><br>
+
+      <div class="form-group row" ng-class="" ng-show="tabs[selectedTab].restClientResponse">
+        <span class="col-xs-5" ng-style="{color: 'black'}">
+          <h3><ins>Response</ins></h3>
+        </span>
+        <uib-tabset active="active">
+          <uib-tab index="0" heading="Body">
+            <div class="col-xs-11">
+              <textarea class="form-control vertResize responsePayload" ng-model="tabs[selectedTab].restClientResponse.data"></textarea>
+            </div>
+            <div class="col-xs-1 h-100">
+              <button type="button" class="btn btn-success align-bottom" ng-click="expandResponse()"
+                ng-show="!resExpanded">
+                <span class="glyphicon glyphicon-resize-full"></span>
+              </button>
+              <button type="button" class="btn btn-success align-bottom" ng-click="collapseResponse()"
+                ng-show="resExpanded">
+                <span class="glyphicon glyphicon-resize-small"></span>
+              </button>
+            </div>
+          </uib-tab>
+          <uib-tab index="1" heading="Headers ({{tabs[selectedTab].restClientResponse.headerLength}})">
+            <table class="table  table-striped table-bordered table-hover .table-sm">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">Header</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(key, data) in tabs[selectedTab].restClientResponse.headers()" ng-hide="">
+                  <th><small>{{key}}</small></th>
+                  <td><small>{{data}}</small></td>
+                </tr>
+              </tbody>
+            </table>
+          </uib-tab>
+          <p class="description">&emsp;&emsp;&emsp;Status: <em>{{tabs[selectedTab].restClientResponse.status.toString()}}
+              {{tabs[selectedTab].restClientResponse.statusText}}</em>&emsp;&emsp;&emsp;Time:
+            <em>{{tabs[selectedTab].restClientResponse.timeTaken}}</em>&emsp;&emsp;&emsp;Size: <em>{{tabs[selectedTab].restClientResponse.respSize}}</em>
+          </p>
+        </uib-tabset>
+      </div>
+
+
+    </div>
+  </div>
+</div>

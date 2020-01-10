@@ -8,6 +8,11 @@
 2. Set secret for JWT: `echo MOCKIATO_SECRET="<REPLACE>" > .env`
 3. Start Mockiato & MongoDB: `docker-compose up`
 4. View the app at http://localhost:8080 or the API documentation at http://localhost:8080/api-docs
+5. Use the '...Register an account here.' link to register as a mockiato user and log in.
+
+Note:- 
+1. To use private NPM registry you need to provide build argument REG_URL(private registry url) in docker build or docker-compose build commands. 
+2. If you run the project locally (npm start) without docker you can use .npmrc file to download packages from private NPM registry. If you don't create .npmrc file NPM packages will be downloaded from public NPM registry (https://registry.npmjs.org/) by default.
 
 This quick-start makes some basic assumptions on how you want to run the application. For other possible configurations, please see the next section.
 
@@ -22,6 +27,8 @@ Mockiato can be configured with the following environment variables. These can b
 | MONGODB_HOST | localhost | The hostname for your Mongo instance |
 | MONGODB_USER | admin | The user to connect to Mongo with |
 | MONGODB_PASSWORD | | The password for the Mongo user |
+| MOCKIATO_ADMIN | | The admin user id |
+| MOCKIATO_ARCHIVE | 0 0 1 * * | The time interval for archive service to delete permanently. The value is Cron-style Scheduling type|
 
 
 ## What is it?

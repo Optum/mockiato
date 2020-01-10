@@ -153,7 +153,7 @@ describe('Search and Get Tests', function() {
             request
                 .get('/api/services/archive/' + id)
                 .expect(200,done);
-        });
+        }).timeout(10000);
         it('Gets the archived service via user',function(done){
             request
                 .get('/api/services/user/' + mockUser.username + '/archive')

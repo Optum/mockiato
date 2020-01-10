@@ -18,10 +18,15 @@
       </div>
     </div>
     <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
-      <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)">
-        <i class="glyphicon glyphicon-info-sign"></i>  View Endpoints
+      <button class="btn btn-info" title="Service Info" ng-click="serviceInfo()">
+        View Endpoints <i class="glyphicon glyphicon-info-sign"></i>
       </button>
     </div>
+    <!-- <div class="col-xs-1" ng-show="servicevo.type !== 'MQ' && showDates">
+      <button class="btn btn-info" title="Api Test" ng-click="goToApiTest()">
+        Test Service <i class="glyphicon glyphicon-expand"></i>
+      </button>
+    </div> -->
   </div>
 
   <div class="form-group req row" ng-show="!canChangeType">

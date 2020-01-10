@@ -1,0 +1,167 @@
+<div ng-controller="rrPairController">
+  <fieldset id="rrpairs" data-ng-repeat="rr in servicevo.rawpairs track by $index | limitTo:totalDisplayed">
+      <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;"/>
+        <div class="form-group row">
+          <div class="col-xs-9">
+                  <span ng-style="{color: 'black'}" ><h3><ins>Request</ins></h3></span>
+          </div>
+        </div>
+  
+        <div class="form-group req row" ng-show="servicevo.type === 'REST'">
+          <label for="service_method" class="col-xs-2 col-form-label">HTTP Method:</label>
+          <div class="col-xs-3">
+            <div class="radio">
+                <input ng-model="rr.method" class="form-control"  ng-required="servicevo.type === 'REST' && !rr.method" ng-disabled="!canChangeType"/>
+            </div>
+          </div>
+        </div>
+  
+        <div class="form-group row" ng-show="servicevo.type === 'REST' && rr.path"> 
+          <label for="service_endpoint" class="col-xs-2 col-form-label">Relative Path:</label>
+          <div class="col-xs-9">
+            <div class="input-group">
+                <input type="text" ng-pattern="/^(?:[\S\\\/][A-Za-z0-9!\-_.+=?&^%$#@!<>]+)*$/" id="service_path" class="form-control" ng-model="rr.path" ng-disabled="!canChangeType">
+            </div>
+          </div>
+        </div>
+  
+        <div class="form-group row" ng-show="servicevo.type === 'REST' && rr.queriesArr[0].k">
+          <label class="col-xs-2 col-form-label">Queries:</label>
+          <div class="col-xs-9">
+            <fieldset data-ng-repeat="q in rr.queriesArr">
+              <br>
+                <div class="row">
+                  <div class="col-xs-5">
+                    <input type="text" class="form-control" ng-model="q.k" placeholder="e.g. name" ng-disabled="!canChangeType">
+                  </div>
+  
+                  <div class="col-xs-5">
+                    <input type="text" class="form-control" ng-model="q.v" placeholder="e.g. value" ng-disabled="!canChangeType">                  
+                  </div>
+                </div>
+            </fieldset>
+          </div>
+        </div>
+  
+        <!-- <div class="form-group req row" ng-show="servicevo.type === 'REST'">
+            <label for="service_payloadtype" class="col-xs-2 col-form-label">Payload Type:</label>
+            <div class="col-xs-9">
+              <div class="radio">
+                <label class="move-radios">
+                    <input ng-model="rr.payloadType" id="service_payloadtype" ng-click="setContentType(rr, 'application/json')" type="radio" ng-value="'JSON'" ng-required="servicevo.type === 'REST' && !rr.payloadType" ng-disabled="!canChangeType">
+                      JSON
+                </label>
+                <label class="move-radios">
+                    <input ng-model="rr.payloadType" id="service_payloadtype" type="radio" ng-value="'XML'" ng-required="servicevo.type === 'REST' && !rr.payloadType" ng-disabled="!canChangeType">
+                      XML
+                </label>
+                <label class="move-radios">
+                    <input ng-model="rr.payloadType" id="service_payloadtype" type="radio" ng-value="'PLAIN'" ng-required="servicevo.type === 'REST' && !rr.payloadType" ng-disabled="!canChangeType">
+                      Plaintext
+                </label>
+              </div>
+            </div>
+          </div> -->
+  
+        <div class="form-group row" ng-show="servicevo.type !== 'MQ' && rr.reqHeadersArr[0].k">
+          <label class="col-xs-2 col-form-label">Request Headers:</label>
+          <div class="col-xs-9">
+            <fieldset data-ng-repeat="header in rr.reqHeadersArr" ng-disabled="!canChangeType">
+                <br>
+                <div class="row">
+                  <div class="col-xs-5">
+                    <div angucomplete-alt
+                      id="req-header-{{ header.id }}"
+                      placeholder="e.g. Content-Type"
+                      pause="100"
+                      initial-value="header.k"
+                      selected-object="header.k"
+                      local-data="possibleHeaders"
+                      override-suggestions="true"
+                      search-fields="name"
+                      title-field="name"
+                      minlength="3"
+                      input-class="form-control"
+                      match-class="highlight">
+                    </div>
+                  </div>
+  
+                  <div class="col-xs-5">
+                    <input type="text" class="form-control" id="req-head-val-{{ header.id }}" ng-model="header.v" placeholder="e.g. application/json">
+                  </div>
+  
+                </div>
+            </fieldset>
+          </div>
+        </div>
+  
+        <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'" ng-show=" servicevo.type === 'SOAP' || rr.method!== 'GET' || servicevo.type === 'MQ'|| rr.getPayloadRequired">
+          <label for="service_request_payload" class="col-xs-2 col-form-label">Request Payload:</label>
+          <div class="col-xs-9">
+            <textarea ng-required="servicevo.type !== 'REST'" id="service_request_payload" class="form-control vertResize requestPayload" ng-model="rr.requestpayload" placeholder="Insert Request Payload" ng-disabled="!canChangeType"></textarea>
+          </div>
+          <div class="col-xs-1 h-100">
+            <button type="button" class="btn btn-success align-bottom" ng-click="expandRequest($index,rr)" ng-show="!rr.reqExpanded">
+              <span class="glyphicon glyphicon-resize-full"></span>
+            </button>
+            <button type="button" class="btn btn-success align-bottom" ng-click="collapseRequest($index,rr)" ng-show="rr.reqExpanded">
+              <span class="glyphicon glyphicon-resize-small"></span>
+            </button>
+          </div>
+        </div>
+  
+        <br>
+        <div class="col-sm-12">
+            <button type="button" title="Test Request" class="btn btn-primary left-block" ng-disabled="isServiceRunning !== '#333'" ng-click="callApi(rr)">Send&emsp;<span class="glyphicon glyphicon-play"></span></button>
+        </div>
+        <br><br><br><br>
+
+        <div class="form-group row" ng-class="servicevo.type === 'REST' ? '' : 'req'"
+          ng-show="restClientResponse && angular.equals(restClientResponse.selectedRRPair, rr)">
+          <span class="col-xs-5" ng-style="{color: 'black'}" ><h3><ins>Response</ins></h3></span>
+          <uib-tabset active="active">
+            <uib-tab index="0" heading="Body">
+              <div class="col-xs-11">
+                <textarea class="form-control vertResize responsePayload" ng-model="restClientResponse.data"></textarea>
+              </div>
+              <div class="col-xs-1 h-100">
+                <button type="button" class="btn btn-success align-bottom" ng-click="expandResponse($index,rr)"
+                  ng-show="!rr.resExpanded">
+                  <span class="glyphicon glyphicon-resize-full"></span>
+                </button>
+                <button type="button" class="btn btn-success align-bottom" ng-click="collapseResponse($index,rr)"
+                  ng-show="rr.resExpanded">
+                  <span class="glyphicon glyphicon-resize-small"></span>
+                </button>
+              </div>
+            </uib-tab>
+            <uib-tab index="1" heading="Headers ({{restClientResponse.headerLength}})">
+              <table class="table  table-striped table-bordered table-hover .table-sm">
+                  <thead class="thead-light">
+                      <tr>
+                        <th scope="col">Header</th>
+                        <th scope="col">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="(key, data) in restClientResponse.headers()" ng-hide="">
+                            <th><small>{{key}}</small></th>
+                            <td><small>{{data}}</small></td>
+                        </tr>
+                    </tbody>
+            </table>
+            </uib-tab>
+                <p class="description">&emsp;&emsp;&emsp;Status: <em>{{restClientResponse.status.toString()}} {{restClientResponse.statusText}}</em>&emsp;&emsp;&emsp;Time: <em>{{restClientResponse.timeTaken}}</em>&emsp;&emsp;&emsp;Size: <em>{{restClientResponse.respSize}}</em></p>
+          </uib-tabset>
+        </div>
+   
+      </fieldset>
+  
+      <div ng-show="totalDisplayed <= servicevo.rawpairs.length">
+        <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" />
+        <btn class="btn btn-default" ng-click="loadMore()">
+          Show more pairs <span class="glyphicon glyphicon-chevron-down"></span>
+        </btn>
+      </div>
+  
+    </div>

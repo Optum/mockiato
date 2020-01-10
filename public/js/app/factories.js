@@ -275,6 +275,85 @@ fact.factory('commonCodeFactory', [function () {
 }]);
 
 
+fact.factory('logTimeTaken', [function() {  
+    var logTimeTaken = {
+        request: function(config) {
+            config.requestTimestamp = new Date().getTime();
+            return config;
+        },
+        response: function(response) {
+            response.config.responseTimestamp = new Date().getTime();
+            return response;
+        }
+    };
+    return logTimeTaken;
+}]);
+
+fact.factory('getQueryParamsFactory', ['$http', function($http) {
+    return {
+        getQueryParams: function(url) {
+            let queryParams = {};
+          //create an anchor tag to use the property called search
+            let anchor = document.createElement('a');
+          //assigning url to href of anchor tag
+            anchor.href = url;
+          //search property returns the query string of url
+            let queryStrings = anchor.search.substring(1);
+            let params = queryStrings.split('&');
+        
+            for (var i = 0; i < params.length; i++) {
+                var pair = params[i].split('=');
+                if(pair[0])
+                queryParams[pair[0]] = decodeURIComponent(pair[1]);
+            }
+            return queryParams;
+        }
+    };
+}]);
+
+fact.factory('getSizeFactory', [function () {
+    return {
+        getSize: function (obj) {
+            var bytes = 0;
+            function sizeOf(obj) {
+                if (obj !== null && obj !== undefined) {
+                    switch (typeof obj) {
+                        case 'number':
+                            bytes += 8;
+                            break;
+                        case 'string':
+                            bytes += obj.length * 2;
+                            break;
+                        case 'boolean':
+                            bytes += 4;
+                            break;
+                        case 'object':
+                            var objClass = Object.prototype.toString.call(obj).slice(8, -1);
+                            if (objClass === 'Object' || objClass === 'Array') {
+                                for (var key in obj) {
+                                    if (!obj.hasOwnProperty(key)) continue;
+                                    sizeOf(obj[key]);
+                                }
+                            } else bytes += obj.toString().length * 2;
+                            break;
+                    }
+                }
+                return bytes;
+            };
+
+            function formatByteSize(bytes) {
+                if (bytes < 1024) return bytes + " B";
+                else if (bytes < 1048576) return (bytes / 1024).toFixed(3) + " KB";
+                else if (bytes < 1073741824) return (bytes / 1048576).toFixed(3) + " MB";
+                else return (bytes / 1073741824).toFixed(3) + " GB";
+            };
+
+            return formatByteSize(sizeOf(obj));
+        }
+    };
+}]);
+
+
 //Below function is complex one. Any change will break Duplicate Req check. - Pradeep
 fact.factory('helperFactory', [function () {
     return {
