@@ -1902,6 +1902,134 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
     }])
 
+    .controller("searchServiceController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
+    function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+      Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
+
+        $scope.servName='';        
+        $scope.servicelist = [];        
+      //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+      $http.get('/api/systems')
+      .then(function (response) {
+        $scope.myUser = authService.getUserInfo().username;
+        $scope.myGroups = [];
+        response.data.forEach(function (sutData) {
+          var sut = {
+            name: sutData.name,
+            members: sutData.members
+          };
+          sut.members.forEach(function (memberlist) {
+            if (memberlist.includes($scope.myUser)) {
+              $scope.myGroups.push(sut.name);
+            }
+          });
+        });
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+
+      $scope.deleteService = function (service) {
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
+        $('#modal-btn-yes').on("click", function () {
+          apiHistoryService.deleteServiceAPI(service)
+            .then(function (response) {
+              var data = response.data;
+              console.log(data);
+              $scope.servicelist.forEach(function (elem, i, arr) {
+                if (elem._id === data.id)
+                  arr.splice(i, 1);
+              });
+            })
+            .catch(function (err) {
+              console.log(err);
+            });
+        });
+      };
+
+      $scope.toggleService = function (service) {
+        apiHistoryService.toggleServiceAPI(service)
+
+          .then(function (response) {
+            var data = response.data;
+            console.log(data);
+            service.running = !service.running;
+          })
+
+          .catch(function (err) {
+            console.log(err);
+          });
+      };
+
+      $scope.goToApiTest = function (serviceID) {
+        $location.path('/restClient/' + serviceID);
+      };  
+
+      $scope.exportService = function (serv) {
+        // clone the service
+        var service = JSON.parse(JSON.stringify(serv));
+
+        // clean up data before export
+        delete service._id;
+        delete service.sut._id;
+        delete service.user;
+        delete service.__v;
+        delete service.$$hashKey;
+
+        if (service.basePath) {
+          service.basePath = service.basePath.replace('/' + service.sut.name, '');
+        }
+
+        service.rrpairs.forEach(function (rr) {
+          delete rr._id;
+        });
+
+        var data = new Blob([JSON.stringify(service, null, "  ")], { type: 'application/json;charset=utf-8' });
+        FileSaver.saveAs(data, service.name + '.json');
+      };
+
+      $scope.serviceInfo = function (serviceID) {
+        console.log('printing service id: ' + serviceID);
+        $http.get('/api/services/' + serviceID)
+
+          .then(function (response) {
+            var data = response.data;
+            console.log(data);
+            feedbackService.displayServiceInfo(data);
+            $('#serviceInfo-modal').modal('toggle');
+          })
+
+          .catch(function (err) {
+            console.log(err);
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+          });
+      };
+
+      $scope.searchServices = function (servName) {
+        $http.get('/api/services/search?name=' + servName)
+          .then(function (response) {
+            var data = response.data;
+            $scope.servicelist = data;
+          })
+          .catch(function (err) {
+            console.log(err);
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.SEARCH_FAIL_ERR_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.SEARCH_FAIL_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+          });
+      };
+
+    })
+  }]) 
+ 
+
   .controller("serviceHistoryController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
@@ -2949,5 +3077,7 @@ ctrl.constant("ctrlConstants", {
   "SERVICE_RESTORE_FAIL_TITLE" : "Restore Fail",
   "EDIT_SERV_INFO_TITLE": "<span class='text-info'>Edit Service Info</span>",
   "EDIT_SERV_INFO_FOOTER": '<button type="button" data-dismiss="modal" class="btn btn-info">OK</button>',
-  "EDIT_RECORDING_INFO_TITLE": "<span class='text-info'>Edit Recording Info</span>"
+  "EDIT_RECORDING_INFO_TITLE": "<span class='text-info'>Edit Recording Info</span>",
+  "SEARCH_FAIL_ERR_TITLE": "Service Search Fail",
+  "SEARCH_FAIL_ERR_BODY": "There is some problem in searching a Service."
 });
