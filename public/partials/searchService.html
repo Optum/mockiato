@@ -1,0 +1,55 @@
+<h2>Search Services</h2>
+<div class="clearfix"></div>
+<br>
+    <div class="col-xs-12" >
+    <form class="form-inline">
+        <div class="form-group">
+            <label for="service_name">Service Name:</label>
+            <input required type="text" id="serv_name" class="form-control" ng-model="servName">
+            <button type="submit" class="btn btn-primary" ng-click="searchServices(servName)">Submit</button>
+        </div>
+    </form>
+    </div>
+    <div class="clearfix">
+        <br>
+        <br>
+    </div>
+    <div class="col-xs-12" >
+        <table class="table table-bordered table-striped well">
+            <tr>
+                <th style="white-space: nowrap">
+                    Name <a href="" title="sort by name" align="right" ng-click="orderByField='name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a></td>
+                </th>
+                <th style="white-space: nowrap">Owner</th>
+                <th style="white-space: nowrap">
+                    Group <a href="" title="sort by group" ng-click="orderByField='sut.name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th style="white-space: nowrap">
+                    Type <a href="" title="sort by type" ng-click="orderByField='type'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th style="white-space: nowrap">
+                    Base URL <a href="" title="sort by base url" ng-click="orderByField='basePath'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th style="white-space: nowrap">
+                    Transactions <a href="" title="sort by transactions" ng-click="orderByField='txnCount'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th style="white-space: nowrap">Action</th>
+            </tr>
+            <tr ng-repeat="service in servicelist | orderBy:orderByField:reverseSort" style=" word-break:break-all">
+                <td style="width:150px"><a href="#!update/{{ service._id }}/frmServHistory" title="edit this service">{{service.name}}</a></td>
+                <td style="white-space: nowrap">{{service.user.uid}}</td>
+                <td style="white-space: nowrap">{{service.sut.name}}</td>
+                <td style="white-space: nowrap">{{service.type}}</td>
+                <td style="width:350px" class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
+                <td style="white-space: nowrap">{{service.txnCount}}</td>
+                <td style="white-space: nowrap">
+                    <button class="btn btn-danger" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === true" ng-click="toggleService(service)">Stop <i class="glyphicon glyphicon-stop"></i></button>
+                    <button class="btn btn-success" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === false" ng-click="toggleService(service)">Start <i class="glyphicon glyphicon-play"></i></button>
+                    <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)"><i class="glyphicon glyphicon-info-sign"></i></button>
+                    <button class="btn btn-primary" ng-if="service.type !== 'MQ'" title="Test service" ng-click="goToApiTest(service._id)">Test <i class="glyphicon glyphicon-expand"></i></button>
+                    <button class="btn btn-primary" title="Export your service as a JSON file to save, send, or import anytime" ng-click="exportService(service)">Export <i class="glyphicon glyphicon-export"></i></button>
+                    <button class="btn btn-default" ng-if="myGroups.includes(service.sut.name)" title="Delete Service" ng-click="deleteService(service)"><i class="glyphicon glyphicon-trash"></i></button>
+                </td>
+            </tr>
+        </table>
+    </div>

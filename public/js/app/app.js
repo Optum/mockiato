@@ -153,6 +153,23 @@ var mockapp = angular.module('mockapp',['mockapp.controllers','mockapp.services'
                 }
             })
 
+            .when("/searchServices", {
+                templateUrl: "fusepartials/searchService.html",
+                controller: "searchServiceController",
+                reloadOnUrl: false,
+                resolve: {
+                    auth: ['$q', 'authService', function($q, authService) {
+                        var userInfo = authService.getUserInfo();
+
+                        if (userInfo) {
+                            return $q.when(userInfo);
+                        } else {
+                            return $q.reject({ authenticated: false });
+                        }
+                    }]
+                }
+            })
+
             .when("/fetchDeletedServices/:sut?/:user?", {
                 templateUrl: "fusepartials/deletedServices.html",
                 controller: "deletedServiceController",

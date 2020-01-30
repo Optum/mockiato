@@ -99,7 +99,7 @@ function createService(serv,req){
 function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
   //Trim service
   var service = {
-    id : doc.id,
+    _id : doc.id,
     name : doc.name,
     sut : {name : doc.sut.name, _id : doc.sut._id},
     type : doc.type,
@@ -107,7 +107,9 @@ function trimServiceAndFilterRRPairs(doc,searchOnReq,searchOnRsp){
     basePath : doc.basePath,
     createdAt : doc.createdAt,
     updatedAt : doc.updatedAt,
-    lastUpdateUser: doc.lastUpdateUser
+    lastUpdateUser: doc.lastUpdateUser,
+    txnCount: doc.txnCount,
+    running: doc.running
   };
 
   //If we have RRpairs to filter...
