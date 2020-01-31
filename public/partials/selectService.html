@@ -40,7 +40,7 @@
         <th style="white-space: nowrap">Last Modified By</th>
     </tr>
     <tr ng-repeat="service in serviceList" style=" word-break:break-all">
-        <td style="width:180px"><a href="#!update/{{ service.id }}/frmSelectService">{{service.name}}</a></td>
+        <td style="width:180px"><a href="#!update/{{ service._id }}/frmSelectService">{{service.name}}</a></td>
         <td style="white-space: nowrap">{{service.user.uid}}</td>
         <td style="white-space: nowrap">{{service.sut.name}}</td>
         <td style="white-space: nowrap">{{service.type}}</td>
