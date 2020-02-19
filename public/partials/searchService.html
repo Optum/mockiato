@@ -15,7 +15,8 @@
         <br>
     </div>
     <div class="col-xs-12" >
-        <table class="table table-bordered table-striped well">
+            <h3 ng-show="searchBtnClicked=='yes' &&  servicelist.length==0"><br>No match found</h3>
+        <table class="table table-bordered table-striped well" ng-show="servicelist.length!==0">
             <tr>
                 <th style="white-space: nowrap">
                     Name <a href="" title="sort by name" align="right" ng-click="orderByField='name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a></td>

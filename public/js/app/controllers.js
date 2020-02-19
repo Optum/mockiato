@@ -1907,7 +1907,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
 
         $scope.servName='';        
-        $scope.servicelist = [];        
+        $scope.servicelist = [];
+        $scope.searchBtnClicked='no';
       //returning a promise from factory didnt seem to work with .then() function here, alternative solution
       $http.get('/api/systems')
       .then(function (response) {
@@ -2012,18 +2013,23 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
 
       $scope.searchServices = function (servName) {
-        $http.get('/api/services/search?name=' + servName)
-          .then(function (response) {
-            var data = response.data;
-            $scope.servicelist = data;
-          })
-          .catch(function (err) {
-            console.log(err);
-            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.SEARCH_FAIL_ERR_TITLE);
-            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.SEARCH_FAIL_ERR_BODY);
-            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
-            $('#genricMsg-dialog').modal('toggle');
-          });
+        $scope.servicelist = [];
+        $scope.searchBtnClicked='no';
+        if(servName){
+          $scope.searchBtnClicked='yes';
+          $http.get('/api/services/search?name=' + servName)
+            .then(function (response) {
+              var data = response.data;
+              $scope.servicelist = data;
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.SEARCH_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.SEARCH_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+            });
+        }
       };
 
     })
