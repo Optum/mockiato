@@ -1995,14 +1995,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       $scope.serviceInfo = function (serviceID) {
         console.log('printing service id: ' + serviceID);
         $http.get('/api/services/' + serviceID)
-
           .then(function (response) {
             var data = response.data;
             console.log(data);
             feedbackService.displayServiceInfo(data);
             $('#serviceInfo-modal').modal('toggle');
           })
-
           .catch(function (err) {
             console.log(err);
             $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
@@ -2012,6 +2010,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           });
       };
 
+      //searchService Function
       $scope.searchServices = function (servName) {
         $scope.servicelist = [];
         $scope.searchBtnClicked='no';
