@@ -1906,9 +1906,12 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
       Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
 
-        $scope.servName='';        
+        $scope.servName='';
+        $scope.reqContains='';
+        $scope.resContains='';        
         $scope.servicelist = [];
         $scope.searchBtnClicked='no';
+        $scope.requiredField='no';
       //returning a promise from factory didnt seem to work with .then() function here, alternative solution
       $http.get('/api/systems')
       .then(function (response) {
@@ -2011,12 +2014,18 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
       };
 
       //searchService Function
-      $scope.searchServices = function (servName) {
+      $scope.searchServices = function (servName, reqContains, resContains) {
         $scope.servicelist = [];
         $scope.searchBtnClicked='no';
-        if(servName){
+        $scope.requiredField='no';
+
+        if(!servName && !reqContains && !resContains){
+          $scope.requiredField='yes';
+        }
+
+        if(servName || reqContains || resContains){
           $scope.searchBtnClicked='yes';
-          $http.get('/api/services/search?name=' + servName)
+          $http.get('/api/services/search?name=' + servName + '&requestContains=' + reqContains + '&responseContains=' + resContains)
             .then(function (response) {
               var data = response.data;
               $scope.servicelist = data;
