@@ -32,8 +32,8 @@
         <br>
     </div>
     <div class="col-xs-12" >
-            <h3 ng-if="searchBtnClicked=='yes' &&  servicelist.length==0"><br>No match found</h3>
-        <table class="table table-bordered table-striped well" ng-if="servicelist.length!==0">
+            <!-- <h3 ng-if="searchBtnClicked=='yes' &&  servicelist.length==0"><br>No match found</h3> -->
+        <table class="table table-bordered table-striped well">
             <tr>
                 <th style="white-space: nowrap">
                     Name <a href="" title="sort by name" align="right" ng-click="orderByField='name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a></td>
@@ -70,4 +70,5 @@
                 </td>
             </tr>
         </table>
+        <h3 ng-if="searchBtnClicked=='yes' &&  servicelist.length==0"><br>No match found</h3>
     </div>
