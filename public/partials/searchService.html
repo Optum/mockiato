@@ -22,17 +22,17 @@
             </div>
             <br>
 
-            <button type="submit" class="btn btn-primary col-xs-1" ng-click="searchServices(servName, reqContains, resContains)">Submit</button>
-            <span ng-if="requiredField=='yes';" class="col-xs-4" ng-style="{color: 'red'}" >&emsp;&emsp;&emsp;&emsp;Please enter any search filter.</span>
-
-            <br>
+            <button type="submit" class="btn btn-primary" ng-click="searchServices(servName, reqContains, resContains)">Submit</button>
+            &nbsp;&nbsp;
+            <button type="submit" class="btn btn-primary" ng-click="clearSelected()">Clear</button>
+                    <span ng-if="requiredField=='yes';" ng-style="{color: 'red'}" >&emsp;&emsp;&emsp;&emsp;Please enter any search filter.</span>
+            
 
     <div class="clearfix">
         <br>
         <br>
     </div>
-    <div class="col-xs-12" >
-            <!-- <h3 ng-if="searchBtnClicked=='yes' &&  servicelist.length==0"><br>No match found</h3> -->
+    <div class="col-xs-12">
         <table class="table table-bordered table-striped well">
             <tr>
                 <th style="white-space: nowrap">
@@ -70,5 +70,6 @@
                 </td>
             </tr>
         </table>
-        <h3 ng-if="searchBtnClicked=='yes' &&  servicelist.length==0"><br>No match found</h3>
     </div>
+    <br><br><br><br>
+    <h3 ng-if="noDataFound">No match found</h3>

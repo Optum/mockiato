@@ -1912,6 +1912,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
         $scope.servicelist = [];
         $scope.searchBtnClicked='no';
         $scope.requiredField='no';
+        $scope.noDataFound=false;
       //returning a promise from factory didnt seem to work with .then() function here, alternative solution
       $http.get('/api/systems')
       .then(function (response) {
@@ -2015,6 +2016,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
       //searchService Function
       $scope.searchServices = function (servName, reqContains, resContains) {
+        $scope.noDataFound=false;
         $scope.servicelist = [];
         $scope.searchBtnClicked='no';
         $scope.requiredField='no';
@@ -2029,6 +2031,8 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
             .then(function (response) {
               var data = response.data;
               $scope.servicelist = data;
+              if(data.length==0)
+              $scope.noDataFound=true;
             })
             .catch(function (err) {
               console.log(err);
@@ -2038,6 +2042,16 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
               $('#genricMsg-dialog').modal('toggle');
             });
         }
+      };
+
+      $scope.clearSelected = function () {
+        $scope.servName='';
+        $scope.reqContains='';
+        $scope.resContains='';
+        $scope.servicelist = [];
+        $scope.searchBtnClicked='no';
+        $scope.noDataFound=false;
+        $scope.requiredField='no';
       };
 
     })
