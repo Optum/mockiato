@@ -2069,7 +2069,7 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
           .then(function (response) {
             $scope.adminUser = response.data;
           })
-        $scope.months='3';      
+        $scope.months='12';      
         $scope.servicelist = [];
         $scope.noDataFound=false;
       //returning a promise from factory didnt seem to work with .then() function here, alternative solution
