@@ -59,6 +59,9 @@ router.post('/', rejectInvalid, servCtrl.addService);
 router.get("/search/:id",servCtrl.searchServices);
 router.get("/search",servCtrl.searchServices);
 
+//get Old Services
+router.get("/getOldServs",servCtrl.getOldServices);
+
 // retrieve a virtual service by ID (in JSON)
 router.get('/:id', servCtrl.getServiceById);
 

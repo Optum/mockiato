@@ -1724,6 +1724,11 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
 
     .controller("selectServiceController", ['$scope', '$http', '$routeParams', 'feedbackService', 'apiHistoryService','authService', 'ctrlConstants',
     function($scope,$http,$routeParams,feedbackService,apiHistoryService,authService,ctrlConstants){
+      $scope.myUser = authService.getUserInfo().username;
+      $http.get('/api/users/admin')
+        .then(function (response) {
+          $scope.adminUser = response.data;
+        })
       $scope.serviceList = [];
       apiHistoryService.getRecentModifiedServices(5, authService.getUserInfo().username).then(function (response) {
         var data = response.data;
@@ -2057,6 +2062,152 @@ var ctrl = angular.module("mockapp.controllers", ['mockapp.services', 'mockapp.f
     })
   }]) 
  
+  .controller("UnusedServicesController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
+    function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {
+      Promise.all([sutService.getAllSUTPromise(), userService.getAllUsersPromise()]).then(function (values) {
+        $http.get('/api/users/admin')
+          .then(function (response) {
+            $scope.adminUser = response.data;
+          })
+        $scope.months='3';      
+        $scope.servicelist = [];
+        $scope.noDataFound=false;
+      //returning a promise from factory didnt seem to work with .then() function here, alternative solution
+      $http.get('/api/systems')
+      .then(function (response) {
+        $scope.myUser = authService.getUserInfo().username;
+        $scope.myGroups = [];
+        response.data.forEach(function (sutData) {
+          var sut = {
+            name: sutData.name,
+            members: sutData.members
+          };
+          sut.members.forEach(function (memberlist) {
+            if (memberlist.includes($scope.myUser)) {
+              $scope.myGroups.push(sut.name);
+            }
+          });
+        });
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+
+      $scope.deleteService = function (service) {
+        $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.DEL_CONFIRM_TITLE);
+        $('#genricMsg-dialog').find('.modal-body').html(ctrlConstants.DEL_CONFIRM_BODY);
+        $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.DEL_CONFIRM_FOOTER);
+        $('#genricMsg-dialog').modal('toggle');
+        $('#modal-btn-yes').on("click", function () {
+          apiHistoryService.deleteServiceAPI(service)
+            .then(function (response) {
+              var data = response.data;
+              console.log(data);
+              $scope.servicelist.forEach(function (elem, i, arr) {
+                if (elem._id === data.id)
+                  arr.splice(i, 1);
+              });
+            })
+            .catch(function (err) {
+              console.log(err);
+            });
+        });
+      };
+
+      $scope.toggleService = function (service) {
+        apiHistoryService.toggleServiceAPI(service)
+
+          .then(function (response) {
+            var data = response.data;
+            console.log(data);
+            service.running = !service.running;
+          })
+
+          .catch(function (err) {
+            console.log(err);
+          });
+      };
+
+      $scope.goToApiTest = function (serviceID) {
+        $location.path('/restClient/' + serviceID);
+      };  
+
+      $scope.exportService = function (serv) {
+        // clone the service
+        var service = JSON.parse(JSON.stringify(serv));
+
+        // clean up data before export
+        delete service._id;
+        delete service.sut._id;
+        delete service.user;
+        delete service.__v;
+        delete service.$$hashKey;
+
+        if (service.basePath) {
+          service.basePath = service.basePath.replace('/' + service.sut.name, '');
+        }
+
+        service.rrpairs.forEach(function (rr) {
+          delete rr._id;
+        });
+
+        var data = new Blob([JSON.stringify(service, null, "  ")], { type: 'application/json;charset=utf-8' });
+        FileSaver.saveAs(data, service.name + '.json');
+      };
+
+      $scope.serviceInfo = function (serviceID) {
+        console.log('printing service id: ' + serviceID);
+        $http.get('/api/services/' + serviceID)
+          .then(function (response) {
+            var data = response.data;
+            console.log(data);
+            feedbackService.displayServiceInfo(data);
+            $('#serviceInfo-modal').modal('toggle');
+          })
+          .catch(function (err) {
+            console.log(err);
+            $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.PUB_FAIL_ERR_TITLE);
+            $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.PUB_FAIL_ERR_BODY);
+            $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
+            $('#genricMsg-dialog').modal('toggle');
+          });
+      };
+
+      $scope.totalDisplayed = 50;
+        $scope.loadMore = function () {
+          $scope.totalDisplayed += 50;
+      };
+
+      //searchService Function
+      $scope.getOldServices = function (months) {
+        $scope.totalDisplayed = 50;
+        $scope.noDataFound=false;
+        $scope.servicelist = [];
+        if(months){
+          $scope.searchBtnClicked='yes';
+          $http.get('/api/services/getOldServs?months=' + months)
+            .then(function (response) {
+              var data = response.data;
+              $scope.servicelist = data;
+              if(data.length==0)
+              $scope.noDataFound=true;
+            })
+            .catch(function (err) {
+              console.log(err);
+              $('#genricMsg-dialog').find('.modal-title').text(ctrlConstants.SEARCH_FAIL_ERR_TITLE);
+              $('#genricMsg-dialog').find('.modal-body').text(ctrlConstants.SEARCH_FAIL_ERR_BODY);
+              $('#genricMsg-dialog').find('.modal-footer').html(ctrlConstants.BACK_DANGER_BTN_FOOTER);
+              $('#genricMsg-dialog').modal('toggle');
+            });
+        }
+      };
+
+      //deleteAllServices
+      $scope.deleteAllServices = function () {
+      };
+
+    })
+  }])
 
   .controller("serviceHistoryController", ['$scope', '$location', '$routeParams', '$http', '$timeout', 'sutService', 'feedbackService', 'apiHistoryService', 'userService', 'authService', 'FileSaver', 'Blob', 'ctrlConstants',
     function ($scope, $location, $routeParams, $http, $timeout, sutService, feedbackService, apiHistoryService, userService, authService, FileSaver, Blob, ctrlConstants) {

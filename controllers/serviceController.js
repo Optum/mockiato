@@ -325,6 +325,34 @@ function searchServices(req,rsp){
 }
 
 
+/**
+ * Specific search to delete old unused services.
+ * @param {*} req express req
+ * @param {*} rsp express rsp
+ */
+function getOldServices(req, rsp) {
+  var search = {};
+  var query = req.query;
+  var date = new Date();
+  var results = [];
+  if (query.months) {
+    date = date.setMonth(date.getMonth() - query.months);
+    search.updatedAt =  { $lt: date } ;
+  }
+  var mongooseQuery = Service.find(search);
+  mongooseQuery.exec(function (err, docs) {
+    if (err) {
+      handleError(err, rsp, 500);
+    }
+    else {
+      docs.forEach(function (doc) {
+        results.push(doc);
+      });
+    }
+    return rsp.json(results);
+  })
+}
+
 
 function getServiceById(req, res) {
   // call find by id function for db
@@ -1652,6 +1680,7 @@ module.exports = {
   permanentDeleteService: permanentDeleteService,
   restoreService: restoreService,
   searchServices:searchServices,
+  getOldServices:getOldServices,
   getDraftServiceById: getDraftServiceById,
   getDraftServices: getDraftServices,
   getServicesDraftBySystem: getServicesDraftBySystem,
