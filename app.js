@@ -222,7 +222,7 @@ function init() {
   }
 
   // running a cronjob only in master cluster (single instance)
-  if (process.env.MOCKIATO_MODE !== 'single' && process.env.NODE_APP_INSTANCE === '0') {
+  /* if (process.env.MOCKIATO_MODE !== 'single' && process.env.NODE_APP_INSTANCE === '0') {
     let priorDate_30days = new Date(new Date().setDate(new Date().getDate() - 30));
     let rule = process.env.MOCKIATO_ARCHIVE;
     schedule.scheduleJob(rule, function(){
@@ -236,7 +236,7 @@ function init() {
         console.log('No. of Documents deleted from Archive:- '+services.length);
       });
     });
-  }
+  } */
 
   // expose api methods for users and groups
   const systems = require('./routes/systems');

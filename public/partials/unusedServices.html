@@ -1,0 +1,75 @@
+<h2>Unused Services</h2>
+<div class="clearfix"></div>
+<br>
+    
+            <div class="form-group row" ng-show="adminUser===myUser">
+                <label for="months" class="col-xs-2 col-form-label">Select Months:</label>
+                <div class="col-xs-3">
+                  <div class="radio">
+                      <select ng-model="months" class="form-control" style="width:5em;">
+                          <option ng-disabled="true" value="3" ng-value="'3'">3</option>
+                          <option ng-disabled="true" value="6" ng-value="'6'">6</option>
+                          <option value="12" ng-value="'12'">12</option>
+                          <option value="15" ng-value="'15'">15</option>
+                        </select>
+                  </div>
+                </div>
+                <label ng-if="searchBtnClicked" for="noOfServicesFound" class="col-xs-3 col-form-label">Total Services Found: {{servicelist.length}}</label>
+            </div>
+            <br><br>
+
+            <button type="submit" class="btn btn-primary" ng-click="getOldServices(months)" ng-show="adminUser===myUser">Submit</button>
+            <button class="btn btn-danger pull-right" ng-if="adminUser===myUser && searchBtnClicked && servicelist.length > 0" title="Delete All Operation not permitted." 
+                ng-disabled="true" ng-click="">Delete All <i class="glyphicon glyphicon-remove"></i></button>
+    <div class="clearfix">
+        <br>
+        <br>
+    </div>
+    <div class="col-xs-12" ng-show="adminUser===myUser">
+        <table class="table table-bordered table-striped well">
+            <tr>
+                <th style="white-space: nowrap">
+                    Name <a href="" title="sort by name" align="right" ng-click="orderByField='name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a></td>
+                </th>
+                <th style="white-space: nowrap">Owner</th>
+                <th style="white-space: nowrap">
+                    Group <a href="" title="sort by group" ng-click="orderByField='sut.name'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th style="white-space: nowrap">
+                    Type <a href="" title="sort by type" ng-click="orderByField='type'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th style="white-space: nowrap">
+                    Base URL <a href="" title="sort by base url" ng-click="orderByField='basePath'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th style="white-space: nowrap">
+                    Transactions <a href="" title="sort by transactions" ng-click="orderByField='txnCount'; reverseSort = !reverseSort"><small><span ng-show="!reverseSort" class ="glyphicon glyphicon-sort"></span></small><small><span ng-show="reverseSort" class ="glyphicon glyphicon-sort"></span></small></a>
+                </th>
+                <th style="white-space: nowrap">Action</th>
+            </tr>
+            <tr ng-repeat="service in servicelist | orderBy:orderByField:reverseSort | limitTo:totalDisplayed" style=" word-break:break-all">
+                <td style="width:150px"><a href="#!update/{{ service._id }}/frmServHistory" title="edit this service">{{service.name}}</a></td>
+                <td style="white-space: nowrap">{{service.user.uid}}</td>
+                <td style="white-space: nowrap">{{service.sut.name}}</td>
+                <td style="white-space: nowrap">{{service.type}}</td>
+                <td style="width:350px" class="urlmax">{{ service.basePath ? mockiatoHost + '/virtual' + service.basePath : '' }}</td>
+                <td style="white-space: nowrap">{{service.txnCount}}</td>
+                <td style="white-space: nowrap">
+                    <button class="btn btn-danger" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === true" ng-click="toggleService(service)">Stop <i class="glyphicon glyphicon-stop"></i></button>
+                    <button class="btn btn-success" ng-if="myGroups.includes(service.sut.name)" ng-show="service.running === false" ng-click="toggleService(service)">Start <i class="glyphicon glyphicon-play"></i></button>
+                    <button class="btn btn-info" title="Service Info" ng-click="serviceInfo(service._id)"><i class="glyphicon glyphicon-info-sign"></i></button>
+                    <button class="btn btn-primary" ng-if="service.type !== 'MQ'" title="Test service" ng-click="goToApiTest(service._id)">Test <i class="glyphicon glyphicon-expand"></i></button>
+                    <button class="btn btn-primary" title="Export your service as a JSON file to save, send, or import anytime" ng-click="exportService(service)">Export <i class="glyphicon glyphicon-export"></i></button>
+                    <button class="btn btn-default" ng-if="myGroups.includes(service.sut.name)" title="Delete Service" ng-click="deleteService(service)"><i class="glyphicon glyphicon-trash"></i></button>
+                </td>
+            </tr>
+        </table>
+        <div ng-show="totalDisplayed < servicelist.length">
+            <!-- <hr style="height:1px;border:none;color:#9f9696;background-color:#9f9696;" /> -->
+            <btn class="btn btn-default" ng-click="loadMore()">
+              Show more <span class="glyphicon glyphicon-chevron-down"></span>
+            </btn>
+          </div>
+    </div>
+    <br><br><br><br>
+    <h3 ng-if="noDataFound">No Service found</h3>
+    <h3 ng-if="adminUser!==myUser">Only mockiato Admin can see this page. </h3>
