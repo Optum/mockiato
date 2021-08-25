@@ -154,7 +154,7 @@ function createRRPairFromReqRes(req,res,service){
       if(options.headers['content-length'])
         delete options.headers['content-length'];
     
-      options.qs = req.query;
+      options.qs = req.query; 
     
       if(req._body) 
         options.body = req.body;
