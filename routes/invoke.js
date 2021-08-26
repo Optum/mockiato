@@ -149,11 +149,12 @@ function createRRPairFromReqRes(req,res,service){
       var options = {};
       options.method = req.method;
       options.headers = req.headers;
+      
     
       if(options.headers['content-length'])
         delete options.headers['content-length'];
     
-      options.qs = req.query;
+      options.qs = req.query; 
     
       if(req._body) 
         options.body = req.body;
@@ -164,6 +165,8 @@ function createRRPairFromReqRes(req,res,service){
     
       //Build URL
       var invokeOptions = service.liveInvocation;
+
+      options.headers.host = invokeOptions.remoteHost;
       var reg = new RegExp("/" + service.sut.name,"i");
       var basePath = service.basePath.replace(reg,"");
       if(service.liveInvocation.remoteBasePath){

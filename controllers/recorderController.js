@@ -228,10 +228,10 @@ function stripRRPairForReq(rrpair) {
     //Start creating req options
     var options = {}
     //Create full URL to remote host
-    options.url = (this.model.ssl ? "https" : "http") + "://" + this.model.remoteHost + ":" + this.model.remotePort + this.model.path + (diff ? "/" + diff : "");
+    options.uri = (this.model.ssl ? "https" : "http") + "://" + this.model.remoteHost + ":" + this.model.remotePort + this.model.path + (diff ? "/" + diff : "");
     options.method = req.method;
     options.headers = req.headers;
-
+    options.headers.host = this.model.remoteHost;
     if(options.headers['content-length'])
         delete options.headers['content-length'];
 
