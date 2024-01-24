@@ -14,3 +14,5 @@ public/js/bower_components
 public/fusepartials
 .vscode/settings.json
 .vscode
+
+package-lock.json
